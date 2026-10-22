@@ -8,8 +8,9 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Configuração do Supabase (Usando a chave publicável)
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://gpzqzwrqndawhhglycat.supabase.co';
-const SUPABASE_KEY = process.env.SUPABASE_KEY || 'sb_publishable_XAyerkDmHZePrP2Ij_QvdQ_mNIkK6Mf';
+
+const SUPABASE_URL = 'https://gpzqzwrqndawhhglycat.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwenF6d3JxbmRhd2hoZ2x5Y2F0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MjY3MzQxNCwiZXhwIjoyMTA4MjQ5NDE0fQ.LEzNod7zqQ70a_2suLly6_t-IHYbpdKhrfV9ApKdP5Y'; // Cole a chave secreta que você copiou
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const upload = multer({ storage: multer.memoryStorage() });
