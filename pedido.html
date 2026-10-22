@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="theme-color" content="#003366">
+<title>Catálogo de Produtos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  :root {
+    --azul-900:#001f3f; --azul-800:#003366; --azul-700:#004080;
+    --azul-500:#2563eb; --azul-100:#dbeafe; --azul-50:#eff6ff;
+    --branco:#ffffff; --cinza-50:#f8fafc; --cinza-100:#f1f5f9;
+    --cinza-200:#e2e8f0; --cinza-300:#cbd5e1; --cinza-400:#94a3b8;
+    --cinza-500:#64748b; --cinza-700:#334155; --texto:#1a2a3a;
+    --verde:#10b981; --verde-hover:#059669;
+    --vermelho:#ef4444; --vermelho-suave:#fee2e2;
+    --sombra-sm:0 2px 8px rgba(0,51,102,.04);
+    --sombra-md:0 4px 16px rgba(0,51,102,.08);
+    --sombra-lg:0 12px 40px rgba(0,51,102,.15);
+    --sombra-azul:0 8px 24px rgba(0,51,102,.25);
+  }
+  html { scroll-behavior:smooth; }
+  body { font-family:'Inter','Segoe UI',system-ui,sans-serif; background:var(--cinza-50); color:var(--texto); -webkit-font-smoothing:antialiased; min-height:100vh; }
+  button { font-family:inherit; cursor:pointer; }
+  img { max-width:100%; }
+
+  #telaLogin { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px;
+    background:linear-gradient(135deg, #001f3f 0%, #003366 50%, #004080 100%); }
+  .login-card { background:white; border-radius:24px; padding:40px; width:100%; max-width:400px;
+    box-shadow:0 20px 60px rgba(0,0,0,.3); text-align:center; }
+  .login-card h1 { color:var(--azul-800); font-size:1.5rem; margin-bottom:8px; }
+  .login-card p { color:var(--cinza-500); font-size:.9rem; margin-bottom:24px; }
+  .login-card input { width:100%; padding:14px 16px; border:2px solid var(--cinza-200); border-radius:12px;
+    font-size:1rem; margin-bottom:12px; font-family:inherit; }
+  .login-card input:focus { outline:none; border-color:var(--azul-800); }
+  .login-card button { width:100%; padding:16px; background:var(--azul-800); color:white; border:none;
+    border-radius:12px; font-size:1rem; font-weight:800; cursor:pointer; margin-top:8px; transition:.2s; }
+  .login-card button:hover { background:var(--azul-700); }
+  .login-card .erro { color:var(--vermelho); font-size:.85rem; margin-top:12px; display:none; }
+
+  .topo { background:linear-gradient(135deg, #001f3f 0%, #003366 100%); color:white;
+    position:sticky; top:0; z-index:100; box-shadow:0 4px 24px rgba(0,51,102,.25); }
+  .topo-inner { max-width:1500px; margin:0 auto; padding:12px 28px;
+    display:flex; justify-content:space-between; align-items:center; gap:16px; }
+  .topo-cliente { display:flex; align-items:center; gap:12px; min-width:0; flex:1; }
+  .topo-logo { height:44px; width:auto; max-width:80px; object-fit:contain; flex-shrink:0;
+    background:white; border-radius:10px; padding:6px 10px; box-shadow:0 2px 8px rgba(0,0,0,.15); }
+  .topo-cliente-info { min-width:0; }
+  .topo-cliente-info strong { display:block; font-size:.95rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:2px; }
+  .topo-cliente-info small { display:block; opacity:.75; font-size:.72rem; font-weight:500; }
+  .topo-acoes { display:flex; gap:10px; align-items:center; flex-shrink:0; }
+  .btn-carrinho { background:white; color:var(--azul-800); padding:11px 18px; border-radius:14px; border:none;
+    font-weight:800; font-size:.88rem; display:flex; align-items:center; gap:8px;
+    transition:.25s; box-shadow:0 4px 14px rgba(0,0,0,.15); white-space:nowrap; }
+  .btn-carrinho:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(0,0,0,.2); }
+  .btn-carrinho .carrinho-ico { font-size:1.1rem; }
+  .btn-carrinho .carrinho-qtd { background:var(--azul-800); color:white; font-size:.72rem; min-width:20px; height:20px; border-radius:10px; padding:0 6px; display:inline-flex; align-items:center; justify-content:center; font-weight:800; }
+  .btn-carrinho .carrinho-valor { font-weight:800; color:var(--azul-800); }
+  .btn-sair { background:rgba(255,255,255,.12); color:white; padding:10px 16px; border-radius:12px; cursor:pointer; border:1px solid rgba(255,255,255,.15); font-size:.8rem; font-weight:600; transition:.2s; }
+  .btn-sair:hover { background:rgba(239,68,68,.85); border-color:rgba(239,68,68,.85); }
+
+  .campanha-banner { background:linear-gradient(135deg, var(--azul-800), var(--azul-700)); color:white; padding:12px 28px; font-size:.88rem; font-weight:700; text-align:center; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .campanha-banner .ico { font-size:1.1rem; }
+
+  .abas-wrap { background:linear-gradient(135deg, #001f3f 0%, #003366 50%, #004080 100%); box-shadow:0 4px 16px rgba(0,51,102,.2); position:sticky; top:68px; z-index:90; padding:0; overflow-x:auto; scrollbar-width:thin; }
+  .abas-wrap::-webkit-scrollbar { height:4px; }
+  .abas-wrap::-webkit-scrollbar-thumb { background:rgba(255,255,255,.2); border-radius:4px; }
+  .abas-grupos { max-width:1500px; margin:0 auto; padding:0 16px; display:flex; gap:2px; }
+  .aba { padding:14px 18px 12px; cursor:pointer; font-size:.74rem; color:rgba(255,255,255,.65); font-weight:700; border:none; background:transparent; white-space:nowrap; transition:.2s; position:relative; display:flex; flex-direction:column; align-items:center; gap:6px; min-width:90px; text-transform:uppercase; letter-spacing:.4px; border-bottom:3px solid transparent; border-radius:6px 6px 0 0; }
+  .aba .aba-ico { display:flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:8px; background:rgba(255,255,255,.06); transition:.2s; }
+  .aba .aba-ico svg { width:22px; height:22px; stroke-width:2; stroke:currentColor; fill:none; }
+  .aba:hover { color:white; background:rgba(255,255,255,.04); }
+  .aba:hover .aba-ico { background:rgba(255,255,255,.14); transform:translateY(-2px); }
+  .aba.ativa { color:#f8b81f; background:linear-gradient(180deg, rgba(248,184,31,.08) 0%, transparent 100%); border-bottom-color:#f8b81f; }
+  .aba.ativa .aba-ico { background:linear-gradient(135deg, #f8b81f, #e0a418); box-shadow:0 4px 14px rgba(248,184,31,.4); color:#003366; }
+  .aba.ativa .aba-ico svg { stroke:#003366; }
+
+  .conteudo { padding:28px 32px 60px; max-width:1500px; margin:0 auto; }
+  .subgrupo { background:white; border-radius:20px; margin-bottom:26px; box-shadow:var(--sombra-md); border:1px solid var(--cinza-100); overflow:hidden; transition:.3s; }
+  .subgrupo:hover { box-shadow:var(--sombra-lg); }
+  .subgrupo-layout { display:grid; grid-template-columns:240px 1fr; gap:16px; padding:14px 18px; }
+  .subgrupo-side { display:flex; flex-direction:column; gap:16px; border-right:1px solid var(--cinza-100); padding-right:20px; }
+  .subgrupo-side .subgrupo-galeria { width:100%; }
+  .subgrupo-side .subgrupo-galeria .subgrupo-img.principal { width:100%; height:auto; aspect-ratio:1; }
+  .subgrupo-side .subgrupo-info h2 { font-size:1.15rem; margin-bottom:10px; }
+  .subgrupo-side .subgrupo-info .descricao { font-size:.82rem; }
+  .subgrupo-produtos { overflow-x:auto; min-width:0; }
+  @media(max-width:960px) { .subgrupo-layout { grid-template-columns:1fr; gap:20px; padding:20px; } .subgrupo-side { border-right:none; border-bottom:1px solid var(--cinza-100); padding-right:0; padding-bottom:20px; } }
+  .subgrupo-galeria { display:flex; flex-direction:column; gap:10px; width:220px; }
+  .img-bloco { display:flex; flex-direction:column; gap:4px; }
+  .subgrupo-galeria .subgrupo-img.principal { width:220px; height:220px; border-radius:16px; background:linear-gradient(135deg, white, var(--cinza-50)); border:1px solid var(--cinza-100); padding:16px; object-fit:contain; transition:.4s; cursor:zoom-in; }
+  .subgrupo:hover .subgrupo-galeria .subgrupo-img.principal { transform:scale(1.04); }
+  .subgrupo-img-placeholder { width:220px; height:220px; display:flex; align-items:center; justify-content:center; font-size:3rem; color:var(--cinza-200); background:var(--cinza-50); border-radius:16px; border:1px solid var(--cinza-100); }
+  .subgrupo-img-laterais { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .subgrupo-img-laterais .subgrupo-img.lateral { width:100%; height:80px; border-radius:10px; background:var(--cinza-50); border:1px solid var(--cinza-100); padding:6px; object-fit:contain; transition:.2s; cursor:zoom-in; }
+  .subgrupo-img-laterais .subgrupo-img.lateral:hover { border-color:var(--azul-800); transform:scale(1.05); }
+  .img-legenda { font-size:.7rem; font-weight:700; color:var(--azul-800); text-align:center; text-transform:uppercase; letter-spacing:.5px; padding:3px 6px; background:var(--azul-50); border-radius:6px; }
+  .subgrupo-info h2 { color:var(--azul-800); font-size:1.4rem; margin-bottom:12px; font-weight:800; letter-spacing:-.5px; }
+  .subgrupo-info .descricao { font-size:.88rem; color:var(--cinza-700); line-height:1.7; list-style:none; }
+  .subgrupo-info .descricao li { margin-bottom:5px; padding-left:18px; position:relative; }
+  .subgrupo-info .descricao li::before { content:''; position:absolute; left:0; top:8px; width:5px; height:5px; border-radius:50%; background:var(--azul-800); }
+  .descricao-wrap .descricao { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; transition:.3s; }
+  .descricao-wrap.expandida .descricao { -webkit-line-clamp:unset; display:block; }
+  .btn-expandir { background:transparent; border:none; color:var(--azul-800); font-weight:700; font-size:.82rem; padding:8px 0 0; cursor:pointer; text-decoration:underline; display:inline-block; }
+  .btn-expandir:hover { color:var(--azul-500); }
+
+  .marca-destaque { display:inline-block; background:linear-gradient(135deg, #f8b81f, #e0a418); color:var(--azul-900); font-size:.7rem; font-weight:900; text-transform:uppercase; letter-spacing:1px; padding:4px 12px; border-radius:20px; margin-bottom:12px; box-shadow:0 2px 8px rgba(248,184,31,.3); }
+
+  .variacoes-wrapper { padding:20px 24px 24px; background:linear-gradient(180deg, white 0%, var(--cinza-50) 100%); }
+  .variacoes-header { display:grid; grid-template-columns: 90px repeat(var(--cols, 1), minmax(0, 1fr)) 140px 150px; gap:12px; padding:0 16px 12px; border-bottom:2px solid var(--azul-100); margin-bottom:14px; }
+  .variacoes-header .vc-col { font-size:.66rem; font-weight:800; color:var(--azul-800); text-transform:uppercase; letter-spacing:.8px; text-align:center; padding:4px 0; }
+  .variacoes-header .vc-col-cod { text-align:left; padding-left:4px; }
+  .variacoes-header .vc-col-preco, .variacoes-header .vc-col-qtd { text-align:center; }
+  .variacoes-lista { display:flex; flex-direction:column; gap:3px; }
+  .variacao-card { display:grid; grid-template-columns: 90px repeat(var(--cols, 1), minmax(0, 1fr)) 140px 150px; gap:12px; align-items:center; background:white; border:1px solid var(--cinza-100); border-radius:14px; padding:8px 14px; transition:.25s; position:relative; box-shadow:0 1px 3px rgba(0,51,102,.04); }
+  .variacao-card:hover { border-color:var(--azul-500); box-shadow:0 4px 16px rgba(0,51,102,.12); transform:translateY(-1px); }
+  .variacao-card.no-carrinho { background:linear-gradient(90deg, #eff6ff 0%, white 100%); border-color:var(--azul-800); box-shadow:0 4px 16px rgba(0,51,102,.18); }
+  .variacao-card.no-carrinho::before { content:''; position:absolute; left:0; top:8px; bottom:8px; width:4px; background:linear-gradient(180deg, var(--azul-800), var(--azul-500)); border-radius:0 4px 4px 0; }
+  .variacao-card .vc-col { text-align:center; font-size:.86rem; color:var(--cinza-700); font-weight:600; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+  .variacao-card .vc-col-cod { text-align:left; font-weight:800; color:var(--azul-800); font-family:'SF Mono', Consolas, monospace; font-size:.8rem; letter-spacing:-.3px; }
+  .variacao-card .vc-attr { font-size:.82rem; color:var(--cinza-700); font-weight:600; letter-spacing:.2px; }
+  .variacao-card .vc-vazio { color:var(--cinza-300); font-weight:400; }
+  .variacao-card .vc-col-preco { text-align:center; }
+  .variacao-card .vc-col-preco .preco { display:inline-block; font-weight:800; color:var(--azul-800); font-size:1.05rem; letter-spacing:-.3px; background:var(--azul-50); padding:6px 12px; border-radius:8px; }
+  .variacao-card .vc-col-preco .preco-antigo { display:block; font-size:.7rem; color:var(--cinza-400); text-decoration:line-through; margin-bottom:2px; }
+  .variacao-card .vc-col-preco .preco-desc { display:inline-block; font-weight:800; color:#dc2626; font-size:1.05rem; letter-spacing:-.3px; background:#fee2e2; padding:6px 12px; border-radius:8px; }
+  .variacao-card .vc-col-preco .badge-desconto { display:block; font-size:.6rem; background:white; color:#dc2626; padding:1px 5px; border-radius:6px; margin-bottom:3px; text-align:center; }
+  .variacao-card .vc-col-qtd { display:flex; justify-content:center; }
+  .vc-cod-mobile { display:none; }
+
+  .qtd-ctrl { display:inline-flex; align-items:center; gap:4px; background:var(--cinza-50); border:1px solid var(--cinza-200); border-radius:12px; padding:4px; }
+  .qtd-ctrl .qtd-btn { width:34px; height:34px; border-radius:9px; border:none; background:white; color:var(--azul-800); font-weight:800; font-size:1.05rem; cursor:pointer; transition:.15s; display:flex; align-items:center; justify-content:center; box-shadow:0 1px 3px rgba(0,0,0,.06); line-height:1; padding-bottom:2px; }
+  .qtd-ctrl .qtd-btn:hover { background:var(--azul-800); color:white; }
+  .qtd-ctrl .qtd-btn:active { transform:scale(.9); }
+  .qtd-ctrl input { width:48px; padding:8px 4px; border:none; background:transparent; font-family:inherit; font-size:.95rem; text-align:center; font-weight:800; color:var(--azul-800); -moz-appearance:textfield; }
+  .qtd-ctrl input::-webkit-outer-spin-button, .qtd-ctrl input::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+  .qtd-ctrl input:focus { outline:none; }
+
+  .isca-layout { display:grid; grid-template-columns:280px 1fr; gap:20px; padding:16px 18px; border-bottom:1px solid var(--cinza-100); }
+  .isca-foto-principal { width:100%; aspect-ratio:1; background:linear-gradient(135deg, white, var(--cinza-50)); border:1px solid var(--cinza-100); border-radius:16px; padding:12px; display:flex; align-items:center; justify-content:center; cursor:zoom-in; transition:.3s; }
+  .isca-foto-principal:hover { transform:scale(1.02); }
+  .isca-foto-principal img { max-width:100%; max-height:100%; object-fit:contain; transition:opacity .25s ease; }
+  .isca-info h2 { color:var(--azul-800); font-size:1.15rem; font-weight:800; margin-bottom:8px; letter-spacing:-.5px; }
+  .isca-info .descricao { font-size:.8rem; line-height:1.5; margin-bottom:10px; }
+  .isca-titulo-cores { font-size:.72rem; font-weight:700; color:var(--cinza-500); text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px; }
+  .isca-grade-cores { display:grid; grid-template-columns:repeat(auto-fill, minmax(64px, 1fr)); gap:6px; max-height:340px; overflow-y:auto; padding:6px; background:var(--cinza-50); border-radius:10px; }
+  .isca-mini { display:flex; flex-direction:column; align-items:center; gap:2px; padding:4px; border-radius:8px; border:2px solid transparent; background:white; cursor:pointer; transition:.2s; position:relative; }
+  .isca-mini:hover { border-color:var(--azul-500); transform:translateY(-2px); }
+  .isca-mini.ativa { border-color:var(--azul-800); box-shadow:0 4px 10px rgba(0,51,102,.15); }
+  .isca-mini img { width:44px; height:44px; object-fit:contain; border-radius:6px; background:var(--cinza-50); }
+  .isca-mini-legenda { font-size:.6rem; font-weight:800; color:var(--azul-800); text-transform:uppercase; letter-spacing:.3px; text-align:center; line-height:1.1; }
+  .isca-mini-badge { position:absolute; top:-4px; right:-4px; min-width:22px; height:22px; padding:0 5px; background:linear-gradient(135deg, #10b981, #059669); color:white; border-radius:11px; font-size:11px; font-weight:900; display:none; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(16,185,129,.6); border:2px solid white; z-index:3; }
+  .isca-mini.tem-qtd .isca-mini-badge { display:flex; }
+  .isca-rodape { display:flex; align-items:center; gap:16px; padding:14px 18px; background:linear-gradient(180deg, white 0%, var(--cinza-50) 100%); flex-wrap:wrap; }
+  .isca-preco-area { font-size:1.15rem; font-weight:800; color:var(--azul-800); }
+  .isca-qtd { margin-left:auto; }
+  .isca-btn-add { padding:12px 24px; border:none; border-radius:12px; background:linear-gradient(135deg, var(--azul-800), var(--azul-700)); color:white; font-weight:800; font-size:.88rem; cursor:pointer; transition:.25s; box-shadow:0 4px 14px rgba(0,51,102,.25); letter-spacing:.3px; }
+  .isca-btn-add:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,51,102,.35); }
+  @media(max-width:720px) { .isca-layout { grid-template-columns:1fr; gap:14px; padding:14px; } .isca-foto-principal { max-width:240px; margin:0 auto; } .isca-info h2 { text-align:center; } .isca-titulo-cores { text-align:center; } .isca-grade-cores { grid-template-columns:repeat(auto-fill, minmax(56px, 1fr)); max-height:220px; } .isca-rodape { flex-direction:column; gap:10px; align-items:stretch; } .isca-qtd { margin-left:0; display:flex; justify-content:center; } .isca-btn-add { width:100%; } }
+
+  .pop-qtd-bg { position:fixed; inset:0; z-index:600; background:rgba(0,15,30,.75); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; padding:20px; opacity:0; pointer-events:none; transition:.25s; }
+  .pop-qtd-bg.on { opacity:1; pointer-events:auto; }
+  .pop-qtd { background:white; border-radius:22px; padding:0; max-width:560px; width:100%; box-shadow:0 25px 80px rgba(0,0,0,.5); animation:popIn .3s cubic-bezier(.16,1,.3,1); overflow:hidden; max-height:90vh; }
+  @keyframes popIn { from { opacity:0; transform:scale(.92); } to { opacity:1; transform:scale(1); } }
+  .pop-qtd-head { display:flex; justify-content:space-between; align-items:center; padding:16px 22px; background:linear-gradient(135deg, var(--azul-800), var(--azul-700)); color:white; }
+  .pop-qtd-head h3 { font-size:1rem; font-weight:800; letter-spacing:-.3px; }
+  .pop-qtd-head .pop-x { background:rgba(255,255,255,.15); border:none; color:white; width:34px; height:34px; border-radius:50%; cursor:pointer; font-size:15px; transition:.2s; display:flex; align-items:center; justify-content:center; }
+  .pop-qtd-head .pop-x:hover { background:var(--vermelho); transform:rotate(90deg); }
+  .pop-qtd-body { display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:20px 22px; align-items:start; }
+  .pop-qtd-foto { background:linear-gradient(135deg, white, var(--cinza-50)); border:1px solid var(--cinza-100); border-radius:14px; aspect-ratio:1; display:flex; align-items:center; justify-content:center; padding:12px; }
+  .pop-qtd-foto img { max-width:100%; max-height:100%; object-fit:contain; }
+  .pop-qtd-info { display:flex; flex-direction:column; gap:12px; min-width:0; overflow:hidden; }
+  .pop-qtd-info .pop-cor { font-size:.72rem; font-weight:800; color:var(--cinza-500); text-transform:uppercase; letter-spacing:.5px; }
+  .pop-qtd-info .pop-cor strong { display:block; font-size:1.5rem; color:var(--azul-800); letter-spacing:-.5px; margin-top:2px; }
+  .pop-qtd-info .pop-preco { font-size:.85rem; color:var(--cinza-500); font-weight:500; }
+  .pop-qtd-info .pop-preco strong { display:block; font-size:1.3rem; color:var(--azul-800); font-weight:800; margin-top:2px; }
+  .pop-qtd-info .pop-subgrupo { background:var(--azul-50); border-left:4px solid var(--azul-500); padding:10px 14px; border-radius:10px; font-size:.72rem; color:var(--cinza-500); font-weight:800; text-transform:uppercase; letter-spacing:.5px; }
+  .pop-qtd-info .pop-subgrupo strong { display:block; font-size:1.05rem; color:var(--azul-800); font-weight:800; margin-top:2px; text-transform:none; letter-spacing:-.3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .pop-qtd-info .pop-qtd-ctrl-wrap { display:flex; flex-direction:column; gap:6px; }
+  .pop-qtd-info .pop-qtd-ctrl-wrap label { font-size:.72rem; font-weight:800; color:var(--cinza-500); text-transform:uppercase; letter-spacing:.5px; }
+  .pop-qtd-info .pop-qtd-ctrl { display:flex; align-items:center; justify-content:space-between; background:var(--cinza-50); border:2px solid var(--cinza-200); border-radius:14px; padding:6px; gap:8px; width:100%; box-sizing:border-box; }
+  .pop-qtd-info .pop-qtd-btn { width:48px; min-width:48px; height:48px; border-radius:12px; border:none; background:white; color:var(--azul-800); font-weight:900; font-size:1.4rem; cursor:pointer; transition:.15s; box-shadow:0 2px 6px rgba(0,0,0,.06); display:flex; align-items:center; justify-content:center; flex-shrink:0; padding:0; }
+  .pop-qtd-info .pop-qtd-btn:hover { background:var(--azul-800); color:white; }
+  .pop-qtd-info .pop-qtd-btn:active { transform:scale(.92); }
+  .pop-qtd-info .pop-qtd-ctrl input { flex:1; min-width:0; text-align:center; border:none; background:transparent; font-family:inherit; font-size:1.6rem; font-weight:900; color:var(--azul-800); padding:8px; -moz-appearance:textfield; }
+  .pop-qtd-info .pop-qtd-ctrl input::-webkit-outer-spin-button, .pop-qtd-info .pop-qtd-ctrl input::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+  .pop-qtd-info .pop-qtd-ctrl input:focus { outline:none; }
+  .pop-qtd-foot { display:flex; gap:10px; padding:14px 22px 20px; }
+  .pop-qtd-foot button { flex:1; padding:14px; border:none; border-radius:12px; font-weight:800; font-size:.9rem; cursor:pointer; transition:.2s; letter-spacing:.3px; }
+  .pop-btn-cancelar { background:var(--vermelho-suave); color:var(--vermelho); }
+  .pop-btn-cancelar:hover { background:#fecaca; }
+  .pop-btn-salvar { background:linear-gradient(135deg, var(--verde), var(--verde-hover)); color:white; box-shadow:0 6px 20px rgba(16,185,129,.3); flex:1.5; }
+  .pop-btn-salvar:hover { transform:translateY(-2px); box-shadow:0 10px 26px rgba(16,185,129,.4); }
+  @media(max-width:600px) { .pop-qtd-body { grid-template-columns:1fr; } .pop-qtd-foto { max-width:200px; margin:0 auto; } }
+
+  .carrinho-overlay { position:fixed; inset:0; background:rgba(0,31,63,.5); backdrop-filter:blur(4px); opacity:0; pointer-events:none; transition:.3s; z-index:199; }
+  .carrinho-overlay.on { opacity:1; pointer-events:auto; }
+  .carrinho-painel { position:fixed; right:0; top:0; bottom:0; width:440px; max-width:100vw; background:white; box-shadow:-16px 0 50px rgba(0,51,102,.25); z-index:200; transform:translateX(100%); transition:.35s cubic-bezier(.16,1,.3,1); display:flex; flex-direction:column; }
+  .carrinho-painel.on { transform:none; }
+  .carrinho-head { padding:22px 26px; background:linear-gradient(135deg, var(--azul-800), var(--azul-700)); color:white; display:flex; justify-content:space-between; align-items:center; }
+  .carrinho-head h3 { font-size:1.1rem; font-weight:800; }
+  .carrinho-head .x { background:rgba(255,255,255,.15); border:none; color:white; width:36px; height:36px; border-radius:50%; cursor:pointer; font-size:15px; transition:.2s; display:flex; align-items:center; justify-content:center; }
+  .carrinho-head .x:hover { background:var(--vermelho); transform:rotate(90deg); }
+  .carrinho-itens { flex:1; overflow-y:auto; padding:18px 22px; }
+  .carrinho-item { display:grid; grid-template-columns:60px 1fr 34px; gap:12px; padding:14px 0; border-bottom:1px solid var(--cinza-100); align-items:center; }
+  .carrinho-item .ci-cod { font-weight:800; color:var(--azul-800); font-size:.82rem; font-family:'SF Mono', Consolas, monospace; }
+  .carrinho-item .ci-qtd { display:inline-block; background:var(--azul-800); color:white; padding:2px 7px; border-radius:20px; font-size:.66rem; font-weight:800; margin-top:4px; }
+  .carrinho-item .ci-desc { font-size:.83rem; color:var(--cinza-700); font-weight:600; margin-bottom:4px; line-height:1.3; }
+  .carrinho-item .ci-preco { font-size:.75rem; color:var(--cinza-500); font-weight:500; }
+  .carrinho-item .ci-sub { font-weight:800; color:var(--azul-800); font-size:.88rem; }
+  .carrinho-item .btn-rem { background:var(--vermelho-suave); color:var(--vermelho); border:none; width:34px; height:34px; border-radius:10px; cursor:pointer; font-size:.82rem; transition:.2s; display:flex; align-items:center; justify-content:center; }
+  .carrinho-item .btn-rem:hover { background:var(--vermelho); color:white; }
+  .carrinho-vazio { text-align:center; padding:80px 20px; color:var(--cinza-400); }
+  .carrinho-vazio .ico { font-size:3.5rem; display:block; margin-bottom:16px; opacity:.4; }
+  .carrinho-vazio .txt { font-size:.95rem; font-weight:500; }
+  .carrinho-foot { padding:22px 26px; border-top:2px solid var(--cinza-100); background:linear-gradient(180deg, var(--cinza-50), white); }
+  .carrinho-foot .total { display:flex; justify-content:space-between; align-items:center; font-size:.95rem; color:var(--cinza-500); margin-bottom:8px; font-weight:600; }
+  .carrinho-foot .total .valor { font-size:1.5rem; font-weight:800; color:var(--azul-800); letter-spacing:-.5px; }
+  .carrinho-foot button { width:100%; padding:15px; border:none; border-radius:14px; font-weight:800; font-size:.92rem; cursor:pointer; transition:.25s; margin-top:10px; letter-spacing:.3px; }
+  .carrinho-foot .btn-fin { background:linear-gradient(135deg, var(--verde), var(--verde-hover)); color:white; box-shadow:0 6px 20px rgba(16,185,129,.3); }
+  .carrinho-foot .btn-fin:hover { transform:translateY(-2px); }
+  .carrinho-foot .btn-limpar { background:var(--vermelho-suave); color:var(--vermelho); font-size:.82rem; padding:12px; }
+  .carrinho-foot .btn-limpar:hover { background:#fecaca; }
+
+  .toast { position:fixed; bottom:32px; left:50%; transform:translateX(-50%) translateY(120px); background:var(--azul-800); color:white; padding:16px 26px; border-radius:14px; box-shadow:0 12px 40px rgba(0,51,102,.4); z-index:300; font-size:.9rem; transition:.35s cubic-bezier(.16,1,.3,1); opacity:0; font-weight:600; max-width:90vw; text-align:center; }
+  .toast.on { transform:translateX(-50%) translateY(0); opacity:1; }
+  .toast.ok { background:linear-gradient(135deg, var(--verde), var(--verde-hover)); }
+  .toast.err { background:linear-gradient(135deg, var(--vermelho), #dc2626); }
+  .loading { text-align:center; padding:80px 20px; color:var(--cinza-400); font-weight:500; }
+  .loading .spinner { width:42px; height:42px; border:4px solid var(--cinza-200); border-top-color:var(--azul-800); border-radius:50%; animation:spin .8s linear infinite; margin:0 auto 16px; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  @keyframes fade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+  .isca-bloco-modelo { margin-bottom:16px; }
+  .isca-bloco-modelo:last-child { margin-bottom:0; }
+  .isca-bloco-titulo { font-size:.78rem; font-weight:800; text-transform:uppercase; letter-spacing:.8px; padding:6px 12px; margin-bottom:8px; border-left:4px solid; background:linear-gradient(90deg, rgba(0,51,102,.04) 0%, transparent 100%); border-radius:6px 0 0 6px; }
+  
+  .anzol-bloco-card { border-radius:14px; overflow:hidden; border:2px solid; background:white; box-shadow:0 2px 8px rgba(0,51,102,.05); transition:.2s; }
+  .anzol-bloco-card:hover { box-shadow:0 6px 18px rgba(0,51,102,.10); }
+  .anzol-bloco-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 16px; color:white; font-weight:800; position:relative; }
+  .anzol-bloco-header::after { content:''; position:absolute; bottom:0; left:0; right:0; height:2px; background:rgba(255,255,255,.25); }
+  .anzol-bloco-header .abh-esq { display:flex; align-items:center; gap:10px; min-width:0; }
+  .anzol-bloco-header .abh-sigla { font-size:1.05rem; font-weight:900; letter-spacing:-.3px; background:rgba(255,255,255,.22); padding:3px 10px; border-radius:8px; line-height:1.2; }
+  .anzol-bloco-header .abh-nome { font-size:.82rem; font-weight:800; text-transform:uppercase; letter-spacing:.6px; opacity:.95; }
+  .anzol-bloco-corpo { padding:12px; background:linear-gradient(180deg, #fafcff 0%, white 100%); }
+  .anzol-bloco-corpo .anzol-inline-grade { background:transparent; padding:0; border-radius:0; }
+  @media(max-width:520px) { .anzol-bloco-header { padding:8px 12px; gap:8px; } .anzol-bloco-header .abh-sigla { font-size:.9rem; padding:2px 8px; } .anzol-bloco-header .abh-nome { font-size:.72rem; } .anzol-bloco-corpo { padding:8px; } }
+
+  .anzol-inline-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); gap: 8px; padding: 8px; background: var(--cinza-50); border-radius: 10px; }
+  .anzol-inline-card { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 6px; background: white; border: 2px solid var(--cinza-200); border-radius: 12px; position: relative; transition: .2s; }
+  .anzol-inline-card:hover { border-color: var(--azul-500); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,51,102,.12); }
+  .anzol-inline-card.tem-qtd { border-color: var(--verde); background: linear-gradient(135deg, white, #f0fdf4); box-shadow: 0 4px 12px rgba(16,185,129,.15); }
+  .anzol-inline-numero { font-size: 1.6rem; font-weight: 900; color: var(--azul-800); letter-spacing: -.5px; line-height: 1; margin-bottom: 1px; }
+  .anzol-inline-preco { font-size: .78rem; font-weight: 800; color: var(--verde); letter-spacing: -.2px; margin-bottom: 3px; }
+  .anzol-inline-qtd-emb { font-size: .62rem; font-weight: 700; color: #64748b; background: var(--cinza-50); border: 1px solid var(--cinza-200); border-radius: 6px; padding: 1px 7px; margin-bottom: 6px; letter-spacing: .2px; display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
+  .anzol-inline-qtd-emb::before { content: '📦'; font-size: .68rem; opacity: .75; }
+  .anzol-inline-qtd { display: flex; align-items: center; gap: 2px; background: var(--cinza-50); border: 1px solid var(--cinza-200); border-radius: 8px; padding: 2px; width: 100%; }
+  .anzol-inline-btn { width: 26px; min-width: 26px; height: 26px; border-radius: 6px; border: none; background: white; color: var(--azul-800); font-weight: 900; font-size: .95rem; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; line-height: 1; transition: .15s; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+  .anzol-inline-btn:hover { background: var(--azul-800); color: white; }
+  .anzol-inline-btn:active { transform: scale(.9); }
+  .anzol-inline-qtd input { flex: 1; min-width: 0; width: 100%; text-align: center; border: none; background: transparent; font-family: inherit; font-size: .9rem; font-weight: 800; color: var(--azul-800); padding: 2px; -moz-appearance: textfield; }
+  .anzol-inline-qtd input::-webkit-outer-spin-button, .anzol-inline-qtd input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .anzol-inline-qtd input:focus { outline: none; background: white; border-radius: 4px; }
+  .anzol-inline-badge { position: absolute; top: -6px; right: -6px; min-width: 22px; height: 22px; padding: 0 5px; background: linear-gradient(135deg, #10b981, #059669); color: white; border-radius: 11px; font-size: 11px; font-weight: 900; display: none; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(16,185,129,.6); border: 2px solid white; z-index: 3; }
+  .anzol-inline-card.tem-qtd .anzol-inline-badge { display: flex; }
+  @media(max-width: 600px) { .anzol-inline-grade { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 6px; padding: 6px; } .anzol-inline-numero { font-size: 1.35rem; } .anzol-inline-preco  { font-size: .72rem; } .anzol-inline-btn    { width: 24px; min-width: 24px; height: 24px; font-size: .85rem; } .anzol-inline-qtd input { font-size: .82rem; } }
+  .isca-instrucao { background: var(--azul-50); border-left: 4px solid var(--azul-500); padding: 8px 14px; border-radius: 8px; font-size: .75rem; color: var(--azul-800); margin: 10px 0; }
+  .isca-preco-info { text-align: left; }
+
+  .lightbox-bg { position:fixed; inset:0; z-index:500; background:rgba(0,15,30,.9); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; padding:40px 20px; opacity:0; pointer-events:none; transition:.25s; }
+  .lightbox-bg.on { opacity:1; pointer-events:auto; }
+  .lightbox-img { max-width:90vw; max-height:85vh; object-fit:contain; border-radius:16px; background:white; padding:24px; box-shadow:0 25px 80px rgba(0,0,0,.6); animation:lbIn .3s cubic-bezier(.16,1,.3,1); }
+  @keyframes lbIn { from { opacity:0; transform:scale(.94); } to { opacity:1; transform:scale(1); } }
+  .lightbox-close { position:fixed; top:20px; right:20px; width:48px; height:48px; border-radius:50%; background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.2); color:white; font-size:22px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:.2s; z-index:501; }
+  .lightbox-close:hover { background:var(--vermelho); transform:rotate(90deg); }
+  .lightbox-legenda { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); color:white; font-weight:800; text-transform:uppercase; letter-spacing:1px; font-size:.9rem; background:rgba(255,255,255,.12); padding:8px 20px; border-radius:20px; backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,.15); z-index:501; }
+
+  @media(max-width:720px) {
+    .topo-inner { padding:10px 14px; gap:10px; }
+    .topo-logo { height:36px; max-width:60px; padding:4px 6px; }
+    .topo-cliente { gap:8px; }
+    .topo-cliente-info strong { font-size:.8rem; }
+    .topo-cliente-info small { font-size:.66rem; }
+    .btn-carrinho { padding:9px 12px; font-size:.78rem; border-radius:11px; gap:6px; }
+    .btn-carrinho .carrinho-ico { font-size:.95rem; }
+    .btn-carrinho .carrinho-valor { font-size:.78rem; font-weight:800; }
+    .btn-sair { padding:8px 11px; font-size:.72rem; }
+    .aba { padding:10px 10px 8px; font-size:.62rem; min-width:70px; gap:4px; }
+    .aba .aba-ico { width:30px; height:30px; }
+    .aba .aba-ico svg { width:18px; height:18px; }
+    .abas-wrap { top:56px; }
+    .subgrupo { border-radius:16px; }
+    .subgrupo-galeria { width:100%; max-width:260px; margin:0 auto; }
+    .subgrupo-galeria .subgrupo-img.principal { width:100%; height:auto; aspect-ratio:1; }
+    .subgrupo-img-placeholder { width:100%; max-width:260px; aspect-ratio:1; height:auto; margin:0 auto; }
+    .subgrupo-info h2 { font-size:1.15rem; text-align:center; margin-bottom:10px; }
+    .subgrupo-info .descricao { font-size:.84rem; }
+    .itens-tab thead th { padding:10px 10px; font-size:.6rem; }
+    .itens-tab td { padding:11px 10px; font-size:.8rem; }
+    .itens-tab td.td-cod { width:auto; font-size:.72rem; }
+    .itens-tab .preco, .itens-tab .preco-desc { font-size:.9rem; }
+    .qtd-ctrl .qtd-btn { width:30px; height:30px; font-size:.95rem; }
+    .qtd-ctrl input { width:38px; font-size:.85rem; }
+    .conteudo { padding:16px 12px 40px; }
+    .carrinho-painel { width:100%; }
+  }
+  @media(max-width:420px) {
+    .topo-cliente-info strong { font-size:.75rem; max-width:120px; }
+    .topo-cliente-info small { display:none; }
+    .aba { padding:9px 8px 7px; font-size:.58rem; min-width:62px; }
+    .aba .aba-ico { width:26px; height:26px; }
+    .aba .aba-ico svg { width:16px; height:16px; }
+    .itens-tab td.td-cod { display:none; }
+    .itens-tab thead th:first-child { display:none; }
+  }
+</style>
+</head>
+<body>
+
+<div id="telaLogin" style="display:none;">
+  <div class="login-card">
+    <h1>🐟 Acesso ao Catálogo</h1>
+    <p>Digite seu CNPJ e a senha para entrar.</p>
+    <input type="text" id="loginCnpj" placeholder="CNPJ (somente números)" maxlength="18" autocomplete="off">
+    <input type="password" id="loginSenha" placeholder="Senha (se houver)" autocomplete="off">
+    <button onclick="fazerLogin()">Entrar</button>
+    <div id="loginErro" class="erro"></div>
+  </div>
+</div>
+
+<div id="app" style="display:none;">
+  <div class="topo">
+    <div class="topo-inner">
+      <div class="topo-cliente">
+        <img class="topo-logo" src="https://kiujnriulwvxxdtotwbk.supabase.co/storage/v1/object/public/anexos-chamados/icon-512.png" alt="Logo" onerror="this.style.display='none'">
+        <div class="topo-cliente-info">
+          <strong id="topoNome">—</strong>
+          <small id="topoInfo">—</small>
+        </div>
+      </div>
+      <div class="topo-acoes">
+        <button class="btn-carrinho" onclick="toggleCarrinho()">
+          <span class="carrinho-ico">🛒</span>
+          <span class="carrinho-qtd" id="topoQtd">0</span>
+          <span class="carrinho-valor">R$ <span id="topoTotal">0,00</span></span>
+        </button>
+        <button class="btn-sair" onclick="sair()">Sair</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="campanha-banner" id="campanhaBanner" style="display:none"></div>
+
+  <div class="abas-wrap">
+    <div class="abas-grupos" id="abasGrupos"></div>
+  </div>
+
+  <div class="conteudo" id="conteudoCatalogo">
+    <div class="loading">
+      <div class="spinner"></div>
+      Carregando catálogo...
+    </div>
+  </div>
+</div>
+
+<div class="lightbox-bg" id="lightboxBg" onclick="fecharLightbox(event)">
+  <button class="lightbox-close" onclick="fecharLightbox(event, true)">✕</button>
+  <img class="lightbox-img" id="lightboxImg" src="" alt="">
+  <div class="lightbox-legenda" id="lightboxLegenda" style="display:none"></div>
+</div>
+
+<div class="pop-qtd-bg" id="popQtdBg">
+  <div class="pop-qtd">
+    <div class="pop-qtd-head">
+      <h3 id="popTitulo">Adicionar ao pedido</h3>
+      <button class="pop-x" onclick="fecharPopQtd()">✕</button>
+    </div>
+    <div class="pop-qtd-body">
+      <div class="pop-qtd-foto">
+        <img id="popImg" src="" alt="">
+      </div>
+      <div class="pop-qtd-info">
+        <div class="pop-cor">
+          <span>Cor selecionada</span>
+          <strong id="popCor">—</strong>
+        </div>
+        <div class="pop-codigo" style="background:var(--cinza-50); border-radius:8px; padding:8px 14px; display:flex; justify-content:space-between; align-items:center; font-size:.72rem; font-weight:800; color:var(--cinza-500); text-transform:uppercase; letter-spacing:.5px; border:1px dashed var(--cinza-200);">
+          <span>Código</span>
+          <strong id="popCodigo" style="font-family:'SF Mono', Consolas, monospace; font-size:.9rem; color:var(--azul-800); font-weight:800; letter-spacing:-.3px;">—</strong>
+        </div>
+        <div class="pop-embalagem" id="popEmbalagemWrap" style="display:none;">
+          <span>📦 Embalagem</span>
+          <strong id="popEmbalagem">—</strong>
+        </div>
+        <div class="pop-preco">
+          <span>Preço unitário</span>
+          <strong id="popPreco">R$ 0,00</strong>
+        </div>
+        <div class="pop-qtd-ctrl-wrap">
+          <label>Quantidade</label>
+          <div class="pop-qtd-ctrl">
+            <button class="pop-qtd-btn" onclick="popMudarQtd(-1)">−</button>
+            <input type="number" id="popQtdInput" min="0" value="1" onfocus="this.select()">
+            <button class="pop-qtd-btn" onclick="popMudarQtd(1)">+</button>
+          </div>
+        </div>
+        <div class="pop-subgrupo">
+          <span>Subgrupo</span>
+          <strong id="popNomeSubgrupo">—</strong>
+        </div>
+      </div>
+    </div>
+    <div class="pop-qtd-foot">
+      <button class="pop-btn-cancelar" onclick="fecharPopQtd()">Cancelar</button>
+      <button class="pop-btn-salvar" onclick="salvarPopQtd()">✅ Adicionar ao pedido</button>
+    </div>
+  </div>
+</div>
+
+<div class="carrinho-overlay" id="carrinhoOverlay" onclick="toggleCarrinho()"></div>
+<div class="carrinho-painel" id="carrinhoPainel">
+  <div class="carrinho-head">
+    <h3>🛒 Meu Pedido</h3>
+    <button class="x" onclick="toggleCarrinho()">✕</button>
+  </div>
+  <div class="carrinho-itens" id="carrinhoItens">
+    <div class="carrinho-vazio">
+      <span class="ico">🛒</span>
+      <div class="txt">Seu carrinho está vazio</div>
+    </div>
+  </div>
+  <div class="carrinho-foot">
+    <div class="total">
+      <span>Total do pedido</span>
+      <span class="valor">R$ <span id="carrinhoTotal">0,00</span></span>
+    </div>
+    <button class="btn-fin" onclick="finalizarPedido()">✅ Finalizar pedido</button>
+    <button class="btn-limpar" onclick="limparCarrinho()">🗑️ Limpar carrinho</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Modal Agrupar Subgrupos -->
+<div class="modal-bg" id="modalAgruparSubgrupos">
+  <div class="modal wide">
+    <div class="modal-head">
+      <div><h3>Agrupar Subgrupos</h3><small>Selecione os subgrupos que devem virar um único card</small></div>
+      <button class="x" onclick="document.getElementById('modalAgruparSubgrupos').classList.remove('on')">✕</button>
+    </div>
+    
+    <div class="card">
+      <label>Nome da Família (que vai aparecer no card)</label>
+      <input id="nomeFamiliaInput" placeholder="Ex: Carretilha Avenger">
+    </div>
+
+    <div class="card">
+      <h3>Subgrupos disponíveis</h3>
+      <div id="checksSubgrupos" class="checks-grid" style="max-height:300px;"></div>
+    </div>
+
+    <div style="display:flex; gap:10px; justify-content:flex-end;">
+      <button class="btn btn-danger" onclick="document.getElementById('modalAgruparSubgrupos').classList.remove('on')">Cancelar</button>
+      <button class="btn btn-success" onclick="salvarAgrupamentoSubgrupos()">💾 Criar Card</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let clienteLogado = null;
+let campanhaAtual = null;
+let gruposCache = [];
+let grupoAtualId = null;
+let carrinho = {};
+let popAtual = null;
+const API = '/api/tabela';
+
+function fmtMoeda(v) {
+    if (v === null || v === undefined) return '0,00';
+    return Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function toast(msg, tipo='ok') {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = 'toast on ' + tipo;
+    setTimeout(() => el.className = 'toast ' + tipo, 3200);
+}
+async function api(url, opts={}) {
+    const r = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...opts });
+    return r.json();
+}
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+function escapeAttr(s) { return escapeHtml(s).replace(/"/g, '&quot;'); }
+
+function iconeGrupo(nome) {
+    const n = (nome || '').toUpperCase();
+    if (n.includes('INÍCIO') || n.includes('INICIO'))  return 'home';
+    if (n.includes('MOLINETE'))                        return 'reel';
+    if (n.includes('VARA'))                            return 'line-chart';
+    if (n.includes('CARRETILHA'))                      return 'cog';
+    if (n.includes('LINHA'))                           return 'cable';
+    if (n.includes('ANZOL') || n.includes('ANZÓI'))    return 'fish';
+    if (n.includes('ISCA'))                            return 'fish-symbol';
+    if (n.includes('ACESSÓRIO') || n.includes('ACESSORIO')) return 'briefcase';
+    if (n.includes('PEÇA') || n.includes('PECA'))      return 'wrench';
+    if (n.includes('DAIWA'))                           return 'badge';
+    if (n.includes('MEGABASS'))                        return 'fish';
+    return 'package';
+}
+
+function abrirLightbox(url, legenda) {
+    if (!url) return;
+    document.getElementById('lightboxImg').src = url;
+    document.getElementById('lightboxLegenda').textContent = legenda || '';
+    document.getElementById('lightboxLegenda').style.display = legenda ? 'block' : 'none';
+    document.getElementById('lightboxBg').classList.add('on');
+}
+function fecharLightbox(ev, forceClose) {
+    if (!forceClose && ev && ev.target && ev.target.id === 'lightboxImg') return;
+    document.getElementById('lightboxBg').classList.remove('on');
+    setTimeout(() => document.getElementById('lightboxImg').src = '', 250);
+}
+
+document.getElementById('loginCnpj').addEventListener('keypress', e => { if (e.key === 'Enter') document.getElementById('loginSenha').focus(); });
+document.getElementById('loginSenha').addEventListener('keypress', e => { if (e.key === 'Enter') fazerLogin(); });
+
+async function fazerLogin() {
+    const cnpj = document.getElementById('loginCnpj').value.trim();
+    const senha = document.getElementById('loginSenha').value.trim();
+    const btn = document.querySelector('#telaLogin button');
+    const erroEl = document.getElementById('loginErro');
+    if (!cnpj) { erroEl.textContent = 'Digite o CNPJ.'; erroEl.style.display = 'block'; return; }
+    erroEl.style.display = 'none';
+    btn.textContent = 'Entrando...'; btn.disabled = true;
+    try {
+        const r = await api(API + '/entrar', { method: 'POST', body: JSON.stringify({ cnpj, senha }) });
+        if (!r.success) throw new Error(r.error || 'Erro ao logar');
+        clienteLogado = r.cliente; campanhaAtual = r.campanha;
+        document.getElementById('telaLogin').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+        document.getElementById('topoNome').textContent = clienteLogado.nome_fantasia || clienteLogado.razao_social || 'Cliente';
+        document.getElementById('topoInfo').textContent = `${clienteLogado.cidade || ''}${clienteLogado.uf ? '/'+clienteLogado.uf : ''} · CNPJ ${clienteLogado.cnpj}`;
+        if (campanhaAtual) {
+            document.getElementById('campanhaBanner').style.display = 'flex';
+            document.getElementById('campanhaBanner').innerHTML = `<span class="ico">🎁</span> ${campanhaAtual.nome}${campanhaAtual.subtitulo ? ' — ' + campanhaAtual.subtitulo : ''}`;
+        }
+        carregarGrupos();
+    } catch (e) {
+        erroEl.textContent = e.message; erroEl.style.display = 'block';
+        btn.textContent = 'Entrar'; btn.disabled = false;
+    }
+}
+function sair() { location.reload(); }
+
+async function carregarGrupos() {
+    const r = await api(API + '/grupos-catalogo');
+    if (!r.success || !r.grupos || !r.grupos.length) {
+        document.getElementById('conteudoCatalogo').innerHTML = '<div class="loading">Nenhum grupo cadastrado ainda.</div>';
+        return;
+    }
+    gruposCache = r.grupos.map((g, index) => ({ id: index + 1, nome: g.nome }));
+    const abas = document.getElementById('abasGrupos');
+    abas.innerHTML = gruposCache.map((g, i) => `
+        <button class="aba ${i===0?'ativa':''}" data-nome="${g.nome}" onclick="trocarGrupo('${escapeHtml(g.nome)}', this)">
+            <span class="aba-ico"><i data-lucide="${iconeGrupo(g.nome)}"></i></span>
+            <span>${g.nome}</span>
+        </button>
+    `).join('');
+    if (window.lucide) lucide.createIcons();
+    if (gruposCache.length) trocarGrupo(gruposCache[0].nome, abas.querySelector('.aba'));
+}
+
+async function trocarGrupo(grupoNome, btn) {
+    grupoAtualId = grupoNome;
+    document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa'));
+    if (btn) btn.classList.add('ativa');
+
+    const cont = document.getElementById('conteudoCatalogo');
+    cont.innerHTML = '<div class="loading"><div class="spinner"></div>Carregando...</div>';
+
+    const url = API + '/catalogo-novo/' + encodeURIComponent(grupoNome);
+    const r = await api(url);
+
+    if (!r.success) {
+        cont.innerHTML = '<div class="loading">Erro ao carregar: ' + (r.error || '') + '</div>';
+        return;
+    }
+
+    if (!r.subgrupos || !r.subgrupos.length) {
+        cont.innerHTML = '<div class="loading">Nenhum produto neste grupo ainda.</div>';
+        return;
+    }
+
+    // 1. Verifica se existe ALGUMA família neste grupo
+    let temFamilia = false;
+    for (const sub of r.subgrupos) {
+        if (sub.itens && sub.itens.some(it => it.familia_id)) {
+            temFamilia = true;
+            break;
+        }
+    }
+
+    // 🚨 SE NÃO TIVER FAMÍLIA: renderiza os subgrupos normalmente (como era antes)
+    if (!temFamilia) {
+        cont.innerHTML = r.subgrupos.map(s => renderSubgrupo(s)).join('');
+        return;
+    }
+
+    // 🚨 SE TIVER FAMÍLIA: junta tudo e agrupa como fizemos antes
+    let todosItens = [];
+    for (const sub of r.subgrupos) {
+        if (sub.itens && sub.itens.length) {
+            todosItens = todosItens.concat(sub.itens);
+        }
+    }
+
+    const familias = {};
+    const itensSoltos = [];
+
+    todosItens.forEach(it => {
+        if (it.familia_id) {
+            if (!familias[it.familia_id]) {
+                familias[it.familia_id] = {
+                    nome: it.familia_nome || 'Família',
+                    descricao: it.familia_descricao || '',
+                    itens: []
+                };
+            }
+            familias[it.familia_id].itens.push(it);
+        } else {
+            itensSoltos.push(it);
+        }
+    });
+
+    let htmlFinal = '';
+    for (const fid in familias) {
+        const fam = familias[fid];
+        fam.itens.sort((a, b) => (a.rotulo_ordem || 0) - (b.rotulo_ordem || 0));
+        const principal = fam.itens[0];
+        const laterais = fam.itens.slice(1);
+
+        const imgPrincipalHtml = `
+            <div class="img-bloco">
+                <img class="subgrupo-img principal" src="${escapeAttr(principal.imagem_url)}" alt="${escapeAttr(principal.descricao)}" onclick="abrirLightbox('${escapeAttr(principal.imagem_url)}', '${escapeAttr(principal.rotulo || principal.descricao)}')" onerror="this.style.display='none'">
+                <div class="img-legenda" style="background:#f8b81f; color:#001f3f;">${escapeHtml(principal.rotulo || 'Principal')}</div>
+            </div>
+        `;
+                const imgLateraisHtml = laterais.slice(0, 2).map(it => {
+            // 🚨 Pega a descrição longa do item (ou o rótulo se não tiver)
+            const descLonga = it.descricao || it.rotulo || 'Clique para ver mais';
+            
+            return `
+            <div class="img-bloco">
+                <img class="subgrupo-img lateral" src="${escapeAttr(it.imagem_url)}" 
+                     alt="${escapeAttr(descLonga)}"
+                     onclick="abrirLightbox('${escapeAttr(it.imagem_url)}', '${escapeAttr(descLonga)}')" 
+                     onerror="this.style.display='none'">
+                <div class="img-legenda">${escapeHtml(it.rotulo)}</div>
+            </div>
+        `;
+        }).join('');
+
+                // 🚨 1. DEFINE AS COLUNAS DINAMICAMENTE
+        // Só adiciona a coluna se pelo menos um item da família tiver o atributo preenchido
+        const colunasFam = ['ROTULO'];
+        
+        if (fam.itens.some(it => it.atributos && (it.atributos['LADO MANIVELA'] || it.atributos['Lado Manivela']))) {
+            colunasFam.push('LADO MANIVELA');
+        }
+        if (fam.itens.some(it => it.atributos && (it.atributos['PESO'] || it.atributos['Peso']))) {
+            colunasFam.push('PESO');
+        }
+
+        // 2. MONTA OS CARDS
+        const cardsHtml = fam.itens.map(it => {
+            const precoFinal = it.preco;
+            const qtdAtual = carrinho[it.cod_produto] ? carrinho[it.cod_produto].quantidade : 0;
+            const nomeCompra = `${fam.nome} ${it.rotulo}`;
+            
+            let attrs = it.atributos || {};
+            if (!it.atributos && it.atributos_json) { try { attrs = JSON.parse(it.atributos_json); } catch (e) {} }
+            
+            const celulasAtributos = colunasFam.map(c => {
+                // Busca o valor ignorando maiúsculas/minúsculas
+                let v = '';
+                if (c === 'ROTULO') {
+                    v = it.rotulo;
+                } else {
+                    v = attrs[c] || attrs[c.toUpperCase()] || attrs[c.toLowerCase()] || attrs['Lado Manivela'] || attrs['Peso'];
+                }
+                return `<div class="vc-col vc-attr">${v ? escapeHtml(v) : '<span class="vc-vazio">—</span>'}</div>`;
+            }).join('');
+
+            return `
+                <div class="variacao-card" data-cod="${it.cod_produto}" style="--cols: ${colunasFam.length};">
+                    <div class="vc-col vc-col-cod"><span class="vc-cod-mobile">Cód</span>${it.cod_produto}</div>
+                    ${celulasAtributos}
+                    <div class="vc-col vc-col-preco"><span class="preco">R$ ${fmtMoeda(precoFinal)}</span></div>
+                    <div class="vc-col vc-col-qtd">
+                        <div class="qtd-ctrl">
+                            <button class="qtd-btn" onclick="mudarQtd('${it.cod_produto}', -1, '${escapeAttr(nomeCompra)}', ${precoFinal})">−</button>
+                            <input type="number" min="0" value="${qtdAtual}" id="qtd-${it.cod_produto}" onchange="setQtd('${it.cod_produto}', this.value, '${escapeAttr(nomeCompra)}', ${precoFinal})" onfocus="this.select()">
+                            <button class="qtd-btn" onclick="mudarQtd('${it.cod_produto}', 1, '${escapeAttr(nomeCompra)}', ${precoFinal})">+</button>
+                        </div>
+                    </div>
+                </div>`;
+        }).join('');
+        
+        const cabecalhoAtrib = colunasFam.map(c => `<div class="vc-col">${escapeHtml(c)}</div>`).join('');
+        htmlFinal += `
+            <div class="subgrupo" style="border: 2px solid #f8b81f; background: #fffbeb;">
+                <div class="subgrupo-layout">
+                    <div class="subgrupo-side">
+                        <div class="subgrupo-galeria">
+                            ${imgPrincipalHtml}
+                            ${imgLateraisHtml ? `<div class="subgrupo-img-laterais">${imgLateraisHtml}</div>` : ''}
+                        </div>
+                        <div class="subgrupo-info">
+                            <h2>${escapeHtml(fam.nome)}</h2>
+                            <div class="descricao-wrap">
+                                <ul class="descricao">
+                                    ${fam.descricao.split('\n').map(l => l.trim()).filter(l => l).map(l => `<li>${escapeHtml(l)}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="subgrupo-produtos">
+                        <div class="variacoes-wrapper" style="background:white;">
+                            <div class="variacoes-header" style="--cols: ${colunasFam.length};">
+                                <div class="vc-col vc-col-cod">Código</div>
+                                ${cabecalhoAtrib}
+                                <div class="vc-col vc-col-preco">Preço</div>
+                                <div class="vc-col vc-col-qtd">Qtd</div>
+                            </div>
+                            <div class="variacoes-lista">${cardsHtml}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // Renderiza os itens soltos
+    if (itensSoltos.length > 0) {
+        const subFalso = {
+            nome: 'Outros Produtos',
+            grupo: grupoNome,
+            marca: '',
+            descricao_longa: '',
+            itens: itensSoltos
+        };
+        htmlFinal += renderTabelaPadrao(subFalso);
+    }
+
+    cont.innerHTML = htmlFinal;
+}
+function renderSubgrupo(s) {
+    const itensIsca = s.itens || [];
+    const nomeUpper = (s.nome || '').toUpperCase();
+    const ehAnzol = nomeUpper.includes('ANZOL') || nomeUpper.includes('ANZÓI');
+    if (ehAnzol) return renderCardAnzol(s);
+    const itensComCor = itensIsca.filter(it => it.cor_nome && String(it.cor_nome).trim());
+    const ehIsca = itensComCor.length > 0;
+    if (ehIsca) return renderCardIsca(s);
+    return renderTabelaPadrao(s);
+}
+
+function renderTabelaPadrao(s) {
+    const itens = s.itens || [];
+    if (!itens.length) return '';
+
+    // 1. Separa as famílias e os itens soltos
+    const familias = {};
+    const itensSoltos = [];
+
+    itens.forEach(it => {
+        if (it.familia_id) {
+            if (!familias[it.familia_id]) {
+                familias[it.familia_id] = { 
+                    nome: it.familia_nome || 'Família', 
+                    descricao: it.familia_descricao || s.descricao_longa, 
+                    itens: [] 
+                };
+            }
+            familias[it.familia_id].itens.push(it);
+        } else {
+            itensSoltos.push(it);
+        }
+    });
+
+    // 2. Renderiza as famílias (Card Amarelo)
+    let htmlFamilias = '';
+    for (const fid in familias) {
+        const fam = familias[fid];
+        fam.itens.sort((a, b) => (a.rotulo_ordem || 0) - (b.rotulo_ordem || 0));
+        const principal = fam.itens[0];
+        const laterais = fam.itens.slice(1);
+
+              // 🚨 PREPARA A IMAGEM PRINCIPAL PARA ABRIR A DESCRIÇÃO
+        const descPrincipal = principal.descricao || fam.descricao || 'Sem descrição';
+        
+        const imgPrincipalHtml = `
+            <div class="img-bloco">
+                <img class="subgrupo-img principal" 
+                     src="${escapeAttr(principal.imagem_url)}" 
+                     alt="Clique para ver a descrição"
+                     onclick="abrirLightbox('${escapeAttr(principal.imagem_url)}', '${escapeAttr(descPrincipal)}')" 
+                     onerror="this.style.display='none'">
+                <div class="img-legenda" style="background:#f8b81f; color:#001f3f;">${escapeHtml(principal.rotulo || 'Principal')}</div>
+            </div>
+        `;
+        const imgLateraisHtml = laterais.slice(0, 2).map(it => `
+            <div class="img-bloco">
+                <img class="subgrupo-img lateral" src="${escapeAttr(it.imagem_url)}" alt="${escapeAttr(it.descricao)}" onclick="abrirLightbox('${escapeAttr(it.imagem_url)}', '${escapeAttr(it.rotulo)}')" onerror="this.style.display='none'">
+                <div class="img-legenda">${escapeHtml(it.rotulo)}</div>
+            </div>
+        `).join('');
+
+        // Para a família, as colunas são as padrão: Rotulo, Lado Manivela, Peso
+        const colunasFam = ['ROTULO', 'LADO MANIVELA', 'PESO'];
+        const cardsHtml = fam.itens.map(it => {
+            const precoFinal = it.preco;
+            const qtdAtual = carrinho[it.cod_produto] ? carrinho[it.cod_produto].quantidade : 0;
+            const nomeCompra = `${fam.nome} ${it.rotulo}`;
+            let attrs = it.atributos || {};
+            if (!it.atributos && it.atributos_json) { try { attrs = JSON.parse(it.atributos_json); } catch (e) {} }
+            const celulasAtributos = colunasFam.map(c => {
+                const v = (c === 'ROTULO') ? it.rotulo : (attrs[c] || attrs[c.toUpperCase()] || attrs[c.toLowerCase()]);
+                return `<div class="vc-col vc-attr">${v ? escapeHtml(v) : '<span class="vc-vazio">—</span>'}</div>`;
+            }).join('');
+            return `
+                <div class="variacao-card" data-cod="${it.cod_produto}" style="--cols: ${colunasFam.length};">
+                    <div class="vc-col vc-col-cod"><span class="vc-cod-mobile">Cód</span>${it.cod_produto}</div>
+                    ${celulasAtributos}
+                    <div class="vc-col vc-col-preco"><span class="preco">R$ ${fmtMoeda(precoFinal)}</span></div>
+                    <div class="vc-col vc-col-qtd">
+                        <div class="qtd-ctrl">
+                            <button class="qtd-btn" onclick="mudarQtd('${it.cod_produto}', -1, '${escapeAttr(nomeCompra)}', ${precoFinal})">−</button>
+                            <input type="number" min="0" value="${qtdAtual}" id="qtd-${it.cod_produto}" onchange="setQtd('${it.cod_produto}', this.value, '${escapeAttr(nomeCompra)}', ${precoFinal})" onfocus="this.select()">
+                            <button class="qtd-btn" onclick="mudarQtd('${it.cod_produto}', 1, '${escapeAttr(nomeCompra)}', ${precoFinal})">+</button>
+                        </div>
+                    </div>
+                </div>`;
+        }).join('');
+        const cabecalhoAtrib = colunasFam.map(c => `<div class="vc-col">${escapeHtml(c)}</div>`).join('');
+
+        htmlFamilias += `
+            <div class="subgrupo" style="border: 2px solid #f8b81f; background: #fffbeb;">
+                <div class="subgrupo-layout">
+                    <div class="subgrupo-side">
+                        <div class="subgrupo-galeria">
+                            ${imgPrincipalHtml}
+                            ${imgLateraisHtml ? `<div class="subgrupo-img-laterais">${imgLateraisHtml}</div>` : ''}
+                        </div>
+                        <div class="subgrupo-info">
+                            <h2>${escapeHtml(fam.nome)}</h2>
+                            <div class="descricao-wrap">
+                                <ul class="descricao">
+                                    ${fam.descricao.split('\n').map(l => l.trim()).filter(l => l).map(l => `<li>${escapeHtml(l)}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="subgrupo-produtos">
+                        <div class="variacoes-wrapper" style="background:white;">
+                            <div class="variacoes-header" style="--cols: ${colunasFam.length};">
+                                <div class="vc-col vc-col-cod">Código</div>
+                                ${cabecalhoAtrib}
+                                <div class="vc-col vc-col-preco">Preço</div>
+                                <div class="vc-col vc-col-qtd">Qtd</div>
+                            </div>
+                            <div class="variacoes-lista">${cardsHtml}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // 3. Renderiza os itens soltos (Tabela Normal, mantendo as colunas reais)
+    let htmlSoltos = '';
+    if (itensSoltos.length > 0) {
+        // Limpa os atributos (remove "Faça login" e CX/CT)
+        const itensLimpos = itensSoltos.map(it => {
+            let attrs = it.atributos || {};
+            if (!it.atributos && it.atributos_json) { try { attrs = JSON.parse(it.atributos_json); } catch (e) {} }
+            const attrsLimpos = {};
+            for (const [k, v] of Object.entries(attrs)) {
+                const valStr = String(v).trim();
+                if (k.toUpperCase() === 'CX/CT') continue; 
+                if (valStr.includes('Faça login') || valStr.includes('http')) continue;
+                if (valStr) attrsLimpos[k] = valStr;
+            }
+            return { ...it, atributos: attrsLimpos };
+        });
+
+        const colunasSet = new Set();
+        for (const it of itensLimpos) { 
+            for (const [k, v] of Object.entries(it.atributos || {})) { 
+                if (v) colunasSet.add(k); 
+            } 
+        }
+        
+        const ordemPreferida = ['MODELO', 'COR', 'TAMANHO', 'LADO MANIVELA', 'ROTAMENTOS', 'RELAÇÃO DE RECOLHIMENTO', 'FREIO MAX. (KG)', 'CAPACIDADE DE LINHA (MM-M)', 'MANIVELA', 'QTD ROLAM.', 'RECOLHIMENTO', 'IPT', 'PESO', 'QTD'];
+        let colunas = ordemPreferida.filter(c => colunasSet.has(c));
+        for (const c of colunasSet) if (!colunas.includes(c)) colunas.push(c);
+
+        const linhasDesc = (s.descricao_longa || '').split('\n').map(l => l.trim()).filter(l => l).map(l => `<li>${escapeHtml(l)}</li>`).join('');
+        const descTexto = (s.descricao_longa || '').trim();
+        const precisaExpandir = descTexto.split('\n').filter(l => l.trim()).length > 3 || descTexto.length > 250;
+
+        const cardsHtml = itensLimpos.map(it => {
+            const precoFinal = it.preco_com_desconto || it.preco;
+            const precoHtml = it.desconto_pct && it.preco_com_desconto
+                ? `<span class="preco-antigo">R$ ${fmtMoeda(it.preco)}</span><span class="preco-desc"><span class="badge-desconto">-${it.desconto_pct}%</span>R$ ${fmtMoeda(it.preco_com_desconto)}</span>`
+                : `<span class="preco">R$ ${fmtMoeda(it.preco)}</span>`;
+            const qtdAtual = carrinho[it.cod_produto] ? carrinho[it.cod_produto].quantidade : 0;
+            const nome = it.descricao || '';
+            const celulasAtributos = colunas.map(c => {
+                const v = it.atributos && it.atributos[c];
+                return `<div class="vc-col vc-attr">${v ? escapeHtml(v) : '<span class="vc-vazio">—</span>'}</div>`;
+            }).join('');
+
+            return `
+                <div class="variacao-card" data-cod="${it.cod_produto}" style="--cols: ${colunas.length};">
+                    <div class="vc-col vc-col-cod"><span class="vc-cod-mobile">Cód</span>${it.cod_produto}</div>
+                    ${celulasAtributos}
+                    <div class="vc-col vc-col-preco">${precoHtml}</div>
+                    <div class="vc-col vc-col-qtd">
+                        <div class="qtd-ctrl">
+                            <button class="qtd-btn" onclick="mudarQtd('${it.cod_produto}', -1, '${escapeAttr(nome)}', ${precoFinal})">−</button>
+                            <input type="number" min="0" value="${qtdAtual}" id="qtd-${it.cod_produto}" onchange="setQtd('${it.cod_produto}', this.value, '${escapeAttr(nome)}', ${precoFinal})" onfocus="this.select()">
+                            <button class="qtd-btn" onclick="mudarQtd('${it.cod_produto}', 1, '${escapeAttr(nome)}', ${precoFinal})">+</button>
+                        </div>
+                    </div>
+                </div>`;
+        }).join('');
+
+        const cabecalhoAtrib = colunas.map(c => `<div class="vc-col">${escapeHtml(c)}</div>`).join('');
+
+        htmlSoltos = `
+            <div class="subgrupo">
+                <div class="subgrupo-layout">
+                    <div class="subgrupo-side">
+                        <div class="subgrupo-galeria">
+                            ${s.imagem_url ? `<div class="img-bloco"><img class="subgrupo-img principal" src="${escapeAttr(s.imagem_url)}" alt="${escapeAttr(s.nome)}" onclick="abrirLightbox('${escapeAttr(s.imagem_url)}', '${escapeAttr(s.legenda_1 || s.nome)}')" onerror="this.style.display='none'">${s.legenda_1 ? `<div class="img-legenda">${escapeHtml(s.legenda_1)}</div>` : ''}</div>` : '<div class="subgrupo-img-placeholder">🖼️</div>'}
+                        </div>
+                        <div class="subgrupo-info">
+                            <h2>${escapeHtml(s.nome)}</h2>
+                            ${linhasDesc ? `<div class="descricao-wrap" id="desc-${s.id}"><ul class="descricao">${linhasDesc}</ul>${precisaExpandir ? `<button class="btn-expandir" onclick="toggleDescricao(${s.id}, this)">Ver mais ▼</button>` : ''}</div>` : ''}
+                        </div>
+                    </div>
+                    <div class="subgrupo-produtos">
+                        <div class="variacoes-wrapper">
+                            <div class="variacoes-header" style="--cols: ${colunas.length};">
+                                <div class="vc-col vc-col-cod">Código</div>
+                                ${cabecalhoAtrib}
+                                <div class="vc-col vc-col-preco">Preço</div>
+                                <div class="vc-col vc-col-qtd">Qtd</div>
+                            </div>
+                            <div class="variacoes-lista">${cardsHtml}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    return htmlFamilias + htmlSoltos;
+}
+function renderCardAnzol(s) {
+    const itens = s.itens || [];
+    if (!itens.length) return '';
+    const it0 = itens[0];
+    const fotoPrincipal = s.imagem_url || it0.imagem_url || '';
+    const marca = s.marca || it0.marca || '';
+    const linhasDesc = (s.descricao_longa || '').split('\n').map(l => l.trim()).filter(l => l).map(l => `<li>${escapeHtml(l)}</li>`).join('');
+    const descTexto = (s.descricao_longa || '').trim();
+    const precisaExpandir = descTexto.split('\n').filter(l => l.trim()).length > 3 || descTexto.length > 250;
+    const grupos = {};
+    itens.forEach(it => {
+        let atributos = it.atributos || {};
+        if (!it.atributos && it.atributos_json) { try { atributos = JSON.parse(it.atributos_json); } catch (e) {} }
+        const qtdInt = parseInt(atributos['QTD']) || 0;
+        const tipo = qtdInt >= 100 ? 'CX' : 'CT';
+        if (!grupos[tipo]) grupos[tipo] = [];
+        grupos[tipo].push(it);
+    });
+    const chaves = Object.keys(grupos).sort((a, b) => {
+        const ordemPreferida = ['CX', 'CT']; 
+        const ia = ordemPreferida.indexOf(a), ib = ordemPreferida.indexOf(b);
+        if (ia >= 0 && ib >= 0) return ia - ib;
+        if (ia >= 0) return -1;
+        if (ib >= 0) return 1;
+        return a.localeCompare(b);
+    });
+    function renderAnzolCard(it) {
+        const precoItem = Number(it.preco) || 0;
+        const qtdAtual = carrinho[it.cod_produto] ? carrinho[it.cod_produto].quantidade : 0;
+        let atributos = it.atributos || {};
+        if (!it.atributos && it.atributos_json) { try { atributos = JSON.parse(it.atributos_json); } catch (e) {} }
+        let tamanho = it.tamanho_anzol || atributos['Tamanho'] || atributos['TAMANHO'] || it.cor_nome || '—';
+        let qtdEmbItem = it.qtd_embalagem || atributos['QTD'] || '';
+        const nome = `${s.nome} ${tamanho}`;
+        return `
+            <div class="anzol-inline-card ${qtdAtual > 0 ? 'tem-qtd' : ''}" data-cod="${it.cod_produto}">
+                <span class="anzol-inline-badge">${qtdAtual}</span>
+                <div class="anzol-inline-numero">${escapeHtml(tamanho)}</div>
+                <div class="anzol-inline-preco">R$ ${fmtMoeda(precoItem)}</div>
+                ${qtdEmbItem ? `<div class="anzol-inline-qtd-emb">${escapeHtml(qtdEmbItem)} un</div>` : ''}
+                <div class="anzol-inline-qtd">
+                    <button type="button" class="anzol-inline-btn" onclick="anzolMudarQtd('${it.cod_produto}', -1, '${escapeAttr(nome)}', ${precoItem})">−</button>
+                    <input type="number" min="0" value="${qtdAtual}" id="anzol-qtd-${it.cod_produto}" onchange="anzolSetQtd('${it.cod_produto}', this.value, '${escapeAttr(nome)}', ${precoItem})" onfocus="this.select()">
+                    <button type="button" class="anzol-inline-btn" onclick="anzolMudarQtd('${it.cod_produto}', 1, '${escapeAttr(nome)}', ${precoItem})">+</button>
+                </div>
+            </div>`;
+    }
+    const blocosHtml = chaves.map(tipo => {
+        const itensDoGrupo = grupos[tipo];
+        const nomeTipo = tipo === 'CX' ? 'Caixa' : tipo === 'CT' ? 'Cartela' : tipo;
+        const emojiTipo = tipo === 'CX' ? '📫' : '📦';
+        const corFundo = tipo === 'CX' ? 'linear-gradient(135deg, #f59e0b, #d97706)' : tipo === 'CT' ? 'linear-gradient(135deg, #2563eb, #1d4ed8)' : 'linear-gradient(135deg, #64748b, #475569)';
+        const corBorda = tipo === 'CX' ? '#f59e0b' : tipo === 'CT' ? '#2563eb' : '#64748b';
+        const cards = itensDoGrupo.map(renderAnzolCard).join('');
+        return `
+            <div class="isca-bloco-modelo">
+                <div class="anzol-bloco-card" style="border-color:${corBorda};">
+                    <div class="anzol-bloco-header" style="background:${corFundo};">
+                        <div class="abh-esq">
+                            <span class="abh-sigla">${emojiTipo} ${escapeHtml(tipo)}</span>
+                            <span class="abh-nome">${escapeHtml(nomeTipo)}</span>
+                        </div>
+                    </div>
+                    <div class="anzol-bloco-corpo">
+                        <div class="anzol-inline-grade">${cards}</div>
+                    </div>
+                </div>
+            </div>`;
+    }).join('');
+    return `
+        <div class="subgrupo isca-card" data-subgrupo="${s.id}">
+            <div class="isca-layout">
+                <div class="isca-foto-principal">
+                    <img id="isca-foto-${s.id}" src="${escapeAttr(fotoPrincipal)}" alt="${escapeAttr(s.nome)}" onclick="abrirLightbox(this.src, '${escapeAttr(s.nome)}')" onerror="this.style.display='none'">
+                </div>
+                <div class="isca-info">
+                    ${marca ? `<div class="marca-destaque">${escapeHtml(marca)}</div>` : ''}
+                    <h2>${escapeHtml(s.nome)}</h2>
+                    ${linhasDesc ? `<div class="descricao-wrap" id="desc-${s.id}"><ul class="descricao">${linhasDesc}</ul>${precisaExpandir ? `<button class="btn-expandir" onclick="toggleDescricao(${s.id}, this)">Ver mais ▼</button>` : ''}</div>` : ''}
+                    <div class="isca-instrucao">💡 <strong>Escolha a quantidade</strong> direto no número</div>
+                    <div id="isca-grade-${s.id}">
+                        ${blocosHtml}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function renderCardIsca(s) {
+    const itens = s.itens || [];
+    if (!itens.length) return '';
+    const it0 = itens[0];
+    const precoUnitario = Number(it0.preco) || 0;
+    const marca = s.marca || it0.marca || '';
+    const linhasDesc = (s.descricao_longa || '').split('\n').map(l => l.trim()).filter(l => l).map(l => `<li>${escapeHtml(l)}</li>`).join('');
+    const descTexto = (s.descricao_longa || '').trim();
+    const precisaExpandir = descTexto.split('\n').filter(l => l.trim()).length > 3 || descTexto.length > 250;
+    const fotoPrincipal = s.imagem_url || it0.imagem_url || '';
+    const grupos = {};
+    const semModelo = [];
+    itens.forEach(it => {
+        let atributos = it.atributos || {};
+        if (!it.atributos && it.atributos_json) { try { atributos = JSON.parse(it.atributos_json); } catch (e) {} }
+        let modelo = '';
+        for (const chave in atributos) {
+            if (chave.toLowerCase() === 'modelo') { modelo = String(atributos[chave]).trim().toUpperCase(); break; }
+        }
+        if (modelo) { if (!grupos[modelo]) grupos[modelo] = []; grupos[modelo].push(it); }
+        else { semModelo.push(it); }
+    });
+    const chaves = Object.keys(grupos).sort();
+    const coresPaleta = ['#2563eb', '#dc2626', '#16a34a', '#d97706', '#9333ea', '#0891b2', '#ea580c', '#4f46e5'];
+    const blocosHtml = chaves.map((modelo, index) => {
+        const itensDoGrupo = grupos[modelo];
+        const miniaturas = itensDoGrupo.map(it => {
+            const precoItem = Number(it.preco) || precoUnitario;
+            const qtdAtual = carrinho[it.cod_produto] ? carrinho[it.cod_produto].quantidade : 0;
+            return `
+                <div class="isca-mini ${qtdAtual > 0 ? 'tem-qtd' : ''}" data-cod="${it.cod_produto}" data-modelo="${escapeAttr(modelo)}" onclick="clicarIscaMini(this, '${it.cod_produto}', '${escapeAttr(s.nome)}', '${escapeAttr(it.cor_nome || '')}', ${precoItem}, '${escapeAttr(it.imagem_url || '')}', ${s.id}, '${escapeAttr(modelo)}')">
+                    <span class="isca-mini-badge">${qtdAtual}</span>
+                    <img src="${escapeAttr(it.imagem_url || '')}" alt="${escapeAttr(it.cor_nome || '')}" onerror="this.style.display='none'">
+                    <div class="isca-mini-legenda">${escapeHtml(it.cor_nome || '')}</div>
+                </div>`;
+        }).join('');
+        const corBloco = coresPaleta[index % coresPaleta.length];
+        const precoModelo = Number(itensDoGrupo[0].preco) || precoUnitario;
+        return `
+            <div class="isca-bloco-modelo">
+                <div class="isca-bloco-titulo" style="color:${corBloco}; border-left-color:${corBloco}; display:flex; justify-content:space-between; align-items:center; gap:12px;">
+                    <span>${escapeHtml(modelo)}</span>
+                    <span style="font-size:.85rem; font-weight:800; color:var(--verde); text-transform:none; letter-spacing:-.3px; background:white; padding:2px 10px; border-radius:20px;">R$ ${fmtMoeda(precoModelo)}</span>
+                </div>
+                <div class="isca-grade-cores">${miniaturas}</div>
+            </div>`;
+    }).join('');
+    let blocoSemModelo = '';
+    if (semModelo.length) {
+        const miniaturasSem = semModelo.map(it => {
+            const precoItem = Number(it.preco) || precoUnitario;
+            const qtdAtual = carrinho[it.cod_produto] ? carrinho[it.cod_produto].quantidade : 0;
+            return `
+                <div class="isca-mini ${qtdAtual > 0 ? 'tem-qtd' : ''}" data-cod="${it.cod_produto}" onclick="clicarIscaMini(this, '${it.cod_produto}', '${escapeAttr(s.nome)}', '${escapeAttr(it.cor_nome || '')}', ${precoItem}, '${escapeAttr(it.imagem_url || '')}', ${s.id}, '')">
+                    <span class="isca-mini-badge">${qtdAtual}</span>
+                    <img src="${escapeAttr(it.imagem_url || '')}" alt="${escapeAttr(it.cor_nome || '')}" onerror="this.style.display='none'">
+                    <div class="isca-mini-legenda">${escapeHtml(it.cor_nome || '')}</div>
+                </div>`;
+        }).join('');
+        const precoSemModelo = Number(semModelo[0].preco) || precoUnitario;
+        blocoSemModelo = `
+            <div class="isca-bloco-modelo">
+                <div class="isca-bloco-titulo" style="color:#64748b; border-left-color:#64748b; display:flex; justify-content:space-between; align-items:center; gap:12px;">
+                    <span>OUTROS</span>
+                    <span style="font-size:.85rem; font-weight:800; color:var(--verde); text-transform:none; letter-spacing:-.3px; background:white; padding:2px 10px; border-radius:20px;">R$ ${fmtMoeda(precoSemModelo)}</span>
+                </div>
+                <div class="isca-grade-cores">${miniaturasSem}</div>
+            </div>`;
+    }
+    return `
+        <div class="subgrupo isca-card" data-subgrupo="${s.id}">
+            <div class="isca-layout">
+                <div class="isca-foto-principal">
+                    <img id="isca-foto-${s.id}" src="${escapeAttr(fotoPrincipal)}" alt="${escapeAttr(s.nome)}" onclick="abrirLightbox(this.src, '${escapeAttr(s.nome)}')" onerror="this.style.display='none'">
+                </div>
+                <div class="isca-info">
+                    ${marca ? `<div class="marca-destaque">${escapeHtml(marca)}</div>` : ''}
+                    <h2>${escapeHtml(s.nome)}</h2>
+                    ${linhasDesc ? `<div class="descricao-wrap" id="desc-${s.id}"><ul class="descricao">${linhasDesc}</ul>${precisaExpandir ? `<button class="btn-expandir" onclick="toggleDescricao(${s.id}, this)">Ver mais ▼</button>` : ''}</div>` : ''}
+                    <div class="isca-instrucao">💡 <strong>Toque na cor</strong> pra escolher a quantidade</div>
+                    <div id="isca-grade-${s.id}">
+                        ${blocosHtml}
+                        ${blocoSemModelo}
+                    </div>
+                    <div class="isca-preco-info" style="font-size:.75rem; color:var(--cinza-500); margin-top:14px;">💡 Cada modelo tem seu próprio preço</div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function toggleDescricao(id, btn) {
+    const wrap = document.getElementById('desc-' + id);
+    if (!wrap) return;
+    const expandida = wrap.classList.toggle('expandida');
+    btn.textContent = expandida ? 'Ver menos ▲' : 'Ver mais ▼';
+}
+
+function clicarIscaMini(el, cod, nomeSubgrupo, corNome, preco, fotoUrl, subgrupoId, modelo, qtdEmbalagem)  {
+    const card = el.closest('.isca-card');
+    if (card) {
+        card.querySelectorAll('.isca-mini').forEach(m => m.classList.remove('ativa'));
+        el.classList.add('ativa');
+        const img = document.getElementById('isca-foto-' + subgrupoId);
+        if (img && fotoUrl) { img.style.opacity = '0'; setTimeout(() => { img.src = fotoUrl; img.style.opacity = '1'; }, 150); }
+    }
+    abrirPopQtd(cod, nomeSubgrupo, corNome, preco, fotoUrl, subgrupoId, modelo, qtdEmbalagem);
+}
+
+function abrirPopQtd(cod, nomeSubgrupo, corNome, preco, fotoUrl, subgrupoId, modelo, qtdEmbalagem) {
+    popAtual = { cod, nomeSubgrupo, corNome, preco, foto: fotoUrl, subgrupoId, modelo, qtdEmbalagem };
+    document.getElementById('popTitulo').textContent = nomeSubgrupo;
+    const imgPop = document.getElementById('popImg');
+    imgPop.src = fotoUrl || '';
+    imgPop.style.display = '';
+    imgPop.onerror = function() { this.style.display = 'none'; };
+    const corEl = document.getElementById('popCor');
+    if (modelo) corEl.innerHTML = `${escapeHtml(corNome || '—')} <span style="font-size:.85rem; color:var(--azul-500); font-weight:700; margin-left:8px;">${escapeHtml(modelo)}</span>`;
+    else corEl.textContent = corNome || '—';
+    document.getElementById('popCodigo').textContent = cod || '—';
+    document.getElementById('popPreco').textContent = 'R$ ' + fmtMoeda(preco);
+    document.getElementById('popNomeSubgrupo').textContent = nomeSubgrupo || '—';
+    const wrapEmb = document.getElementById('popEmbalagemWrap');
+    if (qtdEmbalagem) { wrapEmb.style.display = 'flex'; document.getElementById('popEmbalagem').textContent = `${qtdEmbalagem} un`; }
+    else { wrapEmb.style.display = 'none'; }
+    const qtdAtual = carrinho[cod] ? carrinho[cod].quantidade : 1;
+    document.getElementById('popQtdInput').value = qtdAtual;
+    document.getElementById('popQtdBg').classList.add('on');
+}
+function fecharPopQtd() { document.getElementById('popQtdBg').classList.remove('on'); popAtual = null; }
+function popMudarQtd(delta) {
+    const inp = document.getElementById('popQtdInput');
+    let v = parseInt(inp.value) || 0;
+    v = Math.max(0, v + delta);
+    inp.value = v;
+}
+function salvarPopQtd() {
+    if (!popAtual) return;
+    const qtd = parseInt(document.getElementById('popQtdInput').value) || 0;
+    const descricao = popAtual.corNome ? `${popAtual.nomeSubgrupo} ${popAtual.corNome}` : popAtual.nomeSubgrupo;
+    if (qtd === 0) {
+        delete carrinho[popAtual.cod];
+        atualizarCarrinho();
+        atualizarBadgeMini(popAtual.cod, 0);
+        const mini = document.querySelector(`.isca-mini[data-cod="${popAtual.cod}"]`);
+        if (mini) mini.classList.remove('ativa');
+        toast(`🗑️ ${descricao} removido do pedido`, 'ok');
+        fecharPopQtd(); return;
+    }
+    carrinho[popAtual.cod] = { cod_produto: popAtual.cod, descricao: descricao, valor_unitario: popAtual.preco, quantidade: qtd, foto: popAtual.foto };
+    atualizarCarrinho();
+    atualizarBadgeMini(popAtual.cod, qtd);
+    toast(`✅ ${descricao} — ${qtd}x no pedido`, 'ok');
+    fecharPopQtd();
+}
+function atualizarBadgeMini(cod, qtd) {
+    const mini = document.querySelector(`.isca-mini[data-cod="${cod}"]`);
+    if (!mini) return;
+    const badge = mini.querySelector('.isca-mini-badge');
+    if (!badge) return;
+    if (qtd > 0) { badge.textContent = qtd; mini.classList.add('tem-qtd'); }
+    else { mini.classList.remove('tem-qtd'); }
+}
+
+function mudarQtd(cod, delta, desc, preco) {
+    const atual = carrinho[cod] ? carrinho[cod].quantidade : 0;
+    aplicarQtd(cod, atual + delta, desc, preco);
+}
+function setQtd(cod, valor, desc, preco) {
+    aplicarQtd(cod, parseInt(valor) || 0, desc, preco);
+}
+function aplicarQtd(cod, qtd, desc, preco) {
+    if (qtd < 0) qtd = 0;
+    if (qtd === 0) delete carrinho[cod];
+    else carrinho[cod] = { cod_produto: cod, descricao: desc, valor_unitario: preco, quantidade: qtd };
+    const inp = document.getElementById('qtd-' + cod);
+    if (inp) inp.value = qtd;
+    const tr = document.querySelector(`.variacao-card[data-cod="${cod}"], tr[data-cod="${cod}"]`);
+    if (tr) tr.classList.toggle('no-carrinho', qtd > 0);
+    atualizarCarrinho();
+}
+function anzolMudarQtd(cod, delta, desc, preco) {
+    const atual = carrinho[cod] ? carrinho[cod].quantidade : 0;
+    anzolAplicarQtd(cod, atual + delta, desc, preco);
+}
+function anzolSetQtd(cod, valor, desc, preco) {
+    anzolAplicarQtd(cod, parseInt(valor) || 0, desc, preco);
+}
+function anzolAplicarQtd(cod, qtd, desc, preco) {
+    if (qtd < 0) qtd = 0;
+    if (qtd === 0) delete carrinho[cod];
+    else carrinho[cod] = { cod_produto: cod, descricao: desc, valor_unitario: preco, quantidade: qtd };
+    const inp = document.getElementById('anzol-qtd-' + cod);
+    if (inp) inp.value = qtd;
+    const card = document.querySelector(`.anzol-inline-card[data-cod="${cod}"]`);
+    if (card) {
+        const badge = card.querySelector('.anzol-inline-badge');
+        if (qtd > 0) { card.classList.add('tem-qtd'); if (badge) badge.textContent = qtd; }
+        else card.classList.remove('tem-qtd');
+    }
+    atualizarCarrinho();
+}
+function removerDoCarrinho(cod) {
+    delete carrinho[cod];
+    const inp = document.getElementById('qtd-' + cod);
+    if (inp) inp.value = 0;
+    const tr = document.querySelector(`.variacao-card[data-cod="${cod}"], tr[data-cod="${cod}"]`);
+    if (tr) tr.classList.remove('no-carrinho');
+    atualizarBadgeMini(cod, 0);
+    const mini = document.querySelector(`.isca-mini[data-cod="${cod}"]`);
+    if (mini) mini.classList.remove('ativa');
+    const anzolInp = document.getElementById('anzol-qtd-' + cod);
+    if (anzolInp) anzolInp.value = 0;
+    const anzolCard = document.querySelector(`.anzol-inline-card[data-cod="${cod}"]`);
+    if (anzolCard) anzolCard.classList.remove('tem-qtd');
+    atualizarCarrinho();
+}
+function atualizarCarrinho() {
+    const itens = Object.values(carrinho);
+    const total = itens.reduce((s, i) => s + (i.valor_unitario * i.quantidade), 0);
+    const qtdTotal = itens.reduce((s, i) => s + i.quantidade, 0);
+    document.getElementById('topoQtd').textContent = qtdTotal;
+    document.getElementById('topoTotal').textContent = fmtMoeda(total);
+    document.getElementById('carrinhoTotal').textContent = fmtMoeda(total);
+    const cont = document.getElementById('carrinhoItens');
+    if (!itens.length) {
+        cont.innerHTML = `<div class="carrinho-vazio"><span class="ico">🛒</span><div class="txt">Seu carrinho está vazio</div></div>`;
+    } else {
+        cont.innerHTML = itens.map(i => `
+            <div class="carrinho-item">
+                <div><div class="ci-cod">${i.cod_produto}</div><div class="ci-qtd">${i.quantidade}x</div></div>
+                <div><div class="ci-desc">${escapeHtml(i.descricao)}</div><div class="ci-preco">R$ ${fmtMoeda(i.valor_unitario)} · <span class="ci-sub">Subtotal R$ ${fmtMoeda(i.valor_unitario * i.quantidade)}</span></div></div>
+                <button class="btn-rem" onclick="removerDoCarrinho('${i.cod_produto}')">✕</button>
+            </div>
+        `).join('');
+    }
+}
+function toggleCarrinho() {
+    document.getElementById('carrinhoPainel').classList.toggle('on');
+    document.getElementById('carrinhoOverlay').classList.toggle('on');
+}
+function limparCarrinho() {
+    if (!Object.keys(carrinho).length) return;
+    if (!confirm('Limpar todo o carrinho?')) return;
+    carrinho = {};
+    document.querySelectorAll('.variacao-card[data-cod], .itens-tab tr[data-cod]').forEach(tr => {
+        tr.classList.remove('no-carrinho');
+        const inp = tr.querySelector('input[id^="qtd-"]');
+        if (inp) inp.value = 0;
+    });
+    document.querySelectorAll('.isca-mini.tem-qtd').forEach(el => el.classList.remove('tem-qtd'));
+    document.querySelectorAll('.isca-mini.ativa').forEach(el => el.classList.remove('ativa'));
+    document.querySelectorAll('.anzol-inline-card.tem-qtd').forEach(el => el.classList.remove('tem-qtd'));
+    document.querySelectorAll('.anzol-inline-qtd input').forEach(inp => inp.value = 0);
+    atualizarCarrinho();
+    toast('Carrinho limpo', 'ok');
+}
+
+async function finalizarPedido() {
+    const itens = Object.values(carrinho);
+    if (!itens.length) { toast('Carrinho vazio', 'err'); return; }
+    if (!confirm(`Enviar pedido com ${itens.length} item(ns)?`)) return;
+    const btn = document.querySelector('.btn-fin');
+    btn.textContent = 'Enviando...';
+    btn.disabled = true;
+    try {
+        const body = {
+            campanha_id: campanhaAtual ? campanhaAtual.id : null,
+            cliente_codigo: clienteLogado.codigo,
+            itens: itens.map(i => ({ cod_produto: i.cod_produto, descricao: i.descricao, quantidade: i.quantidade, valor_unitario: i.valor_unitario }))
+        };
+        const r = await api(API + '/pedidos', { method:'POST', body: JSON.stringify(body) });
+        if (!r.success) throw new Error(r.error || 'Erro ao enviar pedido');
+        carrinho = {};
+        document.querySelectorAll('.isca-mini.tem-qtd').forEach(el => el.classList.remove('tem-qtd'));
+        document.querySelectorAll('.isca-mini.ativa').forEach(el => el.classList.remove('ativa'));
+        document.querySelectorAll('.anzol-inline-card.tem-qtd').forEach(el => el.classList.remove('tem-qtd'));
+        document.querySelectorAll('.anzol-inline-qtd input').forEach(inp => inp.value = 0);
+        document.querySelectorAll('.variacao-card[data-cod], .itens-tab tr[data-cod]').forEach(tr => {
+            tr.classList.remove('no-carrinho');
+            const inp = tr.querySelector('input[id^="qtd-"]');
+            if (inp) inp.value = 0;
+        });
+        atualizarCarrinho();
+        toggleCarrinho();
+        toast('🎉 Pedido #' + r.pedido_id + ' enviado! Total R$ ' + fmtMoeda(r.total), 'ok');
+    } catch (e) {
+        toast('Erro: ' + e.message, 'err');
+    } finally {
+        btn.textContent = '✅ Finalizar pedido';
+        btn.disabled = false;
+    }
+}
+
+document.getElementById('telaLogin').style.display = 'flex';
+document.getElementById('app').style.display = 'none';
+document.getElementById('loginCnpj').focus();
+
+
+</script>
+</body>
+</html>

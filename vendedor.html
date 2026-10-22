@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel do Vendedor</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter','Segoe UI',system-ui,sans-serif; }
+  body { background:#f0f4f8; color:#1a2a3a; min-height:100vh; }
+  
+  /* TELA DE LOGIN */
+  #telaLogin { position:fixed; inset:0; background:linear-gradient(135deg, #0a2a4a 0%, #0d3b66 100%); display:flex; align-items:center; justify-content:center; padding:20px; z-index:1000; }
+  .login-box { background:white; border-radius:16px; padding:40px; width:100%; max-width:400px; box-shadow:0 20px 60px rgba(0,0,0,0.4); text-align:center; }
+  .login-box h1 { color:#0d3b66; font-size:1.5rem; font-weight:800; margin-bottom:8px; }
+  .login-box p { color:#64748b; font-size:.9rem; margin-bottom:24px; }
+  .login-box input { width:100%; padding:14px 16px; border:2px solid #e2e8f0; border-radius:10px; font-size:1rem; margin-bottom:16px; font-weight:600; }
+  .login-box input:focus { outline:none; border-color:#0d3b66; }
+  .login-box button { width:100%; padding:14px; background:#0d3b66; color:white; border:none; border-radius:10px; font-size:1rem; font-weight:800; cursor:pointer; transition:.2s; }
+  .login-box button:hover { background:#1a5276; }
+  .login-erro { color:#ef4444; font-size:.85rem; font-weight:700; margin-bottom:12px; display:none; }
+
+  /* HEADER */
+  .header { background:white; padding:16px 24px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 10px rgba(0,0,0,.05); position:sticky; top:0; z-index:100; }
+  .header h1 { font-size:1.2rem; color:#0d3b66; font-weight:800; }
+  .header .info-vendedor { display:flex; align-items:center; gap:16px; font-size:.9rem; font-weight:600; }
+  .btn-sair { background:#fee2e2; color:#ef4444; border:none; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer; }
+
+  /* CONTEÚDO */
+  .container { max-width:1200px; margin:0 auto; padding:24px; }
+  .card { background:white; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,.05); padding:24px; margin-bottom:24px; }
+  .card h2 { color:#0d3b66; font-size:1.1rem; margin-bottom:16px; border-bottom:2px solid #eff6ff; padding-bottom:10px; }
+
+  /* NAVEGAÇÃO DE ABAS */
+  .tabs { display:flex; gap:10px; margin-bottom:24px; border-bottom:2px solid #e2e8f0; padding-bottom:10px; }
+  .tab-btn { background:none; border:none; font-size:1rem; font-weight:700; color:#94a3b8; cursor:pointer; padding:10px 16px; border-radius:8px; transition:.2s; }
+  .tab-btn:hover { background:#f1f5f9; }
+  .tab-btn.active { color:#0d3b66; background:#eff6ff; }
+  
+  /* TABELA DE CLIENTES */
+  table { width:100%; border-collapse:collapse; }
+  th { text-align:left; padding:12px 10px; font-size:.72rem; text-transform:uppercase; color:#64748b; border-bottom:2px solid #e2e8f0; }
+  td { padding:14px 10px; border-bottom:1px solid #f1f5f9; font-size:.9rem; vertical-align:middle; }
+  tr:hover td { background:#f8fafc; }
+  .badge-uf { background:#dbeafe; color:#1e40af; padding:4px 10px; border-radius:6px; font-weight:800; font-size:.75rem; }
+
+  /* TOGGLE (INTERRUPTOR) */
+  .toggle { position:relative; display:inline-block; width:46px; height:24px; vertical-align:middle; }
+  .toggle input { opacity:0; width:0; height:0; }
+  .slider { position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background-color:#cbd5e1; transition:.3s; border-radius:24px; }
+  .slider:before { position:absolute; content:""; height:18px; width:18px; left:3px; bottom:3px; background-color:white; transition:.3s; border-radius:50%; }
+  input:checked + .slider { background-color:#10b981; }
+  input:checked + .slider:before { transform:translateX(22px); }
+  .status-txt { font-size:.8rem; font-weight:700; margin-left:10px; display:inline-block; vertical-align:middle; }
+  .status-on { color:#10b981; }
+  .status-off { color:#94a3b8; }
+
+  /* CARDS DE PEDIDOS */
+  .pedido-card { background:white; border:1px solid #e2e8f0; border-radius:12px; padding:16px; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,.02); }
+  .pedido-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid #f1f5f9; padding-bottom:12px; }
+  .pedido-id { font-size:1.1rem; font-weight:800; color:#0d3b66; }
+  .pedido-data { font-size:.8rem; color:#94a3b8; font-weight:600; }
+  .pedido-cliente { font-size:.9rem; font-weight:700; color:#334155; margin-bottom:8px; }
+  .badge-status { background:#fef3c7; color:#92400e; padding:4px 10px; border-radius:6px; font-size:.72rem; font-weight:800; }
+  .pedido-itens { width:100%; margin-top:10px; }
+  .pedido-itens th { font-size:.65rem; padding:4px; }
+  .pedido-itens td { font-size:.8rem; padding:6px 4px; }
+  .pedido-total { text-align:right; font-size:1.1rem; font-weight:800; color:#10b981; margin-top:12px; }
+</style>
+</head>
+<body>
+
+<!-- TELA DE LOGIN -->
+<div id="telaLogin">
+  <div class="login-box">
+    <h1>Painel do Vendedor</h1>
+    <p>Acesse com o seu código de representante.</p>
+    <div class="login-erro" id="loginErro">Código ou senha inválidos.</div>
+    <input type="text" id="inputCodigo" placeholder="Código (Ex: 82)" autocomplete="off">
+    <input type="password" id="inputSenha" placeholder="Senha" autocomplete="off">
+    <button onclick="fazerLogin()">Entrar no Painel</button>
+  </div>
+</div>
+
+<!-- HEADER DA APLICAÇÃO -->
+<div class="header" id="headerApp" style="display:none;">
+  <h1>📊 Painel do Vendedor</h1>
+  <div class="info-vendedor">
+    <span>Olá, <strong id="nomeVendedor">—</strong></span>
+    <button class="btn-sair" onclick="sair()">Sair</button>
+  </div>
+</div>
+
+<!-- CONTEÚDO PRINCIPAL -->
+<div class="container" id="conteudoApp" style="display:none;">
+  
+  <!-- NAVEGAÇÃO DE ABAS -->
+  <div class="tabs">
+    <button class="tab-btn active" id="btnTabClientes" onclick="mudarAba('clientes')">👥 Meus Clientes</button>
+    <button class="tab-btn" id="btnTabPedidos" onclick="mudarAba('pedidos')">📦 Pedidos Recebidos</button>
+  </div>
+
+  <!-- ABA CLIENTES -->
+  <div id="abaClientes">
+    <div class="card">
+      <h2>Gestão de Acesso dos Clientes</h2>
+      <p style="font-size:.85rem; color:#64748b; margin-bottom:20px;">
+        Ative o acesso para que o cliente possa entrar na tabela de preços usando o CNPJ dele.
+      </p>
+      
+      <table id="tabClientes">
+        <thead>
+          <tr>
+            <th>CNPJ</th>
+            <th>Cliente</th>
+            <th>Cidade / UF</th>
+            <th style="text-align:center;">Acesso à Tabela</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="4" style="text-align:center; padding:20px; color:#94a3b8;">Carregando clientes...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ABA PEDIDOS -->
+  <div id="abaPedidos" style="display:none;">
+    <div class="card">
+      <h2>Pedidos Recebidos</h2>
+      <div id="listaPedidos">
+        <p style="text-align:center; color:#94a3b8; padding:20px;">Clique na aba para carregar os pedidos.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let vendedorLogado = null;
+let pedidosCache = [];
+
+// ==========================================
+// LOGIN
+// ==========================================
+async function fazerLogin() {
+  const codigo = document.getElementById('inputCodigo').value.trim();
+  const senha = document.getElementById('inputSenha').value.trim();
+  const erro = document.getElementById('loginErro');
+  
+  if (!codigo || !senha) {
+    erro.textContent = 'Preencha o código e a senha.';
+    erro.style.display = 'block';
+    return;
+  }
+
+  try {
+    const r = await fetch('/api/vendedor/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ codigo, senha })
+    });
+    const j = await r.json();
+
+    if (!j.ok) {
+      erro.textContent = j.erro || 'Erro ao logar.';
+      erro.style.display = 'block';
+      return;
+    }
+
+    // Login com sucesso
+    vendedorLogado = j.vendedor;
+    document.getElementById('telaLogin').style.display = 'none';
+    document.getElementById('headerApp').style.display = 'flex';
+    document.getElementById('conteudoApp').style.display = 'block';
+    document.getElementById('nomeVendedor').textContent = vendedorLogado.nome;
+
+    carregarClientes();
+  } catch (e) {
+    erro.textContent = 'Erro de conexão com o servidor.';
+    erro.style.display = 'block';
+  }
+}
+
+// ==========================================
+// NAVEGAÇÃO DE ABAS
+// ==========================================
+function mudarAba(aba) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('abaClientes').style.display = 'none';
+  document.getElementById('abaPedidos').style.display = 'none';
+
+  if (aba === 'clientes') {
+    document.getElementById('btnTabClientes').classList.add('active');
+    document.getElementById('abaClientes').style.display = 'block';
+  } else {
+    document.getElementById('btnTabPedidos').classList.add('active');
+    document.getElementById('abaPedidos').style.display = 'block';
+    carregarPedidos();
+  }
+}
+
+// ==========================================
+// CLIENTES
+// ==========================================
+async function carregarClientes() {
+  if (!vendedorLogado) return;
+  const tbody = document.querySelector('#tabClientes tbody');
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#94a3b8;">Carregando...</td></tr>';
+
+  try {
+    const r = await fetch('/api/vendedor/' + vendedorLogado.codigo + '/clientes');
+    const j = await r.json();
+
+    if (!j.ok) throw new Error(j.erro);
+
+    if (j.clientes.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#94a3b8;">Nenhum cliente vinculado a você.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = j.clientes.map(c => {
+      const isChecked = c.acesso_liberado == 1 ? 'checked' : '';
+      const statusClass = c.acesso_liberado == 1 ? 'status-on' : 'status-off';
+      const statusText = c.acesso_liberado == 1 ? 'Liberado' : 'Bloqueado';
+      
+      return `
+        <tr>
+          <td><strong>${c.cnpj}</strong></td>
+          <td>${c.nome_fantasia || c.razao_social}</td>
+          <td><span class="badge-uf">${c.uf || '—'}</span></td>
+          <td style="text-align:center;">
+            <label class="toggle">
+              <input type="checkbox" ${isChecked} onchange="toggleAcesso('${c.cnpj}', this.checked)">
+              <span class="slider"></span>
+            </label>
+            <span class="status-txt ${statusClass}" id="status-${c.cnpj}">${statusText}</span>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#ef4444;">Erro: ${e.message}</td></tr>`;
+  }
+}
+
+async function toggleAcesso(cnpj, liberado) {
+  try {
+    const r = await fetch('/api/vendedor/cliente/' + cnpj + '/acesso', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ liberado })
+    });
+    
+    if (r.ok) {
+      const statusEl = document.getElementById('status-' + cnpj);
+      if (liberado) {
+        statusEl.textContent = 'Liberado';
+        statusEl.className = 'status-txt status-on';
+      } else {
+        statusEl.textContent = 'Bloqueado';
+        statusEl.className = 'status-txt status-off';
+      }
+    } else {
+      alert('Erro ao alterar acesso.');
+      carregarClientes();
+    }
+  } catch (e) {
+    alert('Erro de conexão.');
+    carregarClientes();
+  }
+}
+
+// ==========================================
+// PEDIDOS
+// ==========================================
+async function carregarPedidos() {
+  const container = document.getElementById('listaPedidos');
+  container.innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">Buscando pedidos...</p>';
+
+  try {
+    const r = await fetch('/api/vendedor/' + vendedorLogado.codigo + '/pedidos');
+    const j = await r.json();
+
+    if (!j.ok) throw new Error(j.erro);
+
+    pedidosCache = j.pedidos;
+
+    if (j.pedidos.length === 0) {
+      container.innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">Nenhum pedido recebido ainda.</p>';
+      return;
+    }
+
+    container.innerHTML = j.pedidos.map(p => {
+      const nomeCliente = p.nome_fantasia || p.razao_social || 'Cliente não encontrado';
+      
+      const itensHtml = p.itens.map(it => `
+        <tr>
+          <td><strong>${it.codigo_produto}</strong></td>
+          <td>${it.descricao}</td>
+          <td style="text-align:center;">${it.quantidade}</td>
+          <td style="text-align:right;">R$ ${Number(it.preco_final).toFixed(2).replace('.', ',')}</td>
+        </tr>
+      `).join('');
+
+      return `
+        <div class="pedido-card">
+          <div class="pedido-header">
+            <div>
+              <span class="pedido-id">Pedido #${p.id}</span>
+              <span class="badge-status" style="margin-left:10px;">${p.status}</span>
+            </div>
+            <span class="pedido-data">${new Date(p.data_criacao).toLocaleString('pt-BR')}</span>
+          </div>
+          <div class="pedido-cliente">
+            👤 ${nomeCliente} (${p.uf || 'UF'})
+          </div>
+          
+          <table class="pedido-itens">
+            <thead>
+              <tr>
+                <th>Código</th><th>Produto</th><th style="text-align:center;">Qtd</th><th style="text-align:right;">Preço Final</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itensHtml}
+            </tbody>
+          </table>
+          
+          <div class="pedido-total">
+            Total: R$ ${Number(p.total).toFixed(2).replace('.', ',')}
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (e) {
+    container.innerHTML = `<p style="text-align:center; color:#ef4444; padding:20px;">Erro: ${e.message}</p>`;
+  }
+}
+
+// ==========================================
+// LOGOUT
+// ==========================================
+function sair() {
+  window.location.reload();
+}
+
+// Logar ao apertar Enter
+document.getElementById('inputSenha').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') fazerLogin();
+});
+</script>
+</body>
+</html>

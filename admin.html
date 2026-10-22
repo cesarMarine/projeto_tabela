@@ -1,0 +1,3284 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tabela — Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background:#f0f4f8; color:#1a2a3a; }
+  .header { background:linear-gradient(135deg,#0a2a4a,#0d3b66); padding:14px 24px; color:white;
+            display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 20px rgba(0,0,0,.15); }
+  .header h1 { font-size:1.05rem; font-weight:600; }
+  .header small { opacity:.7; font-size:.72rem; display:block; }
+  .wrap { display:grid; grid-template-columns:220px 1fr; min-height:calc(100vh - 66px); }
+  .side { background:white; border-right:1px solid #e2e8f0; padding:16px 0; }
+  .side button { display:block; width:100%; text-align:left; padding:12px 22px; border:none; background:none;
+                 cursor:pointer; font-size:.88rem; color:#475569; border-left:3px solid transparent; transition:.2s; }
+  .side button:hover { background:#f8fafc; color:#0d3b66; }
+  .side button.active { background:#f0f7ff; color:#0d3b66; border-left-color:#f8b81f; font-weight:600; }
+  .main { padding:24px 32px; overflow-y:auto; }
+  .page { display:none; } .page.active { display:block; animation:fade .3s; }
+  @keyframes fade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+  h2 { color:#0d3b66; font-size:1.25rem; margin-bottom:16px; padding-left:14px; border-left:4px solid #f8b81f; }
+  h3 { color:#0d3b66; font-size:1rem; margin:20px 0 10px; }
+  .card { background:white; border-radius:14px; padding:20px 22px; box-shadow:0 2px 12px rgba(0,0,0,.05);
+          margin-bottom:18px; border:1px solid #eef2f7; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; }
+  .row > * { flex:1; min-width:140px; }
+  label { display:block; font-size:.72rem; font-weight:600; color:#64748b; text-transform:uppercase;
+          letter-spacing:.4px; margin-bottom:5px; }
+  input, select, textarea { width:100%; padding:10px 12px; border:2px solid #e2e8f0; border-radius:10px;
+                            font-family:inherit; font-size:.9rem; background:#fafcff; }
+  input:focus, select:focus, textarea:focus { outline:none; border-color:#f8b81f; background:white;
+                                              box-shadow:0 0 0 3px rgba(248,184,31,.12); }
+  textarea { resize:vertical; min-height:80px; font-family:inherit; }
+  button.btn { padding:10px 18px; border:none; border-radius:10px; font-weight:600; cursor:pointer;
+               font-size:.85rem; transition:.2s; display:inline-flex; align-items:center; gap:6px; }
+  .btn-primary { background:#0d3b66; color:white; }
+  .btn-primary:hover { background:#1a5276; transform:translateY(-1px); }
+  .btn-danger { background:#fee; color:#c00; }
+  .btn-danger:hover { background:#fcc; }
+  .btn-gold { background:#f8b81f; color:#0d3b66; }
+  .btn-gold:hover { background:#e0a418; }
+  .btn-success { background:#10b981; color:white; }
+  .btn-success:hover { background:#059669; }
+  .btn-mini { padding:5px 11px; font-size:.72rem; border-radius:8px; }
+  table { width:100%; border-collapse:collapse; margin-top:8px; }
+  th { text-align:left; padding:9px 10px; font-size:.68rem; text-transform:uppercase;
+       color:#64748b; border-bottom:2px solid #e2e8f0; letter-spacing:.3px; }
+  td { padding:9px 10px; border-bottom:1px solid #f1f5f9; font-size:.85rem; vertical-align:middle; }
+  tr:hover td { background:#f8fafc; }
+  .badge { display:inline-block; padding:2px 9px; border-radius:20px; font-size:.68rem; font-weight:700; }
+  .badge-on { background:#d1fae5; color:#065f46; }
+  .badge-off { background:#fee2e2; color:#991b1b; }
+  .badge-gold { background:#fef3c7; color:#92400e; }
+  .badge-info { background:#dbeafe; color:#1e40af; }
+  .badge-warn { background:#fef3c7; color:#92400e; }
+  .thumb { width:44px; height:44px; object-fit:contain; background:#f8fafc; border-radius:8px;
+           border:1px solid #eef2f7; padding:2px; }
+  .thumb-mini { width:34px; height:34px; object-fit:contain; background:#f8fafc; border-radius:6px;
+                border:1px solid #eef2f7; padding:2px; }
+  .empty { text-align:center; padding:32px; color:#94a3b8; font-size:.9rem; }
+  .alerta { padding:11px 16px; border-radius:10px; margin-bottom:14px; font-size:.85rem; display:none; }
+  .alerta.show { display:block; animation:fade .3s; }
+  .alerta.ok { background:#d1fae5; color:#065f46; border-left:4px solid #10b981; }
+  .alerta.err { background:#fee2e2; color:#991b1b; border-left:4px solid #ef4444; }
+  .alerta.info { background:#dbeafe; color:#1e40af; border-left:4px solid #3b82f6; }
+  .modal-bg { display:none; position:fixed; inset:0; background:rgba(10,30,50,.55); backdrop-filter:blur(4px);
+              z-index:1000; align-items:center; justify-content:center; padding:20px; }
+  .modal-bg.on { display:flex; }
+  .modal { background:white; border-radius:18px; max-width:960px; width:100%; max-height:90vh;
+           overflow-y:auto; padding:26px 30px; box-shadow:0 20px 60px rgba(0,0,0,.3); }
+  .modal.wide { max-width:1100px; }
+  .modal-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;
+                padding-bottom:12px; border-bottom:1px solid #eef2f7; }
+  .modal-head h3 { margin:0; font-size:1.1rem; }
+  .modal-head small { color:#64748b; font-size:.75rem; display:block; margin-top:2px; font-weight:400; }
+  .x { background:#f1f5f9; border:none; width:34px; height:34px; border-radius:50%; cursor:pointer; font-size:16px; }
+  .x:hover { background:#ef4444; color:white; }
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+  .paginacao { display:flex; justify-content:center; gap:8px; margin-top:16px; align-items:center; }
+  .paginacao button { padding:6px 12px; border:1px solid #e2e8f0; background:white; border-radius:8px;
+                      cursor:pointer; font-size:.8rem; }
+  .paginacao button:hover { background:#f0f7ff; border-color:#0d3b66; }
+  .paginacao button.atual { background:#0d3b66; color:white; border-color:#0d3b66; }
+  .paginacao button:disabled { opacity:.4; cursor:not-allowed; }
+  .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-bottom:18px; }
+  .stats-itens-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin-bottom:18px; }
+  .si-card { background:white; border-radius:14px; padding:14px 18px; box-shadow:0 2px 12px rgba(0,0,0,.05);
+             border-left:4px solid var(--cor, #0d3b66); display:flex; flex-direction:column; gap:2px; transition:.2s; }
+  .si-card:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,.08); }
+  .si-card .si-ico { font-size:1rem; margin-bottom:4px; opacity:.8; }
+  .si-card .si-valor { font-size:1.5rem; font-weight:800; color:#0d3b66; letter-spacing:-.5px; line-height:1.1; }
+  .si-card .si-label { font-size:.68rem; text-transform:uppercase; color:#64748b; letter-spacing:.5px; font-weight:700; }
+  .si-card .si-extra { font-size:.72rem; color:#94a3b8; margin-top:2px; font-weight:500; }
+  .stat-card { background:white; border-radius:14px; padding:16px 20px; box-shadow:0 2px 12px rgba(0,0,0,.05);
+               border-left:4px solid #f8b81f; }
+  .stat-card .valor { font-size:1.5rem; font-weight:700; color:#0d3b66; margin:4px 0; }
+  .stat-card .label { font-size:.68rem; text-transform:uppercase; color:#64748b; letter-spacing:.4px; font-weight:600; }
+  .import-btn { background:#0d3b66; color:white; border:none; border-radius:14px; padding:22px 20px;
+                cursor:pointer; transition:.25s; text-align:center; flex:1; min-width:190px; }
+  .import-btn:hover { background:#1a5276; transform:translateY(-2px); box-shadow:0 8px 20px rgba(13,59,102,.25); }
+  .import-btn .ico { font-size:1.7rem; margin-bottom:10px; display:block; color:#f8b81f; }
+  .import-btn strong { display:block; font-size:.92rem; margin-bottom:4px; }
+  .import-btn small { font-size:.7rem; opacity:.75; }
+  .checks-grid { display:grid; grid-template-columns:1fr; gap:6px; max-height:420px; overflow-y:auto;
+                 border:1px solid #e2e8f0; border-radius:12px; padding:10px; background:#fafcff; }
+  .check-item { display:flex; align-items:flex-start; gap:8px; padding:8px; border-radius:8px;
+                font-size:.82rem; transition:.15s; cursor:pointer; }
+  .check-item:hover { background:white; }
+  .check-item input { width:auto; min-width:auto; flex-shrink:0; margin-top:3px; cursor:pointer; }
+  .check-item .cod { font-weight:700; color:#0d3b66; min-width:70px; }
+  .check-item .desc { color:#475569; flex:1; white-space:normal; line-height:1.4; }
+  .check-item .desc .attrs { display:block; color:#f59e0b; font-size:.72rem; margin-top:2px; font-weight:600; }
+  .check-item .preco { color:#10b981; font-weight:700; margin-left:auto; font-size:.75rem; white-space:nowrap; }
+  .img-legend-block { background:#f8fafc; border-radius:12px; padding:14px; border:1px solid #eef2f7; margin-top:8px; }
+  .img-legend-block > label:first-child { color:#0d3b66; font-size:.72rem; }
+  .legenda-hint { display:block; font-size:.66rem; color:#94a3b8; margin-top:4px;
+    font-weight:500; text-transform:none; letter-spacing:0; }
+  .check-item.tem-cor { flex-direction:column; align-items:stretch; background:#fffbeb; border-left:3px solid #f59e0b; }
+  .check-item.tem-cor > label { display:flex; align-items:flex-start; gap:8px; cursor:pointer;
+    text-transform:none; letter-spacing:0; margin:0; }
+  .check-item .campos-cor { display:grid; grid-template-columns:1fr 2fr; gap:6px;
+    margin-top:8px; padding-top:8px; border-top:1px dashed #fcd34d; }
+  .check-item .campos-cor input { font-size:.75rem; padding:5px 8px; border-width:1px; }
+  .check-item .campos-cor input.cor-inp { font-weight:700; text-transform:uppercase; text-align:center; background:#fef3c7; }
+  .check-item .campos-cor input.cor-inp:focus { background:white; }
+  .check-item .campos-cor .saved-flag { grid-column:1 / -1; font-size:.66rem; color:#059669; font-weight:700;
+    text-align:right; opacity:0; transition:.3s; }
+  .check-item .campos-cor .saved-flag.on { opacity:1; }
+  .check-item .cor-preview { display:flex; align-items:center; gap:6px;
+    margin-top:4px; padding:4px 6px; background:white; border-radius:6px;
+    border:1px solid #fcd34d; font-size:.68rem; color:#92400e; }
+  .check-item .cor-preview img { width:32px; height:32px; object-fit:contain;
+    border-radius:4px; background:#fef3c7; padding:2px; }
+  .check-item.em-outro-subgrupo { background:#f1f5f9; opacity:0.7; cursor:not-allowed; border-left:3px solid #f59e0b; }
+  .check-item.em-outro-subgrupo input[type="checkbox"] { cursor:not-allowed; }
+  .check-item.em-outro-subgrupo:hover { background:#f1f5f9; }
+
+  /* CARDS DE GRUPO (scraping + grupos) */
+  .grupos-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:16px; margin-bottom:20px; }
+  .grupo-card { background:white; border-radius:16px; padding:20px; cursor:pointer;
+                box-shadow:0 2px 12px rgba(0,0,0,.05); border:2px solid transparent;
+                transition:.25s; text-align:center; }
+  .grupo-card:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(13,59,102,.15);
+                      border-color:#f8b81f; }
+  .grupo-card.ativo { border-color:#0d3b66; background:#f0f7ff; }
+  .grupo-card .gc-emoji { font-size:2.5rem; margin-bottom:8px; display:block; }
+  .grupo-card .gc-nome { font-size:1rem; font-weight:800; color:#0d3b66; margin-bottom:4px;
+                         text-transform:uppercase; letter-spacing:.3px; }
+  .grupo-card .gc-qtd { font-size:.8rem; color:#64748b; font-weight:600; }
+  .grupo-card .gc-sub { font-size:.7rem; color:#94a3b8; margin-top:2px; }
+
+  /* CARDS DE SUBGRUPO (scraping) */
+  .subgrupos-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:12px; margin-bottom:20px; }
+  .subgrupo-card { background:white; border-radius:12px; padding:14px; cursor:pointer;
+                   box-shadow:0 2px 8px rgba(0,0,0,.04); border:2px solid transparent;
+                   transition:.2s; display:flex; gap:12px; align-items:center; }
+  .subgrupo-card:hover { transform:translateY(-2px); box-shadow:0 6px 16px rgba(13,59,102,.12);
+                         border-color:#0d3b66; }
+  .subgrupo-card.ativo { border-color:#0d3b66; background:#f0f7ff; }
+  .subgrupo-card .sc-foto { width:60px; height:60px; flex-shrink:0; object-fit:contain;
+                            background:#f8fafc; border-radius:10px; padding:4px;
+                            border:1px solid #eef2f7; }
+  .subgrupo-card .sc-info { flex:1; min-width:0; }
+  .subgrupo-card .sc-nome { font-weight:800; color:#0d3b66; font-size:.9rem; margin-bottom:3px;
+                            white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .subgrupo-card .sc-marca { font-size:.72rem; color:#64748b; font-weight:600; }
+  .subgrupo-card .sc-badge { font-size:.66rem; background:#dbeafe; color:#1e40af;
+                             padding:2px 8px; border-radius:20px; font-weight:800;
+                             display:inline-block; margin-top:4px; }
+  .subgrupo-card .sc-acoes { display:flex; flex-direction:column; gap:4px; }
+  .subgrupo-card .sc-acoes button { font-size:.66rem; padding:4px 8px; }
+
+  @media(max-width:880px){
+    .wrap{grid-template-columns:1fr}
+    .side{display:flex; overflow-x:auto; padding:0}
+    .side button{border-left:none; border-bottom:3px solid transparent; white-space:nowrap;
+                 font-size:.75rem; padding:10px 14px;}
+    .side button.active{border-left:none; border-bottom-color:#f8b81f}
+    .grid-2,.grid-3{grid-template-columns:1fr}
+    .main{padding:16px 18px}
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>🏷️ Tabela de Preços — Admin</h1>
+    <small>Catálogo B2B · importação · grupos · campanhas</small>
+  </div>
+  <div style="text-align:right">
+    <div style="font-size:.78rem; opacity:.85">Sistema independente</div>
+    <small id="hora" style="opacity:.7; font-size:.72rem;"></small>
+  </div>
+</div>
+
+<div class="wrap">
+  <aside class="side">
+    <button class="active" data-page="importar">📥 Importar</button>
+    <button data-page="itens">📦 Itens</button>
+    <button data-page="grupos">🗂️ Grupos</button>
+    <button data-page="clientes">👥 Clientes</button>
+    <button data-page="vendedores">👤 Vendedores</button>
+    <button data-page="acrescimos">💸 Acréscimos por UF</button>
+    <button data-page="campanhas">🎯 Campanhas</button>
+    <button data-page="pedidos">📋 Pedidos</button>
+    <button data-page="scraping">🕷️ Scraping</button>
+    <button data-page="importados">🗑️ Importados</button>
+  <button id="btnAbrirFamilias" onclick="abrirFamilias()">👨‍👩‍👧‍👦 Criar Famílias</button>
+  </aside>
+
+  <main class="main">
+    <div id="alerta" class="alerta"></div>
+
+    <!-- ═══════════ IMPORTAR ═══════════ -->
+    <section class="page active" id="page-importar">
+      <h2>Importar Planilhas</h2>
+      <div class="stats-grid" id="statsGrid"></div>
+      <div class="card">
+        <h3 style="margin-top:0">📥 Escolha o tipo de importação</h3>
+        <p style="color:#64748b; font-size:.85rem; margin-bottom:14px;">
+          Aceita .xlsx, .xls e .csv. Reimportar <strong>atualiza</strong> os itens (não perde vínculos com grupos nem imagens).
+        </p>
+        <div style="display:flex; gap:14px; flex-wrap:wrap;">
+          <button class="import-btn" style="background:linear-gradient(135deg,#10b981,#059669);" onclick="document.getElementById('fileSistema').click()">
+            <span class="ico">📊</span><strong>Importar SISTEMA</strong>
+            <small>Descrição | Código | Estoque | P/Venda | Cod.Barra</small>
+            <input type="file" id="fileSistema" accept=".xlsx,.xls,.csv" style="display:none" onchange="importarSistema(this)">
+          </button>
+          <button class="import-btn" onclick="document.getElementById('fileClientes').click()">
+            <span class="ico">👥</span><strong>Importar CLIENTES</strong>
+            <small>CÓDIGO | NOME | CPF/CNPJ | CIDADE | UF | REPRESENTANTE</small>
+            <input type="file" id="fileClientes" accept=".xlsx,.xls,.csv" style="display:none" onchange="importarClientes(this)">
+          </button>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="margin:0 0 10px 0">📋 Log das últimas importações</h3>
+        <table id="tabLog"><tbody></tbody></table>
+      </div>
+    </section>
+
+    <!-- ═══════════ ITENS ═══════════ -->
+    <section class="page" id="page-itens">
+      <h2>Itens</h2>
+      
+      <div class="card">
+        <div class="row">
+          <div style="flex:3"><label>Buscar</label>
+            <input id="buscaItens" placeholder="Código ou descrição..." oninput="debounceBusca()"></div>
+          <div style="flex:1"><label>Filtro</label>
+<select id="filtroItens" onchange="carregarItens()">
+  <option value="com-saldo">✅ Prontos p/ Catálogo (com estoque)</option>
+  <option value="sem-grupo">🚫 Ver Órfãos (sem grupo)</option>
+  <option value="sem-preco">⚠️ Ver Sem Preço</option>
+  <option value="todos">Ver Tudo (até sem estoque)</option>
+</select></div>
+          <div style="flex:0 0 auto">
+            <button class="btn btn-primary" onclick="carregarItens()">🔍 Buscar</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="margin:0 0 8px 0" id="itensResumo">—</h3>
+        <table id="tabItens">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Código</th>
+              <th>Descrição</th>
+              <th>Preço</th>
+              <th>Saldo</th>
+              <th>Grupo</th>
+              <th>Subgrupo</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <div class="paginacao" id="paginacaoItens"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════ GRUPOS (reformulada) ═══════════ -->
+    <section class="page" id="page-grupos">
+      <h2>🗂️ Grupos</h2>
+      <div class="card" style="background:#eff6ff; border-left:4px solid #3b82f6;">
+        <p style="font-size:.85rem; color:#1e40af; margin:0;">
+          ℹ️ Os grupos vêm do <strong>scraping</strong>. Clique num grupo pra ver os subgrupos.
+          Dentro do subgrupo você pode <strong>🔗 vincular itens do SISTEMA</strong> que ainda não vieram do scraping.
+        </p>
+      </div>
+
+      <div class="grupos-grid" id="gruposPageGrid"></div>
+
+      <div id="gruposPageSubgruposCard" style="display:none">
+        <div class="card" style="background:#f0f7ff; border-left:4px solid #0d3b66;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="margin:0" id="gruposPageSubgruposTitulo">Subgrupos</h3>
+            <button class="btn btn-gold btn-mini" onclick="fecharGruposPageSubgrupos()">✕ Fechar</button>
+          </div>
+        </div>
+        <div class="card">
+          <table id="tabGruposPageSubgrupos">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Subgrupo</th>
+                <th>Marca</th>
+                <th>Itens scraping</th>
+                <th>Itens vinculados</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ CLIENTES ═══════════ -->
+    <section class="page" id="page-clientes">
+      <h2>Clientes</h2>
+      <div class="card">
+        <div class="row">
+          <div style="flex:3"><label>Buscar</label>
+            <input id="buscaClientes" placeholder="Código, nome, CNPJ..." oninput="debounceBuscaClientes()"></div>
+          <div style="flex:2"><label>Vendedor</label>
+            <select id="filtroVendClientes" onchange="carregarClientes()"><option value="">— Todos —</option></select></div>
+          <div style="flex:0 0 auto">
+            <button class="btn btn-primary" onclick="carregarClientes()">🔍 Buscar</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="margin:0 0 8px 0" id="clientesResumo">—</h3>
+        <table id="tabClientes"><tbody></tbody></table>
+        <div class="paginacao" id="paginacaoClientes"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════ VENDEDORES ═══════════ -->
+    <section class="page" id="page-vendedores">
+      <h2>Vendedores</h2>
+      <div class="card">
+        <h3 style="margin-top:0">➕ Novo vendedor</h3>
+        <div class="row">
+          <div style="flex:3"><label>Nome</label><input id="vendNome" placeholder="Ex: LEANDRO"></div>
+          <div style="flex:2"><label>Código representante</label><input id="vendRep" placeholder="Ex: 36"></div>
+          <button class="btn btn-primary" onclick="criarVendedor()">➕ Criar</button>
+        </div>
+      </div>
+      <div class="card"><table id="tabVendedores"><tbody></tbody></table></div>
+    </section>
+
+    <!-- ═══════════ ACRÉSCIMOS ═══════════ -->
+    <section class="page" id="page-acrescimos">
+      <h2>💸 Acréscimos por UF</h2>
+      <div class="card" style="background:#eff6ff; border-left:4px solid #3b82f6;">
+        <p style="font-size:.88rem; color:#1e40af; margin:0;">
+          💡 Cadastre os grupos de acréscimo e clique em 🗺️ UFs pra marcar as UFs de cada grupo.
+        </p>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">📦 Grupos de acréscimo</h3>
+        <div class="row" style="background:#f8fafc; padding:14px; border-radius:12px;">
+          <div style="flex:2"><label>Nome do grupo</label><input id="acrNome" placeholder="Ex: REG 03"></div>
+          <div style="flex:1"><label>Acréscimo (%)</label><input id="acrPct" type="number" step="0.01" value="0"></div>
+          <div style="flex:0 0 100px"><label>Ordem</label><input id="acrOrdem" type="number" value="0"></div>
+          <button class="btn btn-primary" onclick="criarGrupoAcrescimo()">➕ Criar grupo</button>
+        </div>
+        <table id="tabGruposAcrescimo" style="margin-top:14px"><tbody></tbody></table>
+      </div>
+    </section>
+
+    <!-- ═══════════ CAMPANHAS ═══════════ -->
+    <section class="page" id="page-campanhas">
+      <h2>Campanhas / Ofertas do Mês</h2>
+      <div class="card">
+        <h3 style="margin-top:0">➕ Nova campanha</h3>
+        <div class="grid-2">
+          <div><label>Nome da campanha</label><input id="campNome" placeholder="Ex: OFERTAS OUTUBRO 2026"></div>
+          <div><label>Subtítulo</label><input id="campSubtitulo" placeholder="Ex: Válido até 31/10"></div>
+        </div>
+        <div class="grid-2" style="margin-top:12px">
+          <div><label>Vendedor dono</label><select id="campVendedor"><option value="">— Global —</option></select></div>
+          <div><label>Banner (URL)</label><input id="campBanner" placeholder="https://..."></div>
+        </div>
+        <div class="grid-3" style="margin-top:12px">
+          <div><label>Senha geral</label><input id="campSenha" placeholder="Ex: OUTUBRO26"></div>
+          <div><label>Exigir senha?</label>
+            <select id="campExigirSenha"><option value="0">Não</option><option value="1">Sim</option></select></div>
+          <div><label>Status</label>
+            <select id="campAtiva"><option value="0">Inativa</option><option value="1">Ativa</option></select></div>
+        </div>
+        <div class="grid-2" style="margin-top:12px">
+          <div><label>Válido de</label><input id="campInicio" type="date"></div>
+          <div><label>Válido até</label><input id="campFim" type="date"></div>
+        </div>
+        <div style="margin-top:16px; text-align:right">
+          <button class="btn btn-gold" onclick="criarCampanha()">➕ Criar campanha</button></div>
+      </div>
+      <div class="card"><h3 style="margin-top:0">Campanhas cadastradas</h3>
+        <table id="tabCampanhas"><tbody></tbody></table></div>
+    </section>
+
+    <!-- ═══════════ PEDIDOS ═══════════ -->
+    <section class="page" id="page-pedidos">
+      <h2>Pedidos</h2>
+      <div class="card">
+        <div class="row">
+          <div style="flex:3"><label>Filtrar por vendedor</label>
+            <select id="filtroVendPedidos" onchange="carregarPedidos()"><option value="">— Todos —</option></select></div>
+          <div style="flex:0 0 auto">
+            <button class="btn btn-primary" onclick="carregarPedidos()">🔄 Atualizar</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="margin:0 0 8px 0" id="pedidosResumo">—</h3>
+        <table id="tabPedidos"><tbody></tbody></table>
+      </div>
+    </section>
+
+    <!-- ═══════════ SCRAPING (cards fixos) ═══════════ -->
+    <section class="page" id="page-scraping">
+      <h2>🕷️ Scraping — Catálogo Importado</h2>
+      <div class="stats-itens-grid" id="scrapingStats"></div>
+
+      <div class="grupos-grid" id="scrapingGruposGrid"></div>
+
+      <div id="scrapingSubgruposCard" style="display:none">
+        <div class="card" style="background:#f0f7ff; border-left:4px solid #0d3b66;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="margin:0" id="scrapingSubgruposTitulo">Subgrupos</h3>
+            <button class="btn btn-gold btn-mini" onclick="fecharScrapingSubgrupos()">✕ Fechar</button>
+          </div>
+        </div>
+        <div class="subgrupos-grid" id="scrapingSubgruposGrid"></div>
+      </div>
+
+      <div id="scrapingItensCardDyn"></div>
+    </section>
+
+    <!-- ═══════════ IMPORTADOS ═══════════ -->
+    <section class="page" id="page-importados">
+      <h2>🗑️ Itens Importados — Gerenciar</h2>
+      <div class="card" style="background:#fef3c7; border-left:4px solid #f59e0b;">
+        <p style="font-size:.85rem; color:#92400e; margin:0;">
+          ⚠️ <strong>Atenção:</strong> deletar um item remove ele do banco <strong>definitivamente</strong>.
+          Se reimportar a planilha, ele volta.
+        </p>
+      </div>
+      <div class="card">
+        <div class="row">
+          <div style="flex:3"><label>Buscar</label>
+            <input id="buscaImportados" placeholder="Código ou descrição..." oninput="debounceImportados()"></div>
+          <div style="flex:2"><label>Grupo</label>
+            <select id="filtroGrupoImportados" onchange="carregarImportados()">
+              <option value="">— Todos —</option>
+            </select></div>
+          <div style="flex:2"><label>Subgrupo</label>
+            <select id="filtroSubgrupoImportados" onchange="carregarImportados()">
+              <option value="">— Todos —</option>
+            </select></div>
+          <div style="flex:2"><label>Estoque</label>
+            <select id="filtroEstoqueImportados" onchange="carregarImportados()">
+              <option value="">— Todos —</option>
+              <option value="com-estoque">✅ Com estoque</option>
+              <option value="sem-estoque">⚠️ Estoque ZERO</option>
+            </select></div>
+          <div style="flex:2"><label>Preço</label>
+            <select id="filtroPrecoImportados" onchange="carregarImportados()">
+              <option value="">— Todos —</option>
+              <option value="com-preco">💰 Com preço</option>
+              <option value="sem-preco">⚠️ Preço ZERO</option>
+            </select></div>
+          <div style="flex:0 0 auto">
+            <button class="btn btn-primary" onclick="carregarImportados()">🔍 Buscar</button></div>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; padding-top:14px; border-top:1px dashed #e2e8f0;">
+          <span style="font-size:.72rem; color:#64748b; font-weight:700; align-self:center; text-transform:uppercase; letter-spacing:.5px;">Atalhos:</span>
+          <button class="btn btn-danger btn-mini" onclick="atalhoImportados('lixo')">🗑️ Lixo (sem estoque E sem preço)</button>
+          <button class="btn btn-gold btn-mini" onclick="atalhoImportados('sem-estoque')">⚠️ Só sem estoque</button>
+          <button class="btn btn-gold btn-mini" onclick="atalhoImportados('sem-preco')">⚠️ Só sem preço</button>
+          <button class="btn btn-gold btn-mini" onclick="atalhoImportados('sem-grupo')">🚫 Só sem grupo</button>
+          <button class="btn btn-primary btn-mini" onclick="atalhoImportados('limpar')">🔄 Limpar filtros</button>
+        </div>
+      </div>
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+          <h3 style="margin:0" id="importadosResumo">—</h3>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-gold btn-mini" onclick="marcarTodosImportados()">Marcar todos</button>
+            <button class="btn btn-danger btn-mini" onclick="desmarcarTodosImportados()">Desmarcar</button>
+            <button class="btn btn-danger" onclick="deletarSelecionados()">🗑️ Deletar selecionados</button>
+          </div>
+        </div>
+        <table id="tabImportados">
+          <thead>
+            <tr>
+              <th style="width:40px"></th>
+              <th style="width:60px"></th>
+              <th>Código</th>
+              <th>Descrição</th>
+              <th>Preço</th>
+              <th>Saldo</th>
+              <th>Grupo</th>
+              <th>Subgrupo</th>
+              <th>Atualizado</th>
+              <th style="width:80px"></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <div class="paginacao" id="paginacaoImportados"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ═══════════ MODAIS ═══════════ -->
+
+<!-- Modal Editar Item (v_catalogo) -->
+<div class="modal-bg" id="modalEditarItem">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-head">
+      <div><h3>Editar item</h3><small id="editItemCod">—</small></div>
+      <button class="x" onclick="fecharModalItem()">✕</button>
+    </div>
+    <div><label>Descrição</label><input id="editDescricao"></div>
+    <div class="grid-2" style="margin-top:12px">
+      <div><label>Preço (R$)</label><input id="editPreco" type="number" step="0.01"></div>
+      <div><label>Saldo</label><input id="editSaldo" type="number" step="0.01"></div>
+    </div>
+    <div style="margin-top:12px"><label>Imagem individual (URL)</label>
+      <input id="editImagem" placeholder="https://..."></div>
+    <div style="margin-top:12px"><label>Nome da Cor (opcional, para iscas)</label>
+      <input id="editCorNome" placeholder="Ex: COR 14"></div>
+    <div style="margin-top:22px; display:flex; gap:10px; justify-content:flex-end;">
+      <button class="btn btn-danger" onclick="fecharModalItem()">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarItem()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Cliente -->
+<div class="modal-bg" id="modalEditarCliente">
+  <div class="modal">
+    <div class="modal-head">
+      <div><h3>Editar cliente</h3><small id="editCliCod">—</small></div>
+      <button class="x" onclick="fecharModalEditCliente()">✕</button>
+    </div>
+    <div class="grid-2">
+      <div><label>Nome fantasia</label><input id="editCliNome"></div>
+      <div><label>Razão social</label><input id="editCliRazao"></div>
+    </div>
+    <div class="grid-2" style="margin-top:12px">
+      <div><label>CNPJ</label><input id="editCliCnpj"></div>
+      <div><label>Cidade</label><input id="editCliCidade"></div>
+    </div>
+    <div class="grid-3" style="margin-top:12px">
+      <div><label>UF</label><input id="editCliUf" maxlength="2"></div>
+      <div><label>Contato</label><input id="editCliContato"></div>
+      <div><label>Telefone</label><input id="editCliTelefone"></div>
+    </div>
+    <div class="grid-3" style="margin-top:12px">
+      <div><label>Celular</label><input id="editCliCelular"></div>
+      <div><label>E-mail</label><input id="editCliEmail"></div>
+      <div><label>E-mail NFe</label><input id="editCliEmailNfe"></div>
+    </div>
+    <div class="grid-2" style="margin-top:12px">
+      <div><label>Vendedor</label>
+        <select id="editCliVendedor"><option value="">— Sem vendedor —</option></select></div>
+      <div><label>Ativo</label>
+        <select id="editCliAtivo"><option value="1">Sim</option><option value="0">Não</option></select></div>
+    </div>
+    <div style="margin-top:22px; display:flex; gap:10px; justify-content:flex-end;">
+      <button class="btn btn-danger" onclick="fecharModalEditCliente()">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarEditCliente()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Ordem -->
+<div class="modal-bg" id="modalOrdem">
+  <div class="modal" style="max-width:700px">
+    <div class="modal-head">
+      <div><h3 id="tituloOrdem">🔢 Ordem dos itens</h3><small id="subOrdem">—</small></div>
+      <button class="x" onclick="fecharModalOrdem()">✕</button>
+    </div>
+    <div class="card" style="background:#eff6ff; border-left:4px solid #3b82f6; padding:12px 16px;">
+      <p style="font-size:.82rem; color:#1e40af; margin:0;">
+        ℹ️ Coloque <strong>1, 2, 3...</strong> pra definir a ordem que os itens aparecem no catálogo.
+      </p>
+    </div>
+    <div class="card" style="padding:0; overflow:hidden;">
+      <div style="display:grid; grid-template-columns:80px 1fr 80px; gap:1px; background:#e2e8f0; font-weight:700; font-size:.72rem; text-transform:uppercase; color:#64748b; letter-spacing:.5px;">
+        <div style="padding:10px 14px; background:#f8fafc;">Ordem</div>
+        <div style="padding:10px 14px; background:#f8fafc;">Item</div>
+        <div style="padding:10px 14px; background:#f8fafc; text-align:center;">Saldo</div>
+      </div>
+      <div id="listaOrdem" style="max-height:500px; overflow-y:auto;"></div>
+    </div>
+    <div style="display:flex; gap:10px; justify-content:space-between; margin-top:14px; flex-wrap:wrap;">
+      <button class="btn btn-gold btn-mini" onclick="autoOrdenarPorCodigo()">⚡ Numerar por código</button>
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-danger" onclick="fecharModalOrdem()">Cancelar</button>
+        <button class="btn btn-success" onclick="salvarOrdem()">💾 Salvar ordem</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Vincular -->
+<div class="modal-bg" id="modalVincular">
+  <div class="modal wide">
+    <div class="modal-head">
+      <div><h3 id="tituloVincular">Vincular itens ao subgrupo</h3><small id="subVincular">—</small></div>
+      <button class="x" onclick="fecharModalVincular()">✕</button>
+    </div>
+    <div class="card" style="background:#f8fafc">
+      <div class="row">
+        <div style="flex:3"><label>Buscar item</label>
+          <input id="buscaVincular" placeholder="Código ou descrição..." oninput="debounceVincular()"></div>
+        <div style="flex:1"><label>Filtro</label>
+          <select id="filtroVincular" onchange="carregarItensVincular()">
+            <option value="todos">Todos</option>
+            <option value="nao-vinculados">Não vinculados</option>
+            <option value="deste">Já deste subgrupo</option>
+          </select></div>
+        <div style="flex:0 0 auto"><button class="btn btn-primary" onclick="carregarItensVincular()">🔍</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <h3 style="margin:0">Selecione os itens</h3>
+        <div>
+          <span id="contadorSelecionados" style="font-size:.85rem; color:#64748b; margin-right:12px;">0</span>
+          <button class="btn btn-gold btn-mini" onclick="marcarTodos()">✓ Marcar todos</button>
+          <button class="btn btn-danger btn-mini" onclick="desmarcarTodos()">✗ Desmarcar</button>
+          <button class="btn btn-primary btn-mini" onclick="inverterSelecao()">🔃 Inverter</button>
+        </div>
+      </div>
+      <div class="checks-grid" id="checksVincular"></div>
+    </div>
+    <div style="display:flex; gap:10px; justify-content:space-between; flex-wrap:wrap;">
+      <button class="btn btn-gold" onclick="abrirModalCopiarCores()">📋 Copiar informações de outro subgrupo</button>
+      <div style="display:flex; gap:10px; margin-left:auto;">
+        <button class="btn btn-danger" onclick="fecharModalVincular()">Cancelar</button>
+        <button class="btn btn-success" onclick="vincularSelecionados()">🔗 Vincular selecionados</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Subgrupo -->
+<div class="modal-bg" id="modalEditarSubgrupo">
+  <div class="modal">
+    <div class="modal-head">
+      <div><h3>Editar subgrupo</h3><small id="editSubNome">—</small></div>
+      <button class="x" onclick="fecharModalEditSub()">✕</button>
+    </div>
+    <div><label>Nome</label><input id="editSubNomeInput"></div>
+    <div class="img-legend-block" style="margin-top:14px;">
+      <label>🖼️ Imagens e legendas</label>
+      <div style="margin-bottom:14px">
+        <label style="color:#0d3b66;">Imagem principal (URL)</label>
+        <input id="editSubImagem">
+        <span class="legenda-hint">Legenda da imagem principal</span>
+        <input id="editSubLegenda1" placeholder="Ex: 11000 PRATA" style="margin-top:4px;">
+      </div>
+      <div class="grid-2">
+        <div>
+          <label style="color:#0d3b66;">Imagem lateral 1</label>
+          <input id="editSubLat1">
+          <input id="editSubLegenda2" placeholder="Ex: 8000 AZUL" style="margin-top:6px;">
+        </div>
+        <div>
+          <label style="color:#0d3b66;">Imagem lateral 2</label>
+          <input id="editSubLat2">
+          <input id="editSubLegenda3" placeholder="Ex: 5000 PRETO" style="margin-top:6px;">
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:12px">
+      <label>Descrição</label>
+      <textarea id="editSubDescricao" rows="6"></textarea>
+    </div>
+    <div style="margin-top:22px; display:flex; gap:10px; justify-content:flex-end;">
+      <button class="btn btn-danger" onclick="fecharModalEditSub()">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarEditSub()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal UFs do grupo -->
+<div class="modal-bg" id="modalUFsGrupo">
+  <div class="modal">
+    <div class="modal-head">
+      <div><h3 id="tituloUFsGrupo">UFs do grupo</h3><small id="subUFsGrupo">—</small></div>
+      <button class="x" onclick="fecharModalUFs()">✕</button>
+    </div>
+    <div class="card" style="background:#f8fafc">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <span id="contadorUFs" style="font-size:.85rem; color:#64748b;">0 selecionada(s)</span>
+        <div>
+          <button class="btn btn-gold btn-mini" onclick="marcarTodasUFsModal()">✓ Marcar todas</button>
+          <button class="btn btn-danger btn-mini" onclick="desmarcarTodasUFsModal()">✗ Desmarcar</button>
+        </div>
+      </div>
+    </div>
+    <div id="checksUFs" class="grid-3" style="gap:8px;"></div>
+    <div style="margin-top:22px; display:flex; gap:10px; justify-content:flex-end;">
+      <button class="btn btn-danger" onclick="fecharModalUFs()">Cancelar</button>
+      <button class="btn btn-success" onclick="salvarUFsDoGrupo()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Ofertas -->
+<div class="modal-bg" id="modalOfertasCampanha">
+  <div class="modal wide">
+    <div class="modal-head">
+      <div><h3 id="tituloOfertasCamp">Ofertas da campanha</h3><small id="subOfertasCamp">—</small></div>
+      <button class="x" onclick="fecharModalOfertas()">✕</button>
+    </div>
+    <div class="card" style="background:#f8fafc">
+      <div class="row">
+        <div style="flex:3"><label>Buscar item</label>
+          <input id="buscaOfertas" placeholder="Código ou descrição..." oninput="debounceOfertas()"></div>
+        <div style="flex:1"><label>Desconto (%)</label>
+          <input id="descontoOfertas" type="number" step="0.01" value="5"></div>
+        <div style="flex:0 0 auto">
+          <button class="btn btn-gold" onclick="aplicarOfertas()">🎁 Aplicar</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <h3 style="margin:0">Selecione os itens</h3>
+        <div>
+          <span id="contadorOfertas" style="font-size:.85rem; color:#64748b; margin-right:12px;">0</span>
+          <button class="btn btn-gold btn-mini" onclick="marcarTodosOfertas()">Marcar todos</button>
+          <button class="btn btn-danger btn-mini" onclick="desmarcarTodosOfertas()">Desmarcar</button>
+        </div>
+      </div>
+      <div class="checks-grid" id="checksOfertas"></div>
+    </div>
+    <div class="card"><h3 style="margin-top:0">Ofertas cadastradas</h3>
+      <table id="tabOfertasCamp"><tbody></tbody></table></div>
+    <div style="display:flex; gap:10px; justify-content:flex-end;">
+      <button class="btn btn-danger" onclick="fecharModalOfertas()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Pedido -->
+<div class="modal-bg" id="modalPedido">
+  <div class="modal wide">
+    <div class="modal-head">
+      <div><h3 id="tituloPedido">Pedido</h3><small id="subPedido">—</small></div>
+      <button class="x" onclick="fecharModalPedido()">✕</button>
+    </div>
+    <div class="card"><h3 style="margin-top:0">Dados do cliente</h3>
+      <div id="pedidoCliente" style="font-size:.9rem"></div></div>
+    <div class="card"><h3 style="margin-top:0">Itens</h3>
+      <table id="tabPedidoItens"><tbody></tbody></table>
+      <div style="text-align:right; margin-top:14px; font-size:1.15rem; font-weight:700; color:#0d3b66;">
+        Total: <span id="pedidoTotal">R$ 0,00</span></div>
+    </div>
+    <div class="card"><h3 style="margin-top:0">Ações</h3>
+      <div class="row">
+        <div style="flex:2"><label>Status</label>
+          <select id="pedidoStatus">
+            <option value="Recebido">Recebido</option>
+            <option value="Enviado">Enviado</option>
+            <option value="Cancelado">Cancelado</option>
+          </select></div>
+        <div style="flex:0 0 auto">
+          <button class="btn btn-primary" onclick="salvarStatusPedido()">💾 Salvar status</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Copiar Cores -->
+<div class="modal-bg" id="modalCopiarCores">
+  <div class="modal" style="max-width:900px">
+    <div class="modal-head">
+      <div><h3>📋 Copiar informações de outro subgrupo</h3><small>Case cada cor da origem com o item de destino</small></div>
+      <button class="x" onclick="fecharModalCopiarCores()">✕</button>
+    </div>
+    <div class="card" style="background:#eff6ff; border-left:4px solid #3b82f6; padding:12px 16px;">
+      <p style="font-size:.82rem; color:#1e40af; margin:0;">
+        ℹ️ Escolha a <strong>origem</strong> e case cada cor com um item de destino.
+      </p>
+    </div>
+    <div class="card">
+      <label>📤 Copiar DE (origem)</label>
+      <select id="selectSubgrupoOrigem" style="width:100%;padding:10px;border-radius:10px;border:2px solid #e2e8f0;font-size:.88rem">
+        <option value="">Carregando...</option>
+      </select>
+    </div>
+    <div id="painelPareamento" style="display:none;">
+      <div class="card" style="padding:12px 16px; background:#f8fafc;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <span id="resumoPareamento" style="font-size:.85rem; color:#0d3b66; font-weight:700;"></span>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-gold btn-mini" onclick="autoCasarOrdem()">⚡ Casar automaticamente</button>
+            <button class="btn btn-danger btn-mini" onclick="limparPareamento()">🗑️ Limpar tudo</button>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="padding:0; overflow:hidden;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1px; background:#e2e8f0; font-weight:700; font-size:.72rem; text-transform:uppercase; color:#64748b; letter-spacing:.5px;">
+          <div style="padding:10px 14px; background:#f8fafc;">🎨 Cor da origem</div>
+          <div style="padding:10px 14px; background:#f8fafc;">📥 Item de destino</div>
+        </div>
+        <div id="listaPareamento" style="max-height:420px; overflow-y:auto;"></div>
+      </div>
+    </div>
+    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:6px;">
+      <button class="btn btn-danger" onclick="fecharModalCopiarCores()">Cancelar</button>
+      <button class="btn btn-success" onclick="executarCopiarCores()">✅ Copiar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Famílias -->
+<!-- Modal Famílias -->
+<div class="modal-bg" id="modalFamilias">
+  <div class="modal wide">
+    <div class="modal-head">
+      <div><h3>👨‍👩‍👧‍👦 Gerenciar Famílias de Produtos</h3><small>Agrupe variações de um mesmo item (ex: Carretilha Avenger 11000, 8000)</small></div>
+      <button class="x" onclick="document.getElementById('modalFamilias').classList.remove('on')">✕</button>
+    </div>
+    
+    <div class="card" style="background:#f8fafc">
+      <div class="row">
+        <div style="flex:3"><label>Buscar item</label>
+          <input id="buscaFamilia" placeholder="Código ou descrição..." oninput="carregarItensFamilia()"></div>
+        <div style="flex:1"><label>Filtro</label>
+          <select id="filtroFamilia" onchange="carregarItensFamilia()">
+            <option value="todos">Todos os itens</option>
+            <option value="nao-vinculados">Apenas não vinculados</option>
+          </select></div>
+        <div style="flex:0 0 auto">
+          <button class="btn btn-primary" onclick="carregarItensFamilia()">🔍 Buscar</button></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <h3 style="margin:0">Selecione os itens para agrupar</h3>
+        <span id="contadorFamilia" style="font-size:.85rem; color:#64748b;">0 selecionado(s)</span>
+      </div>
+      <div class="checks-grid" id="checksFamilia" style="max-height:300px;"></div>
+    </div>
+
+    <div class="card" id="painelFamilia" style="display:none; background:#eff6ff; border:1px solid #bfdbfe;">
+      <h3 style="margin-top:0; color:#1e40af;">Configurar Família</h3>
+      <div class="row">
+        <div style="flex:2"><label>Nome da Família (ex: Carretilha Avenger)</label><input id="familiaNome"></div>
+        <div style="flex:3"><label>Descrição longa (opcional)</label><input id="familiaDescricao"></div>
+      </div>
+      <div style="margin-top:14px;">
+        <label>Defina os rótulos para cada item selecionado:</label>
+        <div id="listaRotulos" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:8px;"></div>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:14px;">
+      <button class="btn btn-danger" onclick="document.getElementById('modalFamilias').classList.remove('on')">Cancelar</button>
+      <button class="btn btn-success" onclick="criarFamilia()">💾 Criar Família</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Agrupamento Simples -->
+<div class="modal-bg" id="modalAgrupar">
+  <div class="modal wide">
+    <div class="modal-head">
+      <div><h3 id="tituloAgrupar">Agrupar Itens</h3><small>Selecione os itens e defina os rótulos</small></div>
+      <button class="x" onclick="fecharModalAgrupar()">✕</button>
+    </div>
+    
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <h3 style="margin:0">Itens do Subgrupo</h3>
+        <span id="contadorAgrupar" style="font-size:.85rem; color:#64748b;">0 selecionado(s)</span>
+      </div>
+      <div class="checks-grid" id="checksAgrupar" style="max-height:400px;"></div>
+    </div>
+
+    <div class="card" id="painelRotulosAgrupar" style="display:none; background:#eff6ff; border:1px solid #bfdbfe;">
+      <h3 style="margin-top:0; color:#1e40af;">Rótulos dos Itens Selecionados</h3>
+      <div id="listaRotulosAgrupar" style="display:flex; flex-direction:column; gap:8px;"></div>
+    </div>
+
+    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:14px;">
+      <button class="btn btn-danger" onclick="fecharModalAgrupar()">Cancelar</button>
+      <button class="btn btn-success" onclick="salvarAgrupamentoPersonalizado()">💾 Criar Card</button>
+    </div>
+  </div>
+</div>
+
+<script>
+    // ================================================================
+// ESTADO GLOBAL
+// ================================================================
+let gruposCache = [];
+let subgruposCache = [];
+let vendedoresCache = [];
+let clientesCache = [];
+let campanhasCache = [];
+let pedidosCache = [];
+let gruposAcrescimoCache = [];
+let ufsCache = [];
+
+let grupoAtualSub = null;
+let subgrupoAtualVinc = null;
+let subgrupoAtualEhIsca = false;
+let itemEditando = null;
+let subgrupoEditando = null;
+let clienteEditando = null;
+let campanhaAtualOfertas = null;
+let pedidoAtual = null;
+let grupoAtualUFs = null;
+let ultimoVinculo = null;
+let timeoutsCor = {};
+
+let paginaItens = 1, limiteItens = 50, totalPaginasItens = 1;
+let paginaClientes = 1, limiteClientes = 50, totalPaginasClientes = 1;
+let paginaImportados = 1, limiteImportados = 50, totalPaginasImportados = 1;
+let timeoutImportados = null;
+
+let timeoutBusca = null;
+let timeoutVincular = null;
+let timeoutBuscaClientes = null;
+let timeoutOfertas = null;
+
+// Estado da nova aba GRUPOS (reformulada)
+let gruposPageGrupoAtual = null;
+let subgruposPageCache = [];
+
+// Estado da nova aba SCRAPING (cards fixos)
+let scrapingGrupoAtual = null;
+let scrapingSubgrupoAtual = null;
+let scrapingItemEditando = null;
+let scrapingSubgrupoEditando = null;
+
+// ================================================================
+// HELPERS
+// ================================================================
+
+
+// ================================================================
+// FAMÍLIAS (ADMIN)
+// ================================================================
+let itensFamiliaSelecionados = [];
+
+async function abrirFamilias() {
+    document.getElementById('modalFamilias').classList.add('on');
+    document.getElementById('buscaFamilia').value = '';
+    document.getElementById('familiaNome').value = '';
+    document.getElementById('familiaDescricao').value = '';
+    document.getElementById('painelFamilia').style.display = 'none';
+    itensFamiliaSelecionados = [];
+    await carregarItensFamilia();
+}
+
+async function carregarItensFamilia() {
+    const busca = document.getElementById('buscaFamilia').value.trim();
+    const filtro = document.getElementById('filtroFamilia').value;
+    const r = await api(`/api/tabela/itens?busca=${encodeURIComponent(busca)}&filtro=${filtro === 'nao-vinculados' ? 'sem-grupo' : 'todos'}&limite=9999`);
+    if (!r.success) return;
+
+    const container = document.getElementById('checksFamilia');
+    container.innerHTML = r.itens.map(i => `
+        <label class="check-item" style="padding:6px;">
+            <input type="checkbox" value="${i.cod_produto}" onchange="toggleItemFamilia(this, '${i.cod_produto}', '${escapeHtml(i.descricao)}')">
+            <span class="cod">${i.cod_produto}</span>
+            <span class="desc">${i.descricao || '—'}</span>
+        </label>
+    `).join('');
+}
+
+function toggleItemFamilia(checkbox, cod, desc) {
+    if (checkbox.checked) {
+        if (!itensFamiliaSelecionados.find(i => i.cod_produto === cod)) {
+            itensFamiliaSelecionados.push({ cod_produto: cod, descricao: desc, rotulo: '' });
+        }
+    } else {
+        itensFamiliaSelecionados = itensFamiliaSelecionados.filter(i => i.cod_produto !== cod);
+    }
+    
+    const painel = document.getElementById('painelFamilia');
+    const contador = document.getElementById('contadorFamilia');
+    
+    contador.textContent = itensFamiliaSelecionados.length + ' selecionado(s)';
+    
+    if (itensFamiliaSelecionados.length > 0) {
+        painel.style.display = 'block';
+        const lista = document.getElementById('listaRotulos');
+        lista.innerHTML = itensFamiliaSelecionados.map((it, idx) => `
+            <div style="flex:1; min-width:200px; background:white; padding:8px; border-radius:8px; border:1px solid #cbd5e1;">
+                <div style="font-size:.7rem; color:#64748b; margin-bottom:4px;">Item ${idx + 1} de ${itensFamiliaSelecionados.length} (${it.cod_produto})</div>
+                <input type="text" placeholder="Rótulo (ex: 11000)" value="${it.rotulo}" oninput="atualizarRotulo(${idx}, this.value)" style="padding:6px; font-size:.8rem;">
+            </div>
+        `).join('');
+    } else {
+        painel.style.display = 'none';
+    }
+}
+
+function atualizarRotulo(index, valor) {
+    itensFamiliaSelecionados[index].rotulo = valor;
+}
+
+async function criarFamilia() {
+    const nome = document.getElementById('familiaNome').value.trim();
+    const descricao = document.getElementById('familiaDescricao').value.trim();
+    
+    if (!nome) return alerta('Digite o nome da família.', 'err');
+    if (itensFamiliaSelecionados.length === 0) return alerta('Selecione pelo menos um item.', 'err');
+
+    const body = {
+        nome,
+        descricao,
+        item_principal: itensFamiliaSelecionados[0].cod_produto,
+        itens: itensFamiliaSelecionados
+    };
+
+    const r = await api('/api/tabela/familias', { method: 'POST', body: JSON.stringify(body) });
+    if (r.success) {
+        alerta('Família criada com sucesso!', 'ok');
+        document.getElementById('modalFamilias').classList.remove('on');
+    } else {
+        alerta('Erro ao criar família: ' + r.error, 'err');
+    }
+}
+function alerta(msg, tipo='ok') {
+    const el = document.getElementById('alerta');
+    el.className = 'alerta show ' + tipo;
+    el.textContent = msg;
+    setTimeout(() => el.className = 'alerta', 5000);
+}
+async function api(url, opts={}) {
+    const r = await fetch(url, {
+        headers: { 'Content-Type': 'application/json' },
+        ...opts
+    });
+    return r.json();
+}
+function debounceBusca() {
+    clearTimeout(timeoutBusca);
+    timeoutBusca = setTimeout(() => { paginaItens = 1; carregarItens(); }, 350);
+}
+function debounceVincular() {
+    clearTimeout(timeoutVincular);
+    timeoutVincular = setTimeout(carregarItensVincular, 350);
+}
+function debounceBuscaClientes() {
+    clearTimeout(timeoutBuscaClientes);
+    timeoutBuscaClientes = setTimeout(() => { paginaClientes = 1; carregarClientes(); }, 350);
+}
+function debounceOfertas() {
+    clearTimeout(timeoutOfertas);
+    timeoutOfertas = setTimeout(carregarItensOfertas, 350);
+}
+function debounceImportados() {
+    clearTimeout(timeoutImportados);
+    timeoutImportados = setTimeout(() => { paginaImportados = 1; carregarImportados(); }, 350);
+}
+function fmtMoeda(v) {
+    if (v === null || v === undefined) return '—';
+    return 'R$ ' + Number(v).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function fmtNum(v) {
+    if (v === null || v === undefined) return '—';
+    return Number(v).toLocaleString('pt-BR');
+}
+function fmtPct(v) {
+    if (v === null || v === undefined) return '—';
+    return Number(v).toFixed(2).replace('.', ',') + '%';
+}
+function escapeHtml(s) {
+    return String(s || '').replace(/[&<>"']/g, c => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+}
+function hora() {
+    document.getElementById('hora').textContent = new Date().toLocaleString('pt-BR');
+}
+setInterval(hora, 1000); hora();
+
+// Emoji por grupo (fallback)
+function emojiGrupo(nome) {
+    const n = (nome || '').toUpperCase();
+    if (n.includes('ISCA')) return '🎣';
+    if (n.includes('ANZOI') || n.includes('ANZOL')) return '🪝';
+    if (n.includes('VARA')) return '🎋';
+    if (n.includes('LINHA')) return '🧵';
+    if (n.includes('EMPATE')) return '🔗';
+    if (n.includes('MOLINETE')) return '⚙️';
+    if (n.includes('CARRE')) return '🎣';
+    if (n.includes('REDE')) return '🕸️';
+    if (n.includes('BOIA') || n.includes('BOIA')) return '🔴';
+    if (n.includes('CHUMB')) return '⚫';
+    return '📦';
+}
+
+// ================================================================
+// NAVEGAÇÃO
+// ================================================================
+document.querySelectorAll('.side button').forEach(b => {
+    // Ignora o botão de Famílias para ele não ser afetado pela navegação de páginas
+    if (b.id === 'btnAbrirFamilias') return;
+
+    b.onclick = () => {
+        document.querySelectorAll('.side button').forEach(x => x.classList.remove('active'));
+        document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+        
+        const pageId = b.dataset.page;
+        if (!pageId) return;
+        
+        const target = document.getElementById('page-' + pageId);
+        if (target) target.classList.add('active');
+
+        if (pageId === 'importar')   { carregarStats(); carregarLog(); }
+        if (pageId === 'itens')      { carregarStatsItens(); carregarItens(); }
+        if (pageId === 'grupos')     { carregarGruposPage(); }
+        if (pageId === 'clientes')   { carregarVendedoresCombo(); carregarClientes(); }
+        if (pageId === 'vendedores') { carregarVendedores(); }
+        if (pageId === 'acrescimos') { carregarAcrescimos(); }
+        if (pageId === 'campanhas')  { carregarVendedoresCombo(); carregarCampanhas(); }
+        if (pageId === 'pedidos')    { carregarVendedoresCombo(); carregarPedidos(); }
+        if (pageId === 'importados') { carregarCombosImportados(); carregarImportados(); }
+        if (pageId === 'scraping')   { carregarScrapingStats(); }
+    };
+});
+
+// ================================================================
+// IMPORTAR SISTEMA (itens_sistema)
+// ================================================================
+async function importarSistema(input) {
+    const file = input.files[0];
+    if (!file) return;
+    try {
+        const dados = await lerPlanilha(file);
+        if (!dados.length) return alerta('Planilha vazia.', 'err');
+
+        const linhas = dados.map(l => ({
+            descricao:   l['Descrição'] ?? l['Descricao'] ?? l['descricao'] ?? l['DESCRIÇÃO'] ?? '',
+            codigo:      l['Código'] ?? l['Codigo'] ?? l['codigo'] ?? l['CÓDIGO'] ?? '',
+            estoque:     l['Estoque'] ?? l['estoque'] ?? l['ESTOQUE'] ?? '',
+            preco_venda: l['P/Venda'] ?? l['P. Venda'] ?? l['Pvenda'] ?? l['preco_venda'] ?? l['VENDA'] ?? '',
+            cod_barras:  l['Cod.Barra'] ?? l['Cod.Barras'] ?? l['Cod Barra'] ?? l['cod_barras'] ?? l['COD.BARRA'] ?? ''
+        })).filter(l => l.codigo);
+
+        if (!linhas.length) return alerta('Nenhuma linha válida.', 'err');
+
+        alerta(`📤 Enviando ${linhas.length} linhas...`, 'info');
+        const r = await api('/api/tabela/importar-itens-sistema', {
+            method:'POST', body: JSON.stringify({ linhas })
+        });
+        if (r.success) {
+            alerta(`✅ SISTEMA: ${r.inseridos} novos, ${r.atualizados} atualizados, ${r.ignorados} ignorados.`, 'ok');
+            carregarStats(); carregarLog();
+        } else alerta('Erro: ' + r.error, 'err');
+    } catch (e) { alerta('Erro ao ler planilha: ' + e.message, 'err'); }
+    input.value = '';
+}
+
+// ================================================================
+// IMPORTAR CLIENTES
+// ================================================================
+async function importarClientes(input) {
+    const file = input.files[0];
+    if (!file) return;
+    try {
+        const dados = await lerPlanilha(file);
+        if (!dados.length) return alerta('Planilha vazia.', 'err');
+        const linhas = dados.map(l => ({
+            codigo:               l['CÓDIGO'] ?? l['CODIGO'] ?? l['codigo'],
+            nome_fantasia:        l['NOME'] ?? l['Nome'] ?? l['nome'],
+            razao_social:         l['RAZÃO SOCIAL'] ?? l['Razão Social'] ?? l['razao_social'],
+            cnpj:                 l['CPF/CNPJ'] ?? l['CNPJ'] ?? l['cnpj'],
+            cidade:               l['CIDADE'] ?? l['Cidade'],
+            uf:                   l['ESTADO'] ?? l['Estado'] ?? l['uf'] ?? l['UF'],
+            contato:              l['CONTATO'] ?? l['Contato'],
+            telefone:             l['TELEFONE'] ?? l['Telefone'],
+            celular:              l['CELULAR'] ?? l['Celular'],
+            email:                l['E-MAIL'] ?? l['EMAIL'] ?? l['Email'],
+            email_nfe:            l['E-MAIL NFe'] ?? l['EMAIL NFE'] ?? l['Email NFe'],
+            codigo_representante: l['Representante'] ?? l['REPRESENTANTE']
+        })).filter(l => l.codigo && l.cnpj);
+
+        if (!linhas.length) return alerta('Nenhuma linha válida.', 'err');
+
+        const r = await api('/api/tabela/importar-clientes', {
+            method:'POST', body: JSON.stringify({ linhas })
+        });
+        if (r.success) {
+            alerta(`✅ Clientes: ${r.inseridos} novos, ${r.atualizados} atualizados.`, 'ok');
+            carregarStats(); carregarLog();
+        } else alerta('Erro: ' + r.error, 'err');
+    } catch (e) { alerta('Erro ao ler planilha: ' + e.message, 'err'); }
+    input.value = '';
+}
+
+function lerPlanilha(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const wb = XLSX.read(e.target.result, { type: 'array' });
+                const sheet = wb.Sheets[wb.SheetNames[0]];
+                resolve(XLSX.utils.sheet_to_json(sheet, { defval: '' }));
+            } catch (err) { reject(err); }
+        };
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(file);
+    });
+}
+
+// ================================================================
+// STATS
+// ================================================================
+async function carregarStatsItens() {
+    const r = await api('/api/tabela/stats-itens');
+    if (!r.success) return;
+    
+    const cont = document.getElementById('cardsItensResumo');
+    if (!cont) return;
+
+    cont.innerHTML = `
+        <div style="display:flex; gap:16px; margin-bottom:20px;">
+            <div style="background:white; border-left:4px solid #10b981; border-radius:10px; padding:16px 24px; box-shadow:0 2px 8px rgba(0,0,0,.05); flex:1;">
+                <div style="font-size:.7rem; color:#64748b; font-weight:700; text-transform:uppercase;">Itens com Estoque (no Sistema)</div>
+                <div style="font-size:1.8rem; font-weight:800; color:#0d3b66;">${fmtNum(r.total)}</div>
+            </div>
+            <div style="background:white; border-left:4px solid #ef4444; border-radius:10px; padding:16px 24px; box-shadow:0 2px 8px rgba(0,0,0,.05); flex:1;">
+                <div style="font-size:.7rem; color:#ef4444; font-weight:700; text-transform:uppercase;">🚫 Itens Órfãos (sem grupo no scraping)</div>
+                <div style="font-size:1.8rem; font-weight:800; color:#ef4444;">${fmtNum(r.orfaos)}</div>
+            </div>
+        </div>
+    `;
+}
+
+async function carregarStats() {
+    const r = await api('/api/tabela/stats');
+    if (!r.success) return;
+    document.getElementById('statsGrid').innerHTML = `
+        <div class="stat-card"><div class="label">Itens totais</div><div class="valor">${fmtNum(r.total)}</div></div>
+        <div class="stat-card"><div class="label">✅ Com estoque</div><div class="valor">${fmtNum(r.comSaldo)}</div></div>
+        <div class="stat-card"><div class="label">🎯 Visíveis</div><div class="valor">${fmtNum(r.comSaldoEPreco)}</div></div>
+        <div class="stat-card"><div class="label">Clientes</div><div class="valor">${fmtNum(r.clientes)}</div></div>
+        <div class="stat-card"><div class="label">Pedidos</div><div class="valor">${fmtNum(r.pedidos)}</div></div>
+    `;
+}
+
+async function carregarLog() {
+    const r = await api('/api/tabela/log-importacoes');
+    const tbody = document.querySelector('#tabLog tbody');
+    if (!r.success || !r.logs.length) {
+        tbody.innerHTML = '<tr><td class="empty" colspan="6">Nenhuma importação ainda.</td></tr>';
+        return;
+    }
+    tbody.innerHTML = r.logs.map(l => `
+        <tr>
+            <td><span class="badge ${l.tipo==='clientes'?'badge-info':'badge-on'}">${l.tipo.toUpperCase()}</span></td>
+            <td>${fmtNum(l.inseridos)}</td><td>${fmtNum(l.atualizados)}</td>
+            <td>${fmtNum(l.ignorados)}</td><td>${fmtNum(l.total)}</td>
+            <td style="color:#64748b; font-size:.78rem">${l.data || ''}</td>
+        </tr>`).join('');
+}
+
+// ================================================================
+// ITENS
+// ================================================================
+// ================================================================
+// ITENS — Mostra TUDO do SISTEMA + status no SCRAPING
+// ================================================================
+// ================================================================
+// ITENS — Espelho da importação (SISTEMA) com status no SCRAPING
+// ================================================================
+// ================================================================
+// ITENS — Foco total no Catálogo (Pedido.html)
+// ================================================================
+// ================================================================
+// ITENS — Focado no que tem estoque e com contadores precisos
+// ================================================================
+async function carregarItens() {
+    const busca = document.getElementById('buscaItens').value.trim();
+    let filtro = document.getElementById('filtroItens').value;
+    let filtroBackend = filtro === 'com-saldo' ? 'todos' : filtro;
+    
+    const tbody = document.querySelector('#tabItens tbody');
+    tbody.innerHTML = '<tr><td class="empty" colspan="8">Carregando...</td></tr>';
+
+    try {
+        const url = `/api/tabela/itens?busca=${encodeURIComponent(busca)}&filtro=${filtroBackend}&pagina=${paginaItens}&limite=${limiteItens}`;
+        const r = await api(url);
+        
+        if (!r.success) throw new Error(r.error);
+        
+        totalPaginasItens = r.totalPaginas || 1;
+        document.getElementById('itensResumo').textContent = `${fmtNum(r.total)} item(ns) — Página ${r.pagina} de ${totalPaginasItens}`;
+        
+        if (!r.itens.length) {
+            tbody.innerHTML = '<tr><td class="empty" colspan="8">Nenhum item encontrado com esse filtro.</td></tr>';
+            document.getElementById('paginacaoItens').innerHTML = '';
+            return;
+        }
+        
+        tbody.innerHTML = r.itens.map(i => {
+            let grupoHtml = i.grupo_nome ? `<span class="badge badge-info">${i.grupo_nome}</span>` : '<span style="color:#cbd5e1">—</span>';
+            let subgrupoHtml = i.subgrupo_nome ? `<span class="badge badge-on">${i.subgrupo_nome}</span>` : `<span style="color:#ef4444; font-weight:700; font-size:.72rem; background:#fee2e2; padding:3px 8px; border-radius:6px; border:1px solid #fca5a5;">🚫 Sem Grupo</span>`;
+            let precoHtml = Number(i.preco) > 0 ? fmtMoeda(i.preco) : `<span style="color:#ef4444; font-weight:700; font-size:.72rem; background:#fee2e2; padding:3px 8px; border-radius:6px; border:1px solid #fca5a5;">🚫 Sem Preço</span>`;
+
+            return `
+            <tr>
+                <td style="width:60px">
+                    ${i.imagem_url ? `<img class="thumb-mini" src="${i.imagem_url}" onerror="this.style.display='none'">` : '<span style="color:#cbd5e1">📦</span>'}
+                </td>
+                <td><strong>${i.cod_produto}</strong></td>
+                <td>${i.descricao || '—'}</td>
+                <td>${precoHtml}</td>
+                <td>${fmtNum(i.saldo)}</td>
+                <td>${grupoHtml}</td>
+                <td>${subgrupoHtml}</td>
+                <td style="width:80px;text-align:right">
+                    <button class="btn btn-primary btn-mini" onclick="editarItem('${i.cod_produto}')" title="Editar item">✏️</button>
+                </td>
+            </tr>`;
+        }).join('');
+        
+        renderPaginacao();
+    } catch (e) {
+        tbody.innerHTML = `<tr><td class="empty" colspan="8" style="color:red;">Erro ao carregar: ${e.message}</td></tr>`;
+    }
+}
+function renderPaginacao() {
+    const cont = document.getElementById('paginacaoItens');
+    if (totalPaginasItens <= 1) { cont.innerHTML = ''; return; }
+    let html = `<button ${paginaItens===1?'disabled':''} onclick="irPagina(${paginaItens-1})">← Anterior</button>`;
+    const inicio = Math.max(1, paginaItens - 2);
+    const fim = Math.min(totalPaginasItens, paginaItens + 2);
+    for (let p = inicio; p <= fim; p++)
+        html += `<button class="${p===paginaItens?'atual':''}" onclick="irPagina(${p})">${p}</button>`;
+    html += `<button ${paginaItens===totalPaginasItens?'disabled':''} onclick="irPagina(${paginaItens+1})">Próxima →</button>`;
+    cont.innerHTML = html;
+}
+function irPagina(p) {
+    if (p < 1 || p > totalPaginasItens) return;
+    paginaItens = p; carregarItens(); window.scrollTo({top:0,behavior:'smooth'});
+}
+async function editarItem(cod) {
+    const r = await api('/api/tabela/itens/' + cod);
+    if (!r.success) return alerta(r.error, 'err');
+    itemEditando = cod;
+    document.getElementById('editItemCod').textContent = 'Código: ' + cod;
+    document.getElementById('editDescricao').value = r.item.descricao || '';
+    document.getElementById('editPreco').value = r.item.preco || 0;
+    document.getElementById('editSaldo').value = r.item.saldo || 0;
+    document.getElementById('editImagem').value = r.item.imagem_url || '';
+    document.getElementById('editCorNome').value = r.item.cor_nome || '';
+    document.getElementById('modalEditarItem').classList.add('on');
+}
+function fecharModalItem() {
+    document.getElementById('modalEditarItem').classList.remove('on');
+    itemEditando = null;
+}
+async function salvarItem() {
+    if (!itemEditando) return;
+    const dados = {
+        descricao: document.getElementById('editDescricao').value,
+        preco: parseFloat(document.getElementById('editPreco').value) || 0,
+        saldo: parseFloat(document.getElementById('editSaldo').value) || 0,
+        imagem_url: document.getElementById('editImagem').value.trim(),
+        cor_nome: document.getElementById('editCorNome').value.trim()
+    };
+    const r1 = await api('/api/tabela/itens/' + itemEditando, {
+        method:'PUT',
+        body: JSON.stringify({ descricao: dados.descricao, preco: dados.preco, saldo: dados.saldo })
+    });
+    const r2 = await api(`/api/tabela/itens/${itemEditando}/imagem`, {
+        method:'PUT', body: JSON.stringify({ imagem_url: dados.imagem_url })
+    });
+    const r3 = await api(`/api/tabela/itens/${itemEditando}/cor`, {
+        method:'POST', body: JSON.stringify({ cor_nome: dados.cor_nome, imagem_url: dados.imagem_url })
+    });
+    if (r1.success && r2.success && r3.success) {
+        alerta('Item salvo!', 'ok'); fecharModalItem(); carregarItens();
+    } else alerta('Erro ao salvar.', 'err');
+}
+
+// ================================================================
+// 🗂️ ABA GRUPOS (reformulada — cards do scraping + subgrupos)
+// ================================================================
+async function carregarGruposPage() {
+    // Busca os grupos do scraping (mesma fonte da aba scraping-stats)
+    const r = await api('/api/tabela/scraping-stats');
+    const grid = document.getElementById('gruposPageGrid');
+
+    let porGrupo = [];
+    if (r && r.success) {
+        porGrupo = r.porGrupo || r.por_grupo || r.grupos || [];
+    }
+
+    if (!porGrupo.length) {
+        grid.innerHTML = '<div class="empty" style="grid-column:1/-1">Nenhum grupo no scraping ainda.</div>';
+        return;
+    }
+
+    grid.innerHTML = porGrupo.map(g => {
+        const nome = g.grupo || g.nome || '—';
+        const qtd = g.qtd || g.total || g.total_itens || 0;
+        const sub = g.total_subgrupos ?? g.subgrupos ?? '';
+        return `
+            <div class="grupo-card" onclick="abrirGrupoPage('${escapeHtml(nome).replace(/'/g,"\\'")}', this)">
+                <span class="gc-emoji">${emojiGrupo(nome)}</span>
+                <div class="gc-nome">${escapeHtml(nome)}</div>
+                <div class="gc-qtd">${fmtNum(qtd)} itens</div>
+                ${sub ? `<div class="gc-sub">${sub} subgrupo(s)</div>` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+async function abrirGrupoPage(grupo, cardEl) {
+    gruposPageGrupoAtual = grupo;
+    document.querySelectorAll('#gruposPageGrid .grupo-card').forEach(c => c.classList.remove('ativo'));
+    if (cardEl) cardEl.classList.add('ativo');
+
+    document.getElementById('gruposPageSubgruposTitulo').textContent = '📁 Subgrupos — ' + grupo;
+    document.getElementById('gruposPageSubgruposCard').style.display = 'block';
+
+    const tbody = document.querySelector('#tabGruposPageSubgrupos tbody');
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Carregando...</td></tr>';
+
+    const r = await api('/api/tabela/scraping-subgrupos/' + encodeURIComponent(grupo));
+    if (!r.success) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty">Erro: ' + escapeHtml(r.error) + '</td></tr>';
+        return;
+    }
+
+    subgruposPageCache = r.subgrupos || [];
+
+    if (!subgruposPageCache.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty">Nenhum subgrupo.</td></tr>';
+        return;
+    }
+
+    // 🚨 AQUI ESTÁ O BOTÃO: Adiciona a linha com o botão "Agrupar" no topo da tabela
+    const linhaBotao = `
+        <tr>
+            <td colspan="6" style="padding:10px 14px; background:#f0f7ff; border-bottom:2px solid #0d3b66;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:.85rem; color:#0d3b66; font-weight:600;">💡 Quer juntar variações de subgrupos diferentes em um único card?</span>
+                    <button class="btn btn-success btn-mini" onclick="abrirModalAgruparSubgrupos()">✨ Agrupar Subgrupos</button>
+                </div>
+            </td>
+        </tr>
+    `;
+
+    // Monta as linhas da tabela
+    const linhas = subgruposPageCache.map(s => {
+        const nome = s.subgrupo || s.nome || '';
+        const marca = s.marca || '—';
+        const img = s.imagem_principal || s.imagem_url || '';
+        return `
+            <tr>
+                <td style="width:60px">
+                    ${img
+                        ? `<img class="thumb" src="${escapeHtml(img)}" onerror="this.style.display='none'">`
+                        : '<span style="color:#cbd5e1">🖼️</span>'}
+                </td>
+                <td><strong>${escapeHtml(nome)}</strong></td>
+                <td>${escapeHtml(marca)}</td>
+                <td><span class="badge badge-info">${s.total_itens || 0}</span></td>
+                <td><span class="badge badge-on">${s.total_vinculados ?? '—'}</span></td>
+                <td style="width:360px;text-align:right;white-space:nowrap">
+                    <button class="btn btn-gold btn-mini" onclick="abrirModalAgrupar('${escapeHtml(grupo).replace(/'/g,"\\'")}', '${escapeHtml(nome).replace(/'/g,"\\'")}')">📁 Agrupar</button>
+                    <button class="btn btn-primary btn-mini" onclick="editarSubgrupoScraping('${escapeHtml(nome).replace(/'/g,"\\'")}', '${escapeHtml(marca).replace(/'/g,"\\'")}', '${escapeHtml((s.descricao_longa || '').replace(/'/g,"\\'").replace(/\n/g,'\\n'))}')">✏️ Editar</button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+
+    // Insere o botão no topo da tabela + as linhas
+    tbody.innerHTML = linhaBotao + linhas;
+}
+function fecharGruposPageSubgrupos() {
+    gruposPageGrupoAtual = null;
+    subgruposPageCache = [];
+    document.getElementById('gruposPageSubgruposCard').style.display = 'none';
+    document.querySelectorAll('#gruposPageGrid .grupo-card').forEach(c => c.classList.remove('ativo'));
+}
+
+// Abre o modal de vincular buscando o ID do subgrupo pelo nome (via API)
+async function abrirVincularPorNome(grupo, subgrupo) {
+    // Busca o ID do subgrupo na tabela interna
+    const r = await api('/api/tabela/subgrupos-por-nome?grupo=' + encodeURIComponent(grupo) + '&subgrupo=' + encodeURIComponent(subgrupo));
+    if (!r.success || !r.id) {
+        // Fallback: abre um modal de aviso
+        alerta('Não foi possível localizar o subgrupo no banco interno. Use a aba Scraping → Ver itens.', 'err');
+        return;
+    }
+    abrirVincular(r.id, subgrupo);
+}
+
+// ================================================================
+// CLIENTES
+// ================================================================
+async function carregarClientes() {
+    const busca = document.getElementById('buscaClientes').value.trim();
+    const vendedor = document.getElementById('filtroVendClientes').value;
+    const url = `/api/tabela/clientes?busca=${encodeURIComponent(busca)}&vendedor_id=${vendedor}&pagina=${paginaClientes}&limite=${limiteClientes}`;
+    const r = await api(url);
+    if (!r.success) return alerta(r.error, 'err');
+    totalPaginasClientes = r.totalPaginas || 1;
+    document.getElementById('clientesResumo').textContent = `${fmtNum(r.total)} cliente(s) — Página ${r.pagina} de ${totalPaginasClientes}`;
+    const tbody = document.querySelector('#tabClientes tbody');
+    if (!r.clientes.length) {
+        tbody.innerHTML = '<tr><td class="empty" colspan="6">Nenhum cliente.</td></tr>';
+        document.getElementById('paginacaoClientes').innerHTML = ''; return;
+    }
+    tbody.innerHTML = r.clientes.map(c => `
+        <tr>
+            <td><strong>${c.codigo}</strong></td>
+            <td>${c.nome_fantasia || '—'}<br><small style="color:#94a3b8">${c.cnpj || ''}</small></td>
+            <td>${c.cidade || '—'}${c.uf ? '/'+c.uf : ''}</td>
+            <td>${c.vendedor_nome || '<span style="color:#f59e0b">— sem vendedor</span>'}</td>
+            <td>${c.ativo ? '<span class="badge badge-on">Ativo</span>' : '<span class="badge badge-off">Inativo</span>'}</td>
+            <td style="width:80px;text-align:right">
+                <button class="btn btn-primary btn-mini" onclick="editarCliente('${c.codigo}')">✏️</button>
+            </td>
+        </tr>`).join('');
+    renderPaginacaoClientes();
+}
+function renderPaginacaoClientes() {
+    const cont = document.getElementById('paginacaoClientes');
+    if (totalPaginasClientes <= 1) { cont.innerHTML = ''; return; }
+    let html = `<button ${paginaClientes===1?'disabled':''} onclick="irPaginaCli(${paginaClientes-1})">← Anterior</button>`;
+    const inicio = Math.max(1, paginaClientes - 2);
+    const fim = Math.min(totalPaginasClientes, paginaClientes + 2);
+    for (let p = inicio; p <= fim; p++)
+        html += `<button class="${p===paginaClientes?'atual':''}" onclick="irPaginaCli(${p})">${p}</button>`;
+    html += `<button ${paginaClientes===totalPaginasClientes?'disabled':''} onclick="irPaginaCli(${paginaClientes+1})">Próxima →</button>`;
+    cont.innerHTML = html;
+}
+function irPaginaCli(p) {
+    if (p < 1 || p > totalPaginasClientes) return;
+    paginaClientes = p; carregarClientes();
+}
+async function editarCliente(codigo) {
+    const r = await api('/api/tabela/clientes/' + codigo);
+    if (!r.success) return alerta(r.error, 'err');
+    clienteEditando = codigo;
+    const c = r.cliente;
+    document.getElementById('editCliCod').textContent = 'Código: ' + c.codigo;
+    document.getElementById('editCliNome').value = c.nome_fantasia || '';
+    document.getElementById('editCliRazao').value = c.razao_social || '';
+    document.getElementById('editCliCnpj').value = c.cnpj || '';
+    document.getElementById('editCliCidade').value = c.cidade || '';
+    document.getElementById('editCliUf').value = c.uf || '';
+    document.getElementById('editCliContato').value = c.contato || '';
+    document.getElementById('editCliTelefone').value = c.telefone || '';
+    document.getElementById('editCliCelular').value = c.celular || '';
+    document.getElementById('editCliEmail').value = c.email || '';
+    document.getElementById('editCliEmailNfe').value = c.email_nfe || '';
+    document.getElementById('editCliVendedor').value = c.vendedor_id || '';
+    document.getElementById('editCliAtivo').value = c.ativo ? '1' : '0';
+    document.getElementById('modalEditarCliente').classList.add('on');
+}
+function fecharModalEditCliente() {
+    document.getElementById('modalEditarCliente').classList.remove('on');
+    clienteEditando = null;
+}
+async function salvarEditCliente() {
+    if (!clienteEditando) return;
+    const dados = {
+        nome_fantasia: document.getElementById('editCliNome').value,
+        razao_social: document.getElementById('editCliRazao').value,
+        cnpj: document.getElementById('editCliCnpj').value,
+        cidade: document.getElementById('editCliCidade').value,
+        uf: document.getElementById('editCliUf').value.toUpperCase(),
+        contato: document.getElementById('editCliContato').value,
+        telefone: document.getElementById('editCliTelefone').value,
+        celular: document.getElementById('editCliCelular').value,
+        email: document.getElementById('editCliEmail').value,
+        email_nfe: document.getElementById('editCliEmailNfe').value,
+        vendedor_id: document.getElementById('editCliVendedor').value || null,
+        ativo: parseInt(document.getElementById('editCliAtivo').value)
+    };
+    const r = await api('/api/tabela/clientes/' + clienteEditando, {
+        method:'PUT', body: JSON.stringify(dados)
+    });
+    if (r.success) { alerta('Cliente atualizado!', 'ok'); fecharModalEditCliente(); carregarClientes(); }
+    else alerta(r.error, 'err');
+}
+
+// ================================================================
+// VENDEDORES
+// ================================================================
+async function carregarVendedores() {
+    const r = await api('/api/tabela/vendedores');
+    if (!r.success) return;
+    vendedoresCache = r.vendedores;
+    const tbody = document.querySelector('#tabVendedores tbody');
+    if (!r.vendedores.length) {
+        tbody.innerHTML = '<tr><td class="empty" colspan="5">Nenhum vendedor.</td></tr>'; return;
+    }
+    tbody.innerHTML = r.vendedores.map(v => `
+        <tr>
+            <td><strong>${v.nome}</strong></td>
+            <td>${v.codigo_representante ? `<span class="badge badge-gold">${v.codigo_representante}</span>` : '—'}</td>
+            <td><span class="badge badge-info">${v.total_clientes} cliente(s)</span></td>
+            <td>${v.ativo ? '<span class="badge badge-on">Ativo</span>' : '<span class="badge badge-off">Inativo</span>'}</td>
+            <td style="width:100px;text-align:right">
+                <button class="btn btn-danger btn-mini" onclick="excluirVendedor(${v.id})">🗑️</button>
+            </td>
+        </tr>`).join('');
+}
+async function criarVendedor() {
+    const nome = document.getElementById('vendNome').value.trim();
+    const codigo_representante = document.getElementById('vendRep').value.trim();
+    if (!nome) return alerta('Digite um nome.', 'err');
+    const r = await api('/api/tabela/vendedores', {
+        method:'POST', body: JSON.stringify({ nome, codigo_representante })
+    });
+    if (r.success) {
+        document.getElementById('vendNome').value = '';
+        document.getElementById('vendRep').value = '';
+        alerta('Vendedor criado!', 'ok'); carregarVendedores();
+    } else alerta(r.error, 'err');
+}
+async function excluirVendedor(id) {
+    if (!confirm('Excluir vendedor?')) return;
+    const r = await api('/api/tabela/vendedores/' + id, { method:'DELETE' });
+    if (r.success) { alerta('Excluído.', 'ok'); carregarVendedores(); }
+    else alerta(r.error, 'err');
+}
+async function carregarVendedoresCombo() {
+    const r = await api('/api/tabela/vendedores');
+    if (!r.success) return;
+    vendedoresCache = r.vendedores;
+    const opts = '<option value="">— Sem vendedor —</option>' +
+        r.vendedores.map(v => `<option value="${v.id}">${v.nome}${v.codigo_representante ? ' ('+v.codigo_representante+')' : ''}</option>`).join('');
+    const ids = ['filtroVendClientes', 'filtroVendPedidos', 'campVendedor', 'editCliVendedor'];
+    for (const id of ids) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+        const val = el.value;
+        el.innerHTML = (id === 'filtroVendClientes' || id === 'filtroVendPedidos')
+            ? '<option value="">— Todos —</option>' + r.vendedores.map(v => `<option value="${v.id}">${v.nome}</option>`).join('')
+            : opts;
+        el.value = val;
+    }
+}
+
+// ================================================================
+// ACRÉSCIMOS POR UF
+// ================================================================
+async function carregarAcrescimos() {
+    await Promise.all([carregarGruposAcrescimo(), carregarUFs()]);
+}
+async function carregarGruposAcrescimo() {
+    const r = await api('/api/tabela/grupos-acrescimo');
+    if (!r.success) return alerta(r.error, 'err');
+    gruposAcrescimoCache = r.grupos;
+    const tbody = document.querySelector('#tabGruposAcrescimo tbody');
+    if (!r.grupos.length) {
+        tbody.innerHTML = '<tr><td class="empty" colspan="5">Nenhum grupo cadastrado.</td></tr>'; return;
+    }
+    tbody.innerHTML = r.grupos.map(g => `
+        <tr>
+            <td><span class="badge badge-gold">${g.ordem}</span></td>
+            <td><strong>${g.nome}</strong></td>
+            <td><span class="badge badge-info">${fmtPct(g.acrescimo)}</span></td>
+            <td><span class="badge ${g.total_ufs > 0 ? 'badge-on' : 'badge-off'}">${g.total_ufs} UF(s)</span></td>
+            <td style="width:240px; text-align:right; white-space:nowrap">
+                <button class="btn btn-gold btn-mini" onclick="abrirUFsGrupo(${g.id})">🗺️ UFs</button>
+                <button class="btn btn-primary btn-mini" onclick="editarGrupoAcrescimo(${g.id})">✏️</button>
+                <button class="btn btn-danger btn-mini" onclick="excluirGrupoAcrescimo(${g.id})">🗑️</button>
+            </td>
+        </tr>`).join('');
+}
+async function criarGrupoAcrescimo() {
+    const nome = document.getElementById('acrNome').value.trim();
+    const acrescimo = parseFloat(String(document.getElementById('acrPct').value).replace(',', '.')) || 0;
+    const ordem = parseInt(document.getElementById('acrOrdem').value) || 0;
+    if (!nome) return alerta('Digite um nome.', 'err');
+    const r = await api('/api/tabela/grupos-acrescimo', {
+        method:'POST', body: JSON.stringify({ nome, acrescimo, ordem })
+    });
+    if (r.success) {
+        alerta('Grupo criado!', 'ok');
+        document.getElementById('acrNome').value = '';
+        document.getElementById('acrPct').value = '0';
+        document.getElementById('acrOrdem').value = '0';
+        carregarGruposAcrescimo();
+    } else alerta(r.error, 'err');
+}
+async function editarGrupoAcrescimo(id) {
+    const g = gruposAcrescimoCache.find(x => x.id === id);
+    if (!g) return;
+    const novoNome = prompt('Nome:', g.nome);
+    if (novoNome === null) return;
+    const novoPct = prompt('Acréscimo (%):', String(g.acrescimo).replace('.', ','));
+    if (novoPct === null) return;
+    const novaOrdem = prompt('Ordem:', g.ordem);
+    if (novaOrdem === null) return;
+    const r = await api('/api/tabela/grupos-acrescimo/' + id, {
+        method:'PUT',
+        body: JSON.stringify({
+            nome: novoNome,
+            acrescimo: parseFloat(String(novoPct).replace(',', '.')) || 0,
+            ordem: parseInt(novaOrdem) || 0
+        })
+    });
+    if (r.success) { alerta('Atualizado!', 'ok'); carregarGruposAcrescimo(); }
+    else alerta(r.error, 'err');
+}
+async function excluirGrupoAcrescimo(id) {
+    if (!confirm('Excluir este grupo?')) return;
+    const r = await api('/api/tabela/grupos-acrescimo/' + id, { method:'DELETE' });
+    if (r.success) { alerta('Excluído.', 'ok'); carregarGruposAcrescimo(); carregarUFs(); }
+    else alerta(r.error, 'err');
+}
+async function carregarUFs() {
+    const r = await api('/api/tabela/uf-acrescimo');
+    if (!r.success) return alerta(r.error, 'err');
+    ufsCache = r.ufs;
+}
+function abrirUFsGrupo(id) {
+    const g = gruposAcrescimoCache.find(x => x.id === id);
+    if (!g) return;
+    grupoAtualUFs = id;
+    document.getElementById('tituloUFsGrupo').textContent = '🗺️ UFs do grupo: ' + g.nome;
+    document.getElementById('subUFsGrupo').textContent = 'Acréscimo aplicado: ' + fmtPct(g.acrescimo);
+    const cont = document.getElementById('checksUFs');
+    cont.innerHTML = ufsCache.map(u => `
+        <label class="check-item" style="background:#fafcff; border:1px solid #e2e8f0; padding:8px 10px;">
+            <input type="checkbox" value="${u.uf}"
+                   ${u.grupo_id === id ? 'checked' : ''}
+                   onchange="atualizarContadorUFsModal()">
+            <span class="cod" style="min-width:32px">${u.uf}</span>
+            ${u.grupo_id && u.grupo_id !== id ? `<span style="font-size:.68rem; color:#f59e0b; margin-left:auto;">em outro grupo</span>` : ''}
+        </label>`).join('');
+    atualizarContadorUFsModal();
+    document.getElementById('modalUFsGrupo').classList.add('on');
+}
+function fecharModalUFs() {
+    document.getElementById('modalUFsGrupo').classList.remove('on');
+    grupoAtualUFs = null;
+}
+function atualizarContadorUFsModal() {
+    const n = document.querySelectorAll('#checksUFs input:checked').length;
+    document.getElementById('contadorUFs').textContent = n + ' selecionada(s)';
+}
+function marcarTodasUFsModal() {
+    document.querySelectorAll('#checksUFs input').forEach(c => c.checked = true);
+    atualizarContadorUFsModal();
+}
+function desmarcarTodasUFsModal() {
+    document.querySelectorAll('#checksUFs input').forEach(c => c.checked = false);
+    atualizarContadorUFsModal();
+}
+async function salvarUFsDoGrupo() {
+    if (!grupoAtualUFs) return;
+    const todasUfsModal = Array.from(document.querySelectorAll('#checksUFs input')).map(c => c.value);
+    const marcadas = Array.from(document.querySelectorAll('#checksUFs input:checked')).map(c => c.value);
+    const ufsParaSalvar = [];
+    for (const uf of todasUfsModal) {
+        const itemCache = ufsCache.find(x => x.uf === uf);
+        const estava = itemCache ? itemCache.grupo_id : null;
+        const marcadaAgora = marcadas.includes(uf);
+        let vaiFicar;
+        if (marcadaAgora) vaiFicar = grupoAtualUFs;
+        else if (estava === grupoAtualUFs) vaiFicar = null;
+        else vaiFicar = estava;
+        if (estava !== vaiFicar) ufsParaSalvar.push({ uf, grupo_id: vaiFicar });
+    }
+    if (!ufsParaSalvar.length) {
+        alerta('Nada mudou.', 'info'); fecharModalUFs(); return;
+    }
+    const r = await api('/api/tabela/uf-acrescimo', {
+        method:'POST', body: JSON.stringify({ ufs: ufsParaSalvar })
+    });
+    if (r.success) {
+        alerta(`✅ ${marcadas.length} UF(s) vinculadas!`, 'ok');
+        fecharModalUFs(); carregarGruposAcrescimo(); carregarUFs();
+    } else alerta(r.error, 'err');
+}
+
+// ================================================================
+// CAMPANHAS
+// ================================================================
+async function carregarCampanhas() {
+    const r = await api('/api/tabela/campanhas');
+    if (!r.success) return;
+    campanhasCache = r.campanhas;
+    const tbody = document.querySelector('#tabCampanhas tbody');
+    if (!r.campanhas.length) {
+        tbody.innerHTML = '<tr><td class="empty" colspan="7">Nenhuma campanha.</td></tr>'; return;
+    }
+    tbody.innerHTML = r.campanhas.map(c => `
+        <tr>
+            <td><strong>${c.nome}</strong><br><small style="color:#94a3b8">${c.subtitulo || ''}</small></td>
+            <td>${c.vendedor_nome || '<span style="color:#64748b">Global</span>'}</td>
+            <td>${c.exigir_senha ? `<span class="badge badge-warn">🔒 ${c.senha}</span>` : '<span class="badge badge-info">Só CNPJ</span>'}</td>
+            <td>${c.ativa ? '<span class="badge badge-on">Ativa</span>' : '<span class="badge badge-off">Inativa</span>'}</td>
+            <td><span class="badge badge-gold">${c.total_ofertas} oferta(s)</span></td>
+            <td style="font-size:.72rem; color:#64748b">${c.data_inicio || '—'} → ${c.data_fim || '—'}</td>
+            <td style="width:280px;text-align:right;white-space:nowrap">
+                <button class="btn btn-gold btn-mini" onclick="abrirOfertas(${c.id}, '${c.nome.replace(/'/g,"\\'")}')">🎁 Ofertas</button>
+                <button class="btn btn-primary btn-mini" onclick="toggleCampanha(${c.id}, ${c.ativa ? 0 : 1})">${c.ativa ? '🔴 Desativar' : '🟢 Ativar'}</button>
+                <button class="btn btn-danger btn-mini" onclick="excluirCampanha(${c.id})">🗑️</button>
+            </td>
+        </tr>`).join('');
+}
+async function criarCampanha() {
+    const dados = {
+        nome: document.getElementById('campNome').value.trim(),
+        subtitulo: document.getElementById('campSubtitulo').value.trim(),
+        banner_url: document.getElementById('campBanner').value.trim(),
+        vendedor_id: document.getElementById('campVendedor').value || null,
+        senha: document.getElementById('campSenha').value.trim(),
+        exigir_senha: document.getElementById('campExigirSenha').value === '1',
+        ativa: document.getElementById('campAtiva').value === '1',
+        data_inicio: document.getElementById('campInicio').value || null,
+        data_fim: document.getElementById('campFim').value || null
+    };
+    if (!dados.nome) return alerta('Digite o nome.', 'err');
+    const r = await api('/api/tabela/campanhas', { method:'POST', body: JSON.stringify(dados) });
+    if (r.success) {
+        alerta('Campanha criada!', 'ok');
+        ['campNome','campSubtitulo','campBanner','campSenha','campInicio','campFim'].forEach(id =>
+            document.getElementById(id).value = '');
+        carregarCampanhas();
+    } else alerta(r.error, 'err');
+}
+async function toggleCampanha(id, ativa) {
+    const r = await api('/api/tabela/campanhas/' + id, { method:'PUT', body: JSON.stringify({ ativa }) });
+    if (r.success) { alerta('Atualizada.', 'ok'); carregarCampanhas(); }
+    else alerta(r.error, 'err');
+}
+async function excluirCampanha(id) {
+    if (!confirm('Excluir campanha? As ofertas dela também serão apagadas.')) return;
+    const r = await api('/api/tabela/campanhas/' + id, { method:'DELETE' });
+    if (r.success) { alerta('Excluída.', 'ok'); carregarCampanhas(); }
+    else alerta(r.error, 'err');
+}
+
+// ================================================================
+// OFERTAS
+// ================================================================
+async function abrirOfertas(campanhaId, campanhaNome) {
+    campanhaAtualOfertas = campanhaId;
+    document.getElementById('tituloOfertasCamp').textContent = '🎁 Ofertas — ' + campanhaNome;
+    document.getElementById('buscaOfertas').value = '';
+    document.getElementById('descontoOfertas').value = '5';
+    document.getElementById('modalOfertasCampanha').classList.add('on');
+    await carregarItensOfertas();
+    await carregarOfertasCadastradas();
+}
+function fecharModalOfertas() {
+    document.getElementById('modalOfertasCampanha').classList.remove('on');
+    campanhaAtualOfertas = null; carregarCampanhas();
+}
+async function carregarItensOfertas() {
+    const busca = document.getElementById('buscaOfertas').value.trim();
+    const r = await api(`/api/tabela/itens-com-atributos?busca=${encodeURIComponent(busca)}&limite=9999`);
+    if (!r.success) return alerta(r.error, 'err');
+    const container = document.getElementById('checksOfertas');
+    if (!r.itens.length) { container.innerHTML = '<div class="empty">Nenhum item.</div>'; return; }
+    container.innerHTML = r.itens.map(i => {
+        const attrs = i.atributos && Object.keys(i.atributos).length
+            ? Object.entries(i.atributos).map(([k, v]) => `${k}: ${v}`).join(' · ')
+            : '';
+        return `
+            <label class="check-item">
+                <input type="checkbox" value="${i.cod_produto}" onchange="atualizarContadorOfertas()">
+                <span class="cod">${i.cod_produto}</span>
+                <span class="desc">
+                    ${i.descricao || '—'}
+                    ${attrs ? `<span class="attrs">${attrs}</span>` : ''}
+                </span>
+                <span class="preco">${fmtMoeda(i.preco)}</span>
+            </label>
+        `;
+    }).join('');
+    atualizarContadorOfertas();
+}
+function atualizarContadorOfertas() {
+    const n = document.querySelectorAll('#checksOfertas input:checked').length;
+    document.getElementById('contadorOfertas').textContent = n + ' selecionado(s)';
+}
+function marcarTodosOfertas() {
+    document.querySelectorAll('#checksOfertas input').forEach(c => c.checked = true);
+    atualizarContadorOfertas();
+}
+function desmarcarTodosOfertas() {
+    document.querySelectorAll('#checksOfertas input').forEach(c => c.checked = false);
+    atualizarContadorOfertas();
+}
+async function aplicarOfertas() {
+    const codigos = Array.from(document.querySelectorAll('#checksOfertas input:checked')).map(c => c.value);
+    const desconto_pct = parseFloat(document.getElementById('descontoOfertas').value);
+    if (!codigos.length) return alerta('Nenhum item selecionado.', 'err');
+    if (isNaN(desconto_pct) || desconto_pct <= 0) return alerta('Desconto inválido.', 'err');
+    const r = await api(`/api/tabela/campanhas/${campanhaAtualOfertas}/ofertas`, {
+        method:'POST', body: JSON.stringify({ codigos, desconto_pct })
+    });
+    if (r.success) { alerta(`🎁 ${r.inseridos} oferta(s) aplicadas!`, 'ok'); await carregarOfertasCadastradas(); }
+    else alerta(r.error, 'err');
+}
+async function carregarOfertasCadastradas() {
+    const r = await api('/api/tabela/campanhas/' + campanhaAtualOfertas);
+    if (!r.success) return;
+    const tbody = document.querySelector('#tabOfertasCamp tbody');
+    if (!r.ofertas.length) {
+        tbody.innerHTML = '<tr><td class="empty" colspan="4">Nenhuma oferta ainda.</td></tr>'; return;
+    }
+    tbody.innerHTML = r.ofertas.map(o => `
+        <tr>
+            <td><strong>${o.cod_produto}</strong></td>
+            <td>${o.descricao || '—'}</td>
+            <td>${fmtMoeda(o.preco)}</td>
+            <td><span class="badge badge-gold">${o.desconto_pct}%</span></td>
+            <td style="width:80px;text-align:right">
+                <button class="btn btn-danger btn-mini" onclick="removerOferta('${o.cod_produto}')">🗑️</button>
+            </td>
+        </tr>`).join('');
+}
+async function removerOferta(cod) {
+    if (!confirm('Remover esta oferta?')) return;
+    const r = await api(`/api/tabela/campanhas/${campanhaAtualOfertas}/ofertas/${cod}`, { method:'DELETE' });
+    if (r.success) { alerta('Removida.', 'ok'); carregarOfertasCadastradas(); }
+    else alerta(r.error, 'err');
+}
+
+// ================================================================
+// PEDIDOS
+// ================================================================
+async function carregarPedidos() {
+    const vendedor = document.getElementById('filtroVendPedidos').value;
+    const container = document.getElementById('tabPedidos').querySelector('tbody');
+    let pedidos = [];
+    if (vendedor) {
+        const r = await api('/api/tabela/pedidos/vendedor/' + vendedor);
+        if (!r.success) return alerta(r.error, 'err');
+        pedidos = r.pedidos || [];
+    } else {
+        const r = await api('/api/tabela/vendedores');
+        if (!r.success) return alerta(r.error, 'err');
+        for (const v of r.vendedores) {
+            const rp = await api('/api/tabela/pedidos/vendedor/' + v.id);
+            if (rp.success) pedidos = pedidos.concat(rp.pedidos || []);
+        }
+        pedidos.sort((a,b) => b.id - a.id);
+    }
+    pedidosCache = pedidos;
+    document.getElementById('pedidosResumo').textContent = `${pedidos.length} pedido(s)`;
+    if (!pedidos.length) {
+        container.innerHTML = '<tr><td class="empty" colspan="6">Nenhum pedido ainda.</td></tr>'; return;
+    }
+    container.innerHTML = pedidos.map(p => `
+        <tr>
+            <td><strong>#${p.id}</strong></td>
+            <td>${p.nome_fantasia || p.razao_social || '—'}<br><small style="color:#94a3b8">${p.cidade || ''}${p.uf ? '/'+p.uf : ''}</small></td>
+            <td>${p.vendedor_nome
+                ? `${p.vendedor_nome}${p.vendedor_rep ? ' <span class="badge badge-gold">'+p.vendedor_rep+'</span>' : ''}`
+                : '<span style="color:#f59e0b">— sem vendedor</span>'}</td>
+            <td>${p.qtd_itens} item(ns)</td>
+            <td><strong>${fmtMoeda(p.total)}</strong></td>
+            <td><span class="badge ${p.status==='Recebido'?'badge-warn':p.status==='Enviado'?'badge-info':'badge-off'}">${p.status}</span></td>
+            <td style="font-size:.72rem; color:#64748b">${p.data_criacao || ''}</td>
+            <td style="width:80px;text-align:right">
+                <button class="btn btn-primary btn-mini" onclick="verPedido(${p.id})">👁️</button>
+            </td>
+        </tr>`).join('');
+}
+async function verPedido(id) {
+    const p = pedidosCache.find(x => x.id === id);
+    if (!p) return alerta('Pedido não encontrado.', 'err');
+    pedidoAtual = p;
+    document.getElementById('tituloPedido').textContent = 'Pedido #' + p.id;
+    document.getElementById('subPedido').textContent = p.nome_fantasia || p.razao_social || '';
+    const vendedorTxt = p.vendedor_nome
+        ? `${p.vendedor_nome}${p.vendedor_rep ? ' (rep ' + p.vendedor_rep + ')' : ''}`
+        : '<span style="color:#f59e0b">— sem vendedor —</span>';
+    document.getElementById('pedidoCliente').innerHTML = `
+        <div class="grid-2" style="gap:10px">
+            <div><b>Cliente:</b> ${p.nome_fantasia || '—'}</div>
+            <div><b>Razão social:</b> ${p.razao_social || '—'}</div>
+            <div><b>CNPJ:</b> ${p.cnpj || '—'}</div>
+            <div><b>Cidade/UF:</b> ${p.cidade || '—'}/${p.uf || '—'}</div>
+            <div><b>Vendedor:</b> ${vendedorTxt}</div>
+            <div><b>Status:</b> ${p.status}</div>
+            <div><b>Data:</b> ${p.data_criacao || '—'}</div>
+            <div><b>Qtd itens:</b> ${p.qtd_itens || 0}</div>
+        </div>`;
+    document.getElementById('tabPedidoItens').querySelector('tbody').innerHTML = p.itens.map(i => `
+        <tr>
+            <td><strong>${i.cod_produto}</strong></td>
+            <td>${i.descricao || '—'}</td>
+            <td>${i.quantidade}</td>
+            <td>${fmtMoeda(i.valor_unitario)}</td>
+            <td><strong>${fmtMoeda(i.subtotal)}</strong></td>
+        </tr>`).join('');
+    document.getElementById('pedidoTotal').textContent = fmtMoeda(p.total);
+    document.getElementById('pedidoStatus').value = p.status;
+    document.getElementById('modalPedido').classList.add('on');
+}
+function fecharModalPedido() {
+    document.getElementById('modalPedido').classList.remove('on');
+    pedidoAtual = null;
+}
+async function salvarStatusPedido() {
+    if (!pedidoAtual) return;
+    const status = document.getElementById('pedidoStatus').value;
+    const r = await api('/api/tabela/pedidos/' + pedidoAtual.id + '/status', {
+        method:'PUT', body: JSON.stringify({ status })
+    });
+    if (r.success) { alerta('Status atualizado!', 'ok'); fecharModalPedido(); carregarPedidos(); }
+    else alerta(r.error, 'err');
+}
+
+// ================================================================
+// ATALHOS DE FILTRO — IMPORTADOS
+// ================================================================
+function atalhoImportados(tipo) {
+    const selEstoque = document.getElementById('filtroEstoqueImportados');
+    const selPreco = document.getElementById('filtroPrecoImportados');
+    const selGrupo = document.getElementById('filtroGrupoImportados');
+    const selSubgrupo = document.getElementById('filtroSubgrupoImportados');
+    const inpBusca = document.getElementById('buscaImportados');
+
+    if (tipo === 'limpar') {
+        selEstoque.value = '';
+        selPreco.value = '';
+        selGrupo.value = '';
+        selSubgrupo.value = '';
+        inpBusca.value = '';
+        carregarImportados();
+        return;
+    }
+
+    selEstoque.value = '';
+    selPreco.value = '';
+    selGrupo.value = '';
+    selSubgrupo.value = '';
+
+    if (tipo === 'lixo') {
+        selEstoque.value = 'sem-estoque';
+        selPreco.value = 'sem-preco';
+    } else if (tipo === 'sem-estoque') {
+        selEstoque.value = 'sem-estoque';
+    } else if (tipo === 'sem-preco') {
+        selPreco.value = 'sem-preco';
+    } else if (tipo === 'sem-grupo') {
+        carregarSemGrupo();
+        return;
+    }
+
+    carregarImportados();
+}
+
+async function carregarSemGrupo() {
+    const tbody = document.querySelector('#tabImportados tbody');
+    tbody.innerHTML = '<tr><td class="empty" colspan="10">Carregando...</td></tr>';
+
+    const r = await api('/api/tabela/itens?busca=&filtro=sem-grupo&pagina=1&limite=9999');
+    if (!r.success) return alerta(r.error, 'err');
+
+    let itens = r.itens;
+
+    document.getElementById('importadosResumo').textContent =
+        `${itens.length} item(ns) SEM GRUPO`;
+
+    if (!itens.length) {
+        tbody.innerHTML = '<tr><td class="empty" colspan="10">Nenhum item sem grupo. 🎉</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = itens.map(i => `
+        <tr data-cod="${i.cod_produto}">
+            <td>
+                <input type="checkbox" class="check-importado" value="${i.cod_produto}"
+                       onchange="atualizarContadorImportados()">
+            </td>
+            <td>
+                ${i.imagem_url
+                    ? `<img class="thumb-mini" src="${i.imagem_url}" onerror="this.style.display='none'">`
+                    : '<span style="color:#cbd5e1">📦</span>'}
+            </td>
+            <td><strong>${i.cod_produto}</strong></td>
+            <td>${i.descricao || '—'}</td>
+            <td>${fmtMoeda(i.preco)}</td>
+            <td>${fmtNum(i.saldo)}</td>
+            <td><span style="color:#cbd5e1">—</span></td>
+            <td><span style="color:#f59e0b; font-size:.72rem; font-weight:700;">⚠️ sem subgrupo</span></td>
+            <td style="font-size:.72rem; color:#64748b">${i.atualizado_preco || i.atualizado_estoque || '—'}</td>
+            <td style="text-align:right">
+                <button class="btn btn-danger btn-mini" onclick="deletarItem('${i.cod_produto}')">🗑️</button>
+            </td>
+        </tr>
+    `).join('');
+
+    document.getElementById('paginacaoImportados').innerHTML = '';
+    atualizarContadorImportados();
+}
+
+// ================================================================
+// IMPORTADOS — listagem e deleção
+// ================================================================
+async function carregarCombosImportados() {
+    const rg = await api('/api/tabela/grupos');
+    if (rg.success) {
+        const sel = document.getElementById('filtroGrupoImportados');
+        sel.innerHTML = '<option value="">— Todos —</option>' +
+            rg.grupos.map(g => `<option value="${g.id}">${g.nome}</option>`).join('');
+        sel.onchange = async () => {
+            await carregarCombosSubgruposImportados(sel.value);
+            carregarImportados();
+        };
+    }
+    await carregarCombosSubgruposImportados('');
+}
+
+async function carregarCombosSubgruposImportados(grupoId) {
+    const url = grupoId
+        ? `/api/tabela/subgrupos?grupo_id=${grupoId}`
+        : '/api/tabela/subgrupos';
+    const rs = await api(url);
+    if (!rs.success) return;
+    const sel = document.getElementById('filtroSubgrupoImportados');
+    sel.innerHTML = '<option value="">— Todos —</option>' +
+        rs.subgrupos.map(s => `<option value="${s.id}">${s.nome}</option>`).join('');
+}
+
+async function carregarImportados() {
+    const busca = document.getElementById('buscaImportados').value.trim();
+    const grupoId = document.getElementById('filtroGrupoImportados').value;
+    const subgrupoId = document.getElementById('filtroSubgrupoImportados').value;
+    const filtroEstoque = document.getElementById('filtroEstoqueImportados').value;
+    const filtroPreco = document.getElementById('filtroPrecoImportados').value;
+
+    const url = `/api/tabela/itens?busca=${encodeURIComponent(busca)}&filtro=todos`
+        + `&pagina=${paginaImportados}&limite=${limiteImportados}`;
+
+    const r = await api(url);
+    if (!r.success) return alerta(r.error, 'err');
+
+    let itens = r.itens;
+
+    if (grupoId) itens = itens.filter(i => String(i.grupo_id) === String(grupoId));
+    if (subgrupoId) itens = itens.filter(i => String(i.subgrupo_id) === String(subgrupoId));
+
+    if (filtroEstoque === 'com-estoque') itens = itens.filter(i => Number(i.saldo) > 0);
+    if (filtroEstoque === 'sem-estoque') itens = itens.filter(i => !Number(i.saldo) || Number(i.saldo) <= 0);
+
+    if (filtroPreco === 'com-preco') itens = itens.filter(i => Number(i.preco) > 0);
+    if (filtroPreco === 'sem-preco') itens = itens.filter(i => !Number(i.preco) || Number(i.preco) <= 0);
+
+    totalPaginasImportados = r.totalPaginas || 1;
+    document.getElementById('importadosResumo').textContent =
+        `${fmtNum(r.total)} item(ns) — Página ${r.pagina} de ${totalPaginasImportados}`;
+
+    const tbody = document.querySelector('#tabImportados tbody');
+    if (!itens.length) {
+        tbody.innerHTML = '<tr><td class="empty" colspan="10">Nenhum item.</td></tr>';
+        document.getElementById('paginacaoImportados').innerHTML = '';
+        return;
+    }
+
+    tbody.innerHTML = itens.map(i => `
+        <tr data-cod="${i.cod_produto}">
+            <td>
+                <input type="checkbox" class="check-importado" value="${i.cod_produto}"
+                       onchange="atualizarContadorImportados()">
+            </td>
+            <td>
+                ${i.imagem_url
+                    ? `<img class="thumb-mini" src="${i.imagem_url}" onerror="this.style.display='none'">`
+                    : '<span style="color:#cbd5e1">📦</span>'}
+            </td>
+            <td><strong>${i.cod_produto}</strong></td>
+            <td>${i.descricao || '—'}</td>
+            <td>${fmtMoeda(i.preco)}</td>
+            <td>${fmtNum(i.saldo)}</td>
+            <td>${i.grupo_nome ? `<span class="badge badge-info">${i.grupo_nome}</span>` : '<span style="color:#cbd5e1">—</span>'}</td>
+            <td>${i.subgrupo_nome ? `<span class="badge badge-on">${i.subgrupo_nome}</span>` : '<span style="color:#f59e0b; font-size:.72rem; font-weight:700;">⚠️ sem subgrupo</span>'}</td>
+            <td style="font-size:.72rem; color:#64748b">${i.atualizado_preco || i.atualizado_estoque || '—'}</td>
+            <td style="text-align:right">
+                <button class="btn btn-danger btn-mini" onclick="deletarItem('${i.cod_produto}')">🗑️</button>
+            </td>
+        </tr>
+    `).join('');
+
+    renderPaginacaoImportados();
+    atualizarContadorImportados();
+}
+
+function renderPaginacaoImportados() {
+    const cont = document.getElementById('paginacaoImportados');
+    if (totalPaginasImportados <= 1) { cont.innerHTML = ''; return; }
+    let html = `<button ${paginaImportados===1?'disabled':''} onclick="irPaginaImp(${paginaImportados-1})">← Anterior</button>`;
+    const inicio = Math.max(1, paginaImportados - 2);
+    const fim = Math.min(totalPaginasImportados, paginaImportados + 2);
+    for (let p = inicio; p <= fim; p++)
+        html += `<button class="${p===paginaImportados?'atual':''}" onclick="irPaginaImp(${p})">${p}</button>`;
+    html += `<button ${paginaImportados===totalPaginasImportados?'disabled':''} onclick="irPaginaImp(${paginaImportados+1})">Próxima →</button>`;
+    cont.innerHTML = html;
+}
+
+function irPaginaImp(p) {
+    if (p < 1 || p > totalPaginasImportados) return;
+    paginaImportados = p;
+    carregarImportados();
+}
+
+function atualizarContadorImportados() {
+    const n = document.querySelectorAll('.check-importado:checked').length;
+    const total = document.querySelectorAll('.check-importado').length;
+    const el = document.getElementById('importadosResumo');
+    if (el) {
+        el.textContent = el.textContent.replace(/\s·\s\d+\sselecionado\(s\)/,'') + ` · ${n}/${total} selecionado(s)`;
+    }
+}
+
+function marcarTodosImportados() {
+    document.querySelectorAll('.check-importado').forEach(c => c.checked = true);
+    atualizarContadorImportados();
+}
+
+function desmarcarTodosImportados() {
+    document.querySelectorAll('.check-importado').forEach(c => c.checked = false);
+    atualizarContadorImportados();
+}
+
+async function deletarItem(cod) {
+    if (!confirm(`Deletar o item ${cod}? Essa ação não pode ser desfeita.`)) return;
+    const r = await api(`/api/tabela/itens/${cod}`, { method: 'DELETE' });
+    if (r.success) {
+        alerta(`🗑️ Item ${cod} deletado.`, 'ok');
+        carregarImportados();
+    } else {
+        alerta('Erro: ' + r.error, 'err');
+    }
+}
+
+async function deletarSelecionados() {
+    const selecionados = Array.from(document.querySelectorAll('.check-importado:checked'))
+        .map(c => c.value);
+
+    if (!selecionados.length) {
+        return alerta('Nenhum item selecionado.', 'err');
+    }
+
+    if (!confirm(`Deletar ${selecionados.length} item(ns)?\n\nEssa ação não pode ser desfeita.`)) return;
+    if (!confirm(`TEM CERTEZA? Vai apagar ${selecionados.length} itens de vez.`)) return;
+
+    alerta(`🗑️ Deletando ${selecionados.length} itens...`, 'info');
+
+    const r = await api('/api/tabela/itens-deletar-lote', {
+        method: 'POST',
+        body: JSON.stringify({ codigos: selecionados })
+    });
+
+    if (r.success) {
+        alerta(`✅ ${r.deletados} item(ns) deletado(s)!`, 'ok');
+        carregarImportados();
+    } else {
+        alerta('Erro: ' + r.error, 'err');
+    }
+}
+// ================================================================
+// SUBGRUPOS — modal Vincular (abrirVincular)
+// ================================================================
+async function abrirVincular(subgrupoId, subgrupoNome) {
+    subgrupoAtualVinc = subgrupoId;
+    document.getElementById('tituloVincular').textContent = '🔗 Vincular itens — ' + subgrupoNome;
+    document.getElementById('buscaVincular').value = '';
+    document.getElementById('filtroVincular').value = 'todos';
+    document.getElementById('modalVincular').classList.add('on');
+
+    // Detecta se o grupo desse subgrupo é ISCAS
+    subgrupoAtualEhIsca = false;
+    try {
+        const rs = await api('/api/tabela/subgrupos/' + subgrupoId);
+        if (rs.success && rs.subgrupo && rs.subgrupo.grupo_id) {
+            const rg = await api('/api/tabela/grupos');
+            const grupo = rg.grupos.find(g => g.id === rs.subgrupo.grupo_id);
+            subgrupoAtualEhIsca = !!(grupo && grupo.nome.toUpperCase().includes('ISCA'));
+        }
+    } catch (e) { subgrupoAtualEhIsca = false; }
+
+    await carregarItensVincular();
+}
+
+function fecharModalVincular() {
+    document.getElementById('modalVincular').classList.remove('on');
+    subgrupoAtualVinc = null;
+}
+
+async function carregarItensVincular() {
+    const busca = document.getElementById('buscaVincular').value.trim();
+    const filtro = document.getElementById('filtroVincular').value;
+
+    const r = await api(`/api/tabela/itens-com-atributos?busca=${encodeURIComponent(busca)}&limite=9999`);
+    if (!r.success) return alerta(r.error, 'err');
+    let itens = r.itens;
+
+    if (filtro === 'nao-vinculados') itens = itens.filter(i => !i.subgrupo_id);
+    else if (filtro === 'deste')     itens = itens.filter(i => i.subgrupo_id == subgrupoAtualVinc);
+
+    const container = document.getElementById('checksVincular');
+    if (!itens.length) {
+        container.innerHTML = '<div class="empty">Nenhum item.</div>';
+        return;
+    }
+
+    let avisoHtml = '';
+    if (subgrupoAtualEhIsca) {
+        avisoHtml = `
+            <div style="background:#fef3c7; border-left:4px solid #f59e0b; padding:10px 14px;
+                        border-radius:8px; margin-bottom:10px; font-size:.8rem; color:#92400e;">
+                <strong>🎣 Modo ISCA ativado</strong><br>
+                Preencha o <strong>nome da cor</strong> e a <strong>URL da foto</strong>.
+            </div>
+        `;
+    }
+
+    container.innerHTML = avisoHtml + itens.map(i => {
+        const attrs = i.atributos && Object.keys(i.atributos).length
+            ? Object.entries(i.atributos).map(([k, v]) => `${k}: ${v}`).join(' · ')
+            : '';
+
+        const emOutroSubgrupo = i.subgrupo_id && i.subgrupo_id != subgrupoAtualVinc;
+        const outroSubgrupoNome = emOutroSubgrupo ? (i.subgrupo_nome || 'outro') : '';
+        const classeOutro = emOutroSubgrupo ? 'em-outro-subgrupo' : '';
+        const flagOutro = emOutroSubgrupo ? `data-outro-subgrupo="1"` : '';
+
+        const avisoOutro = emOutroSubgrupo
+            ? `<span style="display:inline-block; background:#fef3c7; color:#92400e;
+                            font-size:.62rem; font-weight:800; padding:2px 8px;
+                            border-radius:10px; margin-left:8px; text-transform:none;">
+                    ⚠️ em "${escapeHtml(outroSubgrupoNome)}"
+               </span>`
+            : '';
+
+        if (subgrupoAtualEhIsca) {
+            const corAtual = i.cor_nome || '';
+            const imgAtual = i.imagem_url || '';
+            const previewHtml = imgAtual
+                ? `<div class="cor-preview">
+                     <img src="${escapeHtml(imgAtual)}" onerror="this.style.display='none'">
+                     <span>Prévia da imagem</span>
+                   </div>`
+                : '';
+
+            return `
+                <div class="check-item tem-cor ${classeOutro}" data-cod="${i.cod_produto}" ${flagOutro}>
+                    <label>
+                        <input type="checkbox" value="${i.cod_produto}"
+                               ${i.subgrupo_id == subgrupoAtualVinc ? 'checked' : ''}
+                               ${emOutroSubgrupo ? 'disabled' : ''}
+                               onchange="atualizarContador()">
+                        <span class="cod">${i.cod_produto}</span>
+                        <span class="desc">
+                            ${i.descricao || '—'}
+                            ${avisoOutro}
+                            ${attrs ? `<span class="attrs">${attrs}</span>` : ''}
+                        </span>
+                        <span class="preco">${fmtMoeda(i.preco)}</span>
+                    </label>
+                    <div class="campos-cor">
+                        <input type="text" class="cor-inp" placeholder="COR 14"
+                               value="${escapeHtml(corAtual)}"
+                               data-cod="${i.cod_produto}"
+                               data-campo="cor"
+                               oninput="agendarSalvarCor(this)">
+                        <input type="text" placeholder="URL da foto da cor"
+                               value="${escapeHtml(imgAtual)}"
+                               data-cod="${i.cod_produto}"
+                               data-campo="img"
+                               oninput="agendarSalvarCor(this)">
+                        <span class="saved-flag" id="flag-${i.cod_produto}">✓ salvo</span>
+                        ${previewHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        return `
+            <label class="check-item ${classeOutro}" data-cod="${i.cod_produto}" ${flagOutro}>
+                <input type="checkbox" value="${i.cod_produto}"
+                       ${i.subgrupo_id == subgrupoAtualVinc ? 'checked' : ''}
+                       ${emOutroSubgrupo ? 'disabled' : ''}
+                       onchange="atualizarContador()">
+                <span class="cod">${i.cod_produto}</span>
+                <span class="desc">
+                    ${i.descricao || '—'}
+                    ${avisoOutro}
+                    ${attrs ? `<span class="attrs">${attrs}</span>` : ''}
+                </span>
+                <span class="preco">${fmtMoeda(i.preco)}</span>
+            </label>
+        `;
+    }).join('');
+    atualizarContador();
+}
+
+function atualizarContador() {
+    const n = document.querySelectorAll('#checksVincular input[type="checkbox"]:checked').length;
+    document.getElementById('contadorSelecionados').textContent = n + ' selecionado(s)';
+}
+function marcarTodos() {
+    const checks = document.querySelectorAll('#checksVincular input[type="checkbox"]');
+    let marcados = 0;
+    let pulados = 0;
+    checks.forEach(c => {
+        const card = c.closest('.check-item');
+        const emOutroSubgrupo = card.dataset.outroSubgrupo === '1';
+        if (emOutroSubgrupo) { c.checked = false; pulados++; }
+        else { c.checked = true; marcados++; }
+    });
+    atualizarContador();
+    if (pulados > 0) {
+        alerta(`✅ ${marcados} itens marcados. ⚠️ ${pulados} itens já estão em outros subgrupos e foram PULADOS.`, 'info');
+    }
+}
+function desmarcarTodos() {
+    document.querySelectorAll('#checksVincular input[type="checkbox"]').forEach(c => c.checked = false);
+    atualizarContador();
+}
+function inverterSelecao() {
+    document.querySelectorAll('#checksVincular input[type="checkbox"]').forEach(c => {
+        if (!c.disabled) c.checked = !c.checked;
+    });
+    atualizarContador();
+}
+
+async function vincularSelecionados() {
+    const codigos = Array.from(document.querySelectorAll('#checksVincular input[type="checkbox"]:checked')).map(c => c.value);
+    if (!codigos.length) return alerta('Nenhum item selecionado.', 'err');
+
+    if (codigos.length > 300) {
+        if (!confirm(`⚠️ ${codigos.length} itens marcados! Tem certeza?`)) return;
+        if (!confirm(`🚨 Confirmar novamente?`)) return;
+    }
+
+    let r = await api(`/api/tabela/subgrupos/${subgrupoAtualVinc}/vincular-itens`, {
+        method: 'POST',
+        body: JSON.stringify({ codigos })
+    });
+
+    if (!r.success && r.precisa_confirmar) {
+        const exemplos = (r.conflitos || []).slice(0, 10)
+            .map(c => `  • ${c.cod_produto} → estava em "${c.subgrupo_atual}"`)
+            .join('\n');
+        const msg = `⚠️ ${r.total_conflitos} item(ns) já estão em outros subgrupos:\n\n` +
+                    `${exemplos}\n\nMover mesmo assim?`;
+        if (!confirm(msg)) return alerta('Cancelado. Nada foi alterado. ✅', 'info');
+
+        r = await api(`/api/tabela/subgrupos/${subgrupoAtualVinc}/vincular-itens`, {
+            method: 'POST',
+            body: JSON.stringify({ codigos, forcar: true })
+        });
+    }
+
+    if (r.success) {
+        ultimoVinculo = {
+            subgrupo_id: subgrupoAtualVinc,
+            codigos,
+            data: new Date(),
+            subgrupo_nome: document.getElementById('tituloVincular').textContent
+        };
+
+        alerta(`🔗 ${r.vinculados} item(ns) vinculados! ${r.conflitos_resolvidos ? `(${r.conflitos_resolvidos} movidos)` : ''}`, 'ok');
+
+        setTimeout(() => {
+            if (confirm('✅ Vinculação feita! Deseja DESFAZER?')) {
+                desfazerUltimoVinculo();
+            }
+        }, 500);
+
+        fecharModalVincular();
+    } else {
+        alerta(r.error, 'err');
+    }
+}
+
+async function desfazerUltimoVinculo() {
+    if (!ultimoVinculo) return alerta('Nada pra desfazer.', 'err');
+    if (!confirm(`Desfazer a vinculação de ${ultimoVinculo.codigos.length} itens?`)) return;
+
+    const r = await api(`/api/tabela/subgrupos/${ultimoVinculo.subgrupo_id}/desvincular-itens`, {
+        method: 'POST',
+        body: JSON.stringify({ codigos: ultimoVinculo.codigos })
+    });
+
+    if (r.success) {
+        alerta(`↩️ ${r.removidos} itens desvinculados.`, 'ok');
+        ultimoVinculo = null;
+    } else {
+        alerta('Erro ao desfazer: ' + r.error, 'err');
+    }
+}
+
+// ================================================================
+// SALVAR COR COM DEBOUNCE
+// ================================================================
+function agendarSalvarCor(inputEl) {
+    const cod = inputEl.dataset.cod;
+    const flag = document.getElementById('flag-' + cod);
+
+    if (flag) {
+        flag.textContent = '💾 salvando...';
+        flag.classList.add('on');
+        flag.style.color = '#f59e0b';
+    }
+
+    if (timeoutsCor[cod]) clearTimeout(timeoutsCor[cod]);
+
+    timeoutsCor[cod] = setTimeout(async () => {
+        const card = inputEl.closest('.check-item.tem-cor');
+        const inpCor = card.querySelector('.cor-inp');
+        const inpImg = card.querySelector('input[placeholder*="URL"]');
+
+        const cor_nome = inpCor ? inpCor.value.trim() : '';
+        const imagem_url = inpImg ? inpImg.value.trim() : '';
+
+        const res = await api(`/api/tabela/itens/${cod}/cor`, {
+            method: 'POST',
+            body: JSON.stringify({ cor_nome, imagem_url })
+        });
+
+        const flagAgora = document.getElementById('flag-' + cod);
+        if (res.success && flagAgora) {
+            flagAgora.textContent = '✓ salvo';
+            flagAgora.style.color = '#059669';
+            setTimeout(() => flagAgora.classList.remove('on'), 1500);
+        } else if (flagAgora) {
+            flagAgora.textContent = '❌ erro';
+            flagAgora.style.color = '#dc2626';
+        }
+        delete timeoutsCor[cod];
+    }, 600);
+}
+
+// ================================================================
+// COPIAR CORES — pareamento manual
+// ================================================================
+let subgrupoOrigemSelecionado = null;
+let itensDestinoDisponiveis = [];
+let pareamentoAtual = [];
+
+async function abrirModalCopiarCores() {
+    if (!subgrupoAtualVinc) return alerta('Nenhum subgrupo aberto.', 'err');
+
+    const marcados = Array.from(
+        document.querySelectorAll('#checksVincular input[type="checkbox"]:checked')
+    ).map(c => c.value);
+
+    if (!marcados.length) return alerta('Marque primeiro os itens que vão RECEBER as cores.', 'err');
+
+    itensDestinoDisponiveis = Array.from(
+        document.querySelectorAll('#checksVincular .check-item')
+    ).filter(el => {
+        const cb = el.querySelector('input[type="checkbox"]');
+        return cb && cb.checked;
+    }).map(el => {
+        const cod = el.querySelector('.cod')?.textContent.trim() || el.dataset.cod;
+        const descEl = el.querySelector('.desc');
+        let desc = '';
+        if (descEl) {
+            const attrsEl = descEl.querySelector('.attrs');
+            if (attrsEl) attrsEl.remove();
+            desc = descEl.textContent.trim();
+        }
+        return { cod, desc };
+    }).sort((a, b) => a.cod.localeCompare(b.cod, undefined, { numeric: true }));
+
+    document.getElementById('modalCopiarCores').classList.add('on');
+    document.getElementById('painelPareamento').style.display = 'none';
+
+    const sel = document.getElementById('selectSubgrupoOrigem');
+    sel.innerHTML = '<option value="">Carregando...</option>';
+
+    try {
+        const r = await api('/api/tabela/subgrupos-com-cores');
+        if (!r.success) throw new Error(r.error || 'Erro desconhecido');
+
+        const opcoes = (r.subgrupos || []).filter(s => String(s.id) !== String(subgrupoAtualVinc));
+
+        if (!opcoes.length) {
+            sel.innerHTML = '<option value="">Nenhum outro subgrupo com cores cadastradas</option>';
+            return;
+        }
+
+        sel.innerHTML = '<option value="">— Escolha o subgrupo de origem —</option>' +
+            opcoes.map(s =>
+                `<option value="${s.id}">${escapeHtml(s.nome)} (${s.qtd_cores} cor(es))</option>`
+            ).join('');
+
+        sel.onchange = () => carregarCoresOrigem(sel.value);
+    } catch (e) {
+        sel.innerHTML = `<option value="">Erro: ${escapeHtml(e.message)}</option>`;
+    }
+}
+
+function fecharModalCopiarCores() {
+    document.getElementById('modalCopiarCores').classList.remove('on');
+    subgrupoOrigemSelecionado = null;
+    pareamentoAtual = [];
+    itensDestinoDisponiveis = [];
+}
+
+async function carregarCoresOrigem(subgrupoId) {
+    const painel = document.getElementById('painelPareamento');
+    if (!subgrupoId) { painel.style.display = 'none'; return; }
+
+    try {
+        const r = await api(`/api/tabela/subgrupos/${subgrupoId}/cores`);
+        if (!r.success) throw new Error(r.error);
+
+        subgrupoOrigemSelecionado = { id: subgrupoId, cores: r.cores };
+        pareamentoAtual = r.cores.map(c => ({ origem: c, destino_cod: '' }));
+
+        painel.style.display = 'block';
+        renderizarPareamento();
+    } catch (e) {
+        alerta('Erro ao carregar cores: ' + e.message, 'err');
+    }
+}
+
+function renderizarPareamento() {
+    const cont = document.getElementById('listaPareamento');
+    cont.innerHTML = pareamentoAtual.map((par, idx) => {
+        const cor = par.origem;
+        const imgSrc = cor.imagem_url || '';
+        const miniatura = imgSrc
+            ? `<img src="${escapeHtml(imgSrc)}" onerror="this.style.display='none'"
+                    style="width:48px; height:48px; object-fit:contain; background:white;
+                           border-radius:8px; border:1px solid #e2e8f0; padding:3px;">`
+            : `<div style="width:48px;height:48px;background:#f1f5f9;border-radius:8px;
+                           display:flex;align-items:center;justify-content:center;color:#94a3b8;
+                           font-size:18px;">🎨</div>`;
+
+        const usados = pareamentoAtual.map((p, i) => i !== idx ? p.destino_cod : null).filter(Boolean);
+        const opcoes = ['<option value="">— não vincular —</option>']
+            .concat(
+                itensDestinoDisponiveis
+                    .filter(it => !usados.includes(it.cod) || it.cod === par.destino_cod)
+                    .map(it => {
+                        const sel = it.cod === par.destino_cod ? 'selected' : '';
+                        const desc = it.desc.length > 60 ? it.desc.slice(0, 60) + '…' : it.desc;
+                        return `<option value="${escapeHtml(it.cod)}" ${sel}>${escapeHtml(it.cod)} — ${escapeHtml(desc)}</option>`;
+                    })
+            ).join('');
+
+        return `
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1px; background:#eef2f7; border-bottom:1px solid #eef2f7;">
+                <div style="padding:10px 14px; background:white; display:flex; gap:10px; align-items:center;">
+                    ${miniatura}
+                    <div style="min-width:0;">
+                        <div style="font-weight:700; color:#0d3b66; font-size:.85rem;">
+                            ${escapeHtml(cor.cor_nome || '(sem nome)')}
+                        </div>
+                        <div style="font-size:.72rem; color:#94a3b8;">
+                            ${escapeHtml(cor.cod_produto)}
+                        </div>
+                    </div>
+                </div>
+                <div style="padding:10px 14px; background:white;">
+                    <select onchange="definirDestino(${idx}, this.value)"
+                            style="width:100%; padding:8px 10px; border:2px solid #e2e8f0;
+                                   border-radius:8px; font-size:.8rem;">
+                        ${opcoes}
+                    </select>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    atualizarResumoPareamento();
+}
+
+function definirDestino(idx, cod) {
+    pareamentoAtual[idx].destino_cod = cod;
+    renderizarPareamento();
+}
+function autoCasarOrdem() {
+    pareamentoAtual.forEach((par, idx) => {
+        par.destino_cod = itensDestinoDisponiveis[idx]?.cod || '';
+    });
+    renderizarPareamento();
+}
+function limparPareamento() {
+    pareamentoAtual.forEach(par => par.destino_cod = '');
+    renderizarPareamento();
+}
+function atualizarResumoPareamento() {
+    const total = pareamentoAtual.length;
+    const casados = pareamentoAtual.filter(p => p.destino_cod).length;
+    const naoUsados = itensDestinoDisponiveis.length - casados;
+    document.getElementById('resumoPareamento').innerHTML = `
+        🎨 ${total} cor(es) na origem · 📥 ${itensDestinoDisponiveis.length} item(ns) no destino ·
+        ✅ <b>${casados}</b> par(es) definido(s)
+        ${naoUsados > 0 ? ` · ⚠️ ${naoUsados} item(ns) sem cor` : ''}
+    `;
+}
+async function executarCopiarCores() {
+    const validos = pareamentoAtual.filter(p => p.destino_cod);
+    if (!validos.length) return alerta('Nenhum par definido.', 'err');
+    if (!confirm(`Copiar ${validos.length} par(es) selecionado(s)?`)) return;
+
+    alerta('📋 Copiando...', 'info');
+    try {
+        const r = await api('/api/tabela/copiar-cores-pares', {
+            method: 'POST',
+            body: JSON.stringify({
+                pares: validos.map(p => ({
+                    destino_cod: p.destino_cod,
+                    cor_nome: p.origem.cor_nome,
+                    imagem_url: p.origem.imagem_url || null
+                }))
+            })
+        });
+        if (r.success) {
+            alerta(`✅ ${r.copiadas} cor(es) aplicada(s)!`, 'ok');
+            fecharModalCopiarCores();
+            carregarItensVincular();
+        } else alerta(r.error, 'err');
+    } catch (e) {
+        alerta('Erro: ' + e.message, 'err');
+    }
+}
+
+// ================================================================
+// MODAL ORDEM DOS ITENS
+// ================================================================
+let subgrupoAtualOrdem = null;
+let itensOrdemCache = [];
+
+async function abrirModalOrdem(subgrupoId, subgrupoNome) {
+    subgrupoAtualOrdem = subgrupoId;
+    document.getElementById('tituloOrdem').textContent = '🔢 Ordem dos itens — ' + subgrupoNome;
+    document.getElementById('subOrdem').textContent = 'Define a ordem no catálogo';
+    document.getElementById('modalOrdem').classList.add('on');
+    document.getElementById('listaOrdem').innerHTML = '<div class="empty">Carregando...</div>';
+
+    const r = await api('/api/tabela/subgrupos/' + subgrupoId + '/itens-ordem');
+    if (!r.success) {
+        document.getElementById('listaOrdem').innerHTML = '<div class="empty">Erro: ' + r.error + '</div>';
+        return;
+    }
+    itensOrdemCache = r.itens;
+    if (!r.itens.length) {
+        document.getElementById('listaOrdem').innerHTML = '<div class="empty">Nenhum item neste subgrupo.</div>';
+        return;
+    }
+    document.getElementById('listaOrdem').innerHTML = r.itens.map((it) => {
+        const ordem = it.ordem_manual === 999999 ? '' : it.ordem_manual;
+        const img = it.imagem_url
+            ? `<img src="${escapeHtml(it.imagem_url)}" style="width:32px; height:32px; object-fit:contain; background:#f8fafc; border-radius:6px; border:1px solid #e2e8f0; padding:2px;" onerror="this.style.display='none'">`
+            : '<span style="color:#cbd5e1">📦</span>';
+        return `
+            <div style="display:grid; grid-template-columns:80px 1fr 80px; gap:1px; background:#eef2f7; border-bottom:1px solid #eef2f7;">
+                <div style="padding:8px 14px; background:white;">
+                    <input type="number" min="1" step="1"
+                           value="${ordem}"
+                           data-cod="${it.cod_produto}"
+                           class="input-ordem"
+                           style="width:100%; padding:6px 8px; font-size:.9rem; font-weight:800; text-align:center; background:#eff6ff;"
+                           onfocus="this.select()">
+                </div>
+                <div style="padding:8px 14px; background:white; display:flex; gap:10px; align-items:center;">
+                    ${img}
+                    <div style="min-width:0;">
+                        <div style="font-weight:700; color:#0d3b66; font-size:.82rem;">
+                            ${escapeHtml(it.cor_nome || '(sem cor)')}
+                        </div>
+                        <div style="font-size:.72rem; color:#94a3b8;">
+                            ${escapeHtml(it.cod_produto)} — ${escapeHtml((it.descricao || '').slice(0, 40))}
+                        </div>
+                    </div>
+                </div>
+                <div style="padding:8px 14px; background:white; text-align:center; font-weight:700; color:#10b981;">
+                    ${it.saldo}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function fecharModalOrdem() {
+    document.getElementById('modalOrdem').classList.remove('on');
+    subgrupoAtualOrdem = null;
+    itensOrdemCache = [];
+}
+function autoOrdenarPorCodigo() {
+    document.querySelectorAll('#listaOrdem .input-ordem').forEach((inp, idx) => {
+        inp.value = idx + 1;
+    });
+}
+async function salvarOrdem() {
+    if (!subgrupoAtualOrdem) return;
+    const inputs = document.querySelectorAll('#listaOrdem .input-ordem');
+    const itens = [];
+    inputs.forEach(inp => {
+        const cod = inp.dataset.cod;
+        const ordem = parseInt(inp.value, 10);
+        if (!isNaN(ordem)) itens.push({ cod_produto: cod, ordem });
+    });
+    if (!itens.length) return alerta('Nenhum item com ordem definida.', 'err');
+    alerta('💾 Salvando ordem...', 'info');
+    const r = await api('/api/tabela/subgrupos/' + subgrupoAtualOrdem + '/itens-ordem', {
+        method: 'POST',
+        body: JSON.stringify({ itens })
+    });
+    if (r.success) {
+        alerta(`✅ ${r.salvos} itens ordenados!`, 'ok');
+        fecharModalOrdem();
+    } else alerta('Erro: ' + r.error, 'err');
+}
+
+// ================================================================
+// 🕷️ SCRAPING — CARDS FIXOS DE GRUPO
+// ================================================================
+async function carregarScrapingStats() {
+    const grid = document.getElementById('scrapingGruposGrid');
+    if (grid) grid.innerHTML = '<div class="empty" style="grid-column:1/-1">Buscando dados do scraping...</div>';
+
+    try {
+        const r = await api('/api/tabela/scraping-stats');
+        if (!r.success) throw new Error(r.error);
+
+        const statsCont = document.getElementById('scrapingStats');
+        if (statsCont) {
+            statsCont.innerHTML = `
+                <div class="si-card" style="--cor:#0d3b66;">
+                    <div class="si-ico">🕷️</div>
+                    <div class="si-valor">${fmtNum(r.total)}</div>
+                    <div class="si-label">Total de itens</div>
+                </div>
+            `;
+        }
+
+        if (!r.porGrupo || !r.porGrupo.length) {
+            if (grid) grid.innerHTML = '<div class="empty" style="grid-column:1/-1">Nenhum grupo no scraping.</div>';
+            return;
+        }
+
+        if (grid) {
+            grid.innerHTML = r.porGrupo.map(g => `
+                <div class="grupo-card" onclick="abrirGrupoScraping('${escapeHtml(g.grupo).replace(/'/g,"\\'")}', this)">
+                    <span class="gc-emoji">${emojiGrupo(g.grupo)}</span>
+                    <div class="gc-nome">${escapeHtml(g.grupo)}</div>
+                    <div class="gc-qtd">${fmtNum(g.qtd)} itens</div>
+                </div>
+            `).join('');
+        }
+    } catch (e) {
+        if (grid) grid.innerHTML = `<div class="empty" style="grid-column:1/-1; color:red;">Erro: ${e.message}</div>`;
+    }
+}
+async function abrirGrupoScraping(grupo, cardEl) {
+    scrapingGrupoAtual = grupo;
+    document.querySelectorAll('#scrapingGruposGrid .grupo-card').forEach(c => c.classList.remove('ativo'));
+    if (cardEl) cardEl.classList.add('ativo');
+
+    // Fecha o card de itens antigo (se tiver)
+    const cardItensAntigo = document.getElementById('scrapingItensCardDyn');
+    if (cardItensAntigo) cardItensAntigo.remove();
+
+    document.getElementById('scrapingSubgruposTitulo').textContent = '📁 Subgrupos — ' + grupo;
+    document.getElementById('scrapingSubgruposCard').style.display = 'block';
+
+    const grid = document.getElementById('scrapingSubgruposGrid');
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1">Carregando...</div>';
+
+    try {
+        const r = await api('/api/tabela/scraping-subgrupos/' + encodeURIComponent(grupo));
+        if (!r.success) {
+            grid.innerHTML = '<div class="empty" style="grid-column:1/-1">Erro: ' + escapeHtml(r.error) + '</div>';
+            return;
+        }
+
+        if (!r.subgrupos.length) {
+            grid.innerHTML = '<div class="empty" style="grid-column:1/-1">Nenhum subgrupo.</div>';
+            return;
+        }
+
+        grid.innerHTML = r.subgrupos.map(s => {
+            const nome = s.subgrupo || s.nome || '';
+            const marca = s.marca || '—';
+            const img = s.imagem_principal || s.imagem_url || '';
+            return `
+                <div class="subgrupo-card" onclick="carregarScrapingItens('${escapeHtml(nome).replace(/'/g,"\\'")}', this)">
+                    ${img
+                        ? `<img class="sc-foto" src="${escapeHtml(img)}" onerror="this.style.display='none'">`
+                        : `<div class="sc-foto" style="display:flex;align-items:center;justify-content:center;color:#cbd5e1;font-size:22px;">🖼️</div>`}
+                    <div class="sc-info">
+                        <div class="sc-nome">${escapeHtml(nome)}</div>
+                        <div class="sc-marca">${escapeHtml(marca)}</div>
+                        <span class="sc-badge">${s.total_itens || 0} variações</span>
+                    </div>
+                    <div class="sc-acoes" onclick="event.stopPropagation()">
+                        <button class="btn btn-gold btn-mini" onclick="editarSubgrupoScraping('${escapeHtml(nome).replace(/'/g,"\\'")}', '${escapeHtml(marca).replace(/'/g,"\\'")}', '${escapeHtml((s.descricao_longa || '').replace(/'/g,"\\'").replace(/\n/g,'\\n'))}')">✏️ Editar</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    } catch (e) {
+        grid.innerHTML = '<div class="empty" style="grid-column:1/-1">Erro: ' + escapeHtml(e.message) + '</div>';
+    }
+}
+
+function fecharScrapingSubgrupos() {
+    scrapingGrupoAtual = null;
+    scrapingSubgrupoAtual = null;
+    document.getElementById('scrapingSubgruposCard').style.display = 'none';
+    document.querySelectorAll('#scrapingGruposGrid .grupo-card').forEach(c => c.classList.remove('ativo'));
+    const cardItens = document.getElementById('scrapingItensCardDyn');
+    if (cardItens) cardItens.remove();
+}
+
+async function carregarScrapingItens(subgrupo, cardEl) {
+    scrapingSubgrupoAtual = subgrupo;
+    const grupo = scrapingGrupoAtual;
+
+    document.querySelectorAll('#scrapingSubgruposGrid .subgrupo-card').forEach(c => c.classList.remove('ativo'));
+    if (cardEl) cardEl.classList.add('ativo');
+
+    const r = await api(`/api/tabela/scraping-itens/${encodeURIComponent(grupo)}/${encodeURIComponent(subgrupo)}`);
+
+    if (!r.success) {
+        alerta('Erro API: ' + r.error, 'err');
+        return;
+    }
+
+    // Remove card antigo
+    const cardAntigo = document.getElementById('scrapingItensCardDyn');
+    if (cardAntigo) cardAntigo.remove();
+
+    // Cria card novo
+    const card = document.createElement('div');
+    card.id = 'scrapingItensCardDyn';
+    card.className = 'card';
+    card.style.marginTop = '20px';
+
+    let linhas = '';
+    if (!r.itens || r.itens.length === 0) {
+        linhas = '<tr><td colspan="6" class="empty" style="text-align:center;padding:20px;color:#94a3b8;">Nenhum item.</td></tr>';
+    } else {
+        linhas = r.itens.map(it => {
+            let attrs = '';
+            try {
+                const obj = JSON.parse(it.atributos_json || '{}');
+                attrs = Object.entries(obj).map(([k, v]) => `${k}: ${v}`).join(' · ');
+            } catch {}
+
+            const imgHtml = it.imagem_url
+                ? `<img src="${it.imagem_url}" style="width:34px;height:34px;object-fit:contain;background:#f8fafc;border-radius:6px;padding:2px;border:1px solid #eef2f7;" onerror="this.style.display='none'">`
+                : '<span style="color:#cbd5e1">📦</span>';
+
+            const precoHtml = it.preco_venda
+                ? 'R$ ' + Number(it.preco_venda).toFixed(2).replace('.', ',')
+                : '<span style="color:#f59e0b">— sem preço</span>';
+
+            return `
+                <tr style="border-bottom:1px solid #f1f5f9;">
+                    <td style="padding:9px 10px;">${imgHtml}</td>
+                    <td style="padding:9px 10px;"><strong>${escapeHtml(it.codigo || '')}</strong></td>
+                    <td style="padding:9px 10px;font-size:.78rem;color:#64748b;">${escapeHtml(attrs)}</td>
+                    <td style="padding:9px 10px;">${precoHtml}</td>
+                    <td style="padding:9px 10px;">${it.estoque || 0}</td>
+                    <td style="padding:9px 10px;text-align:right;">
+                        <button class="btn btn-danger btn-mini" onclick="deletarItemScraping(${it.id})">🗑️</button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    card.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <h3 style="margin:0;">Itens: ${escapeHtml(subgrupo)}</h3>
+            <button class="btn btn-danger btn-mini" onclick="deletarSubgrupoScraping()">🗑️ Deletar subgrupo inteiro</button>
+        </div>
+        <table style="width:100%;border-collapse:collapse;">
+            <thead>
+                <tr style="border-bottom:2px solid #e2e8f0;">
+                    <th style="text-align:left;padding:9px 10px;font-size:.68rem;color:#64748b;text-transform:uppercase;"></th>
+                    <th style="text-align:left;padding:9px 10px;font-size:.68rem;color:#64748b;text-transform:uppercase;">Código</th>
+                    <th style="text-align:left;padding:9px 10px;font-size:.68rem;color:#64748b;text-transform:uppercase;">Atributos</th>
+                    <th style="text-align:left;padding:9px 10px;font-size:.68rem;color:#64748b;text-transform:uppercase;">Preço</th>
+                    <th style="text-align:left;padding:9px 10px;font-size:.68rem;color:#64748b;text-transform:uppercase;">Estoque</th>
+                    <th style="text-align:left;padding:9px 10px;font-size:.68rem;color:#64748b;text-transform:uppercase;"></th>
+                </tr>
+            </thead>
+            <tbody>${linhas}</tbody>
+        </table>
+    `;
+
+    const pagina = document.getElementById('page-scraping');
+    if (pagina) pagina.appendChild(card);
+    else document.body.appendChild(card);
+
+    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+async function deletarItemScraping(id) {
+    if (!confirm('Deletar este item?')) return;
+    const r = await api('/api/tabela/scraping-item/' + id, { method: 'DELETE' });
+    if (r.success) {
+        alerta('Item deletado.', 'ok');
+        if (scrapingSubgrupoAtual) {
+            const cardEl = Array.from(document.querySelectorAll('#scrapingSubgruposGrid .subgrupo-card'))
+                .find(c => c.querySelector('.sc-nome')?.textContent.trim() === scrapingSubgrupoAtual);
+            carregarScrapingItens(scrapingSubgrupoAtual, cardEl);
+        }
+    } else alerta(r.error, 'err');
+}
+
+// ================================================================
+// EDITAR SUBGRUPO SCRAPING
+// ================================================================
+function editarSubgrupoScraping(subgrupo, marca, descricao) {
+    scrapingSubgrupoEditando = subgrupo;
+    document.getElementById('editScrapingSubgrupoAntigo').textContent = 'Subgrupo atual: ' + subgrupo;
+    document.getElementById('editScrapingNovoNome').value = subgrupo;
+    document.getElementById('editScrapingNovaMarca').value = marca || '';
+    document.getElementById('editScrapingNovaDescricao').value = descricao || '';
+    document.getElementById('modalEditarScrapingSubgrupo').classList.add('on');
+}
+
+function fecharModalScrapingSubgrupo() {
+    document.getElementById('modalEditarScrapingSubgrupo').classList.remove('on');
+    scrapingSubgrupoEditando = null;
+}
+
+async function salvarScrapingSubgrupo() {
+    if (!scrapingSubgrupoEditando) return;
+    const dados = {
+        grupo: scrapingGrupoAtual,
+        subgrupo_antigo: scrapingSubgrupoEditando,
+        novo_nome: document.getElementById('editScrapingNovoNome').value.trim(),
+        nova_marca: document.getElementById('editScrapingNovaMarca').value.trim(),
+        nova_descricao: document.getElementById('editScrapingNovaDescricao').value.trim()
+    };
+    const r = await api('/api/tabela/scraping-subgrupo-lote', {
+        method: 'PUT', body: JSON.stringify(dados)
+    });
+    if (r.success) {
+        alerta('Subgrupo atualizado!', 'ok');
+        fecharModalScrapingSubgrupo();
+        if (scrapingGrupoAtual) abrirGrupoScraping(scrapingGrupoAtual);
+    } else alerta(r.error, 'err');
+}
+
+async function deletarSubgrupoScraping() {
+    if (!scrapingSubgrupoAtual || !scrapingGrupoAtual) return;
+    if (!confirm(`Deletar TODOS os itens do subgrupo "${scrapingSubgrupoAtual}"?`)) return;
+
+    const r = await api('/api/tabela/scraping-subgrupo', {
+        method: 'DELETE',
+        body: JSON.stringify({ grupo: scrapingGrupoAtual, subgrupo: scrapingSubgrupoAtual })
+    });
+
+    if (r.success) {
+        alerta(`${r.deletados} itens deletados.`, 'ok');
+        const cardItens = document.getElementById('scrapingItensCardDyn');
+        if (cardItens) cardItens.remove();
+        if (scrapingGrupoAtual) abrirGrupoScraping(scrapingGrupoAtual);
+    } else alerta(r.error, 'err');
+}
+
+// ================================================================
+// ATALHOS DE TECLADO
+// ================================================================
+document.addEventListener('keydown', (e) => {
+    if (!document.getElementById('modalVincular').classList.contains('on')) return;
+
+    if (e.key === 'Escape' && !e.target.matches('input, textarea, select')) {
+        fecharModalVincular();
+    }
+    if (e.ctrlKey && e.key === 'a' && !e.target.matches('input, textarea')) {
+        e.preventDefault();
+        marcarTodos();
+    }
+});
+
+// ================================================================
+/// ================================================================
+// INIT
+// ================================================================
+carregarStats();
+carregarLog();
+carregarStatsItens();
+
+// ================================================================
+// AGRUPAR (ÚNICO E PERSONALIZADO) — VERSÃO DEFINITIVA
+// ================================================================
+let itensAgrupar = [];
+
+async function abrirModalAgrupar(grupo, subgrupo) {
+    // Usado quando clica em "Agrupar" dentro de um subgrupo
+    await abrirModalAgruparInterno(grupo, subgrupo, false);
+}
+
+async function abrirModalAgruparPersonalizado() {
+    // Usado quando clica em "Criar Card Manual" no topo
+    const grupo = gruposPageGrupoAtual || 'CARRETILHAS';
+    await abrirModalAgruparInterno(grupo, null, true);
+}
+
+async function abrirModalAgruparInterno(grupo, subgrupo, personalizado) {
+    itensAgrupar = [];
+    document.getElementById('tituloAgrupar').textContent = personalizado ? 'Criar Card Manual — ' + grupo : 'Agrupar — ' + subgrupo;
+    document.getElementById('modalAgrupar').classList.add('on');
+    document.getElementById('checksAgrupar').innerHTML = '<div class="empty">Buscando itens...</div>';
+    document.getElementById('painelRotulosAgrupar').style.display = 'none';
+
+    let todosItens = [];
+
+     if (personalizado) {
+        // Busca todos os subgrupos do grupo
+        const rSub = await api('/api/tabela/scraping-subgrupos/' + encodeURIComponent(grupo));
+        if (!rSub.success) return alerta('Erro ao buscar subgrupos.', 'err');
+        
+        // Para cada subgrupo, busca TODOS os itens (não só o primeiro)
+        for (const sub of rSub.subgrupos) {
+            const rItens = await api('/api/tabela/scraping-itens/' + encodeURIComponent(grupo) + '/' + encodeURIComponent(sub.subgrupo));
+            if (rItens.success && rItens.itens.length > 0) {
+                // Adiciona TODOS os itens do subgrupo na lista
+                todosItens = todosItens.concat(rItens.itens);
+            }
+        }
+    } else {
+        // Busca apenas os itens do subgrupo específico
+        const r = await api('/api/tabela/scraping-itens/' + encodeURIComponent(grupo) + '/' + encodeURIComponent(subgrupo));
+        if (!r.success) return alerta('Erro ao buscar itens.', 'err');
+        todosItens = r.itens;
+    }
+
+    if (!todosItens.length) return alerta('Nenhum item encontrado.', 'err');
+
+    const container = document.getElementById('checksAgrupar');
+    container.innerHTML = todosItens.map(i => `
+        <label class="check-item" style="padding:8px;">
+            <input type="checkbox" value="${i.codigo}" data-desc="${escapeHtml(i.descricao_longa || i.codigo)}" onchange="toggleItemAgrupar(this)">
+            <span class="cod">${i.codigo}</span>
+            <span class="desc">${(i.descricao_longa || '').slice(0, 70)}${(i.descricao_longa || '').length > 70 ? '...' : ''}</span>
+        </label>
+    `).join('');
+}
+
+function fecharModalAgrupar() {
+    document.getElementById('modalAgrupar').classList.remove('on');
+}
+
+function toggleItemAgrupar(checkbox) {
+    const cod = checkbox.value;
+    if (checkbox.checked) {
+        itensAgrupar.push({ cod_produto: cod, rotulo: '' });
+    } else {
+        itensAgrupar = itensAgrupar.filter(i => i.cod_produto !== cod);
+    }
+    
+    document.getElementById('contadorAgrupar').textContent = itensAgrupar.length + ' selecionado(s)';
+
+    const painel = document.getElementById('painelRotulosAgrupar');
+    if (itensAgrupar.length > 0) {
+        painel.style.display = 'block';
+        document.getElementById('listaRotulosAgrupar').innerHTML = itensAgrupar.map((it, idx) => `
+            <div style="display:flex; gap:10px; align-items:center; background:white; padding:8px; border-radius:8px; border:1px solid #cbd5e1;">
+                <span style="font-weight:800; color:#0d3b66; min-width:80px;">${it.cod_produto}</span>
+                <input type="text" placeholder="Rótulo (ex: 11000)" value="${it.rotulo}" oninput="itensAgrupar[${idx}].rotulo = this.value" style="flex:1; padding:6px; font-size:.8rem;">
+            </div>
+        `).join('');
+    } else {
+        painel.style.display = 'none';
+    }
+}
+
+async function salvarAgrupamentoPersonalizado() {
+    if (itensAgrupar.length === 0) return alerta('Selecione pelo menos 1 item.', 'err');
+
+    const subgrupoNome = document.getElementById('tituloAgrupar').textContent.includes('Manual') 
+        ? 'Card Manual - ' + (gruposPageGrupoAtual || 'Carretilhas')
+        : document.getElementById('tituloAgrupar').textContent.replace('Agrupar — ', '').trim();
+
+    // Normaliza os códigos para bater com o banco (remove zeros à esquerda)
+    const itensNormalizados = itensAgrupar.map(it => ({
+        ...it,
+        cod_produto: String(it.cod_produto).replace(/^0+/, '')
+    }));
+
+    const body = {
+        grupo: gruposPageGrupoAtual || 'CARRETILHAS',
+        subgrupo: subgrupoNome,
+        itens: itensNormalizados
+    };
+
+    const r = await api('/api/tabela/agrupar-itens', { method: 'POST', body: JSON.stringify(body) });
+    if (r.success) {
+        alert('✅ Card criado com sucesso!');
+        fecharModalAgrupar();
+        if (gruposPageGrupoAtual) abrirGrupoPage(gruposPageGrupoAtual);
+    } else {
+        alert('❌ Erro: ' + r.error);
+    }
+}
+
+// ================================================================
+// AGRUPAR SUBGRUPOS (Criar Card)
+// ================================================================
+let subgruposParaAgrupar = [];
+
+async function abrirModalAgruparSubgrupos() {
+    const grupo = gruposPageGrupoAtual;
+    if (!grupo) return alert('Nenhum grupo selecionado.');
+
+    document.getElementById('tituloAgrupar').textContent = 'Agrupar Subgrupos — ' + grupo;
+    document.getElementById('modalAgrupar').classList.add('on');
+    document.getElementById('checksAgrupar').innerHTML = '<div class="empty">Carregando...</div>';
+    document.getElementById('painelRotulosAgrupar').style.display = 'none';
+    subgruposParaAgrupar = [];
+
+    // Busca os subgrupos do grupo atual
+    const r = await api('/api/tabela/scraping-subgrupos/' + encodeURIComponent(grupo));
+    if (!r.success) return alert('Erro ao buscar subgrupos.');
+
+    const container = document.getElementById('checksAgrupar');
+    container.innerHTML = r.subgrupos.map(sub => `
+        <label class="check-item" style="padding:8px;">
+            <input type="checkbox" value="${sub.subgrupo}" onchange="toggleSubgrupoAgrupar(this)">
+            <span class="cod">${sub.subgrupo}</span>
+            <span class="desc">${sub.total_itens || 0} variações</span>
+        </label>
+    `).join('');
+}
+
+function toggleSubgrupoAgrupar(checkbox) {
+    const nome = checkbox.value;
+    if (checkbox.checked) {
+        subgruposParaAgrupar.push(nome);
+    } else {
+        subgruposParaAgrupar = subgruposParaAgrupar.filter(s => s !== nome);
+    }
+    document.getElementById('contadorAgrupar').textContent = subgruposParaAgrupar.length + ' selecionado(s)';
+}
+
+async function salvarAgrupamentoPersonalizado() {
+    if (subgruposParaAgrupar.length === 0) return alert('Selecione pelo menos 1 subgrupo.');
+
+    const body = {
+        grupo: gruposPageGrupoAtual,
+        subgrupos: subgruposParaAgrupar,
+        nome_familia: gruposPageGrupoAtual + ' - Família'
+    };
+
+    const r = await api('/api/tabela/agrupar-subgrupos', { method: 'POST', body: JSON.stringify(body) });
+    if (r.success) {
+        alert('✅ Card criado com sucesso!');
+        fecharModalAgrupar();
+        abrirGrupoPage(gruposPageGrupoAtual);
+    } else {
+        alert('❌ Erro: ' + r.error);
+    }
+}
+</script>
+</body>
+</html>
