@@ -230,7 +230,10 @@
       </div>
     </section>
 
-          <div class="painel" style="background:#0f172a; border:1px dashed #475569;">
+    <!-- ═══════════ PÁGINA: VENDEDORES ═══════════ -->
+    <section class="page" id="page-vendedores">
+      <!-- Bloco de Novo Vendedor AGORA ESTÁ NO LUGAR CERTO -->
+      <div class="painel" style="background:#0f172a; border:1px dashed #475569;">
         <h2 style="margin-bottom:16px;">➕ Novo Vendedor</h2>
         <div class="row">
           <div><label>Nome</label><input type="text" id="novoVendedorNome" placeholder="Ex: LEANDRO"></div>
@@ -242,10 +245,8 @@
         </div>
       </div>
 
-    <!-- ═══════════ PÁGINA: VENDEDORES ═══════════ -->
-    <section class="page" id="page-vendedores">
       <div class="painel">
-        <h2>👤 Vendedores</h2>
+        <h2>👤 Vendedores Cadastrados</h2>
         <p style="font-size:14px; color:#94a3b8; margin-bottom:16px;">Defina a senha de acesso para os vendedores entrarem no Painel do Vendedor.</p>
         
         <table id="tabVendedores">
@@ -752,10 +753,6 @@ async function editarSenhaVendedor(id, nome, temSenha) {
   }
 }
 
-// INIT
-carregarStatus();
-
-
 async function criarVendedor() {
   const nome = document.getElementById('novoVendedorNome').value.trim();
   const codigo = document.getElementById('novoVendedorCod').value.trim();
@@ -778,7 +775,7 @@ async function criarVendedor() {
       document.getElementById('novoVendedorNome').value = '';
       document.getElementById('novoVendedorCod').value = '';
       document.getElementById('novoVendedorSenha').value = '';
-      carregarVendedores(); // Atualiza a tabela
+      carregarVendedores();
     } else {
       alert('❌ Erro: ' + j.erro);
     }
@@ -786,6 +783,9 @@ async function criarVendedor() {
     alert('Erro de conexão.');
   }
 }
+
+// INIT
+carregarStatus();
 </script>
 </body>
 </html>

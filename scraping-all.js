@@ -18,7 +18,7 @@ const getArg = (nome, def) => {
 const PAGINA_INICIAL = parseInt(getArg('--pagina-inicial', '1'));
 const PAGINA_FINAL = parseInt(getArg('--pagina-final', '10'));
 const DELAY_MS = parseInt(getArg('--delay', '1000'));
-const SERVIDOR = getArg('--server', 'http://localhost:3300');
+const SERVIDOR = getArg('--server', 'https://projeto-tabela.onrender.com');
 const URL_BASE = 'https://loja.marinefishing.com.br/produtos/filter?d=all';
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';

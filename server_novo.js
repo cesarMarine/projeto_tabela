@@ -427,4 +427,48 @@ app.get('/api/vendedor/:codigo/pedidos', async (req, res) => {
   } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
 
+// ROTA PARA O SCRAPER ENVIAR OS DADOS (Via JSON)
+app.post('/api/tabela/importar-scraping', async (req, res) => {
+  try {
+    const { produtos } = req.body;
+    if (!produtos || !produtos.length) {
+      return res.status(400).json({ success: false, error: 'Nenhum produto recebido.' });
+    }
+
+    let inseridos = 0;
+    let atualizados = 0;
+
+    for (const p of produtos) {
+      // O scraper manda variações. O nosso banco simplificado usa o código principal.
+      const codigo = p.codigo;
+      const subgrupo = p.subgrupo;
+      const grupo = p.grupo;
+      const marca = p.marca;
+      const descricao_longa = p.descricao_longa;
+      const imagem_url = p.imagem_url;
+      const url_origem = p.url_origem;
+      const atributos_json = JSON.stringify(p.variacoes || {}); // Salva as variações no JSON
+
+      // Verifica se já existe no Supabase para atualizar ou inserir
+      const { data: existente } = await supabase.from('scraping_produtos').select('id').eq('codigo', codigo).single();
+
+      if (existente) {
+        await supabase.from('scraping_produtos').update({
+          site: 'marine', grupo, subgrupo, marca, descricao_longa, imagem_url, url_origem, atributos_json
+        }).eq('codigo', codigo);
+        atualizados++;
+      } else {
+        await supabase.from('scraping_produtos').insert({
+          site: 'marine', grupo, subgrupo, marca, descricao_longa, imagem_url, url_origem, atributos_json, codigo
+        });
+        inseridos++;
+      }
+    }
+
+    res.json({ success: true, inseridos, atualizados });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
 app.listen(PORT, () => console.log(`🚀 Servidor rodando em http://localhost:${PORT}`));
