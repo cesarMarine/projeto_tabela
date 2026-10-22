@@ -78,32 +78,26 @@ app.post('/api/importar/sistema', upload.single('arquivo'), async (req, res) => 
 // IMPORTAR SCRAPING
 // IMPORTAR SCRAPING
 // IMPORTAR SCRAPING (Desmembrando Variações)
+// IMPORTAR SCRAPING (Desmembrando Variações)
 app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ erro: 'Nenhum arquivo.' });
     
     const dados = JSON.parse(req.file.buffer.toString('utf8'));
     const lista = Array.isArray(dados) ? dados : (dados.produtos || []);
-
     if (!lista.length) return res.json({ ok: true, inseridos: 0 });
 
-    // Limpa a tabela antes de inserir os novos dados
     await supabase.from('scraping_produtos').delete().neq('id', 0);
 
     let inseridos = 0;
-
     for (const p of lista) {
-      // Se o produto tiver variações, nós criamos uma linha no banco para CADA variação
       if (p.variacoes && p.variacoes.length > 0) {
         for (const v of p.variacoes) {
-          // Pegamos o código da variação. Se não tiver, usamos o código pai.
           const codigoVariacao = v.codigo || p.codigo;
           if (!codigoVariacao) continue;
-
-          // Pegamos a imagem da variação. Se não tiver, usamos a principal.
           const imagemVariacao = v.imagem || p.imagem_url;
-
-          // Montamos o JSON de atributos com o que sobrou da variação (QTD, tamanho, etc)
+          
+          // Limpa o objeto de atributos (tira codigo, cod_barras, imagem para não duplicar)
           const atributosLimpos = { ...v };
           delete atributosLimpos.codigo;
           delete atributosLimpos.cod_barras;
@@ -112,22 +106,19 @@ app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) =>
           const { error } = await supabase.from('scraping_produtos').insert({
             site: p.site || 'marine',
             grupo: p.grupo || '',
-            subgrupo: p.subgrupo || '', // Nome do produto
+            subgrupo: p.subgrupo || '',
             marca: p.marca || '',
             descricao_longa: p.descricao_longa || '',
             url_origem: p.url_origem || '',
-            codigo: codigoVariacao, // Código único da variação
+            codigo: codigoVariacao,
             cod_barras: v.cod_barras || '',
             imagem_url: imagemVariacao,
             atributos_json: JSON.stringify(atributosLimpos)
           });
-
           if (!error) inseridos++;
         }
       } else {
-        // Se o produto não tiver variações, insere ele mesmo
         if (!p.codigo) continue;
-        
         const { error } = await supabase.from('scraping_produtos').insert({
           site: p.site || 'marine',
           grupo: p.grupo || '',
@@ -140,11 +131,9 @@ app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) =>
           imagem_url: p.imagem_url || '',
           atributos_json: '{}'
         });
-
         if (!error) inseridos++;
       }
     }
-
     res.json({ ok: true, inseridos });
   } catch (e) { 
     res.status(500).json({ erro: e.message }); 
