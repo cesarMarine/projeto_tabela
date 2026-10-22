@@ -392,20 +392,49 @@ else {
             const codBarrasFinal = codBarrasPrincipal || variacoes[0]?.cod_barras || '';
             const imagemFinal = imagemPrincipal || variacoes[0]?.imagem || '';
 
-            if (codigoFinal) {
-                produtos.push({
-                    site: 'marine',
-                    grupo,
-                    subgrupo: nomeProduto,
-                    codigo: codigoFinal,
-                    cod_barras: codBarrasFinal,
-                    marca,
-                    descricao_longa: descricao,
-                    imagem_url: imagemFinal,
-                    url_origem: urlProduto,
-                    colunas: colunasCabecalho,
-                    variacoes
-                });
+                        if (codigoFinal) {
+                // Se o produto tiver variações, a gente "desmembra" aqui mesmo
+                if (variacoes && variacoes.length > 0) {
+                    for (const v of variacoes) {
+                        const codVar = v.codigo || codigoFinal;
+                        if (!codVar) continue;
+
+                        // Limpa o objeto de atributos da variação
+                        const attrs = { ...v };
+                        delete attrs.codigo;
+                        delete attrs.cod_barras;
+                        delete attrs.imagem;
+
+                        produtos.push({
+                            site: 'marine',
+                            grupo,
+                            subgrupo: nomeProduto,
+                            codigo: codVar,
+                            cod_barras: v.cod_barras || '',
+                            marca,
+                            descricao_longa: descricao,
+                            imagem_url: v.imagem || imagemFinal,
+                            url_origem: urlProduto,
+                            colunas: colunasCabecalho,
+                            atributos_json: JSON.stringify(attrs) // JSON limpo com QTD, tamanho, etc
+                        });
+                    }
+                } else {
+                    // Se não tiver variações, salva o produto principal
+                    produtos.push({
+                        site: 'marine',
+                        grupo,
+                        subgrupo: nomeProduto,
+                        codigo: codigoFinal,
+                        cod_barras: codBarrasFinal,
+                        marca,
+                        descricao_longa: descricao,
+                        imagem_url: imagemFinal,
+                        url_origem: urlProduto,
+                        colunas: colunasCabecalho,
+                        atributos_json: '{}'
+                    });
+                }
 
                 if (grupo === 'OUTROS') estatisticas.semGrupo++;
             }
@@ -439,7 +468,7 @@ else {
 
         // 2. Tentar enviar para o servidor (Render)
         try {
-            const resp = await fetch(`${SERVIDOR}/api/tabela/importar-scraping`, {
+            const resp = await fetch(`${SERVIDOR}/api/importar/scraping`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ produtos })

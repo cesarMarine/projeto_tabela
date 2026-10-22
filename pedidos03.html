@@ -215,7 +215,13 @@ let todosItens = [], todasFamilias = [], grupoAtual = '__TODOS__', buscaAtual = 
 let clienteLogado = null;
 let porcentagemAcrescimo = 0; // Multiplicador (ex: 1.54 para 1.54%)
 
-const fmtMoeda = v => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+const fmtMoeda = v => {
+  const num = Number(v) || 0;
+  return num.toLocaleString('pt-BR', { 
+    minimumFractionDigits: 2, 
+    maximumFractionDigits: 2 
+  });
+};
 const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 const parseAtributos = json => { try { return JSON.parse(json || '{}'); } catch { return {}; } };
 
