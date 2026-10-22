@@ -5,6 +5,7 @@
 // ================================================================
 import fetch from 'node-fetch';
 import * as cheerio from 'cheerio';
+import fs from 'fs'; // <-- ADICIONE ESTA LINHA AQUI
 
 // ────────────────────────────────────────────────────────────────
 // PARÂMETROS
@@ -417,7 +418,26 @@ else {
     }
 
     // Envia o lote pro servidor
+        // Envia o lote pro servidor E salva localmente
     if (produtos.length) {
+        // 1. Salvar localmente em um arquivo JSON
+        // const fs = require('fs');
+        const caminhoArquivo = 'backup_scraping.json';
+        
+        let dadosAntigos = [];
+        if (fs.existsSync(caminhoArquivo)) {
+            try {
+                dadosAntigos = JSON.parse(fs.readFileSync(caminhoArquivo, 'utf8'));
+            } catch (e) { dadosAntigos = []; }
+        }
+        
+        // Junta os novos com os antigos, sem duplicar os códigos
+        const todos = [...dadosAntigos, ...produtos];
+        const unicos = Array.from(new Map(todos.map(p => [p.codigo, p])).values());
+        fs.writeFileSync(caminhoArquivo, JSON.stringify(unicos, null, 2));
+        console.log(`   📁 Backup local atualizado (${unicos.length} produtos)`);
+
+        // 2. Tentar enviar para o servidor (Render)
         try {
             const resp = await fetch(`${SERVIDOR}/api/tabela/importar-scraping`, {
                 method: 'POST',
@@ -431,13 +451,13 @@ else {
                 produtos.forEach(p => {
                     estatisticas.porGrupo[p.grupo] = (estatisticas.porGrupo[p.grupo] || 0) + 1;
                 });
-                console.log(`   💾 ${r.inseridos} novos, ${r.atualizados} atualizados`);
+                console.log(`   💾 ${r.inseridos} novos, ${r.atualizados} atualizados (Enviado ao Render)`);
             } else {
-                console.log(`   ❌ Erro do servidor: ${r.error}`);
+                console.log(`   ⚠️ Erro no servidor: ${r.error} (Salvo localmente)`);
                 estatisticas.erros.push({ pagina, erro: r.error });
             }
         } catch (e) {
-            console.log(`   ❌ Erro ao enviar: ${e.message}`);
+            console.log(`   ⚠️ Falha de conexão com o Render (Salvo localmente)`);
             estatisticas.erros.push({ pagina, erro: e.message });
         }
     }

@@ -75,28 +75,49 @@ app.post('/api/importar/sistema', upload.single('arquivo'), async (req, res) => 
 });
 
 // IMPORTAR SCRAPING
+// IMPORTAR SCRAPING
 app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ erro: 'Nenhum arquivo.' });
+    
     const dados = JSON.parse(req.file.buffer.toString('utf8'));
+    // Se o arquivo for um array (como o scraper gera), usa ele. Se for objeto com 'produtos', usa o 'produtos'.
     const lista = Array.isArray(dados) ? dados : (dados.produtos || []);
 
-    // Limpa a tabela de scraping antes de inserir a nova
+    if (!lista.length) return res.json({ ok: true, inseridos: 0 });
+
+    // Limpa a tabela antes de inserir a nova versão
     await supabase.from('scraping_produtos').delete().neq('id', 0);
 
     let inseridos = 0;
     for (const p of lista) {
-      if (!p.codigo) continue;
+      if (!p.codigo) continue; // Pula produtos sem código
+
+      // O scraper manda as variações dentro de 'variacoes'. Vamos salvar no atributos_json.
+      const atributos = p.variacoes && p.variacoes.length > 0 
+          ? JSON.stringify(p.variacoes) 
+          : '{}';
+
       const { error } = await supabase.from('scraping_produtos').insert({
-        site: p.site || '', grupo: p.grupo || '', subgrupo: p.subgrupo || '', marca: p.marca || '',
-        descricao_longa: p.descricao_longa || '', url_origem: p.url_origem || '', codigo: p.codigo,
-        cod_barras: soDigitos(p.cod_barras), imagem_url: p.imagem_url || '',
-        atributos_json: typeof p.atributos_json === 'string' ? p.atributos_json : JSON.stringify(p.atributos_json || {})
+        site: p.site || 'marine',
+        grupo: p.grupo || '',
+        subgrupo: p.subgrupo || '',
+        marca: p.marca || '',
+        descricao_longa: p.descricao_longa || '',
+        url_origem: p.url_origem || '',
+        codigo: p.codigo,
+        cod_barras: soDigitos(p.cod_barras || ''),
+        imagem_url: p.imagem_url || '',
+        atributos_json: atributos
       });
+
       if (!error) inseridos++;
     }
+
     res.json({ ok: true, inseridos });
-  } catch (e) { res.status(500).json({ erro: e.message }); }
+  } catch (e) { 
+    res.status(500).json({ erro: e.message }); 
+  }
 });
 
 // IMPORTAR CLIENTES
