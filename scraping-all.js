@@ -5,7 +5,7 @@
 // ================================================================
 import fetch from 'node-fetch';
 import * as cheerio from 'cheerio';
-import fs from 'fs'; // <-- ADICIONE ESTA LINHA AQUI
+import fs from 'fs'; // <-- IMPORTANTE: Adicionado para salvar o arquivo
 
 // ────────────────────────────────────────────────────────────────
 // PARÂMETROS
@@ -327,12 +327,15 @@ for (let pagina = PAGINA_INICIAL; pagina <= PAGINA_FINAL; pagina++) {
                 if (nome) colunasCabecalho.push(nome);
             });
 
-            // VARIAÇÕES
+            // VARIAÇÕES (EXTRAÇÃO INTELIGENTE PARA A NOVA TABELA)
             const variacoes = [];
-            $p('#subprodutos tbody tr, #subprodutos tr').each((k, tr) => {
-                const tds = $p(tr).find('td');
-                if (tds.length < 4) return;
+            const linhasTabela = $p('#subprodutos tbody tr').toArray();
 
+            linhasTabela.forEach(tr => {
+                const tds = $p(tr).find('td');
+                if (tds.length < 5) return;
+
+                // 1. Imagem
                 let link = '';
                 const $a = $p(tds[0]).find('a.fancybox');
                 if ($a.length) link = $a.attr('href') || '';
@@ -341,42 +344,34 @@ for (let pagina = PAGINA_INICIAL; pagina <= PAGINA_FINAL; pagina++) {
                     link = src.replace('/400/', '/1500/').replace('/800/', '/1500/');
                 }
 
-                const variacao = { imagem: link };
+                // 2. Tamanho e QTD
+                const tamanho = $p(tds[3]).text().trim();
+                const qtd = $p(tds[4]).text().trim();
 
-                colunasCabecalho.forEach((nomeCol, idx) => {
-                    if (idx === 0) return;
-                    const td = tds[idx];
-                    if (!td) return;
+                // 3. Código
+                let codigoVar = '';
+                let codBarrasVar = '';
+                const htmlCod = $p(tds[5]).html() || '';
+                const partesCod = htmlCod
+                    .replace(/<br\s*\/?>/gi, '|')
+                    .replace(/<[^>]*>/g, '')
+                    .split('|')
+                    .map(s => s.trim())
+                    .filter(s => s);
+                
+                codigoVar = partesCod[0] || '';
+                codBarrasVar = partesCod[1] || '';
 
-                    const texto = $p(td).text().trim();
-                    const nomeUpper = nomeCol.toUpperCase();
-
-if (nomeUpper.includes('CÓD') || nomeUpper.includes('COD')) {
-    const html = $p(td).html() || '';
-    const partes = html
-        .replace(/<br\s*\/?>/gi, '|')
-        .replace(/<[^>]*>/g, '')
-        .split('|')
-        .map(s => s.trim())
-        .filter(s => s);
-    variacao['codigo'] = partes[0] || '';
-    variacao['cod_barras'] = partes[1] || '';
-}
-else if (nomeUpper.includes('QUANTIDADE') && !nomeUpper.includes('QTD')) {
-    // 🎯 NOVO: Salva a quantidade na embalagem (ex: 100)
-    variacao['QTD'] = texto;
-    // E também salva como CX/CT para o Frontend saber que é caixa/cartela
-    variacao['CX/CT'] = 'CX'; 
-}
-else if (nomeUpper.includes('PRECO') || nomeUpper.includes('PREÇO')) {
-    // pula
-}
-else {
-    variacao[nomeCol] = texto;
-}
-                });
-
-                if (variacao.codigo) variacoes.push(variacao);
+                if (codigoVar) {
+                    variacoes.push({
+                        imagem: link,
+                        Tamanho: tamanho,
+                        QTD: qtd,
+                        codigo: codigoVar,
+                        cod_barras: codBarrasVar,
+                        'CX/CT': 'CX'
+                    });
+                }
             });
 
             // Se não achou tabela mas achou código principal → cria variação única
@@ -392,49 +387,20 @@ else {
             const codBarrasFinal = codBarrasPrincipal || variacoes[0]?.cod_barras || '';
             const imagemFinal = imagemPrincipal || variacoes[0]?.imagem || '';
 
-                        if (codigoFinal) {
-                // Se o produto tiver variações, a gente "desmembra" aqui mesmo
-                if (variacoes && variacoes.length > 0) {
-                    for (const v of variacoes) {
-                        const codVar = v.codigo || codigoFinal;
-                        if (!codVar) continue;
-
-                        // Limpa o objeto de atributos da variação
-                        const attrs = { ...v };
-                        delete attrs.codigo;
-                        delete attrs.cod_barras;
-                        delete attrs.imagem;
-
-                        produtos.push({
-                            site: 'marine',
-                            grupo,
-                            subgrupo: nomeProduto,
-                            codigo: codVar,
-                            cod_barras: v.cod_barras || '',
-                            marca,
-                            descricao_longa: descricao,
-                            imagem_url: v.imagem || imagemFinal,
-                            url_origem: urlProduto,
-                            colunas: colunasCabecalho,
-                            atributos_json: JSON.stringify(attrs) // JSON limpo com QTD, tamanho, etc
-                        });
-                    }
-                } else {
-                    // Se não tiver variações, salva o produto principal
-                    produtos.push({
-                        site: 'marine',
-                        grupo,
-                        subgrupo: nomeProduto,
-                        codigo: codigoFinal,
-                        cod_barras: codBarrasFinal,
-                        marca,
-                        descricao_longa: descricao,
-                        imagem_url: imagemFinal,
-                        url_origem: urlProduto,
-                        colunas: colunasCabecalho,
-                        atributos_json: '{}'
-                    });
-                }
+            if (codigoFinal) {
+                produtos.push({
+                    site: 'marine',
+                    grupo,
+                    subgrupo: nomeProduto,
+                    codigo: codigoFinal,
+                    cod_barras: codBarrasFinal,
+                    marca,
+                    descricao_longa: descricao,
+                    imagem_url: imagemFinal,
+                    url_origem: urlProduto,
+                    colunas: colunasCabecalho,
+                    variacoes
+                });
 
                 if (grupo === 'OUTROS') estatisticas.semGrupo++;
             }
@@ -446,11 +412,8 @@ else {
         }
     }
 
-    // Envia o lote pro servidor
-        // Envia o lote pro servidor E salva localmente
+    // Envia o lote pro servidor E salva localmente
     if (produtos.length) {
-        // 1. Salvar localmente em um arquivo JSON
-        // const fs = require('fs');
         const caminhoArquivo = 'backup_scraping.json';
         
         let dadosAntigos = [];
@@ -460,13 +423,11 @@ else {
             } catch (e) { dadosAntigos = []; }
         }
         
-        // Junta os novos com os antigos, sem duplicar os códigos
         const todos = [...dadosAntigos, ...produtos];
         const unicos = Array.from(new Map(todos.map(p => [p.codigo, p])).values());
         fs.writeFileSync(caminhoArquivo, JSON.stringify(unicos, null, 2));
         console.log(`   📁 Backup local atualizado (${unicos.length} produtos)`);
 
-        // 2. Tentar enviar para o servidor (Render)
         try {
             const resp = await fetch(`${SERVIDOR}/api/importar/scraping`, {
                 method: 'POST',
@@ -476,18 +437,16 @@ else {
             const r = await resp.json();
 
             if (r.success) {
-                estatisticas.produtosSalvos += r.inseridos + r.atualizados;
+                estatisticas.produtosSalvos += r.inseridos;
                 produtos.forEach(p => {
                     estatisticas.porGrupo[p.grupo] = (estatisticas.porGrupo[p.grupo] || 0) + 1;
                 });
-                console.log(`   💾 ${r.inseridos} novos, ${r.atualizados} atualizados (Enviado ao Render)`);
+                console.log(`   💾 ${r.inseridos} novos (Enviado ao Render)`);
             } else {
                 console.log(`   ⚠️ Erro no servidor: ${r.error} (Salvo localmente)`);
-                estatisticas.erros.push({ pagina, erro: r.error });
             }
         } catch (e) {
-            console.log(`   ⚠️ Falha de conexão com o Render (Salvo localmente)`);
-            estatisticas.erros.push({ pagina, erro: e.message });
+            console.log(`   ⚠️ Falha de conexão (Salvo localmente)`);
         }
     }
 
@@ -509,11 +468,6 @@ console.log('');
 console.log('📦 Por grupo:');
 for (const [grupo, qtd] of Object.entries(estatisticas.porGrupo).sort((a, b) => b[1] - a[1])) {
     console.log(`   ${grupo.padEnd(20)} ${qtd}`);
-}
-if (estatisticas.erros.length) {
-    console.log('');
-    console.log(`⚠️  ${estatisticas.erros.length} erros. Últimos 5:`);
-    estatisticas.erros.slice(-5).forEach(e => console.log(`   Página ${e.pagina}: ${e.erro}`));
 }
 console.log('');
 console.log('✅ Concluído!');

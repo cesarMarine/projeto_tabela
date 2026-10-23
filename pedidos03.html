@@ -1021,7 +1021,9 @@ function analisarMolinete(it) {
   let modelo = attrs['Modelo'] || attrs['MODELO'] || '';
   const relacao = attrs['Relação de recolhimento'] || '';
   const capacidade = attrs['Capacidade de linha (mm-m)'] || '';
-  const ladoManivela = attrs['Lado Manivela'] || attrs['LADO MANIVELA'] || '';
+  
+  // LÊ A CHAVE "Manivela" E "Lado Manivela" (para carretilhas)
+  const ladoManivela = attrs['Manivela'] || attrs['Lado Manivela'] || attrs['LADO MANIVELA'] || '';
   const velMax = attrs['Velocidade Máxima'] || '';
 
   if (!modelo) {
@@ -1032,7 +1034,7 @@ function analisarMolinete(it) {
   const partesVar = [];
   if (relacao) partesVar.push(relacao);
   if (capacidade) partesVar.push(capacidade);
-  if (ladoManivela) partesVar.push(ladoManivela);
+  if (ladoManivela) partesVar.push(ladoManivela); // <-- AQUI ELE VAI PEGAR "DIREITA" OU "ESQUERDA"
   if (velMax) partesVar.push(velMax);
   
   const variacao = partesVar.join(' • ');
