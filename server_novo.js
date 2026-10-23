@@ -79,6 +79,7 @@ app.post('/api/importar/sistema', upload.single('arquivo'), async (req, res) => 
 // IMPORTAR SCRAPING
 // IMPORTAR SCRAPING (Desmembrando Variações)
 // IMPORTAR SCRAPING (Desmembrando Variações)
+// IMPORTAR SCRAPING (Modo Upsert: Atualiza existentes, Insere novos)
 app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ erro: 'Nenhum arquivo.' });
@@ -87,15 +88,15 @@ app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) =>
     const lista = Array.isArray(dados) ? dados : (dados.produtos || []);
     if (!lista.length) return res.json({ ok: true, inseridos: 0 });
 
-    await supabase.from('scraping_produtos').delete().neq('id', 0);
-
     let inseridos = 0;
+    
     for (const p of lista) {
       if (p.variacoes && p.variacoes.length > 0) {
         for (const v of p.variacoes) {
-          const codigoVariacao = v.codigo || p.codigo;
+          const codigoVariacao = String(v.codigo || p.codigo || '').trim();
           if (!codigoVariacao) continue;
-          const imagemVariacao = v.imagem || p.imagem_url;
+          
+          const imagemVariacao = v.imagem || p.imagem_url || '';
           
           // Limpa o objeto de atributos (tira codigo, cod_barras, imagem para não duplicar)
           const atributosLimpos = { ...v };
@@ -103,7 +104,7 @@ app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) =>
           delete atributosLimpos.cod_barras;
           delete atributosLimpos.imagem;
 
-          const { error } = await supabase.from('scraping_produtos').insert({
+          const itemData = {
             site: p.site || 'marine',
             grupo: p.grupo || '',
             subgrupo: p.subgrupo || '',
@@ -111,29 +112,44 @@ app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) =>
             descricao_longa: p.descricao_longa || '',
             url_origem: p.url_origem || '',
             codigo: codigoVariacao,
-            cod_barras: v.cod_barras || '',
+            cod_barras: String(v.cod_barras || '').trim(),
             imagem_url: imagemVariacao,
             atributos_json: JSON.stringify(atributosLimpos)
-          });
+          };
+
+          // UPSERT com base no campo 'codigo'
+          const { error } = await supabase
+            .from('scraping_produtos')
+            .upsert(itemData, { onConflict: 'codigo' });
+            
           if (!error) inseridos++;
         }
       } else {
-        if (!p.codigo) continue;
-        const { error } = await supabase.from('scraping_produtos').insert({
+        const codigoPrincipal = String(p.codigo || '').trim();
+        if (!codigoPrincipal) continue;
+
+        const itemData = {
           site: p.site || 'marine',
           grupo: p.grupo || '',
           subgrupo: p.subgrupo || '',
           marca: p.marca || '',
           descricao_longa: p.descricao_longa || '',
           url_origem: p.url_origem || '',
-          codigo: p.codigo,
-          cod_barras: p.cod_barras || '',
+          codigo: codigoPrincipal,
+          cod_barras: String(p.cod_barras || '').trim(),
           imagem_url: p.imagem_url || '',
           atributos_json: '{}'
-        });
+        };
+
+        // UPSERT com base no campo 'codigo'
+        const { error } = await supabase
+          .from('scraping_produtos')
+          .upsert(itemData, { onConflict: 'codigo' });
+          
         if (!error) inseridos++;
       }
     }
+
     res.json({ ok: true, inseridos });
   } catch (e) { 
     res.status(500).json({ erro: e.message }); 
