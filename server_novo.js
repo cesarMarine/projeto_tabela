@@ -236,7 +236,7 @@ app.get('/api/catalogo', async (req, res) => {
       };
     });
 
-    linhas = linhas.filter(l => Number(l.estoque) > 0);
+   // linhas = linhas.filter(l => Number(l.estoque) > 0);
     res.json({ ok: true, total: linhas.length, itens: linhas });
   } catch (e) {
     res.status(500).json({ ok: false, erro: e.message });
