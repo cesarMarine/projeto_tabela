@@ -80,6 +80,7 @@ app.post('/api/importar/sistema', upload.single('arquivo'), async (req, res) => 
 // IMPORTAR SCRAPING (Desmembrando Variações)
 // IMPORTAR SCRAPING (Desmembrando Variações)
 // IMPORTAR SCRAPING (Modo Upsert: Atualiza existentes, Insere novos)
+// IMPORTAR SCRAPING (Desmembrando Variações e Garantindo Subgrupo)
 app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ erro: 'Nenhum arquivo.' });
@@ -89,8 +90,11 @@ app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) =>
     if (!lista.length) return res.json({ ok: true, inseridos: 0 });
 
     let inseridos = 0;
-    
     for (const p of lista) {
+      // Garante que o subgrupo tenha texto (se p.subgrupo for vazio, usa o p.grupo ou o título/nome)
+      const subgrupoNome = String(p.subgrupo || p.nome || p.grupo || 'OUTROS').trim();
+      const grupoNome = String(p.grupo || 'OUTROS').trim();
+
       if (p.variacoes && p.variacoes.length > 0) {
         for (const v of p.variacoes) {
           const codigoVariacao = String(v.codigo || p.codigo || '').trim();
@@ -98,7 +102,6 @@ app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) =>
           
           const imagemVariacao = v.imagem || p.imagem_url || '';
           
-          // Limpa o objeto de atributos (tira codigo, cod_barras, imagem para não duplicar)
           const atributosLimpos = { ...v };
           delete atributosLimpos.codigo;
           delete atributosLimpos.cod_barras;
@@ -106,8 +109,8 @@ app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) =>
 
           const itemData = {
             site: p.site || 'marine',
-            grupo: p.grupo || '',
-            subgrupo: p.subgrupo || '',
+            grupo: grupoNome,
+            subgrupo: subgrupoNome,
             marca: p.marca || '',
             descricao_longa: p.descricao_longa || '',
             url_origem: p.url_origem || '',
@@ -117,11 +120,10 @@ app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) =>
             atributos_json: JSON.stringify(atributosLimpos)
           };
 
-          // UPSERT com base no campo 'codigo'
           const { error } = await supabase
             .from('scraping_produtos')
             .upsert(itemData, { onConflict: 'codigo' });
-            
+
           if (!error) inseridos++;
         }
       } else {
@@ -130,8 +132,8 @@ app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) =>
 
         const itemData = {
           site: p.site || 'marine',
-          grupo: p.grupo || '',
-          subgrupo: p.subgrupo || '',
+          grupo: grupoNome,
+          subgrupo: subgrupoNome,
           marca: p.marca || '',
           descricao_longa: p.descricao_longa || '',
           url_origem: p.url_origem || '',
@@ -141,15 +143,13 @@ app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) =>
           atributos_json: '{}'
         };
 
-        // UPSERT com base no campo 'codigo'
         const { error } = await supabase
           .from('scraping_produtos')
           .upsert(itemData, { onConflict: 'codigo' });
-          
+
         if (!error) inseridos++;
       }
     }
-
     res.json({ ok: true, inseridos });
   } catch (e) { 
     res.status(500).json({ erro: e.message }); 
@@ -204,17 +204,34 @@ app.get('/api/catalogo', async (req, res) => {
 
     const mapaScr = {};
     if (itensScr) {
-      itensScr.forEach(s => { mapaScr[String(parseInt(s.codigo))] = s; });
+      itensScr.forEach(s => { 
+        if (!s.codigo) return;
+        const cOriginal = String(s.codigo).trim();
+        const cNum = String(parseInt(s.codigo) || s.codigo).trim();
+        
+        mapaScr[cOriginal] = s;
+        mapaScr[cNum] = s;
+      });
     }
 
     let linhas = (itensSis || []).map(s => {
-      const scr = mapaScr[String(parseInt(s.codigo))] || {};
+      const cOriginal = String(s.codigo).trim();
+      const cNum = String(parseInt(s.codigo) || s.codigo).trim();
+      
+      const scr = mapaScr[cOriginal] || mapaScr[cNum] || {};
+      
       return {
-        codigo: s.codigo, cod_barras: s.cod_barras, descricao_sistema: s.descricao,
-        estoque: s.estoque, preco_venda: s.preco_venda,
-        subgrupo_scraping: scr.subgrupo || '', grupo_scraping: scr.grupo || '',
-        marca: scr.marca || '', descricao_longa: scr.descricao_longa || '',
-        imagem_url: scr.imagem_url || '', url_origem: scr.url_origem || '',
+        codigo: s.codigo, 
+        cod_barras: s.cod_barras, 
+        descricao_sistema: s.descricao,
+        estoque: s.estoque, 
+        preco_venda: s.preco_venda,
+        subgrupo_scraping: scr.subgrupo || '', 
+        grupo_scraping: scr.grupo || '',
+        marca: scr.marca || '', 
+        descricao_longa: scr.descricao_longa || '',
+        imagem_url: scr.imagem_url || '', 
+        url_origem: scr.url_origem || '',
         atributos_json: scr.atributos_json || '{}'
       };
     });
