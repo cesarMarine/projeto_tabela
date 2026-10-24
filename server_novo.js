@@ -145,12 +145,14 @@ app.get('/api/status', async (req, res) => {
 // ==========================================
 // ROTA DO CATÁLOGO COM PARSE DE CÓDIGO MELHORADO
 // ==========================================
+// Manter APENAS UMA declaração da rota no arquivo (Substitua na Linha 148 e APAGUE a da Linha 225)
 app.get('/api/catalogo', async (req, res) => {
   try {
     const { data: itensSis } = await supabase.from('itens_sistema').select('*').eq('ativo', 1);
     const { data: itensScr } = await supabase.from('scraping_produtos').select('*');
 
-    const norm = c => String(c ?? '').trim().replace(/^0+/, '');
+    // Função para remover zeros à esquerda e converter para minúsculas
+    const norm = c => String(c ?? '').trim().replace(/^0+/, '').toLowerCase();
 
     const mapaScr = {};
     if (itensScr) {
@@ -168,7 +170,8 @@ app.get('/api/catalogo', async (req, res) => {
         descricao_sistema: s.descricao,
         estoque: s.estoque, 
         preco_venda: s.preco_venda,
-        subgrupo_scraping: scr.subgrupo || '', 
+        // Garante que subgrupo_scraping receba o valor do scraping ou a descrição do sistema para a busca no Admin
+        subgrupo_scraping: scr.subgrupo || s.descricao || '', 
         grupo_scraping: scr.grupo || '',
         marca: scr.marca || '', 
         descricao_longa: scr.descricao_longa || '',
@@ -178,7 +181,6 @@ app.get('/api/catalogo', async (req, res) => {
       };
     });
 
-    linhas = linhas.filter(l => Number(l.estoque) > 0);
     res.json({ ok: true, total: linhas.length, itens: linhas });
   } catch (e) {
     res.status(500).json({ ok: false, erro: e.message });
@@ -222,34 +224,7 @@ app.post('/api/importar/clientes', upload.single('arquivo'), async (req, res) =>
 // CATÁLOGO E STATUS
 // ==========================================
 
-app.get('/api/catalogo', async (req, res) => {
-  try {
-    const { data: itensSis } = await supabase.from('itens_sistema').select('*').eq('ativo', 1);
-    const { data: itensScr } = await supabase.from('scraping_produtos').select('*');
 
-    const mapaScr = {};
-    if (itensScr) {
-      itensScr.forEach(s => { mapaScr[String(parseInt(s.codigo))] = s; });
-    }
-
-    let linhas = (itensSis || []).map(s => {
-      const scr = mapaScr[String(parseInt(s.codigo))] || {};
-      return {
-        codigo: s.codigo, cod_barras: s.cod_barras, descricao_sistema: s.descricao,
-        estoque: s.estoque, preco_venda: s.preco_venda,
-        subgrupo_scraping: scr.subgrupo || '', grupo_scraping: scr.grupo || '',
-        marca: scr.marca || '', descricao_longa: scr.descricao_longa || '',
-        imagem_url: scr.imagem_url || '', url_origem: scr.url_origem || '',
-        atributos_json: scr.atributos_json || '{}'
-      };
-    });
-
-    linhas = linhas.filter(l => Number(l.estoque) > 0);
-    res.json({ ok: true, total: linhas.length, itens: linhas });
-  } catch (e) {
-    res.status(500).json({ ok: false, erro: e.message });
-  }
-});
 
 app.get('/api/status', async (req, res) => {
   try {
