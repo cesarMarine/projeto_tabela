@@ -1,9 +1,10 @@
 {
   "name": "catalogo-vendas",
   "version": "1.0.0",
-  "main": "server.js",
+  "type": "module",
+  "main": "server_novo.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server_novo.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
