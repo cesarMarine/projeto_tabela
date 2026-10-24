@@ -199,26 +199,34 @@ app.post('/api/importar/clientes', upload.single('arquivo'), async (req, res) =>
 
 app.get('/api/catalogo', async (req, res) => {
   try {
-    const { data: itensSis } = await supabase.from('itens_sistema').select('*').eq('ativo', 1);
-    const { data: itensScr } = await supabase.from('scraping_produtos').select('*');
+    const { data: itensSis, error: errSis } = await supabase.from('itens_sistema').select('*').eq('ativo', 1);
+    const { data: itensScr, error: errScr } = await supabase.from('scraping_produtos').select('*');
+
+    if (errSis) throw errSis;
+    if (errScr) throw errScr;
+
+    // Helper para padronizar qualquer código removendo zeros à esquerda
+    const limparCod = (v) => String(v ?? '').replace(/^0+/, '').trim();
 
     const mapaScr = {};
     if (itensScr) {
       itensScr.forEach(s => { 
         if (!s.codigo) return;
-        const cOriginal = String(s.codigo).trim();
-        const cNum = String(parseInt(s.codigo) || s.codigo).trim();
+        const codOriginal = String(s.codigo).trim();
+        const codSemZeros = limparCod(s.codigo);
         
-        mapaScr[cOriginal] = s;
-        mapaScr[cNum] = s;
+        // Mapeia pelas duas formas para garantir o match perfeito
+        mapaScr[codOriginal] = s;
+        mapaScr[codSemZeros] = s;
       });
     }
 
     let linhas = (itensSis || []).map(s => {
-      const cOriginal = String(s.codigo).trim();
-      const cNum = String(parseInt(s.codigo) || s.codigo).trim();
+      const codOriginal = String(s.codigo).trim();
+      const codSemZeros = limparCod(s.codigo);
       
-      const scr = mapaScr[cOriginal] || mapaScr[cNum] || {};
+      // Busca no mapa tentando o código limpo (ex: "8050" acha "008050")
+      const scr = mapaScr[codSemZeros] || mapaScr[codOriginal] || {};
       
       return {
         codigo: s.codigo, 
@@ -236,9 +244,12 @@ app.get('/api/catalogo', async (req, res) => {
       };
     });
 
-   // linhas = linhas.filter(l => Number(l.estoque) > 0);
+    // Desativado o filtro de estoque para permitir a montagem das Famílias no Admin
+    // linhas = linhas.filter(l => Number(l.estoque) > 0);
+    
     res.json({ ok: true, total: linhas.length, itens: linhas });
   } catch (e) {
+    console.error("ERRO NO CATALOGO:", e.message);
     res.status(500).json({ ok: false, erro: e.message });
   }
 });
