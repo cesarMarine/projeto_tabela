@@ -166,10 +166,12 @@ async function main() {
                                 }
                             });
 
-                            const manivelaNaLinha = extrairManivelaTexto(textoLinhaCompleta) || manivelaNoTitulo;
-                            if (manivelaNaLinha) {
-                                atributosRow['Lado Manivela'] = manivelaNaLinha;
-                            }
+                           // Dentro do loop de extração da tabela em importar_scraping.js:
+const manivelaNaLinha = extrairManivelaTexto(textoLinhaCompleta) || manivelaNoTitulo;
+if (manivelaNaLinha) {
+    atributosRow['lado_manivela'] = manivelaNaLinha;
+    atributosRow['Lado Manivela'] = manivelaNaLinha; // Compatibilidade com ambas as chaves
+}
 
                             if (!codigoVar) {
                                 const matchSoCodigo = $p(tr).text().match(/\b\d{5,8}\b/);

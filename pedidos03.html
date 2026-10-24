@@ -1015,14 +1015,13 @@ function analisarAnzol(it) {
   const lote = loteMatch ? loteMatch[1] + ' un' : '';
   return { numero, lote };
 }
-
 function analisarMolinete(it) {
   const attrs = it.atributos || {};
   let modelo = attrs['Modelo'] || attrs['MODELO'] || '';
-  const relacao = attrs['Relação de recolhimento'] || '';
-  const capacidade = attrs['Capacidade de linha (mm-m)'] || '';
-  const ladoManivela = attrs['Lado Manivela'] || attrs['LADO MANIVELA'] || '';
-  const velMax = attrs['Velocidade Máxima'] || '';
+  const relacao = attrs['Relação de recolhimento'] || attrs['relacao_recolhimento'] || '';
+  const capacidade = attrs['Capacidade de linha (mm-m)'] || attrs['capacidade_linha'] || '';
+  const ladoManivela = attrs['Lado Manivela'] || attrs['LADO MANIVELA'] || attrs['lado_manivela'] || '';
+  const velMax = attrs['Velocidade Máxima'] || attrs['velocidade_maxima'] || '';
 
   if (!modelo) {
     const partes = (it.subgrupo || '').trim().split(/\s+/);

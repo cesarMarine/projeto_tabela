@@ -77,14 +77,31 @@ app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) =>
 
     let inseridos = 0;
     for (const p of lista) {
-      if (!p.codigo) continue;
-      const { error } = await supabase.from('scraping_produtos').insert({
-        site: p.site || 'marine', grupo: p.grupo || '', subgrupo: p.subgrupo || '', marca: p.marca || '',
-        descricao_longa: p.descricao_longa || '', url_origem: p.url_origem || '', codigo: p.codigo,
-        cod_barras: soDigitos(p.cod_barras), imagem_url: p.imagem_url || '',
-        atributos_json: typeof p.atributos_json === 'string' ? p.atributos_json : JSON.stringify(p.atributos_json || {})
-      });
-      if (!error) inseridos++;
+      // Se o produto possui um array de variações, iteramos sobre cada uma delas
+      const variacoes = (p.variacoes && p.variacoes.length > 0) ? p.variacoes : [p];
+
+      for (const v of variacoes) {
+        const codVar = v.codigo || p.codigo;
+        if (!codVar) continue;
+
+        // Separa os atributos extras (remove chaves padrão do objeto da variação)
+        const { imagem, codigo, cod_barras, ...atributos } = v;
+
+        const { error } = await supabase.from('scraping_produtos').insert({
+          site: p.site || 'marine',
+          grupo: p.grupo || '',
+          subgrupo: p.subgrupo || '',
+          marca: p.marca || '',
+          descricao_longa: p.descricao_longa || '',
+          url_origem: p.url_origem || '',
+          codigo: codVar,
+          cod_barras: soDigitos(cod_barras || p.cod_barras),
+          imagem_url: imagem || p.imagem_url || '',
+          atributos_json: JSON.stringify(atributos || {})
+        });
+
+        if (!error) inseridos++;
+      }
     }
     res.json({ ok: true, inseridos });
   } catch (e) { res.status(500).json({ erro: e.message }); }
