@@ -494,4 +494,29 @@ app.get('/api/vendedor/:codigo/pedidos', async (req, res) => {
   } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
 
+// ROTA PARA PROCESSAR VINCULAÇÃO E MATCH MANUALMENTE
+app.post('/api/vincular', async (req, res) => {
+  try {
+    const { data: sisData, error: err1 } = await supabase.from('itens_sistema').select('codigo');
+    const { data: scrData, error: err2 } = await supabase.from('scraping_produtos').select('codigo');
+
+    if (err1 || err2) throw new Error((err1 || err2).message);
+
+    const norm = c => String(c ?? '').trim().replace(/^0+/, '').toLowerCase();
+    const scrCodigos = new Set((scrData || []).map(s => norm(s.codigo)));
+
+    let cruzados = 0;
+    if (sisData) {
+      cruzados = sisData.filter(s => {
+        const c = norm(s.codigo);
+        return c !== '' && scrCodigos.has(c);
+      }).length;
+    }
+
+    res.json({ ok: true, cruzados });
+  } catch (e) {
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
+
 app.listen(PORT, () => console.log(`🚀 Servidor rodando em http://localhost:${PORT}`));
