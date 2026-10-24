@@ -1,35 +1,31 @@
-const express = require('express');
-const multer = require('multer');
-const XLSX = require('xlsx');
-const { createClient } = require('@supabase/supabase-js');
-const path = require('path');
+import express from 'express';
+import multer from 'multer';
+import XLSX from 'xlsx';
+import { createClient } from '@supabase/supabase-js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Configuração do Supabase (Usando a chave publicável)
-
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://gpzqzwrqndawhhglycat.supabase.co';
+const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_KEY;
-
-const upload = multer({ storage: multer.memoryStorage() });
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 app.use(express.json({ limit: '100mb' }));
 app.use(express.static(__dirname));
 
-// Helpers
 const soDigitos = (v) => String(v ?? '').replace(/\D/g, '');
 const num = (v) => {
   if (v === null || v === undefined || v === '') return 0;
   if (typeof v === 'number') return v;
   return Number(String(v).replace(/\./g, '').replace(',', '.')) || 0;
 };
+const upload = multer({ storage: multer.memoryStorage() });
 
 // ==========================================
 // IMPORTAÇÕES
 // ==========================================
 
-// IMPORTAR PLANILHA SISTEMA
+// 1. IMPORTAR PLANILHA SISTEMA
 app.post('/api/importar/sistema', upload.single('arquivo'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ erro: 'Nenhum arquivo enviado.' });
@@ -65,97 +61,38 @@ app.post('/api/importar/sistema', upload.single('arquivo'), async (req, res) => 
         atualizado_em: new Date().toISOString()
       };
       
-      // Upsert no Supabase (Atualiza se existir, insere se não)
       const { error } = await supabase.from('itens_sistema').upsert(item, { onConflict: 'codigo' });
       if (!error) inseridos++;
     }
-    
     res.json({ ok: true, inseridos });
   } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
-// IMPORTAR SCRAPING
-// IMPORTAR SCRAPING
-// IMPORTAR SCRAPING (Desmembrando Variações)
-// IMPORTAR SCRAPING (Desmembrando Variações)
-// IMPORTAR SCRAPING (Modo Upsert: Atualiza existentes, Insere novos)
-// IMPORTAR SCRAPING (Desmembrando Variações e Garantindo Subgrupo)
+// 2. IMPORTAR SCRAPING
 app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ erro: 'Nenhum arquivo.' });
-    
     const dados = JSON.parse(req.file.buffer.toString('utf8'));
     const lista = Array.isArray(dados) ? dados : (dados.produtos || []);
-    if (!lista.length) return res.json({ ok: true, inseridos: 0 });
+
+    await supabase.from('scraping_produtos').delete().neq('id', 0);
 
     let inseridos = 0;
     for (const p of lista) {
-      // Garante que o subgrupo tenha texto (se p.subgrupo for vazio, usa o p.grupo ou o título/nome)
-      const subgrupoNome = String(p.subgrupo || p.nome || p.grupo || 'OUTROS').trim();
-      const grupoNome = String(p.grupo || 'OUTROS').trim();
-
-      if (p.variacoes && p.variacoes.length > 0) {
-        for (const v of p.variacoes) {
-          const codigoVariacao = String(v.codigo || p.codigo || '').trim();
-          if (!codigoVariacao) continue;
-          
-          const imagemVariacao = v.imagem || p.imagem_url || '';
-          
-          const atributosLimpos = { ...v };
-          delete atributosLimpos.codigo;
-          delete atributosLimpos.cod_barras;
-          delete atributosLimpos.imagem;
-
-          const itemData = {
-            site: p.site || 'marine',
-            grupo: grupoNome,
-            subgrupo: subgrupoNome,
-            marca: p.marca || '',
-            descricao_longa: p.descricao_longa || '',
-            url_origem: p.url_origem || '',
-            codigo: codigoVariacao,
-            cod_barras: String(v.cod_barras || '').trim(),
-            imagem_url: imagemVariacao,
-            atributos_json: JSON.stringify(atributosLimpos)
-          };
-
-          const { error } = await supabase
-            .from('scraping_produtos')
-            .upsert(itemData, { onConflict: 'codigo' });
-
-          if (!error) inseridos++;
-        }
-      } else {
-        const codigoPrincipal = String(p.codigo || '').trim();
-        if (!codigoPrincipal) continue;
-
-        const itemData = {
-          site: p.site || 'marine',
-          grupo: grupoNome,
-          subgrupo: subgrupoNome,
-          marca: p.marca || '',
-          descricao_longa: p.descricao_longa || '',
-          url_origem: p.url_origem || '',
-          codigo: codigoPrincipal,
-          cod_barras: String(p.cod_barras || '').trim(),
-          imagem_url: p.imagem_url || '',
-          atributos_json: '{}'
-        };
-
-        const { error } = await supabase
-          .from('scraping_produtos')
-          .upsert(itemData, { onConflict: 'codigo' });
-
-        if (!error) inseridos++;
-      }
+      if (!p.codigo) continue;
+      const { error } = await supabase.from('scraping_produtos').insert({
+        site: p.site || 'marine', grupo: p.grupo || '', subgrupo: p.subgrupo || '', marca: p.marca || '',
+        descricao_longa: p.descricao_longa || '', url_origem: p.url_origem || '', codigo: p.codigo,
+        cod_barras: soDigitos(p.cod_barras), imagem_url: p.imagem_url || '',
+        atributos_json: typeof p.atributos_json === 'string' ? p.atributos_json : JSON.stringify(p.atributos_json || {})
+      });
+      if (!error) inseridos++;
     }
     res.json({ ok: true, inseridos });
-  } catch (e) { 
-    res.status(500).json({ erro: e.message }); 
-  }
+  } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
-// IMPORTAR CLIENTES
+// 3. IMPORTAR CLIENTES
 app.post('/api/importar/clientes', upload.single('arquivo'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ erro: 'Nenhum arquivo enviado.' });
@@ -168,13 +105,12 @@ app.post('/api/importar/clientes', upload.single('arquivo'), async (req, res) =>
       const cnpjRaw = r['CPF/CNPJ'] ?? r['CNPJ'] ?? r['cnpj'] ?? '';
       const cnpj = String(cnpjRaw).replace(/\D/g, ''); 
       const codigo = String(r['CÓDIGO'] ?? r['codigo'] ?? '').trim();
-      
       if (!cnpj || !codigo) continue; 
+
       const rep = r['Representante'] ?? r['REPRESENTANTE'] ?? r['representante'] ?? r['COD REP'] ?? r['Cód. Rep'] ?? r['codigo_representante'] ?? '';
 
       const item = {
-        codigo: codigo,
-        cnpj: cnpj,
+        codigo: codigo, cnpj: cnpj,
         nome_fantasia: String(r['NOME'] ?? r['Nome'] ?? '').trim(),
         razao_social: String(r['RAZÃO SOCIAL'] ?? r['Razão Social'] ?? r['Razao'] ?? '').trim(),
         cidade: String(r['CIDADE'] ?? r['Cidade'] ?? '').trim(),
@@ -187,9 +123,7 @@ app.post('/api/importar/clientes', upload.single('arquivo'), async (req, res) =>
       if (!error) inseridos++;
     }
     res.json({ ok: true, inseridos });
-  } catch (e) { 
-    res.status(500).json({ erro: e.message }); 
-  }
+  } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
 // ==========================================
@@ -198,57 +132,29 @@ app.post('/api/importar/clientes', upload.single('arquivo'), async (req, res) =>
 
 app.get('/api/catalogo', async (req, res) => {
   try {
-    const { data: itensSis, error: errSis } = await supabase.from('itens_sistema').select('*').eq('ativo', 1);
-    const { data: itensScr, error: errScr } = await supabase.from('scraping_produtos').select('*');
-
-    if (errSis) throw errSis;
-    if (errScr) throw errScr;
-
-    // Helper para padronizar qualquer código removendo zeros à esquerda
-    const limparCod = (v) => String(v ?? '').replace(/^0+/, '').trim();
+    const { data: itensSis } = await supabase.from('itens_sistema').select('*').eq('ativo', 1);
+    const { data: itensScr } = await supabase.from('scraping_produtos').select('*');
 
     const mapaScr = {};
     if (itensScr) {
-      itensScr.forEach(s => { 
-        if (!s.codigo) return;
-        const codOriginal = String(s.codigo).trim();
-        const codSemZeros = limparCod(s.codigo);
-        
-        // Mapeia pelas duas formas para garantir o match perfeito
-        mapaScr[codOriginal] = s;
-        mapaScr[codSemZeros] = s;
-      });
+      itensScr.forEach(s => { mapaScr[String(parseInt(s.codigo))] = s; });
     }
 
     let linhas = (itensSis || []).map(s => {
-      const codOriginal = String(s.codigo).trim();
-      const codSemZeros = limparCod(s.codigo);
-      
-      // Busca no mapa tentando o código limpo (ex: "8050" acha "008050")
-      const scr = mapaScr[codSemZeros] || mapaScr[codOriginal] || {};
-      
+      const scr = mapaScr[String(parseInt(s.codigo))] || {};
       return {
-        codigo: s.codigo, 
-        cod_barras: s.cod_barras, 
-        descricao_sistema: s.descricao,
-        estoque: s.estoque, 
-        preco_venda: s.preco_venda,
-        subgrupo_scraping: scr.subgrupo || '', 
-        grupo_scraping: scr.grupo || '',
-        marca: scr.marca || '', 
-        descricao_longa: scr.descricao_longa || '',
-        imagem_url: scr.imagem_url || '', 
-        url_origem: scr.url_origem || '',
+        codigo: s.codigo, cod_barras: s.cod_barras, descricao_sistema: s.descricao,
+        estoque: s.estoque, preco_venda: s.preco_venda,
+        subgrupo_scraping: scr.subgrupo || '', grupo_scraping: scr.grupo || '',
+        marca: scr.marca || '', descricao_longa: scr.descricao_longa || '',
+        imagem_url: scr.imagem_url || '', url_origem: scr.url_origem || '',
         atributos_json: scr.atributos_json || '{}'
       };
     });
 
-    // Desativado o filtro de estoque para permitir a montagem das Famílias no Admin
-    // linhas = linhas.filter(l => Number(l.estoque) > 0);
-    
+    linhas = linhas.filter(l => Number(l.estoque) > 0);
     res.json({ ok: true, total: linhas.length, itens: linhas });
   } catch (e) {
-    console.error("ERRO NO CATALOGO:", e.message);
     res.status(500).json({ ok: false, erro: e.message });
   }
 });
@@ -257,7 +163,17 @@ app.get('/api/status', async (req, res) => {
   try {
     const { count: sis } = await supabase.from('itens_sistema').select('*', { count: 'exact', head: true });
     const { count: scr } = await supabase.from('scraping_produtos').select('*', { count: 'exact', head: true });
-    res.json({ itens_sistema: sis || 0, scraping_produtos: scr || 0, cruzados: sis || 0 });
+    
+    const { data: sisData } = await supabase.from('itens_sistema').select('codigo');
+    const { data: scrData } = await supabase.from('scraping_produtos').select('codigo');
+    
+    let cruzados = 0;
+    if (sisData && scrData) {
+      const scrCodigos = new Set(scrData.map(s => String(parseInt(s.codigo))));
+      cruzados = sisData.filter(s => scrCodigos.has(String(parseInt(s.codigo)))).length;
+    }
+
+    res.json({ itens_sistema: sis || 0, scraping_produtos: scr || 0, cruzados });
   } catch (e) {
     res.status(500).json({ erro: e.message });
   }
@@ -509,50 +425,6 @@ app.get('/api/vendedor/:codigo/pedidos', async (req, res) => {
     }
     res.json({ ok: true, pedidos });
   } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }
-});
-
-// ROTA PARA O SCRAPER ENVIAR OS DADOS (Via JSON)
-app.post('/api/tabela/importar-scraping', async (req, res) => {
-  try {
-    const { produtos } = req.body;
-    if (!produtos || !produtos.length) {
-      return res.status(400).json({ success: false, error: 'Nenhum produto recebido.' });
-    }
-
-    let inseridos = 0;
-    let atualizados = 0;
-
-    for (const p of produtos) {
-      // O scraper manda variações. O nosso banco simplificado usa o código principal.
-      const codigo = p.codigo;
-      const subgrupo = p.subgrupo;
-      const grupo = p.grupo;
-      const marca = p.marca;
-      const descricao_longa = p.descricao_longa;
-      const imagem_url = p.imagem_url;
-      const url_origem = p.url_origem;
-      const atributos_json = JSON.stringify(p.variacoes || {}); // Salva as variações no JSON
-
-      // Verifica se já existe no Supabase para atualizar ou inserir
-      const { data: existente } = await supabase.from('scraping_produtos').select('id').eq('codigo', codigo).single();
-
-      if (existente) {
-        await supabase.from('scraping_produtos').update({
-          site: 'marine', grupo, subgrupo, marca, descricao_longa, imagem_url, url_origem, atributos_json
-        }).eq('codigo', codigo);
-        atualizados++;
-      } else {
-        await supabase.from('scraping_produtos').insert({
-          site: 'marine', grupo, subgrupo, marca, descricao_longa, imagem_url, url_origem, atributos_json, codigo
-        });
-        inseridos++;
-      }
-    }
-
-    res.json({ success: true, inseridos, atualizados });
-  } catch (e) {
-    res.status(500).json({ success: false, error: e.message });
-  }
 });
 
 app.listen(PORT, () => console.log(`🚀 Servidor rodando em http://localhost:${PORT}`));
