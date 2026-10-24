@@ -67,26 +67,25 @@ app.post('/api/importar/sistema', upload.single('arquivo'), async (req, res) => 
   } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
+// ==========================================
+// ROTA DE IMPORTAÇÃO DE SCRAPING CORRIGIDA
+// ==========================================
 app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ erro: 'Nenhum arquivo.' });
     const dados = JSON.parse(req.file.buffer.toString('utf8'));
     const lista = Array.isArray(dados) ? dados : (dados.produtos || []);
 
-    // REMOVIDO: await supabase.from('scraping_produtos').delete().neq('id', 0);
-    // Agora não apagamos mais a tabela inteira antes de importar!
-
-    let inseridosOuAtualizados = 0;
+    let inseridos = 0;
 
     for (const p of lista) {
-      // Pega o array de variações ou o próprio item caso não haja variações
       const variacoes = (p.variacoes && p.variacoes.length > 0) ? p.variacoes : [p];
 
       for (const v of variacoes) {
+        // Limpa o código para garantir correspondência exata
         const codVar = String(v.codigo || p.codigo || '').trim();
         if (!codVar) continue;
 
-        // Separa os atributos extras da variação
         const { imagem, codigo, cod_barras, ...atributos } = v;
 
         const itemScraping = {
@@ -102,18 +101,87 @@ app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) =>
           atributos_json: JSON.stringify(atributos || {})
         };
 
-        // Usamos upsert com base na coluna 'codigo'
         const { error } = await supabase
           .from('scraping_produtos')
           .upsert(itemScraping, { onConflict: 'codigo' });
 
-        if (!error) inseridosOuAtualizados++;
+        if (!error) inseridos++;
       }
     }
 
-    res.json({ ok: true, processados: inseridosOuAtualizados });
+    // Retorna 'inseridos' para o frontend exibir a mensagem correta em vez de 'undefined'
+    res.json({ ok: true, inseridos });
   } catch (e) { 
     res.status(500).json({ erro: e.message }); 
+  }
+});
+
+// ==========================================
+// ROTA DE STATUS COM PARSE DE CÓDIGO MELHORADO
+// ==========================================
+app.get('/api/status', async (req, res) => {
+  try {
+    const { count: sis } = await supabase.from('itens_sistema').select('*', { count: 'exact', head: true });
+    const { count: scr } = await supabase.from('scraping_produtos').select('*', { count: 'exact', head: true });
+    
+    const { data: sisData } = await supabase.from('itens_sistema').select('codigo');
+    const { data: scrData } = await supabase.from('scraping_produtos').select('codigo');
+    
+    let cruzados = 0;
+    if (sisData && scrData) {
+      // Função para normalizar códigos tirando zeros à esquerda e espaços
+      const norm = c => String(c ?? '').trim().replace(/^0+/, '');
+      
+      const scrCodigos = new Set(scrData.map(s => norm(s.codigo)));
+      cruzados = sisData.filter(s => norm(s.codigo) !== '' && scrCodigos.has(norm(s.codigo))).length;
+    }
+
+    res.json({ itens_sistema: sis || 0, scraping_produtos: scr || 0, cruzados });
+  } catch (e) {
+    res.status(500).json({ erro: e.message });
+  }
+});
+
+// ==========================================
+// ROTA DO CATÁLOGO COM PARSE DE CÓDIGO MELHORADO
+// ==========================================
+app.get('/api/catalogo', async (req, res) => {
+  try {
+    const { data: itensSis } = await supabase.from('itens_sistema').select('*').eq('ativo', 1);
+    const { data: itensScr } = await supabase.from('scraping_produtos').select('*');
+
+    const norm = c => String(c ?? '').trim().replace(/^0+/, '');
+
+    const mapaScr = {};
+    if (itensScr) {
+      itensScr.forEach(s => { 
+        const chave = norm(s.codigo);
+        if (chave) mapaScr[chave] = s; 
+      });
+    }
+
+    let linhas = (itensSis || []).map(s => {
+      const scr = mapaScr[norm(s.codigo)] || {};
+      return {
+        codigo: s.codigo, 
+        cod_barras: s.cod_barras, 
+        descricao_sistema: s.descricao,
+        estoque: s.estoque, 
+        preco_venda: s.preco_venda,
+        subgrupo_scraping: scr.subgrupo || '', 
+        grupo_scraping: scr.grupo || '',
+        marca: scr.marca || '', 
+        descricao_longa: scr.descricao_longa || '',
+        imagem_url: scr.imagem_url || '', 
+        url_origem: scr.url_origem || '',
+        atributos_json: scr.atributos_json || '{}'
+      };
+    });
+
+    linhas = linhas.filter(l => Number(l.estoque) > 0);
+    res.json({ ok: true, total: linhas.length, itens: linhas });
+  } catch (e) {
+    res.status(500).json({ ok: false, erro: e.message });
   }
 });
 
