@@ -73,21 +73,23 @@ app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) =>
     const dados = JSON.parse(req.file.buffer.toString('utf8'));
     const lista = Array.isArray(dados) ? dados : (dados.produtos || []);
 
-    await supabase.from('scraping_produtos').delete().neq('id', 0);
+    // REMOVIDO: await supabase.from('scraping_produtos').delete().neq('id', 0);
+    // Agora não apagamos mais a tabela inteira antes de importar!
 
-    let inseridos = 0;
+    let inseridosOuAtualizados = 0;
+
     for (const p of lista) {
-      // Se o produto possui um array de variações, iteramos sobre cada uma delas
+      // Pega o array de variações ou o próprio item caso não haja variações
       const variacoes = (p.variacoes && p.variacoes.length > 0) ? p.variacoes : [p];
 
       for (const v of variacoes) {
-        const codVar = v.codigo || p.codigo;
+        const codVar = String(v.codigo || p.codigo || '').trim();
         if (!codVar) continue;
 
-        // Separa os atributos extras (remove chaves padrão do objeto da variação)
+        // Separa os atributos extras da variação
         const { imagem, codigo, cod_barras, ...atributos } = v;
 
-        const { error } = await supabase.from('scraping_produtos').insert({
+        const itemScraping = {
           site: p.site || 'marine',
           grupo: p.grupo || '',
           subgrupo: p.subgrupo || '',
@@ -98,13 +100,21 @@ app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) =>
           cod_barras: soDigitos(cod_barras || p.cod_barras),
           imagem_url: imagem || p.imagem_url || '',
           atributos_json: JSON.stringify(atributos || {})
-        });
+        };
 
-        if (!error) inseridos++;
+        // Usamos upsert com base na coluna 'codigo'
+        const { error } = await supabase
+          .from('scraping_produtos')
+          .upsert(itemScraping, { onConflict: 'codigo' });
+
+        if (!error) inseridosOuAtualizados++;
       }
     }
-    res.json({ ok: true, inseridos });
-  } catch (e) { res.status(500).json({ erro: e.message }); }
+
+    res.json({ ok: true, processados: inseridosOuAtualizados });
+  } catch (e) { 
+    res.status(500).json({ erro: e.message }); 
+  }
 });
 
 app.post('/api/importar/clientes', upload.single('arquivo'), async (req, res) => {

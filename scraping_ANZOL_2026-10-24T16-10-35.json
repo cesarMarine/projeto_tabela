@@ -1,0 +1,3708 @@
+[
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "ANZOL WIDE GAP",
+    "marca": "MARINE",
+    "descricao_longa": "O Anzol Wide Gap da Marine é produzido em aço super resistente e conta com acabamento Black Nickel, garantindo durabilidade e proteção contra corrosão. Com ponta angulada e super afiada, oferece penetração eficiente e fisgadas firmes, tornando-se indispensável para diferentes modalidades de pesca.\n\nReforçado e com maior espessura, o Wide Gap combina leveza e robustez em um desenho versátil, ideal para pescadores que exigem confiança em cada arremesso.\n\nConfiável, afiado e resistente, o Wide Gap é a escolha certa para pescadores que buscam qualidade e desempenho em cada fisgada.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/anzol-wide-gap--1963.html",
+    "codigo": "001311",
+    "cod_barras": "7898480921839",
+    "imagem_url": "https://loja.marinefishing.com.br/img/1966/produtos/1500/ANZOL-WIDE-GAP-BLACK-codigo-000718.jpg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1956/produtos/1500/ANZOL-WIDE-GAP-BLACK-codigo-001311.jpg",
+        "codigo": "001311",
+        "cod_barras": "7898480921839",
+        "Tamanho": "6",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001311 7898480921839"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1955/produtos/1500/ANZOL-WIDE-GAP-BLACK-codigo-002108.jpg",
+        "codigo": "002108",
+        "cod_barras": "7898480921822",
+        "Tamanho": "4",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "002108 7898480921822"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1954/produtos/1500/ANZOL-WIDE-GAP-BLACK-codigo-001310.jpg",
+        "codigo": "001310",
+        "cod_barras": "7898480921815",
+        "Tamanho": "2",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001310 7898480921815"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1953/produtos/1500/ANZOL-WIDE-GAP-BLACK-codigo-001309.jpg",
+        "codigo": "001309",
+        "cod_barras": "7898480921808",
+        "Tamanho": "1",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001309 7898480921808"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1957/produtos/1500/ANZOL-WIDE-GAP-BLACK-codigo-001359.jpg",
+        "codigo": "001359",
+        "cod_barras": "7898480925103",
+        "Tamanho": "1/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001359 7898480925103"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1958/produtos/1500/ANZOL-WIDE-GAP-BLACK-codigo-001360.jpg",
+        "codigo": "001360",
+        "cod_barras": "7898480921853",
+        "Tamanho": "2/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001360 7898480921853"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1959/produtos/1500/ANZOL-WIDE-GAP-BLACK-codigo-001361.jpg",
+        "codigo": "001361",
+        "cod_barras": "7898480921860",
+        "Tamanho": "3/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001361 7898480921860"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1963/produtos/1500/ANZOL-WIDE-GAP-BLACK-codigo-000715.jpg",
+        "codigo": "000715",
+        "cod_barras": "7898480921761",
+        "Tamanho": "6",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000715 7898480921761"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1962/produtos/1500/ANZOL-WIDE-GAP-BLACK-codigo-000714.jpg",
+        "codigo": "000714",
+        "cod_barras": "7898480921754",
+        "Tamanho": "4",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000714 7898480921754"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1961/produtos/1500/ANZOL-WIDE-GAP-BLACK-codigo-000713.jpg",
+        "codigo": "000713",
+        "cod_barras": "7898480921747",
+        "Tamanho": "2",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000713 7898480921747"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1960/produtos/1500/ANZOL-WIDE-GAP-BLACK-codigo-000712.jpg",
+        "codigo": "000712",
+        "cod_barras": "7898480921730",
+        "Tamanho": "1",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000712 7898480921730"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1964/produtos/1500/ANZOL-WIDE-GAP-BLACK-codigo-000716.jpg",
+        "codigo": "000716",
+        "cod_barras": "7898480933887",
+        "Tamanho": "1/0",
+        "Quantidade": "40",
+        "Cód / Cód Barras": "000716 7898480933887"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1965/produtos/1500/ANZOL-WIDE-GAP-BLACK-codigo-000717.jpg",
+        "codigo": "000717",
+        "cod_barras": "7898480921785",
+        "Tamanho": "2/0",
+        "Quantidade": "40",
+        "Cód / Cód Barras": "000717 7898480921785"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1966/produtos/1500/ANZOL-WIDE-GAP-BLACK-codigo-000718.jpg",
+        "codigo": "000718",
+        "cod_barras": "7898480921792",
+        "Tamanho": "3/0",
+        "Quantidade": "40",
+        "Cód / Cód Barras": "000718 7898480921792"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "ANZOL WIDE GAP 4X BLACK NICKEL",
+    "marca": "MARINE",
+    "descricao_longa": "O Anzol Marine Wide Gap 4X Black Nickel é produzido em aço super resistente, desenvolvido para oferecer firmeza e desempenho superior nas pescarias mais exigentes. Seu acabamento Black Nickel garante maior durabilidade e proteção contra corrosão, assegurando confiabilidade em ambientes de água doce e salgada.\n\nCom ponta afiada e reforço estrutural, o Wide Gap 4X proporciona penetração rápida e fisgadas seguras, sendo ideal para enfrentar espécies mais fortes.\n\nRobusto, resistente e eficiente, o Wide Gap 4X Black Nickel é a escolha certa para pescadores que buscam potência, qualidade e segurança em cada fisgada.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/anzol-wide-gap-4x-black-nickel-8872.html",
+    "codigo": "007640",
+    "cod_barras": "7908137906277",
+    "imagem_url": "https://loja.marinefishing.com.br/img/8873/produtos/1500/ANZOL-WIDE-GAP-4X-PRETO-PC-30-codigo-007291.jpg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9162/produtos/1500/ANZOL-WIDE-GAP-Cx-codigo-007640.jpg",
+        "codigo": "007640",
+        "cod_barras": "7908137906277",
+        "Tamanho": "2/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "007640 7908137906277"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9163/produtos/1500/da74a3e3f590a2533f9d1bb5f2d769d1.jpg",
+        "codigo": "007641",
+        "cod_barras": "7908137906284",
+        "Tamanho": "3/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "007641 7908137906284"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/8872/produtos/1500/ANZOL-WIDE-GAP-4X-codigo-007290.jpg",
+        "codigo": "007290",
+        "cod_barras": "7908137904082",
+        "Tamanho": "2/0",
+        "Quantidade": "40",
+        "Cód / Cód Barras": "007290 7908137904082"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/8873/produtos/1500/ANZOL-WIDE-GAP-4X-PRETO-PC-30-codigo-007291.jpg",
+        "codigo": "007291",
+        "cod_barras": "7908137904099",
+        "Tamanho": "3/0",
+        "Quantidade": "40",
+        "Cód / Cód Barras": "007291 7908137904099"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "ANZOL WIDE GAP 4X SEM FARPA BLACK NICKEL",
+    "marca": "MARINE",
+    "descricao_longa": "O Anzol Marine Wide Gap 4X Sem Farpa Black Nickel é fabricado em aço super resistente e conta com acabamento Black Nickel, que garante maior durabilidade e proteção contra corrosão. Seu desenho robusto oferece firmeza e desempenho superior, sendo ideal para pescarias que exigem máxima resistência.\n\nPor não possuir farpa, facilita a retirada do anzol e reduz danos ao peixe, sendo uma opção indicada para práticas esportivas e de pesca consciente.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/anzol-wide-gap-4x-sem-farpa-black-nickel-8874.html",
+    "codigo": "007642",
+    "cod_barras": "7908137906291",
+    "imagem_url": "https://loja.marinefishing.com.br/img/8874/produtos/1500/ANZOL-WIDE-GAP-4X-PRETO-SEM-FARPA-PC-20-codigo-007292.jpg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9164/produtos/1500/ANZOL-WIDE-GAP-CX-4X-20-C100-codigo-007642.jpg",
+        "codigo": "007642",
+        "cod_barras": "7908137906291",
+        "Tamanho": "2/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "007642 7908137906291"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/8874/produtos/1500/ANZOL-WIDE-GAP-4X-PRETO-SEM-FARPA-PC-20-codigo-007292.jpg",
+        "codigo": "007292",
+        "cod_barras": "7908137904105",
+        "Tamanho": "2/0",
+        "Quantidade": "40",
+        "Cód / Cód Barras": "007292 7908137904105"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "GARATEIA SANKEN SHORT SHANK 3X",
+    "marca": "MARINE",
+    "descricao_longa": "A Garateia Sanken Short Shank 3X foi desenvolvida para pescadores que buscam resistência, precisão e durabilidade. Seu design com haste curta (Short Shank) proporciona fisgadas rápidas e seguras, mantendo a firmeza do peixe mesmo durante brigas intensas.\n\nFabricada com estrutura forjada Hyper Strong, garante força extra para enfrentar espécies combativas, enquanto o acabamento Nickel assegura proteção anticorrosiva, ideal tanto para água doce quanto ambiente marinho.\n\nAs pontas Super Sharp, afiadas quimicamente, oferecem penetração imediata e eficiência máxima na captura. Versátil, pode ser utilizada com iscas artificiais e naturais, adaptando-se facilmente às mais diversas condições de pesca esportiva.\n\nCom construção reforçada, resistência à corrosão e alta eficiência de fisgada, a Garateia Sanken é a escolha ideal para quem exige desempenho e confiabilidade em qualquer pescaria.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/garateia-sanken-short-shank-3x-9961.html",
+    "codigo": "008582",
+    "cod_barras": "7908137910540",
+    "imagem_url": "https://loja.marinefishing.com.br/img/9971/produtos/1500/f6f39c74a2c82b13e732f256e075cd98.jpg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10117/produtos/1500/GARATEIA-SANKEN-16-CX-codigo-008582.png",
+        "codigo": "008582",
+        "cod_barras": "7908137910540",
+        "Tamanho": "16",
+        "Quantidade": "50",
+        "Peso": "0.13 g",
+        "Cód / Cód Barras": "008582 7908137910540"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10116/produtos/1500/GARATEIA-SANKEN-14-CX-codigo-008581.png",
+        "codigo": "008581",
+        "cod_barras": "7908137910533",
+        "Tamanho": "14",
+        "Quantidade": "50",
+        "Peso": "0.19 g",
+        "Cód / Cód Barras": "008581 7908137910533"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10115/produtos/1500/GARATEIA-SANKEN-12-CX-codigo-008580.png",
+        "codigo": "008580",
+        "cod_barras": "7908137910526",
+        "Tamanho": "12",
+        "Quantidade": "50",
+        "Peso": "0.2 g",
+        "Cód / Cód Barras": "008580 7908137910526"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10114/produtos/1500/fef56e7c9871b959cef4bccf85624388.jpg",
+        "codigo": "008579",
+        "cod_barras": "7908137910519",
+        "Tamanho": "10",
+        "Quantidade": "50",
+        "Peso": "0.3 g",
+        "Cód / Cód Barras": "008579 7908137910519"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10113/produtos/1500/706e0607f158b12c4ff63a0c849524a3.jpg",
+        "codigo": "008578",
+        "cod_barras": "7908137910502",
+        "Tamanho": "8",
+        "Quantidade": "50",
+        "Peso": "0.55 g",
+        "Cód / Cód Barras": "008578 7908137910502"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10112/produtos/1500/323a8744f44236aac9f72621424f3e50.jpg",
+        "codigo": "008577",
+        "cod_barras": "7908137910496",
+        "Tamanho": "6",
+        "Quantidade": "50",
+        "Peso": "0.8 g",
+        "Cód / Cód Barras": "008577 7908137910496"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10111/produtos/1500/cd3be2ee910a74fafa21efa4215109b5.jpg",
+        "codigo": "008576",
+        "cod_barras": "7908137910489",
+        "Tamanho": "4",
+        "Quantidade": "50",
+        "Peso": "1.05 g",
+        "Cód / Cód Barras": "008576 7908137910489"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11753/produtos/1500/1512faa04e57fe7295809cac441dc8f3.jpg",
+        "codigo": "010177",
+        "cod_barras": "7908137919178",
+        "Tamanho": "3",
+        "Quantidade": "50",
+        "Peso": "1.36 g",
+        "Cód / Cód Barras": "010177 7908137919178"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10110/produtos/1500/ce9e4e7cdbca4e9ec15c55325127a13e.jpg",
+        "codigo": "008575",
+        "cod_barras": "7908137910472",
+        "Tamanho": "2",
+        "Quantidade": "50",
+        "Peso": "1.4 g",
+        "Cód / Cód Barras": "008575 7908137910472"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10109/produtos/1500/9ce9d990baf6438da32bdec057956907.jpg",
+        "codigo": "008574",
+        "cod_barras": "7908137910465",
+        "Tamanho": "1",
+        "Quantidade": "30",
+        "Peso": "1.95 g",
+        "Cód / Cód Barras": "008574 7908137910465"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10118/produtos/1500/GARATEIA-SANKEN-10-CX-codigo-008583.png",
+        "codigo": "008583",
+        "cod_barras": "7908137910557",
+        "Tamanho": "1/0",
+        "Quantidade": "30",
+        "Peso": "2.3 g",
+        "Cód / Cód Barras": "008583 7908137910557"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10119/produtos/1500/GARATEIA-SANKEN-20-CX-codigo-008584.png",
+        "codigo": "008584",
+        "cod_barras": "7908137910564",
+        "Tamanho": "2/0",
+        "Quantidade": "30",
+        "Peso": "3.2 g",
+        "Cód / Cód Barras": "008584 7908137910564"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9969/produtos/1500/24534e5b0adfdf633a579dc647bf7f30.jpg",
+        "codigo": "008421",
+        "cod_barras": "7908137910274",
+        "Tamanho": "16",
+        "Quantidade": "16",
+        "Peso": "0.13 g",
+        "Cód / Cód Barras": "008421 7908137910274"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9968/produtos/1500/3cf22f5d270b9ed67af3e7c1943925c1.jpg",
+        "codigo": "008420",
+        "cod_barras": "7908137910267",
+        "Tamanho": "14",
+        "Quantidade": "16",
+        "Peso": "0.19 g",
+        "Cód / Cód Barras": "008420 7908137910267"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9967/produtos/1500/3b78d52297f18dd760cc41cff85a317c.jpg",
+        "codigo": "008419",
+        "cod_barras": "7908137910250",
+        "Tamanho": "12",
+        "Quantidade": "16",
+        "Peso": "0.2 g",
+        "Cód / Cód Barras": "008419 7908137910250"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9966/produtos/1500/581c52dab385c6ea5a3f8c2591847248.jpg",
+        "codigo": "008418",
+        "cod_barras": "7908137910243",
+        "Tamanho": "10",
+        "Quantidade": "16",
+        "Peso": "0.3 g",
+        "Cód / Cód Barras": "008418 7908137910243"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9965/produtos/1500/d4594c7e291491aaac332dfb7e7b2fcf.jpg",
+        "codigo": "008417",
+        "cod_barras": "7908137910236",
+        "Tamanho": "8",
+        "Quantidade": "16",
+        "Peso": "0.55 g",
+        "Cód / Cód Barras": "008417 7908137910236"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9964/produtos/1500/53ec45d6cfea99565a57f327f39f5592.jpg",
+        "codigo": "008416",
+        "cod_barras": "7908137910229",
+        "Tamanho": "6",
+        "Quantidade": "16",
+        "Peso": "0.8 g",
+        "Cód / Cód Barras": "008416 7908137910229"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9963/produtos/1500/16687e8e8ae45783dcf5bae6c2e302b2.jpg",
+        "codigo": "008415",
+        "cod_barras": "7908137910212",
+        "Tamanho": "4",
+        "Quantidade": "12",
+        "Peso": "1.05 g",
+        "Cód / Cód Barras": "008415 7908137910212"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11752/produtos/1500/81ad3afa1923bca53a85a42d4ba7d222.jpg",
+        "codigo": "010176",
+        "cod_barras": "7908137919161",
+        "Tamanho": "3",
+        "Quantidade": "12",
+        "Peso": "1.36 g",
+        "Cód / Cód Barras": "010176 7908137919161"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9962/produtos/1500/7ea5888565808881a105d6c5550ee841.jpg",
+        "codigo": "008414",
+        "cod_barras": "7908137910205",
+        "Tamanho": "2",
+        "Quantidade": "12",
+        "Peso": "1.4 g",
+        "Cód / Cód Barras": "008414 7908137910205"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9961/produtos/1500/eb7433e68ae4663ff9701c905ded50af.jpg",
+        "codigo": "008413",
+        "cod_barras": "7908137910199",
+        "Tamanho": "1",
+        "Quantidade": "8",
+        "Peso": "1.95 g",
+        "Cód / Cód Barras": "008413 7908137910199"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9970/produtos/1500/30049598d9eba29222b65301dcecd296.jpg",
+        "codigo": "008422",
+        "cod_barras": "7908137910281",
+        "Tamanho": "1/0",
+        "Quantidade": "8",
+        "Peso": "2.3 g",
+        "Cód / Cód Barras": "008422 7908137910281"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9971/produtos/1500/f6f39c74a2c82b13e732f256e075cd98.jpg",
+        "codigo": "008423",
+        "cod_barras": "7908137910298",
+        "Tamanho": "2/0",
+        "Quantidade": "8",
+        "Peso": "3.2 g",
+        "Cód / Cód Barras": "008423 7908137910298"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "GARATEIA SANKEN SHORT SHANK 4X RED",
+    "marca": "MARINE",
+    "descricao_longa": "A Garateia Sanken Short Shank 4X Red foi projetada para pescadores que exigem o máximo de resistência, precisão e durabilidade, mesmo nas condições mais extremas. Seu desenho de haste curta oferece melhor encaixe nas iscas artificiais, reduz enroscos entre as garateias e aumenta a eficiência nos ataques, garantindo desempenho superior tanto na água doce quanto na salgada. As pontas Super Sharp entregam perfuração rápida e precisa, assegurando fisgadas consistentes mesmo em peixes de comportamento agressivo. Sua construção 4X Hyper Strong oferece força excepcional, suportando grandes cargas sem deformações, enquanto o revestimento Ultra AntiRust Red aumenta significativamente a resistência contra corrosão, prolongando a vida útil da garateia em ambientes salinos.\n\nA Sanken Short Shank 4X Red é a escolha ideal para quem busca segurança, confiabilidade e alto desempenho em cada pescaria.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/garateia-sanken-short-shank-4x-red--11735.html",
+    "codigo": "010154",
+    "cod_barras": "7908137918942",
+    "imagem_url": "https://loja.marinefishing.com.br/img/11741/produtos/1500/7f7fd5e2da146b98500558162bd80ee0.jpg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11739/produtos/1500/e19a7322dd2c8d17a3278d34c558a8f3.jpg",
+        "codigo": "010154",
+        "cod_barras": "7908137918942",
+        "Tamanho": "8",
+        "Quantidade": "16",
+        "Cód / Cód Barras": "010154 7908137918942"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11738/produtos/1500/c840eaa529e27153d8df9ca19343090c.jpg",
+        "codigo": "010153",
+        "cod_barras": "7908137918935",
+        "Tamanho": "6",
+        "Quantidade": "16",
+        "Cód / Cód Barras": "010153 7908137918935"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11737/produtos/1500/404627ca05e4c89da7fd6fd72e3ec669.jpg",
+        "codigo": "010152",
+        "cod_barras": "7908137918928",
+        "Tamanho": "4",
+        "Quantidade": "12",
+        "Cód / Cód Barras": "010152 7908137918928"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11756/produtos/1500/6de902262a0269ba4b5711eca9e8821c.jpg",
+        "codigo": "010180",
+        "cod_barras": "7908137919208",
+        "Tamanho": "3",
+        "Quantidade": "12",
+        "Cód / Cód Barras": "010180 7908137919208"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11736/produtos/1500/17674e464dc61fee336363aa2cc707b2.jpg",
+        "codigo": "010151",
+        "cod_barras": "7908137918911",
+        "Tamanho": "2",
+        "Quantidade": "12",
+        "Cód / Cód Barras": "010151 7908137918911"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11735/produtos/1500/f07b1bb1b75df4bd7bf7c862282c006d.jpg",
+        "codigo": "010150",
+        "cod_barras": "7908137918904",
+        "Tamanho": "1",
+        "Quantidade": "8",
+        "Cód / Cód Barras": "010150 7908137918904"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11740/produtos/1500/4a2868660b0e7cac811c448003a32ac5.jpg",
+        "codigo": "010155",
+        "cod_barras": "7908137918959",
+        "Tamanho": "1/0",
+        "Quantidade": "8",
+        "Cód / Cód Barras": "010155 7908137918959"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11741/produtos/1500/7f7fd5e2da146b98500558162bd80ee0.jpg",
+        "codigo": "010156",
+        "cod_barras": "7908137918966",
+        "Tamanho": "2/0",
+        "Quantidade": "8",
+        "Cód / Cód Barras": "010156 7908137918966"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "GARATEIA Z-TN3X NICKEL",
+    "marca": "ZEST",
+    "descricao_longa": "A Garateia Z-TN3X Nickel é projetada para pescadores que exigem resistência e desempenho superiores em situações extremas. Produzida com aço carbono de alta qualidade e acabamento em níquel, oferece durabilidade e resistência excepcionais à corrosão, garantindo confiabilidade tanto em água doce quanto salgada.\n\nCom estrutura 3X reforçada, suporta a força dos peixes mais agressivos sem deformar ou perder o corte. Sua ponta superafiada proporciona penetração rápida e segura, assegurando fisgadas firmes e eficientes em cada ataque.\n\nDisponível em múltiplos tamanhos, adapta-se às mais diversas montagens e modalidades de pesca — desde o uso em iscas artificiais menores até montagens robustas para predadores de grande porte.\n\nCom sua combinação de força, precisão e durabilidade, a Garateia Zest Z-TN3X é a escolha perfeita para quem busca máxima eficiência e segurança nas pescarias mais desafiadoras.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/garateia-ztn3x-nickel-10081.html",
+    "codigo": "008550",
+    "cod_barras": "7908137910434",
+    "imagem_url": "https://loja.marinefishing.com.br/img/10087/produtos/1500/GARATEIA-Z-TN3X-codigo-008552.jpeg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10085/produtos/1500/GARATEIA-Z-TN3X-codigo-008550.jpeg",
+        "codigo": "008550",
+        "cod_barras": "7908137910434",
+        "Tamanho": "8",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "008550 7908137910434"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10084/produtos/1500/GARATEIA-Z-TN3X-codigo-008549.jpeg",
+        "codigo": "008549",
+        "cod_barras": "7908137910427",
+        "Tamanho": "6",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "008549 7908137910427"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10083/produtos/1500/GARATEIA-Z-TN3X-codigo-008548.jpeg",
+        "codigo": "008548",
+        "cod_barras": "7908137910410",
+        "Tamanho": "4",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "008548 7908137910410"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10082/produtos/1500/GARATEIA-Z-TN3X-codigo-008547.jpeg",
+        "codigo": "008547",
+        "cod_barras": "7908137910403",
+        "Tamanho": "2",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "008547 7908137910403"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10081/produtos/1500/GARATEIA-Z-TN3X-codigo-008546.jpeg",
+        "codigo": "008546",
+        "cod_barras": "7908137910397",
+        "Tamanho": "1",
+        "Quantidade": "30",
+        "Cód / Cód Barras": "008546 7908137910397"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10086/produtos/1500/GARATEIA-Z-TN3X-codigo-008551.jpeg",
+        "codigo": "008551",
+        "cod_barras": "7908137910441",
+        "Tamanho": "1/0",
+        "Quantidade": "30",
+        "Cód / Cód Barras": "008551 7908137910441"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10087/produtos/1500/GARATEIA-Z-TN3X-codigo-008552.jpeg",
+        "codigo": "008552",
+        "cod_barras": "7908137910458",
+        "Tamanho": "2/0",
+        "Quantidade": "30",
+        "Cód / Cód Barras": "008552 7908137910458"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "SABIKI SM-6H618",
+    "marca": "MARINE",
+    "descricao_longa": "O Sabiki SM-6H618 é um chicote pronto para uso, montado com 6 anzóis Maruseigo Gold preparados para simular pequenas presas. Cada anzol conta com pêlo sintético refletivo e material que imita pequenos peixes ou camarões, criando brilho e movimento na água para atrair peixes de cardume.Disponível em 8 tamanhos, com anzóis do nº 6 ao nº 20, o modelo conta com dois snaps com giradores: um para conexão à linha principal e outro para fixação do alimentador. É indicado para a captura de pequenos peixes como pargos, carapaus, xareletes, olho-de-cão e outras espécies de cardume.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/sabiki-sm6h618-187.html",
+    "codigo": "001968",
+    "cod_barras": "7898480922508",
+    "imagem_url": "https://loja.marinefishing.com.br/img/6582/produtos/1500/SABIKI-SM-6H618-20-MARINE.jpg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/187/produtos/1500/SABIKI-SM-6H618-6-ANZOL-SABIKI-SM-6H618-MARINE.jpg",
+        "codigo": "001968",
+        "cod_barras": "7898480922508",
+        "Tamanho": "6",
+        "Quantidade": "1",
+        "Cód / Cód Barras": "001968 7898480922508"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/188/produtos/1500/SABIKI-SM-6H618-8-MARINE.jpg",
+        "codigo": "001969",
+        "cod_barras": "7898480922515",
+        "Tamanho": "8",
+        "Quantidade": "1",
+        "Cód / Cód Barras": "001969 7898480922515"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/189/produtos/1500/SABIKI-SM-6H618-10-MARINE.jpg",
+        "codigo": "001970",
+        "cod_barras": "7898480922522",
+        "Tamanho": "10",
+        "Quantidade": "1",
+        "Cód / Cód Barras": "001970 7898480922522"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/190/produtos/1500/SABIKI-SM-6H618-12-MARINE.jpg",
+        "codigo": "001971",
+        "cod_barras": "7898480922539",
+        "Tamanho": "12",
+        "Quantidade": "1",
+        "Cód / Cód Barras": "001971 7898480922539"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/191/produtos/1500/SABIKI-SM-6H618-14-MARINE.jpg",
+        "codigo": "001972",
+        "cod_barras": "7898480922546",
+        "Tamanho": "14",
+        "Quantidade": "1",
+        "Cód / Cód Barras": "001972 7898480922546"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/192/produtos/1500/SABIKI-SM-6H618-16-MARINE.jpg",
+        "codigo": "001973",
+        "cod_barras": "7898480922553",
+        "Tamanho": "16",
+        "Quantidade": "1",
+        "Cód / Cód Barras": "001973 7898480922553"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/193/produtos/1500/SABIKI-SM-6H618-18-MARINE.jpg",
+        "codigo": "003081",
+        "cod_barras": "7898480933672",
+        "Tamanho": "18",
+        "Quantidade": "1",
+        "Cód / Cód Barras": "003081 7898480933672"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/6582/produtos/1500/SABIKI-SM-6H618-20-MARINE.jpg",
+        "codigo": "005261",
+        "cod_barras": "7898480950754",
+        "Tamanho": "20",
+        "Quantidade": "1",
+        "Cód / Cód Barras": "005261 7898480950754"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "SABIKI VERDE/ROSA",
+    "marca": "MARINE",
+    "descricao_longa": "O Sabiki Verde/Rosa é um chicote pronto para uso, montado com 6 anzóis Maruseigo Gold adornados com pêlo sintético refletivo e materiais que simulam pequenos peixes ou camarões. Nas cores verde e rosa, o conjunto cria brilho e movimento natural na água, ajudando a atrair peixes de cardume.Disponível em 5 tamanhos, com anzóis do nº 12 ao nº 20, o modelo possui dois snaps com giradores: um para conexão à linha principal e outro para fixação do alimentador. É uma opção produtiva para a captura de pequenos peixes como pargos, carapaus, xareletes, olho-de-cão e outras espécies de cardume.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/sabiki-verderosa-7604.html",
+    "codigo": "006564",
+    "cod_barras": "7898480959870",
+    "imagem_url": "https://loja.marinefishing.com.br/img/7603/produtos/1500/SABIKI-VERDEROSA-SM-6H625-20-MARINE.jpg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/7604/produtos/1500/SABIKI-VERDEROSA-SM-6H625-12-ANZOL-SABIKI-VERDEROSA-MARINE.jpg",
+        "codigo": "006564",
+        "cod_barras": "7898480959870",
+        "Tamanho": "12",
+        "Quantidade": "1",
+        "Cód / Cód Barras": "006564 7898480959870"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/7600/produtos/1500/SABIKI-VERDEROSA-SM-6H625-14-MARINE.jpg",
+        "codigo": "006565",
+        "cod_barras": "7898480959887",
+        "Tamanho": "14",
+        "Quantidade": "1",
+        "Cód / Cód Barras": "006565 7898480959887"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/7601/produtos/1500/SABIKI-VERDEROSA-SM-6H625-16-MARINE.jpg",
+        "codigo": "006566",
+        "cod_barras": "7898480959894",
+        "Tamanho": "16",
+        "Quantidade": "1",
+        "Cód / Cód Barras": "006566 7898480959894"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/7602/produtos/1500/SABIKI-VERDEROSA-SM-6H625-18-MARINE.jpg",
+        "codigo": "006567",
+        "cod_barras": "7898480959900",
+        "Tamanho": "18",
+        "Quantidade": "1",
+        "Cód / Cód Barras": "006567 7898480959900"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/7603/produtos/1500/SABIKI-VERDEROSA-SM-6H625-20-MARINE.jpg",
+        "codigo": "006568",
+        "cod_barras": "7898480959917",
+        "Tamanho": "20",
+        "Quantidade": "1",
+        "Cód / Cód Barras": "006568 7898480959917"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "GARATEIA NICKEL",
+    "marca": "MARINE",
+    "descricao_longa": "A Garateia Nickel da Marine é reconhecida pela resistência, afiação e acabamento superior, sendo ideal para pescadores que buscam desempenho e durabilidade em suas iscas artificiais ou naturais.\n\nProduzida em aço carbono de alta qualidade, a garateia passa por rigoroso processo de têmpera que garante alta resistência à tração e excelente penetração, mesmo em peixes de mandíbulas mais firmes. Seu acabamento Nickel assegura proteção contra corrosão e desgaste, mantendo o desempenho mesmo após diversas pescarias em ambientes de água doce ou salgada.\n\nProjetada para ótima fixação e equilíbrio, a Garateia Nickel é amplamente utilizada na substituição ou customização de iscas artificiais, garantindo maior eficiência nas fisgadas e durabilidade do conjunto.\n\nDurável, afiada e confiável, a Garateia Nickel Marine é a escolha certa para quem busca performance, resistência e acabamento premium em qualquer modalidade de pesca.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/garateia-nickel-133.html",
+    "codigo": "001326",
+    "cod_barras": "7898480922676",
+    "imagem_url": "https://loja.marinefishing.com.br/img/147/produtos/1500/GARATEIA-50-C100-GARATEIA-50-CAIXA-COM-100-UNIDADES-MARINE.jpg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/142/produtos/1500/GARATEIA-18-C100-GARATEIA-18-COM-100-PEAS-MARINE.jpg",
+        "codigo": "001326",
+        "cod_barras": "7898480922676",
+        "Tamanho": "18",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001326 7898480922676"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/141/produtos/1500/GARATEIA-16-C100-GARATEIA-16-COM-100-PEAS-MARINE.jpg",
+        "codigo": "001325",
+        "cod_barras": "7898480922669",
+        "Tamanho": "16",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001325 7898480922669"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/140/produtos/1500/GARATEIA-14-C100-GARATEIA-14-COM-100-PEAS-MARINE.jpg",
+        "codigo": "001324",
+        "cod_barras": "7898480922652",
+        "Tamanho": "14",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001324 7898480922652"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/139/produtos/1500/GARATEIA-12-C100-GARATEIA-12-COM-100-PEAS-MARINE.jpg",
+        "codigo": "001323",
+        "cod_barras": "7898480922645",
+        "Tamanho": "12",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001323 7898480922645"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/138/produtos/1500/GARATEIA-10-C100-GARATEIA-10-COM-100-PEAS-MARINE.jpg",
+        "codigo": "001322",
+        "cod_barras": "7898480922638",
+        "Tamanho": "10",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001322 7898480922638"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/137/produtos/1500/GARATEIA-8-C100-GARATEIA-8-COM-100-PEAS-MARINE.jpg",
+        "codigo": "001321",
+        "cod_barras": "7898480922621",
+        "Tamanho": "8",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001321 7898480922621"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/136/produtos/1500/GARATEIA-6-C100-GARATEIA-6-COM-100-PEAS-MARINE.jpg",
+        "codigo": "001320",
+        "cod_barras": "7898480922614",
+        "Tamanho": "6",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001320 7898480922614"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/135/produtos/1500/GARATEIA-4-C100-GARATEIA-4-COM-100-PEAS-MARINE.jpg",
+        "codigo": "001319",
+        "cod_barras": "7898480922607",
+        "Tamanho": "4",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001319 7898480922607"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/134/produtos/1500/GARATEIA-2-C100-GARATEIA-NICKEL-2-COM-100-PEAS-MARINE.jpg",
+        "codigo": "001318",
+        "cod_barras": "7898480922591",
+        "Tamanho": "2",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001318 7898480922591"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/133/produtos/1500/GARATEIA-1-C100-GARATEIA-NICKEL-MARINE.jpg",
+        "codigo": "001317",
+        "cod_barras": "7898480922584",
+        "Tamanho": "1",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001317 7898480922584"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/5988/produtos/1500/GARATEIA-10-C100-MARINE.jpg",
+        "codigo": "001327",
+        "cod_barras": "7898480922683",
+        "Tamanho": "1/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001327 7898480922683"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/144/produtos/1500/45e663224e7de021d20eb0b29c3a1ba6.jpg",
+        "codigo": "001328",
+        "cod_barras": "7898480922690",
+        "Tamanho": "2/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001328 7898480922690"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/145/produtos/1500/GARATEIA-30-C100-GARATEIA-30-CAIXA-COM-100-UNIDADES-MARINE.jpg",
+        "codigo": "001329",
+        "cod_barras": "7898480922706",
+        "Tamanho": "3/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001329 7898480922706"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/146/produtos/1500/GARATEIA-40-C100-GARATEIA-40-CAIXA-COM-100-UNIDADES-MARINE.jpg",
+        "codigo": "001330",
+        "cod_barras": "7898480922713",
+        "Tamanho": "4/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001330 7898480922713"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/147/produtos/1500/GARATEIA-50-C100-GARATEIA-50-CAIXA-COM-100-UNIDADES-MARINE.jpg",
+        "codigo": "001423",
+        "cod_barras": "7898480922720",
+        "Tamanho": "5/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001423 7898480922720"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "GARATEIA SANKEN SHORT SHANK 4X",
+    "marca": "MARINE",
+    "descricao_longa": "A Garateia Sanken Short Shank 4X foi desenvolvida para pescadores que buscam máxima resistência e performance, mesmo nas condições mais extremas. Seu design de haste curta (Short Shank) proporciona melhor adaptação às iscas artificiais, evitando enroscos entre as garateias e garantindo maior eficiência na fisgada.\n\nConstruída com tecnologia 4X Hyper Strong, suporta os peixes mais fortes sem comprometer a estrutura, enquanto as pontas Super Sharp asseguram fisgadas rápidas e precisas. Na cor Preto Fosco e com revestimento Ultra AntiRust oferece alta resistência à corrosão, ampliando a durabilidade em ambientes de água doce e salgada.\n\nDisponível em diversos tamanhos (8 ao 2/0), em blister e caixa, a Sanken Short Shank 4X é a escolha certa para quem exige segurança, durabilidade e confiança em cada pescaria.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/garateia-sanken-short-shank-4x--11195.html",
+    "codigo": "009656",
+    "cod_barras": "7908137915248",
+    "imagem_url": "https://loja.marinefishing.com.br/img/11201/produtos/1500/446517131f3817822b6779abe4487afc.jpg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11206/produtos/1500/88af76b5f646d2402a531da6f51723f9.jpg",
+        "codigo": "009656",
+        "cod_barras": "7908137915248",
+        "Tamanho": "8",
+        "Quantidade": "50",
+        "Peso": "0.73 g",
+        "Cód / Cód Barras": "009656 7908137915248"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11205/produtos/1500/321b9cbda2bd103a055f7b6a5c831d2d.jpg",
+        "codigo": "009655",
+        "cod_barras": "7908137915231",
+        "Tamanho": "6",
+        "Quantidade": "50",
+        "Peso": "0.84 g",
+        "Cód / Cód Barras": "009655 7908137915231"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11204/produtos/1500/fe16796711c96fd6760e38b282a50a09.jpg",
+        "codigo": "009654",
+        "cod_barras": "7908137915224",
+        "Tamanho": "4",
+        "Quantidade": "50",
+        "Peso": "1.29 g",
+        "Cód / Cód Barras": "009654 7908137915224"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11755/produtos/1500/7e5cbe5c070688245dd781437dd7119a.jpg",
+        "codigo": "010179",
+        "cod_barras": "7908137919192",
+        "Tamanho": "3",
+        "Quantidade": "50",
+        "Peso": "1.55 g",
+        "Cód / Cód Barras": "010179 7908137919192"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11203/produtos/1500/d1e9e8b799081fd12c844f6421c29fb9.jpg",
+        "codigo": "009653",
+        "cod_barras": "7908137915217",
+        "Tamanho": "2",
+        "Quantidade": "50",
+        "Peso": "1.68 g",
+        "Cód / Cód Barras": "009653 7908137915217"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11202/produtos/1500/2e3e5424674b1ae6b64f874484bb9a26.jpg",
+        "codigo": "009652",
+        "cod_barras": "7908137915200",
+        "Tamanho": "1",
+        "Quantidade": "30",
+        "Peso": "2.21 g",
+        "Cód / Cód Barras": "009652 7908137915200"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11207/produtos/1500/59214e330958c3b900125733937f3672.jpg",
+        "codigo": "009657",
+        "cod_barras": "7908137915255",
+        "Tamanho": "1/0",
+        "Quantidade": "30",
+        "Peso": "3.00 g",
+        "Cód / Cód Barras": "009657 7908137915255"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11208/produtos/1500/4fe76bcd4ce9d790434ee87262d6390a.jpg",
+        "codigo": "009658",
+        "cod_barras": "7908137915262",
+        "Tamanho": "2/0",
+        "Quantidade": "30",
+        "Peso": "4.00 g",
+        "Cód / Cód Barras": "009658 7908137915262"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11199/produtos/1500/b4456e2a010f6d42a6c809aa1577b3a5.jpg",
+        "codigo": "009649",
+        "cod_barras": "7908137915170",
+        "Tamanho": "8",
+        "Quantidade": "16",
+        "Peso": "0.73 g",
+        "Cód / Cód Barras": "009649 7908137915170"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11198/produtos/1500/27099a65af6babfcf2510d05ef5727bd.jpg",
+        "codigo": "009648",
+        "cod_barras": "7908137915163",
+        "Tamanho": "6",
+        "Quantidade": "16",
+        "Peso": "0.84 g",
+        "Cód / Cód Barras": "009648 7908137915163"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11197/produtos/1500/531ad57ea744ca70203cf95d813dacb7.jpg",
+        "codigo": "009647",
+        "cod_barras": "7908137915156",
+        "Tamanho": "4",
+        "Quantidade": "12",
+        "Peso": "1.29 g",
+        "Cód / Cód Barras": "009647 7908137915156"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11754/produtos/1500/2200d2e4178ab48adb1c259ed0e11227.jpg",
+        "codigo": "010178",
+        "cod_barras": "7908137919185",
+        "Tamanho": "3",
+        "Quantidade": "12",
+        "Peso": "1.55 g",
+        "Cód / Cód Barras": "010178 7908137919185"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11196/produtos/1500/1adf1e56c382012c41f643ffa4e1eccc.jpg",
+        "codigo": "009646",
+        "cod_barras": "7908137915149",
+        "Tamanho": "2",
+        "Quantidade": "12",
+        "Peso": "1.68 g",
+        "Cód / Cód Barras": "009646 7908137915149"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11195/produtos/1500/74bb8862317ae1b07b7db56901b9d132.jpg",
+        "codigo": "009645",
+        "cod_barras": "7908137915132",
+        "Tamanho": "1",
+        "Quantidade": "8",
+        "Peso": "2.21 g",
+        "Cód / Cód Barras": "009645 7908137915132"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11200/produtos/1500/38d90c3bd3bec37d94f14f83fafb8bfd.jpg",
+        "codigo": "009650",
+        "cod_barras": "7908137915187",
+        "Tamanho": "1/0",
+        "Quantidade": "8",
+        "Peso": "4.00 g",
+        "Cód / Cód Barras": "009650 7908137915187"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11201/produtos/1500/446517131f3817822b6779abe4487afc.jpg",
+        "codigo": "009651",
+        "cod_barras": "7908137915194",
+        "Tamanho": "2/0",
+        "Quantidade": "8",
+        "Peso": "4.00 g",
+        "Cód / Cód Barras": "009651 7908137915194"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "SABIKI SS-6H34",
+    "marca": "MARINE",
+    "descricao_longa": "O Sabiki SS-6H34 é um chicote pronto para uso, montado com 6 anzóis Sode preparados para simular pequenas presas. Cada anzol conta com material que imita pequenos peixes ou insetos, criando brilho e movimento natural na água para atrair peixes de cardume.Disponível em 2 tamanhos, com anzóis do nº 3 e nº 4, o modelo conta com dois snaps com giradores: um para conexão à linha principal e outro para fixação do alimentador. É uma opção produtiva para a captura de lambaris, sardinhas e outros pequenos peixes de cardume.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/sabiki-ss6h34-194.html",
+    "codigo": "001974",
+    "cod_barras": "7898480922560",
+    "imagem_url": "https://loja.marinefishing.com.br/img/195/produtos/1500/SABIKI-SS-6H34-4-MARINE.jpg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/194/produtos/1500/SABIKI-SS-6H34-3-ANZOL-SABIKI-SS-6H34-MARINE.jpg",
+        "codigo": "001974",
+        "cod_barras": "7898480922560",
+        "Tamanho": "3",
+        "Quantidade": "1",
+        "Cód / Cód Barras": "001974 7898480922560"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/195/produtos/1500/SABIKI-SS-6H34-4-MARINE.jpg",
+        "codigo": "001975",
+        "cod_barras": "7898480922577",
+        "Tamanho": "4",
+        "Quantidade": "1",
+        "Cód / Cód Barras": "001975 7898480922577"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "ANZOL 71525 TUNA CIRCLE",
+    "marca": "MARINE",
+    "descricao_longa": "O Anzol Marine 71525 Tuna Circle é fabricado em aço de alta resistência com acabamento Permatín, garantindo máxima durabilidade e proteção contra corrosão, mesmo em uso contínuo em ambiente marinho. Seu design em formato circle hook assegura fisgadas firmes e seguras, reduzindo as chances de escapadas e aumentando a eficiência na captura de grandes espécies.\n\nDisponível em tamanhos reforçados, é indicado para pescarias oceânicas de grande porte.\n\nRobusto e confiável, o 71525 Tuna Circle é a escolha ideal para pescadores que buscam alto desempenho e segurança em pescarias pesadas, seja na captura de atuns, marlins ou outras espécies de grande porte.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/anzol-71525-tuna-circle-2122.html",
+    "codigo": "001312",
+    "cod_barras": "7898480920573",
+    "imagem_url": "https://loja.marinefishing.com.br/img/2126/produtos/1500/ANZOL-71525-TUNA-CIRCLE-codigo-001316.jpg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/2122/produtos/1500/ANZOL-71525-TUNA-CIRCLE-codigo-001312.jpg",
+        "codigo": "001312",
+        "cod_barras": "7898480920573",
+        "Tamanho": "12/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001312 7898480920573"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/2123/produtos/1500/ANZOL-71525-TUNA-CIRCLE-codigo-001313.jpg",
+        "codigo": "001313",
+        "cod_barras": "7898480934242",
+        "Tamanho": "13/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001313 7898480934242"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/2126/produtos/1500/ANZOL-71525-TUNA-CIRCLE-codigo-001316.jpg",
+        "codigo": "001316",
+        "cod_barras": "7898480935768",
+        "Tamanho": "16/0",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "001316 7898480935768"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "ANZOL AKITA-KITSUNE",
+    "marca": "MARINE",
+    "descricao_longa": "O Anzol Marine Akita-Kitsune é produzido em aço super resistente, garantindo firmeza e durabilidade em diferentes situações de pesca. Seu acabamento dourado (Gold) proporciona maior proteção contra corrosão e um visual diferenciado, aliado a uma ponta extremamente afiada, que assegura fisgadas rápidas e eficientes.\n\nDisponível em diversos tamanhos, atende desde pescarias leves até intermediárias, oferecendo praticidade nas embalagens.\n\nRobusto, confiável e versátil, o Akita-Kitsune Gold é a escolha ideal para pescadores que buscam qualidade, eficiência e desempenho superior em cada fisgada.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/anzol-akitakitsune-1851.html",
+    "codigo": "000648",
+    "cod_barras": "7898480921389",
+    "imagem_url": "https://loja.marinefishing.com.br/img/1850/produtos/1500/ANZOL-AKITA-KITSUNE-GOLD--codigo-000647.jpg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1851/produtos/1500/ANZOL-AKITA-KITSUNE-GOLD--codigo-000648.jpg",
+        "codigo": "000648",
+        "cod_barras": "7898480921389",
+        "Tamanho": "2",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000648 7898480921389"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1852/produtos/1500/ANZOL-AKITA-KITSUNE-GOLD--codigo-000649.jpg",
+        "codigo": "000649",
+        "cod_barras": "7898480921488",
+        "Tamanho": "3",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000649 7898480921488"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1853/produtos/1500/ANZOL-AKITA-KITSUNE-GOLD--codigo-000650.jpg",
+        "codigo": "000650",
+        "cod_barras": "7898480921402",
+        "Tamanho": "4",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000650 7898480921402"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1846/produtos/1500/ANZOL-AKITA-KITSUNE-GOLD--codigo-000643.jpg",
+        "codigo": "000643",
+        "cod_barras": "7898480921419",
+        "Tamanho": "5",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000643 7898480921419"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1847/produtos/1500/ANZOL-AKITA-KITSUNE-GOLD--codigo-000644.jpg",
+        "codigo": "000644",
+        "cod_barras": "7898480921426",
+        "Tamanho": "6",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000644 7898480921426"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1848/produtos/1500/ANZOL-AKITA-KITSUNE-GOLD--codigo-000645.jpg",
+        "codigo": "000645",
+        "cod_barras": "7898480921433",
+        "Tamanho": "7",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000645 7898480921433"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1849/produtos/1500/ANZOL-AKITA-KITSUNE-GOLD--codigo-000646.jpg",
+        "codigo": "000646",
+        "cod_barras": "7898480921440",
+        "Tamanho": "8",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000646 7898480921440"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1850/produtos/1500/ANZOL-AKITA-KITSUNE-GOLD--codigo-000647.jpg",
+        "codigo": "000647",
+        "cod_barras": "7898480921457",
+        "Tamanho": "9",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000647 7898480921457"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "ANZOL CHINU BLACK NICKEL",
+    "marca": "MARINE",
+    "descricao_longa": "O Anzol Marine Chinu Black Nickel é fabricado em aço super resistente, oferecendo firmeza e durabilidade em diferentes modalidades de pesca. Seu acabamento Black Nickel garante alta proteção contra corrosão, aumentando a vida útil e a confiabilidade do equipamento mesmo em condições exigentes.\n\nDisponível em diversos tamanhos, adapta-se às mais variadas necessidades do pescador.\n\nRobusto, afiado e versátil, o Chinu Black Nickel é a escolha ideal para quem busca segurança e desempenho em cada fisgada.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/anzol-chinu-black-nickel-1816.html",
+    "codigo": "009974",
+    "cod_barras": "7908137917303",
+    "imagem_url": "https://loja.marinefishing.com.br/img/11518/produtos/1500/e50e880039be5c2d73f8783c0ac1c057.jpg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11519/produtos/1500/5e6d59b037fb4ab6a9be97b8109455be.jpg",
+        "codigo": "009974",
+        "cod_barras": "7908137917303",
+        "Tamanho": "1",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "009974 7908137917303"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1824/produtos/1500/ANZOL-CHINU-CX-BLACK-codigo-001297.jpg",
+        "codigo": "001297",
+        "cod_barras": "7898480921310",
+        "Tamanho": "2",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001297 7898480921310"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1825/produtos/1500/ANZOL-CHINU-CX-BLACK-codigo-001298.jpg",
+        "codigo": "001298",
+        "cod_barras": "7898480921327",
+        "Tamanho": "3",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001298 7898480921327"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1826/produtos/1500/ANZOL-CHINU-CX-BLACK-codigo-001299.jpg",
+        "codigo": "001299",
+        "cod_barras": "7898480921334",
+        "Tamanho": "4",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001299 7898480921334"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1827/produtos/1500/ANZOL-CHINU-CX-BLACK-codigo-001300.jpg",
+        "codigo": "001300",
+        "cod_barras": "7898480921341",
+        "Tamanho": "5",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001300 7898480921341"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1828/produtos/1500/ANZOL-CHINU-CX-BLACK-codigo-001301.jpg",
+        "codigo": "001301",
+        "cod_barras": "7898480921358",
+        "Tamanho": "6",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001301 7898480921358"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1829/produtos/1500/ANZOL-CHINU-CX-BLACK-codigo-001302.jpg",
+        "codigo": "001302",
+        "cod_barras": "7898480921365",
+        "Tamanho": "7",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001302 7898480921365"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1830/produtos/1500/ANZOL-CHINU-CX-BLACK-codigo-001303.jpg",
+        "codigo": "001303",
+        "cod_barras": "7898480921372",
+        "Tamanho": "8",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001303 7898480921372"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1831/produtos/1500/ANZOL-CHINU-CX-BLACK-codigo-001304.jpg",
+        "codigo": "001304",
+        "cod_barras": "7898480924342",
+        "Tamanho": "9",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001304 7898480924342"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11520/produtos/1500/f8fd2966fbc2b8ad7a1014e7c119be93.jpg",
+        "codigo": "009975",
+        "cod_barras": "7908137917310",
+        "Tamanho": "10",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "009975 7908137917310"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11521/produtos/1500/eacdeee9e9e0ca4fcc2ac95afe0406c2.jpg",
+        "codigo": "009976",
+        "cod_barras": "7908137917327",
+        "Tamanho": "11",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "009976 7908137917327"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11522/produtos/1500/338cd194b2bb39517ac58bf02486767c.jpg",
+        "codigo": "009977",
+        "cod_barras": "7908137917334",
+        "Tamanho": "12",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "009977 7908137917334"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11515/produtos/1500/e96f17bf6b1ab26e5cf4e7b9b59367a4.jpg",
+        "codigo": "009970",
+        "cod_barras": "7908137917266",
+        "Tamanho": "1",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "009970 7908137917266"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1816/produtos/1500/ANZOL-CHINU-CX-BLACK-codigo-000628.jpg",
+        "codigo": "000628",
+        "cod_barras": "7898480921235",
+        "Tamanho": "2",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000628 7898480921235"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1817/produtos/1500/ANZOL-CHINU-BLACK-codigo-000629.jpg",
+        "codigo": "000629",
+        "cod_barras": "7898480921242",
+        "Tamanho": "3",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000629 7898480921242"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1818/produtos/1500/ANZOL-CHINU-BLACK-codigo-000630.jpg",
+        "codigo": "000630",
+        "cod_barras": "7898480921259",
+        "Tamanho": "4",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000630 7898480921259"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1819/produtos/1500/ANZOL-CHINU-BLACK-codigo-000631.jpg",
+        "codigo": "000631",
+        "cod_barras": "7898480921266",
+        "Tamanho": "5",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000631 7898480921266"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1820/produtos/1500/ANZOL-CHINU-BLACK-codigo-000632.jpg",
+        "codigo": "000632",
+        "cod_barras": "7898480921273",
+        "Tamanho": "6",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000632 7898480921273"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1821/produtos/1500/ANZOL-CHINU-BLACK-codigo-000633.jpg",
+        "codigo": "000633",
+        "cod_barras": "7898480921280",
+        "Tamanho": "7",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000633 7898480921280"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1822/produtos/1500/ANZOL-CHINU-BLACK-codigo-000634.jpg",
+        "codigo": "000634",
+        "cod_barras": "7898480921297",
+        "Tamanho": "8",
+        "Quantidade": "30",
+        "Cód / Cód Barras": "000634 7898480921297"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1823/produtos/1500/ANZOL-CHINU-BLACK-codigo-000635.jpg",
+        "codigo": "000635",
+        "cod_barras": "7898480921303",
+        "Tamanho": "9",
+        "Quantidade": "30",
+        "Cód / Cód Barras": "000635 7898480921303"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11516/produtos/1500/c1514bb6d18c5323b6ca8590f1fd2f61.jpg",
+        "codigo": "009971",
+        "cod_barras": "7908137917273",
+        "Tamanho": "10",
+        "Quantidade": "30",
+        "Cód / Cód Barras": "009971 7908137917273"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11517/produtos/1500/8f87725a759f393267c44dbf654923cb.jpg",
+        "codigo": "009972",
+        "cod_barras": "7908137917280",
+        "Tamanho": "11",
+        "Quantidade": "30",
+        "Cód / Cód Barras": "009972 7908137917280"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11518/produtos/1500/e50e880039be5c2d73f8783c0ac1c057.jpg",
+        "codigo": "009973",
+        "cod_barras": "7908137917297",
+        "Tamanho": "12",
+        "Quantidade": "30",
+        "Cód / Cód Barras": "009973 7908137917297"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "ANZOL CHINU S/ FARPA BLACK NICKEL",
+    "marca": "MARINE",
+    "descricao_longa": "O Anzol Chinu Black Nickel Sem Farpa Marine foi desenvolvido para pescadores que priorizam a prática do pesque-e-solte e atuam em pesqueiros onde o uso de anzóis com farpa é proibido. Fabricado em aço carbono super resistente com acabamento Black Nickel, combina firmeza estrutural, resistência à corrosão e uma apresentação discreta dentro da água.\n\nA ponta sem farpa garante fisgadas eficientes e permite a soltura do peixe de forma rápida e segura, reduzindo o estresse do animal e minimizando danos durante o manuseio. Disponível nos tamanhos 5 ao 12, atende desde pescarias mais delicadas até aplicações que exigem anzóis de maior porte, em rios, represas e pesqueiros.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/anzol-chinu-s-farpa-black-nickel--11523.html",
+    "codigo": "009986",
+    "cod_barras": "7908137917426",
+    "imagem_url": "https://loja.marinefishing.com.br/img/11530/produtos/1500/e529e6df336728634e16b6b4835b9dc0.jpg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11531/produtos/1500/543ca3ace79bbc41fdb8b1063d1dc64a.jpg",
+        "codigo": "009986",
+        "cod_barras": "7908137917426",
+        "Tamanho": "5",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "009986 7908137917426"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11532/produtos/1500/bf413c5ac42e6c1ac169e2baa176ce01.jpg",
+        "codigo": "009987",
+        "cod_barras": "7908137917433",
+        "Tamanho": "6",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "009987 7908137917433"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11533/produtos/1500/595f78db5c03b8b165b5d5fd1a20ff96.jpg",
+        "codigo": "009988",
+        "cod_barras": "7908137917440",
+        "Tamanho": "7",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "009988 7908137917440"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11534/produtos/1500/92b38d00df5a927d07787bfaf8b1f6d8.jpg",
+        "codigo": "009989",
+        "cod_barras": "7908137917457",
+        "Tamanho": "8",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "009989 7908137917457"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11535/produtos/1500/54cdaf5eae210211ac24c40118b982eb.jpg",
+        "codigo": "009990",
+        "cod_barras": "7908137917464",
+        "Tamanho": "9",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "009990 7908137917464"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11536/produtos/1500/f9a521b9d4ab359ef0aec61a6133d0be.jpg",
+        "codigo": "009991",
+        "cod_barras": "7908137917471",
+        "Tamanho": "10",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "009991 7908137917471"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11537/produtos/1500/1c338c1c94550c501a424bd474dca513.jpg",
+        "codigo": "009992",
+        "cod_barras": "7908137917488",
+        "Tamanho": "11",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "009992 7908137917488"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11538/produtos/1500/8d1590a875d13c2cfd3379bfb408943a.jpg",
+        "codigo": "009993",
+        "cod_barras": "7908137917495",
+        "Tamanho": "12",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "009993 7908137917495"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11523/produtos/1500/3d3083b2f43b2b5f2a009109445abfae.jpg",
+        "codigo": "009978",
+        "cod_barras": "7908137917341",
+        "Tamanho": "5",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "009978 7908137917341"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11524/produtos/1500/16e9ac6b9aaa07bab058d9f44bedd532.jpg",
+        "codigo": "009979",
+        "cod_barras": "7908137917358",
+        "Tamanho": "6",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "009979 7908137917358"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11525/produtos/1500/e45ff643e6d5c2476fea08dc669e8039.jpg",
+        "codigo": "009980",
+        "cod_barras": "7908137917365",
+        "Tamanho": "7",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "009980 7908137917365"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11526/produtos/1500/655089409c9c767830ca74979f31f928.jpg",
+        "codigo": "009981",
+        "cod_barras": "7908137917372",
+        "Tamanho": "8",
+        "Quantidade": "30",
+        "Cód / Cód Barras": "009981 7908137917372"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11527/produtos/1500/e6a2fd757134cf979bf6e248875ab153.jpg",
+        "codigo": "009982",
+        "cod_barras": "7908137917389",
+        "Tamanho": "9",
+        "Quantidade": "30",
+        "Cód / Cód Barras": "009982 7908137917389"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11528/produtos/1500/9586ab85958b5c7a1d2c837ac7914a79.jpg",
+        "codigo": "009983",
+        "cod_barras": "7908137917396",
+        "Tamanho": "10",
+        "Quantidade": "30",
+        "Cód / Cód Barras": "009983 7908137917396"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11529/produtos/1500/c15e665fdbbfb7fe4f24bb2be2ad2c49.jpg",
+        "codigo": "009984",
+        "cod_barras": "7908137917402",
+        "Tamanho": "11",
+        "Quantidade": "30",
+        "Cód / Cód Barras": "009984 7908137917402"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11530/produtos/1500/e529e6df336728634e16b6b4835b9dc0.jpg",
+        "codigo": "009985",
+        "cod_barras": "7908137917419",
+        "Tamanho": "12",
+        "Quantidade": "30",
+        "Cód / Cód Barras": "009985 7908137917419"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "ANZOL LIVE BAIT",
+    "marca": "MARINE",
+    "descricao_longa": "O Anzol Marine Live Bait é produzido em aço carbono super resistente com acabamento Black Nickel, que garante durabilidade, proteção contra corrosão e alta performance em diferentes modalidades de pesca.\n\nReforçado e confiável, é ideal para a confecção de Suport Hooks ou para uso direto em pescarias com iscas naturais, proporcionando fisgadas seguras e eficientes mesmo em situações exigentes.\n\nVersátil, robusto e de alto desempenho, o Live Bait Marine é a escolha ideal para pescadores que buscam confiança e eficiência em cada fisgada.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/anzol-live-bait-178.html",
+    "codigo": "004241",
+    "cod_barras": "7898480944364",
+    "imagem_url": "https://loja.marinefishing.com.br/img/7569/produtos/1500/ANZOL-LIVE-BAIT-codigo-005923.jpg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/178/produtos/1500/ANZOL-LIVE-BAIT-codigo-004241.jpg",
+        "codigo": "004241",
+        "cod_barras": "7898480944364",
+        "Tamanho": "1/0",
+        "Quantidade": "30",
+        "Cód / Cód Barras": "004241 7898480944364"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/179/produtos/1500/ANZOL-LIVE-BAIT-codigo-004242.jpg",
+        "codigo": "004242",
+        "cod_barras": "7898480944371",
+        "Tamanho": "2/0",
+        "Quantidade": "30",
+        "Cód / Cód Barras": "004242 7898480944371"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/180/produtos/1500/ANZOL-LIVE-BAIT-codigo-001991.jpg",
+        "codigo": "001991",
+        "cod_barras": "7898480921877",
+        "Tamanho": "3/0",
+        "Quantidade": "30",
+        "Cód / Cód Barras": "001991 7898480921877"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/181/produtos/1500/ANZOL-LIVE-BAIT-codigo-001992.jpg",
+        "codigo": "001992",
+        "cod_barras": "7898480921884",
+        "Tamanho": "4/0",
+        "Quantidade": "30",
+        "Cód / Cód Barras": "001992 7898480921884"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/182/produtos/1500/ANZOL-LIVE-BAIT-codigo-001993.jpg",
+        "codigo": "001993",
+        "cod_barras": "7898480921891",
+        "Tamanho": "5/0",
+        "Quantidade": "20",
+        "Cód / Cód Barras": "001993 7898480921891"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/183/produtos/1500/ANZOL-LIVE-BAIT-codigo-003757.jpg",
+        "codigo": "003757",
+        "cod_barras": "7898480940694",
+        "Tamanho": "6/0",
+        "Quantidade": "20",
+        "Cód / Cód Barras": "003757 7898480940694"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/184/produtos/1500/ANZOL-LIVE-BAIT-codigo-003758.jpg",
+        "codigo": "003758",
+        "cod_barras": "7898480940700",
+        "Tamanho": "7/0",
+        "Quantidade": "10",
+        "Cód / Cód Barras": "003758 7898480940700"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/186/produtos/1500/ANZOL-LIVE-BAIT-codigo-004243.jpg",
+        "codigo": "004243",
+        "cod_barras": "7898480944388",
+        "Tamanho": "9/0",
+        "Quantidade": "10",
+        "Cód / Cód Barras": "004243 7898480944388"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/5963/produtos/1500/ANZOL-LIVE-BAIT-codigo-001284.jpg",
+        "codigo": "001284",
+        "cod_barras": "7898480921907",
+        "Tamanho": "11/0",
+        "Quantidade": "10",
+        "Cód / Cód Barras": "001284 7898480921907"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/7569/produtos/1500/ANZOL-LIVE-BAIT-codigo-005923.jpg",
+        "codigo": "005923",
+        "cod_barras": "7898480955452",
+        "Tamanho": "13/0",
+        "Quantidade": "10",
+        "Cód / Cód Barras": "005923 7898480955452"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "ANZOL MARUSEIGO GOLD",
+    "marca": "MARINE",
+    "descricao_longa": "O Anzol Marine Maruseigo Gold é produzido em aço super resistente com acabamento Gold, que garante maior durabilidade, resistência à corrosão e eficiência em diferentes modalidades de pesca. Sua construção robusta e ponta afiada asseguram fisgadas firmes e seguras, tornando-o uma opção confiável para o pescador em qualquer situação.\n\nVersátil e confiável, o Maruseigo Gold é a escolha ideal para quem busca qualidade, resistência e segurança em cada fisgada.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/anzol-maruseigo-gold-1872.html",
+    "codigo": "000660",
+    "cod_barras": "7898480924526",
+    "imagem_url": "https://loja.marinefishing.com.br/img/1884/produtos/1500/ANZOL-MARUSEIGO-GOLD-PC-codigo-000672.jpg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1872/produtos/1500/ANZOL-MARUSEIGO-GOLD-PC-codigo-000660.jpg",
+        "codigo": "000660",
+        "cod_barras": "7898480924526",
+        "Tamanho": "6",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000660 7898480924526"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1873/produtos/1500/ANZOL-MARUSEIGO-GOLD-PC-codigo-000661.jpg",
+        "codigo": "000661",
+        "cod_barras": "7898480924533",
+        "Tamanho": "8",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000661 7898480924533"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1874/produtos/1500/ANZOL-MARUSEIGO-GOLD-PC-codigo-000662.jpg",
+        "codigo": "000662",
+        "cod_barras": "7898480924540",
+        "Tamanho": "10",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000662 7898480924540"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1875/produtos/1500/ANZOL-MARUSEIGO-GOLD-PC-codigo-000663.jpg",
+        "codigo": "000663",
+        "cod_barras": "7898480924557",
+        "Tamanho": "12",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000663 7898480924557"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1876/produtos/1500/ANZOL-MARUSEIGO-GOLD-PC-codigo-000664.jpg",
+        "codigo": "000664",
+        "cod_barras": "7898480924564",
+        "Tamanho": "14",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000664 7898480924564"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1877/produtos/1500/ANZOL-MARUSEIGO-GOLD-PC-codigo-000665.jpg",
+        "codigo": "000665",
+        "cod_barras": "7898480924571",
+        "Tamanho": "16",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000665 7898480924571"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1878/produtos/1500/ANZOL-MARUSEIGO-GOLD-PC-codigo-000666.jpg",
+        "codigo": "000666",
+        "cod_barras": "7898480924588",
+        "Tamanho": "18",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000666 7898480924588"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1879/produtos/1500/ANZOL-MARUSEIGO-GOLD-PC-codigo-000667.jpg",
+        "codigo": "000667",
+        "cod_barras": "7898480924595",
+        "Tamanho": "20",
+        "Quantidade": "25",
+        "Cód / Cód Barras": "000667 7898480924595"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1880/produtos/1500/ANZOL-MARUSEIGO-GOLD-PC-codigo-000668.jpg",
+        "codigo": "000668",
+        "cod_barras": "7898480924601",
+        "Tamanho": "22",
+        "Quantidade": "25",
+        "Cód / Cód Barras": "000668 7898480924601"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1881/produtos/1500/ANZOL-MARUSEIGO-GOLD-PC-codigo-000669.jpg",
+        "codigo": "000669",
+        "cod_barras": "7898480924618",
+        "Tamanho": "24",
+        "Quantidade": "15",
+        "Cód / Cód Barras": "000669 7898480924618"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1882/produtos/1500/ANZOL-MARUSEIGO-GOLD-PC-codigo-002039.jpg",
+        "codigo": "002039",
+        "cod_barras": "7898480924632",
+        "Tamanho": "26",
+        "Quantidade": "15",
+        "Cód / Cód Barras": "002039 7898480924632"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1883/produtos/1500/ANZOL-MARUSEIGO-GOLD-PC-codigo-000671.jpg",
+        "codigo": "000671",
+        "cod_barras": "7898480924649",
+        "Tamanho": "28",
+        "Quantidade": "10",
+        "Cód / Cód Barras": "000671 7898480924649"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1884/produtos/1500/ANZOL-MARUSEIGO-GOLD-PC-codigo-000672.jpg",
+        "codigo": "000672",
+        "cod_barras": "7898480924656",
+        "Tamanho": "30",
+        "Quantidade": "10",
+        "Cód / Cód Barras": "000672 7898480924656"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "ANZOL MARUSEIGO NICKEL",
+    "marca": "MARINE",
+    "descricao_longa": "O Anzol Marine Maruseigo Nickel é produzido em aço de alta resistência, garantindo firmeza, durabilidade e excelente performance em diferentes modalidades de pesca. Seu acabamento Nickel assegura alta resistência à corrosão, oferecendo confiabilidade em variadas condições de uso.\n\nVersátil, afiado e confiável, o Maruseigo Nickel é a escolha ideal para pescadores que buscam segurança e qualidade em cada fisgada.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/anzol-maruseigo-nickel-1777.html",
+    "codigo": "001288",
+    "cod_barras": "7898480924465",
+    "imagem_url": "https://loja.marinefishing.com.br/img/1789/produtos/1500/ANZOL-MARUSEIGO-NICKEL-codigo-000627.jpg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1803/produtos/1500/575ef60a7d892414074382bfdf5ad9a7.jpg",
+        "codigo": "001288",
+        "cod_barras": "7898480924465",
+        "Tamanho": "6",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001288 7898480924465"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1804/produtos/1500/ANZOL-MARUSEIGO-NICKEL-codigo-001289.jpg",
+        "codigo": "001289",
+        "cod_barras": "7898480924472",
+        "Tamanho": "8",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001289 7898480924472"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1805/produtos/1500/ANZOL-MARUSEIGO-NICKEL-codigo-001290.jpg",
+        "codigo": "001290",
+        "cod_barras": "7898480924397",
+        "Tamanho": "10",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001290 7898480924397"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1806/produtos/1500/ANZOL-MARUSEIGO-NICKEL-codigo-001291.jpg",
+        "codigo": "001291",
+        "cod_barras": "7898480924403",
+        "Tamanho": "12",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001291 7898480924403"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1807/produtos/1500/ANZOL-MARUSEIGO-NICKEL-codigo-001292.jpg",
+        "codigo": "001292",
+        "cod_barras": "7898480924410",
+        "Tamanho": "14",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001292 7898480924410"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1808/produtos/1500/ANZOL-MARUSEIGO-NICKEL-codigo-001293.jpg",
+        "codigo": "001293",
+        "cod_barras": "7898480924427",
+        "Tamanho": "16",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001293 7898480924427"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1809/produtos/1500/ANZOL-MARUSEIGO-NICKEL-codigo-001294.jpg",
+        "codigo": "001294",
+        "cod_barras": "7898480924434",
+        "Tamanho": "18",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001294 7898480924434"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1810/produtos/1500/ANZOL-MARUSEIGO-NICKEL-codigo-001295.jpg",
+        "codigo": "001295",
+        "cod_barras": "7898480924441",
+        "Tamanho": "20",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001295 7898480924441"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1811/produtos/1500/ANZOL-MARUSEIGO-NICKEL-codigo-001296.jpg",
+        "codigo": "001296",
+        "cod_barras": "7898480924458",
+        "Tamanho": "22",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001296 7898480924458"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1812/produtos/1500/ANZOL-MARUSEIGO-NICKEL-cx-codigo-001305.jpg",
+        "codigo": "001305",
+        "cod_barras": "7898480924489",
+        "Tamanho": "24",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "001305 7898480924489"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1813/produtos/1500/ANZOL-MARUSEIGO-NICKEL-codigo-001306.jpg",
+        "codigo": "001306",
+        "cod_barras": "7898480924496",
+        "Tamanho": "26",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "001306 7898480924496"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1814/produtos/1500/ANZOL-MARUSEIGO-NICKEL-codigo-001307.jpg",
+        "codigo": "001307",
+        "cod_barras": "7898480924502",
+        "Tamanho": "28",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "001307 7898480924502"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1815/produtos/1500/ANZOL-MARUSEIGO-NICKEL-codigo-001308.jpg",
+        "codigo": "001308",
+        "cod_barras": "7898480924519",
+        "Tamanho": "30",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "001308 7898480924519"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1777/produtos/1500/ANZOL-MARUSEIGO-NICKEL-codigo-000615.jpg",
+        "codigo": "000615",
+        "cod_barras": "7898480924663",
+        "Tamanho": "6",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000615 7898480924663"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1778/produtos/1500/ANZOL-MARUSEIGO-NICKEL-codigo-000616.jpg",
+        "codigo": "000616",
+        "cod_barras": "7898480924670",
+        "Tamanho": "8",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000616 7898480924670"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1779/produtos/1500/ANZOL-MARUSEIGO-NICKEL-codigo-000617.jpg",
+        "codigo": "000617",
+        "cod_barras": "7898480924687",
+        "Tamanho": "10",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000617 7898480924687"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1780/produtos/1500/ANZOL-MARUSEIGO-NICKEL-codigo-000618.jpg",
+        "codigo": "000618",
+        "cod_barras": "7898480924694",
+        "Tamanho": "12",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000618 7898480924694"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1781/produtos/1500/ANZOL-MARUSEIGO-NICKEL-codigo-000619.jpg",
+        "codigo": "000619",
+        "cod_barras": "7898480924700",
+        "Tamanho": "14",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000619 7898480924700"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1782/produtos/1500/ANZOL-MARUSEIGO-NICKEL-codigo-000620.jpg",
+        "codigo": "000620",
+        "cod_barras": "7898480924717",
+        "Tamanho": "16",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000620 7898480924717"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1783/produtos/1500/ANZOL-MARUSEIGO-NICKEL-codigo-000621.jpg",
+        "codigo": "000621",
+        "cod_barras": "7898480924724",
+        "Tamanho": "18",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000621 7898480924724"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1784/produtos/1500/ANZOL-MARUSEIGO-NICKEL-codigo-000622.jpg",
+        "codigo": "000622",
+        "cod_barras": "7898480924731",
+        "Tamanho": "20",
+        "Quantidade": "25",
+        "Cód / Cód Barras": "000622 7898480924731"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1785/produtos/1500/ANZOL-MARUSEIGO-NICKEL-codigo-000623.jpg",
+        "codigo": "000623",
+        "cod_barras": "7898480924748",
+        "Tamanho": "22",
+        "Quantidade": "25",
+        "Cód / Cód Barras": "000623 7898480924748"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1786/produtos/1500/ANZOL-MARUSEIGO-NICKEL-codigo-001944.jpg",
+        "codigo": "001944",
+        "cod_barras": "7898480924762",
+        "Tamanho": "24",
+        "Quantidade": "15",
+        "Cód / Cód Barras": "001944 7898480924762"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1787/produtos/1500/ANZOL-MARUSEIGO-NICKEL-codigo-001945.jpg",
+        "codigo": "001945",
+        "cod_barras": "7898480924779",
+        "Tamanho": "26",
+        "Quantidade": "15",
+        "Cód / Cód Barras": "001945 7898480924779"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1788/produtos/1500/ANZOL-MARUSEIGO-NICKEL-codigo-000626.jpg",
+        "codigo": "000626",
+        "cod_barras": "7898480924786",
+        "Tamanho": "28",
+        "Quantidade": "10",
+        "Cód / Cód Barras": "000626 7898480924786"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1789/produtos/1500/ANZOL-MARUSEIGO-NICKEL-codigo-000627.jpg",
+        "codigo": "000627",
+        "cod_barras": "7898480924793",
+        "Tamanho": "30",
+        "Quantidade": "10",
+        "Cód / Cód Barras": "000627 7898480924793"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "ANZOL MUTSU",
+    "marca": "MARINE",
+    "descricao_longa": "O Anzol Mutsu da Marine é produzido em aço super resistente, garantindo firmeza e durabilidade mesmo em situações de pesca extrema. Seu acabamento Black Nickel oferece maior proteção contra corrosão e alta performance em ambientes de água doce e salgada.\n\nCom ponta afiada e resistência superior, o Mutsu é a escolha certa para pescadores que buscam segurança, eficiência e confiabilidade em cada fisgada.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/anzol-mutsu--1771.html",
+    "codigo": "008322",
+    "cod_barras": "7908137909810",
+    "imagem_url": "https://loja.marinefishing.com.br/img/7067/produtos/1500/ANZOL-MUTSU-PC-codigo-005933.jpg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9926/produtos/1500/ANZOL-MUTSU-PC-codigo-008322.jpg",
+        "codigo": "008322",
+        "cod_barras": "7908137909810",
+        "Tamanho": "1/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "008322 7908137909810"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9927/produtos/1500/ANZOL-MUTSU-PC-codigo-008323.jpg",
+        "codigo": "008323",
+        "cod_barras": "7908137909827",
+        "Tamanho": "2/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "008323 7908137909827"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9928/produtos/1500/ANZOL-MUTSU-PC-codigo-008324.jpg",
+        "codigo": "008324",
+        "cod_barras": "7908137909834",
+        "Tamanho": "3/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "008324 7908137909834"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9929/produtos/1500/ANZOL-MUTSU-PC-codigo-008325.jpg",
+        "codigo": "008325",
+        "cod_barras": "7908137909841",
+        "Tamanho": "4/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "008325 7908137909841"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9930/produtos/1500/ANZOL-MUTSU-PC-codigo-008326.jpg",
+        "codigo": "008326",
+        "cod_barras": "7908137909858",
+        "Tamanho": "5/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "008326 7908137909858"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9931/produtos/1500/ANZOL-MUTSU-PC-codigo-008327.jpg",
+        "codigo": "008327",
+        "cod_barras": "7908137909865",
+        "Tamanho": "6/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "008327 7908137909865"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9932/produtos/1500/ANZOL-MUTSU-PC-codigo-008328.jpg",
+        "codigo": "008328",
+        "cod_barras": "7908137909872",
+        "Tamanho": "8/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "008328 7908137909872"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9933/produtos/1500/ANZOL-MUTSU-PC-codigo-008329.jpg",
+        "codigo": "008329",
+        "cod_barras": "7908137909889",
+        "Tamanho": "10/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "008329 7908137909889"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1771/produtos/1500/ANZOL-MUTSU-PC-codigo-004344.jpg",
+        "codigo": "004344",
+        "cod_barras": "7898480920481",
+        "Tamanho": "1/0",
+        "Quantidade": "30",
+        "Cód / Cód Barras": "004344 7898480920481"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1772/produtos/1500/ANZOL-MUTSU-PC-codigo-004402.jpg",
+        "codigo": "004402",
+        "cod_barras": "7898480920498",
+        "Tamanho": "2/0",
+        "Quantidade": "30",
+        "Cód / Cód Barras": "004402 7898480920498"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1773/produtos/1500/ANZOL-MUTSU-PC-codigo-003567.jpg",
+        "codigo": "003567",
+        "cod_barras": "7898480938851",
+        "Tamanho": "3/0",
+        "Quantidade": "30",
+        "Cód / Cód Barras": "003567 7898480938851"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1774/produtos/1500/ANZOL-MUTSU-PC-codigo-003568.jpg",
+        "codigo": "003568",
+        "cod_barras": "7898480938868",
+        "Tamanho": "4/0",
+        "Quantidade": "20",
+        "Cód / Cód Barras": "003568 7898480938868"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1775/produtos/1500/ANZOL-MUTSU-PC-codigo-003569.jpg",
+        "codigo": "003569",
+        "cod_barras": "7898480938875",
+        "Tamanho": "5/0",
+        "Quantidade": "20",
+        "Cód / Cód Barras": "003569 7898480938875"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1776/produtos/1500/ANZOL-MUTSU-PC-codigo-003570.jpg",
+        "codigo": "003570",
+        "cod_barras": "7898480938882",
+        "Tamanho": "6/0",
+        "Quantidade": "20",
+        "Cód / Cód Barras": "003570 7898480938882"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/7686/produtos/1500/ANZOL-MUTSU-PC-codigo-005932.jpg",
+        "codigo": "005932",
+        "cod_barras": "7898480955469",
+        "Tamanho": "8/0",
+        "Quantidade": "10",
+        "Cód / Cód Barras": "005932 7898480955469"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/7067/produtos/1500/ANZOL-MUTSU-PC-codigo-005933.jpg",
+        "codigo": "005933",
+        "cod_barras": "7898480955476",
+        "Tamanho": "10/0",
+        "Quantidade": "10",
+        "Cód / Cód Barras": "005933 7898480955476"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "ANZOL SUPER CHINU BLACK NICKEL",
+    "marca": "MARINE",
+    "descricao_longa": "O Anzol Super Chinu Black Nickel é a escolha certa para quem busca resistência e precisão em cada fisgada. Produzido em aço de alta qualidade, oferece robustez em um formato compacto, ideal para pescarias que exigem confiança e desempenho.\n\nSeu acabamento Black Nickel proporciona maior durabilidade e proteção contra a corrosão, enquanto a ponta quimicamente afiada garante penetração rápida e eficiente. Além disso, conta com revestimento em teflon que aumenta ainda mais sua vida útil, mesmo em ambientes desafiadores.\n\nUm anzol desenvolvido para oferecer máxima firmeza e resistência, atendendo pescadores que não abrem mão de qualidade e performance.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/anzol-super-chinu-black-nickel-8540.html",
+    "codigo": "008312",
+    "cod_barras": "7908137909711",
+    "imagem_url": "https://loja.marinefishing.com.br/img/11540/produtos/1500/932e6622695243adaa532d7130dfa2e0.jpg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9916/produtos/1500/ANZOL-SUPER-CHINU-BLACKNICKEL-CT-codigo-008312.jpg",
+        "codigo": "008312",
+        "cod_barras": "7908137909711",
+        "Tamanho": "1",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "008312 7908137909711"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9917/produtos/1500/ANZOL-SUPER-CHINU-BLACKNICKEL-CT-codigo-008313.jpg",
+        "codigo": "008313",
+        "cod_barras": "7908137909728",
+        "Tamanho": "2",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "008313 7908137909728"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9918/produtos/1500/ANZOL-SUPER-CHINU-BLACKNICKEL-CT-codigo-008314.jpg",
+        "codigo": "008314",
+        "cod_barras": "7908137909735",
+        "Tamanho": "3",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "008314 7908137909735"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9919/produtos/1500/ANZOL-SUPER-CHINU-BLACKNICKEL-CT-codigo-008315.jpg",
+        "codigo": "008315",
+        "cod_barras": "7908137909742",
+        "Tamanho": "4",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "008315 7908137909742"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9920/produtos/1500/ANZOL-SUPER-CHINU-BLACKNICKEL-CT-codigo-008316.jpg",
+        "codigo": "008316",
+        "cod_barras": "7908137909759",
+        "Tamanho": "5",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "008316 7908137909759"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9921/produtos/1500/ANZOL-SUPER-CHINU-BLACKNICKEL-CT-codigo-008317.jpg",
+        "codigo": "008317",
+        "cod_barras": "7908137909766",
+        "Tamanho": "6",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "008317 7908137909766"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9922/produtos/1500/ANZOL-SUPER-CHINU-BLACKNICKEL-CT-codigo-008318.jpg",
+        "codigo": "008318",
+        "cod_barras": "7908137909773",
+        "Tamanho": "7",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "008318 7908137909773"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9923/produtos/1500/ANZOL-SUPER-CHINU-BLACKNICKEL-CT-codigo-008319.jpg",
+        "codigo": "008319",
+        "cod_barras": "7908137909780",
+        "Tamanho": "8",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "008319 7908137909780"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9924/produtos/1500/ANZOL-SUPER-CHINU-BLACKNICKEL-CT-codigo-008320.jpg",
+        "codigo": "008320",
+        "cod_barras": "7908137909797",
+        "Tamanho": "9",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "008320 7908137909797"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9925/produtos/1500/ANZOL-SUPER-CHINU-BLACKNICKEL-CT-codigo-008321.jpg",
+        "codigo": "008321",
+        "cod_barras": "7908137909803",
+        "Tamanho": "10",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "008321 7908137909803"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11541/produtos/1500/000dc86644ff2c7943400b7fd62fabe4.jpg",
+        "codigo": "009996",
+        "cod_barras": "7908137917525",
+        "Tamanho": "11",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "009996 7908137917525"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11542/produtos/1500/5df76cd74e1bf571e603b3bdeebaf8b3.jpg",
+        "codigo": "009997",
+        "cod_barras": "7908137917532",
+        "Tamanho": "12",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "009997 7908137917532"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/8540/produtos/1500/ANZOL-SUPER-CHINU-BLACKNICKEL-codigo-007276.jpg",
+        "codigo": "007276",
+        "cod_barras": "7908137903856",
+        "Tamanho": "1",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "007276 7908137903856"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/8541/produtos/1500/ANZOL-SUPER-CHINU-BLACKNICKEL-CT-codigo-007277.jpg",
+        "codigo": "007277",
+        "cod_barras": "7898480925899",
+        "Tamanho": "2",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "007277 7898480925899"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/8542/produtos/1500/ANZOL-SUPER-CHINU-BLACKNICKEL-CT-codigo-007278.jpg",
+        "codigo": "007278",
+        "cod_barras": "7908137903863",
+        "Tamanho": "3",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "007278 7908137903863"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/8543/produtos/1500/ANZOL-SUPER-CHINU-BLACKNICKEL-CT-codigo-007279.jpg",
+        "codigo": "007279",
+        "cod_barras": "7908137903870",
+        "Tamanho": "4",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "007279 7908137903870"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/8544/produtos/1500/ANZOL-SUPER-CHINU-BLACKNICKEL-CT-codigo-007280.jpg",
+        "codigo": "007280",
+        "cod_barras": "7908137903887",
+        "Tamanho": "5",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "007280 7908137903887"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/8545/produtos/1500/ANZOL-SUPER-CHINU-BLACKNICKEL-CT-codigo-007281.jpg",
+        "codigo": "007281",
+        "cod_barras": "7908137903894",
+        "Tamanho": "6",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "007281 7908137903894"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/8546/produtos/1500/ANZOL-SUPER-CHINU-BLACKNICKEL-CT-codigo-007282.jpg",
+        "codigo": "007282",
+        "cod_barras": "7908137903900",
+        "Tamanho": "7",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "007282 7908137903900"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/8549/produtos/1500/ANZOL-SUPER-CHINU-BLACKNICKEL-CT-codigo-007283.jpg",
+        "codigo": "007283",
+        "cod_barras": "7908137903917",
+        "Tamanho": "8",
+        "Quantidade": "30",
+        "Cód / Cód Barras": "007283 7908137903917"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/8547/produtos/1500/ANZOL-SUPER-CHINU-BLACKNICKEL-CT-codigo-007284.jpg",
+        "codigo": "007284",
+        "cod_barras": "7908137903924",
+        "Tamanho": "9",
+        "Quantidade": "30",
+        "Cód / Cód Barras": "007284 7908137903924"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/8548/produtos/1500/ANZOL-SUPER-CHINU-BLACKNICKEL-CT-codigo-007285.jpg",
+        "codigo": "007285",
+        "cod_barras": "7908137903931",
+        "Tamanho": "10",
+        "Quantidade": "30",
+        "Cód / Cód Barras": "007285 7908137903931"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11539/produtos/1500/897b0a5dff942ec4bff54be887ec06e8.jpg",
+        "codigo": "009994",
+        "cod_barras": "7908137917501",
+        "Tamanho": "11",
+        "Quantidade": "30",
+        "Cód / Cód Barras": "009994 7908137917501"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11540/produtos/1500/932e6622695243adaa532d7130dfa2e0.jpg",
+        "codigo": "009995",
+        "cod_barras": "7908137917518",
+        "Tamanho": "12",
+        "Quantidade": "30",
+        "Cód / Cód Barras": "009995 7908137917518"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "ANZOL SUPER MARUSEIGO",
+    "marca": "MARINE",
+    "descricao_longa": "O Anzol Super Maruseigo Marine é produzido em aço super resistente e conta com acabamento Black Nickel, garantindo maior durabilidade e proteção contra corrosão em diferentes modalidades de pesca. Sua ponta afiada assegura fisgadas rápidas e seguras, oferecendo confiabilidade em cada arremesso.\n\nRobusto, versátil e confiável, o Super Maruseigo Marine é a escolha ideal para pescadores que buscam qualidade, resistência e segurança em cada fisgada.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/anzol-super-maruseigo-1790.html",
+    "codigo": "008330",
+    "cod_barras": "7908137909896",
+    "imagem_url": "https://loja.marinefishing.com.br/img/1802/produtos/1500/ANZOL-SUPER-MARUSEIGO-BLACKNICKEL-CT-codigo-003434.jpg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9934/produtos/1500/ANZOL-SUPER-MARUSEIGO-BLACKNICKEL-CX-codigo-008330.jpg",
+        "codigo": "008330",
+        "cod_barras": "7908137909896",
+        "Tamanho": "6",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "008330 7908137909896"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9935/produtos/1500/ANZOL-SUPER-MARUSEIGO-BLACKNICKEL-CXX-codigo-008331.jpg",
+        "codigo": "008331",
+        "cod_barras": "7908137909902",
+        "Tamanho": "8",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "008331 7908137909902"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9936/produtos/1500/ANZOL-SUPER-MARUSEIGO-BLACKNICKEL-CX-codigo-008332.jpg",
+        "codigo": "008332",
+        "cod_barras": "7908137909919",
+        "Tamanho": "10",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "008332 7908137909919"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9937/produtos/1500/ANZOL-SUPER-MARUSEIGO-BLACKNICKEL-CX-codigo-008333.jpg",
+        "codigo": "008333",
+        "cod_barras": "7908137909926",
+        "Tamanho": "12",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "008333 7908137909926"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9938/produtos/1500/ANZOL-SUPER-MARUSEIGO-BLACKNICKEL-CX-codigo-008334.jpg",
+        "codigo": "008334",
+        "cod_barras": "7908137909933",
+        "Tamanho": "14",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "008334 7908137909933"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9939/produtos/1500/ANZOL-SUPER-MARUSEIGO-BLACKNICKEL-CX-codigo-008335.jpg",
+        "codigo": "008335",
+        "cod_barras": "7908137909940",
+        "Tamanho": "16",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "008335 7908137909940"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9947/produtos/1500/ANZOL-SUPER-MARUSEIGO-BLACKNICKEL-CXX-codigo-008336.jpg",
+        "codigo": "008336",
+        "cod_barras": "7908137909957",
+        "Tamanho": "18",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "008336 7908137909957"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9948/produtos/1500/ANZOL-SUPER-MARUSEIGO-BLACKNICKEL-CX-codigo-008337.jpg",
+        "codigo": "008337",
+        "cod_barras": "7908137909964",
+        "Tamanho": "20",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "008337 7908137909964"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9949/produtos/1500/ANZOL-SUPER-MARUSEIGO-BLACKNICKEL-CX-codigo-008338.jpg",
+        "codigo": "008338",
+        "cod_barras": "7908137909971",
+        "Tamanho": "22",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "008338 7908137909971"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9950/produtos/1500/136d116281b50b9eda58b37175912f30.jpg",
+        "codigo": "008339",
+        "cod_barras": "7908137909988",
+        "Tamanho": "24",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "008339 7908137909988"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9951/produtos/1500/3cc01445d5ceb9236ec0733a436742c8.jpg",
+        "codigo": "008340",
+        "cod_barras": "7908137909995",
+        "Tamanho": "26",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "008340 7908137909995"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9952/produtos/1500/f7ce53920e84cafb75be410d6104541d.jpg",
+        "codigo": "008341",
+        "cod_barras": "7908137910007",
+        "Tamanho": "28",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "008341 7908137910007"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9953/produtos/1500/6c09c96dac96ccf114ae1cacd80b4207.jpg",
+        "codigo": "008342",
+        "cod_barras": "7908137910014",
+        "Tamanho": "30",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "008342 7908137910014"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1790/produtos/1500/ANZOL-SUPER-MARUSEIGO-BLACKNICKEL-CX-codigo-003017.jpg",
+        "codigo": "003017",
+        "cod_barras": "7898480931920",
+        "Tamanho": "6",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "003017 7898480931920"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1791/produtos/1500/ANZOL-SUPER-MARUSEIGO-BLACKNICKEL-CT-codigo-003016.jpg",
+        "codigo": "003016",
+        "cod_barras": "7898480931937",
+        "Tamanho": "8",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "003016 7898480931937"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1792/produtos/1500/ANZOL-SUPER-MARUSEIGO-BLACKNICKEL-CT-codigo-003015.jpg",
+        "codigo": "003015",
+        "cod_barras": "7898480931944",
+        "Tamanho": "10",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "003015 7898480931944"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1793/produtos/1500/ANZOL-SUPER-MARUSEIGO-BLACKNICKEL-CT-codigo-003014.jpg",
+        "codigo": "003014",
+        "cod_barras": "7898480931951",
+        "Tamanho": "12",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "003014 7898480931951"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1794/produtos/1500/ANZOL-SUPER-MARUSEIGO-BLACKNICKEL-CT-codigo-003013.jpg",
+        "codigo": "003013",
+        "cod_barras": "7898480931968",
+        "Tamanho": "14",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "003013 7898480931968"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1795/produtos/1500/ANZOL-SUPER-MARUSEIGO-BLACKNICKEL-CT-codigo-003012.jpg",
+        "codigo": "003012",
+        "cod_barras": "7898480931975",
+        "Tamanho": "16",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "003012 7898480931975"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1796/produtos/1500/ANZOL-SUPER-MARUSEIGO-BLACKNICKEL-CT-codigo-003011.jpg",
+        "codigo": "003011",
+        "cod_barras": "7898480931982",
+        "Tamanho": "18",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "003011 7898480931982"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1797/produtos/1500/ANZOL-SUPER-MARUSEIGO-BLACKNICKEL-CT-codigo-003429.jpg",
+        "codigo": "003429",
+        "cod_barras": "7898480937700",
+        "Tamanho": "20",
+        "Quantidade": "25",
+        "Cód / Cód Barras": "003429 7898480937700"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1798/produtos/1500/ANZOL-SUPER-MARUSEIGO-BLACKNICKEL-CT-codigo-003430.jpg",
+        "codigo": "003430",
+        "cod_barras": "7898480937717",
+        "Tamanho": "22",
+        "Quantidade": "25",
+        "Cód / Cód Barras": "003430 7898480937717"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1799/produtos/1500/ANZOL-SUPER-MARUSEIGO-BLACKNICKEL-CT-codigo-003431.jpg",
+        "codigo": "003431",
+        "cod_barras": "7898480937724",
+        "Tamanho": "24",
+        "Quantidade": "15",
+        "Cód / Cód Barras": "003431 7898480937724"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1800/produtos/1500/ANZOL-SUPER-MARUSEIGO-BLACKNICKEL-CT-codigo-003432.jpg",
+        "codigo": "003432",
+        "cod_barras": "7898480937731",
+        "Tamanho": "26",
+        "Quantidade": "15",
+        "Cód / Cód Barras": "003432 7898480937731"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1801/produtos/1500/ANZOL-SUPER-MARUSEIGO-BLACKNICKEL-CT-codigo-003433.jpg",
+        "codigo": "003433",
+        "cod_barras": "7898480937748",
+        "Tamanho": "28",
+        "Quantidade": "10",
+        "Cód / Cód Barras": "003433 7898480937748"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1802/produtos/1500/ANZOL-SUPER-MARUSEIGO-BLACKNICKEL-CT-codigo-003434.jpg",
+        "codigo": "003434",
+        "cod_barras": "7898480937755",
+        "Tamanho": "30",
+        "Quantidade": "10",
+        "Cód / Cód Barras": "003434 7898480937755"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "ANZOL SUPER WIDE GAP BLACK NICKEL",
+    "marca": "MARINE",
+    "descricao_longa": "O Anzol Marine Super Wide Gap Black Nickel da Marine é fabricado em aço de alta resistência e recebe acabamento Black Nickel, que garante maior durabilidade e proteção contra corrosão. Sua ponta angulada e super afiada assegura penetração rápida e fisgadas firmes, mesmo em situações de pesca desafiadoras.\n\nCom têmpera especial e processo de forjamento, o modelo apresenta resistência 20% superior em comparação ao Wide Gap tradicional, oferecendo confiabilidade extra em cada captura.\n\nRobusto, eficiente e versátil, o Super Wide Gap Black Nickel é a escolha ideal para pescadores que exigem força, desempenho e segurança em cada fisgada.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/anzol-super-wide-gap-black-nickel--9454.html",
+    "codigo": "007905",
+    "cod_barras": "7908137907434",
+    "imagem_url": "https://loja.marinefishing.com.br/img/9457/produtos/1500/ANZOL-SUPER-WIDE-GAP-BLACKNICKEL-CX--codigo-007915.jpg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9447/produtos/1500/ANZOL-SUPER-WIDE-GAP-BLACKNICKEL-CX--codigo-007905.jpg",
+        "codigo": "007905",
+        "cod_barras": "7908137907434",
+        "Tamanho": "6",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "007905 7908137907434"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9446/produtos/1500/ANZOL-SUPER-WIDE-GAP-BLACKNICKEL-CX--codigo-007904.jpg",
+        "codigo": "007904",
+        "cod_barras": "7908137907427",
+        "Tamanho": "4",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "007904 7908137907427"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9445/produtos/1500/ANZOL-SUPER-WIDE-GAP-BLACKNICKEL-CX--codigo-007903.jpg",
+        "codigo": "007903",
+        "cod_barras": "7908137907410",
+        "Tamanho": "2",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "007903 7908137907410"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9444/produtos/1500/ANZOL-SUPER-WIDE-GAP-BLACKNICKEL-CX--codigo-007902.jpg",
+        "codigo": "007902",
+        "cod_barras": "7908137907403",
+        "Tamanho": "1",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "007902 7908137907403"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9448/produtos/1500/ANZOL-SUPER-WIDE-GAP-BLACKNICKEL-CX--codigo-007906.jpg",
+        "codigo": "007906",
+        "cod_barras": "7908137907441",
+        "Tamanho": "1/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "007906 7908137907441"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9449/produtos/1500/ANZOL-SUPER-WIDE-GAP-BLACKNICKEL-CX--codigo-007907.jpg",
+        "codigo": "007907",
+        "cod_barras": "7908137907458",
+        "Tamanho": "2/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "007907 7908137907458"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9450/produtos/1500/ANZOL-SUPER-WIDE-GAP-BLACKNICKEL-CX--codigo-007908.jpg",
+        "codigo": "007908",
+        "cod_barras": "7908137907465",
+        "Tamanho": "3/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "007908 7908137907465"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9454/produtos/1500/ANZOL-SUPER-WIDE-GAP-BLACKNICKEL-CX--codigo-007912.jpg",
+        "codigo": "007912",
+        "cod_barras": "7908137907502",
+        "Tamanho": "6",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "007912 7908137907502"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9453/produtos/1500/ANZOL-SUPER-WIDE-GAP-BLACKNICKEL-CX--codigo-007911.jpg",
+        "codigo": "007911",
+        "cod_barras": "7908137907496",
+        "Tamanho": "4",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "007911 7908137907496"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9452/produtos/1500/ANZOL-SUPER-WIDE-GAP-BLACKNICKEL-CX--codigo-007910.jpg",
+        "codigo": "007910",
+        "cod_barras": "7908137907489",
+        "Tamanho": "2",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "007910 7908137907489"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9451/produtos/1500/ANZOL-SUPER-WIDE-GAP-BLACKNICKEL-CX--codigo-007909.jpg",
+        "codigo": "007909",
+        "cod_barras": "7908137907472",
+        "Tamanho": "1",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "007909 7908137907472"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9455/produtos/1500/ANZOL-SUPER-WIDE-GAP-BLACKNICKEL-CX--codigo-007913.jpg",
+        "codigo": "007913",
+        "cod_barras": "7908137907519",
+        "Tamanho": "1/0",
+        "Quantidade": "40",
+        "Cód / Cód Barras": "007913 7908137907519"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9456/produtos/1500/ANZOL-SUPER-WIDE-GAP-BLACKNICKEL-CX--codigo-007914.jpg",
+        "codigo": "007914",
+        "cod_barras": "7908137907526",
+        "Tamanho": "2/0",
+        "Quantidade": "40",
+        "Cód / Cód Barras": "007914 7908137907526"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9457/produtos/1500/ANZOL-SUPER-WIDE-GAP-BLACKNICKEL-CX--codigo-007915.jpg",
+        "codigo": "007915",
+        "cod_barras": "7908137907533",
+        "Tamanho": "3/0",
+        "Quantidade": "40",
+        "Cód / Cód Barras": "007915 7908137907533"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "ANZOL SUZUKI",
+    "marca": "MARINE",
+    "descricao_longa": "O Anzol Suzuki da Marine é produzido em aço super resistente, oferecendo firmeza, durabilidade e desempenho confiável em diferentes modalidades de pesca. Seu acabamento Nickel garante maior proteção contra corrosão, prolongando a vida útil do equipamento mesmo em condições intensas de uso.\n\nRobusto, afiado e versátil, o Suzuki  é a escolha ideal para pescadores que buscam segurança e confiabilidade em cada fisgada.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/anzol-suzuki-2039.html",
+    "codigo": "000704",
+    "cod_barras": "7898480925073",
+    "imagem_url": "https://loja.marinefishing.com.br/img/2046/produtos/1500/ANZOL-SUZUKI--codigo-000711.jpg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/2039/produtos/1500/ANZOL-SUZUKI--codigo-000704.jpg",
+        "codigo": "000704",
+        "cod_barras": "7898480925073",
+        "Tamanho": "16",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000704 7898480925073"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/2040/produtos/1500/ANZOL-SUZUKI--codigo-000705.jpg",
+        "codigo": "000705",
+        "cod_barras": "7898480921921",
+        "Tamanho": "17",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000705 7898480921921"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/2041/produtos/1500/ANZOL-SUZUKI--codigo-000706.jpg",
+        "codigo": "000706",
+        "cod_barras": "7898480921938",
+        "Tamanho": "18",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000706 7898480921938"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/2042/produtos/1500/ANZOL-SUZUKI--codigo-000707.jpg",
+        "codigo": "000707",
+        "cod_barras": "7898480921945",
+        "Tamanho": "19",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000707 7898480921945"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/2043/produtos/1500/ANZOL-SUZUKI--codigo-000708.jpg",
+        "codigo": "000708",
+        "cod_barras": "7898480921952",
+        "Tamanho": "20",
+        "Quantidade": "25",
+        "Cód / Cód Barras": "000708 7898480921952"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/2044/produtos/1500/ANZOL-SUZUKI--codigo-000709.jpg",
+        "codigo": "000709",
+        "cod_barras": "7898480921969",
+        "Tamanho": "21",
+        "Quantidade": "25",
+        "Cód / Cód Barras": "000709 7898480921969"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/2045/produtos/1500/ANZOL-SUZUKI--codigo-000710.jpg",
+        "codigo": "000710",
+        "cod_barras": "7898480921976",
+        "Tamanho": "22",
+        "Quantidade": "25",
+        "Cód / Cód Barras": "000710 7898480921976"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/2046/produtos/1500/ANZOL-SUZUKI--codigo-000711.jpg",
+        "codigo": "000711",
+        "cod_barras": "7898480921983",
+        "Tamanho": "24",
+        "Quantidade": "25",
+        "Cód / Cód Barras": "000711 7898480921983"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "ANZOL WIDE GAP",
+    "marca": "MARINE",
+    "descricao_longa": "O Anzol Wide Gap da Marine é produzido em aço super resistente e conta com acabamento Black Nickel, garantindo durabilidade e proteção contra corrosão. Com ponta angulada e super afiada, oferece penetração eficiente e fisgadas firmes, tornando-se indispensável para diferentes modalidades de pesca.\n\nReforçado e com maior espessura, o Wide Gap combina leveza e robustez em um desenho versátil, ideal para pescadores que exigem confiança em cada arremesso.\n\nConfiável, afiado e resistente, o Wide Gap é a escolha certa para pescadores que buscam qualidade e desempenho em cada fisgada.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/anzol-wide-gap--1963.html",
+    "codigo": "001311",
+    "cod_barras": "7898480921839",
+    "imagem_url": "https://loja.marinefishing.com.br/img/1966/produtos/1500/ANZOL-WIDE-GAP-BLACK-codigo-000718.jpg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1956/produtos/1500/ANZOL-WIDE-GAP-BLACK-codigo-001311.jpg",
+        "codigo": "001311",
+        "cod_barras": "7898480921839",
+        "Tamanho": "6",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001311 7898480921839"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1955/produtos/1500/ANZOL-WIDE-GAP-BLACK-codigo-002108.jpg",
+        "codigo": "002108",
+        "cod_barras": "7898480921822",
+        "Tamanho": "4",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "002108 7898480921822"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1954/produtos/1500/ANZOL-WIDE-GAP-BLACK-codigo-001310.jpg",
+        "codigo": "001310",
+        "cod_barras": "7898480921815",
+        "Tamanho": "2",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001310 7898480921815"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1953/produtos/1500/ANZOL-WIDE-GAP-BLACK-codigo-001309.jpg",
+        "codigo": "001309",
+        "cod_barras": "7898480921808",
+        "Tamanho": "1",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001309 7898480921808"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1957/produtos/1500/ANZOL-WIDE-GAP-BLACK-codigo-001359.jpg",
+        "codigo": "001359",
+        "cod_barras": "7898480925103",
+        "Tamanho": "1/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001359 7898480925103"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1958/produtos/1500/ANZOL-WIDE-GAP-BLACK-codigo-001360.jpg",
+        "codigo": "001360",
+        "cod_barras": "7898480921853",
+        "Tamanho": "2/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001360 7898480921853"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1959/produtos/1500/ANZOL-WIDE-GAP-BLACK-codigo-001361.jpg",
+        "codigo": "001361",
+        "cod_barras": "7898480921860",
+        "Tamanho": "3/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001361 7898480921860"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1963/produtos/1500/ANZOL-WIDE-GAP-BLACK-codigo-000715.jpg",
+        "codigo": "000715",
+        "cod_barras": "7898480921761",
+        "Tamanho": "6",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000715 7898480921761"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1962/produtos/1500/ANZOL-WIDE-GAP-BLACK-codigo-000714.jpg",
+        "codigo": "000714",
+        "cod_barras": "7898480921754",
+        "Tamanho": "4",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000714 7898480921754"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1961/produtos/1500/ANZOL-WIDE-GAP-BLACK-codigo-000713.jpg",
+        "codigo": "000713",
+        "cod_barras": "7898480921747",
+        "Tamanho": "2",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000713 7898480921747"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1960/produtos/1500/ANZOL-WIDE-GAP-BLACK-codigo-000712.jpg",
+        "codigo": "000712",
+        "cod_barras": "7898480921730",
+        "Tamanho": "1",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "000712 7898480921730"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1964/produtos/1500/ANZOL-WIDE-GAP-BLACK-codigo-000716.jpg",
+        "codigo": "000716",
+        "cod_barras": "7898480933887",
+        "Tamanho": "1/0",
+        "Quantidade": "40",
+        "Cód / Cód Barras": "000716 7898480933887"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1965/produtos/1500/ANZOL-WIDE-GAP-BLACK-codigo-000717.jpg",
+        "codigo": "000717",
+        "cod_barras": "7898480921785",
+        "Tamanho": "2/0",
+        "Quantidade": "40",
+        "Cód / Cód Barras": "000717 7898480921785"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/1966/produtos/1500/ANZOL-WIDE-GAP-BLACK-codigo-000718.jpg",
+        "codigo": "000718",
+        "cod_barras": "7898480921792",
+        "Tamanho": "3/0",
+        "Quantidade": "40",
+        "Cód / Cód Barras": "000718 7898480921792"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "ANZOL WIDE GAP 4X BLACK NICKEL",
+    "marca": "MARINE",
+    "descricao_longa": "O Anzol Marine Wide Gap 4X Black Nickel é produzido em aço super resistente, desenvolvido para oferecer firmeza e desempenho superior nas pescarias mais exigentes. Seu acabamento Black Nickel garante maior durabilidade e proteção contra corrosão, assegurando confiabilidade em ambientes de água doce e salgada.\n\nCom ponta afiada e reforço estrutural, o Wide Gap 4X proporciona penetração rápida e fisgadas seguras, sendo ideal para enfrentar espécies mais fortes.\n\nRobusto, resistente e eficiente, o Wide Gap 4X Black Nickel é a escolha certa para pescadores que buscam potência, qualidade e segurança em cada fisgada.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/anzol-wide-gap-4x-black-nickel-8872.html",
+    "codigo": "007640",
+    "cod_barras": "7908137906277",
+    "imagem_url": "https://loja.marinefishing.com.br/img/8873/produtos/1500/ANZOL-WIDE-GAP-4X-PRETO-PC-30-codigo-007291.jpg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9162/produtos/1500/ANZOL-WIDE-GAP-Cx-codigo-007640.jpg",
+        "codigo": "007640",
+        "cod_barras": "7908137906277",
+        "Tamanho": "2/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "007640 7908137906277"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9163/produtos/1500/da74a3e3f590a2533f9d1bb5f2d769d1.jpg",
+        "codigo": "007641",
+        "cod_barras": "7908137906284",
+        "Tamanho": "3/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "007641 7908137906284"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/8872/produtos/1500/ANZOL-WIDE-GAP-4X-codigo-007290.jpg",
+        "codigo": "007290",
+        "cod_barras": "7908137904082",
+        "Tamanho": "2/0",
+        "Quantidade": "40",
+        "Cód / Cód Barras": "007290 7908137904082"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/8873/produtos/1500/ANZOL-WIDE-GAP-4X-PRETO-PC-30-codigo-007291.jpg",
+        "codigo": "007291",
+        "cod_barras": "7908137904099",
+        "Tamanho": "3/0",
+        "Quantidade": "40",
+        "Cód / Cód Barras": "007291 7908137904099"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "ANZOL WIDE GAP 4X SEM FARPA BLACK NICKEL",
+    "marca": "MARINE",
+    "descricao_longa": "O Anzol Marine Wide Gap 4X Sem Farpa Black Nickel é fabricado em aço super resistente e conta com acabamento Black Nickel, que garante maior durabilidade e proteção contra corrosão. Seu desenho robusto oferece firmeza e desempenho superior, sendo ideal para pescarias que exigem máxima resistência.\n\nPor não possuir farpa, facilita a retirada do anzol e reduz danos ao peixe, sendo uma opção indicada para práticas esportivas e de pesca consciente.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/anzol-wide-gap-4x-sem-farpa-black-nickel-8874.html",
+    "codigo": "007642",
+    "cod_barras": "7908137906291",
+    "imagem_url": "https://loja.marinefishing.com.br/img/8874/produtos/1500/ANZOL-WIDE-GAP-4X-PRETO-SEM-FARPA-PC-20-codigo-007292.jpg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9164/produtos/1500/ANZOL-WIDE-GAP-CX-4X-20-C100-codigo-007642.jpg",
+        "codigo": "007642",
+        "cod_barras": "7908137906291",
+        "Tamanho": "2/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "007642 7908137906291"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/8874/produtos/1500/ANZOL-WIDE-GAP-4X-PRETO-SEM-FARPA-PC-20-codigo-007292.jpg",
+        "codigo": "007292",
+        "cod_barras": "7908137904105",
+        "Tamanho": "2/0",
+        "Quantidade": "40",
+        "Cód / Cód Barras": "007292 7908137904105"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "GARATEIA SANKEN SHORT SHANK 3X",
+    "marca": "MARINE",
+    "descricao_longa": "A Garateia Sanken Short Shank 3X foi desenvolvida para pescadores que buscam resistência, precisão e durabilidade. Seu design com haste curta (Short Shank) proporciona fisgadas rápidas e seguras, mantendo a firmeza do peixe mesmo durante brigas intensas.\n\nFabricada com estrutura forjada Hyper Strong, garante força extra para enfrentar espécies combativas, enquanto o acabamento Nickel assegura proteção anticorrosiva, ideal tanto para água doce quanto ambiente marinho.\n\nAs pontas Super Sharp, afiadas quimicamente, oferecem penetração imediata e eficiência máxima na captura. Versátil, pode ser utilizada com iscas artificiais e naturais, adaptando-se facilmente às mais diversas condições de pesca esportiva.\n\nCom construção reforçada, resistência à corrosão e alta eficiência de fisgada, a Garateia Sanken é a escolha ideal para quem exige desempenho e confiabilidade em qualquer pescaria.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/garateia-sanken-short-shank-3x-9961.html",
+    "codigo": "008582",
+    "cod_barras": "7908137910540",
+    "imagem_url": "https://loja.marinefishing.com.br/img/9971/produtos/1500/f6f39c74a2c82b13e732f256e075cd98.jpg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10117/produtos/1500/GARATEIA-SANKEN-16-CX-codigo-008582.png",
+        "codigo": "008582",
+        "cod_barras": "7908137910540",
+        "Tamanho": "16",
+        "Quantidade": "50",
+        "Peso": "0.13 g",
+        "Cód / Cód Barras": "008582 7908137910540"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10116/produtos/1500/GARATEIA-SANKEN-14-CX-codigo-008581.png",
+        "codigo": "008581",
+        "cod_barras": "7908137910533",
+        "Tamanho": "14",
+        "Quantidade": "50",
+        "Peso": "0.19 g",
+        "Cód / Cód Barras": "008581 7908137910533"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10115/produtos/1500/GARATEIA-SANKEN-12-CX-codigo-008580.png",
+        "codigo": "008580",
+        "cod_barras": "7908137910526",
+        "Tamanho": "12",
+        "Quantidade": "50",
+        "Peso": "0.2 g",
+        "Cód / Cód Barras": "008580 7908137910526"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10114/produtos/1500/fef56e7c9871b959cef4bccf85624388.jpg",
+        "codigo": "008579",
+        "cod_barras": "7908137910519",
+        "Tamanho": "10",
+        "Quantidade": "50",
+        "Peso": "0.3 g",
+        "Cód / Cód Barras": "008579 7908137910519"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10113/produtos/1500/706e0607f158b12c4ff63a0c849524a3.jpg",
+        "codigo": "008578",
+        "cod_barras": "7908137910502",
+        "Tamanho": "8",
+        "Quantidade": "50",
+        "Peso": "0.55 g",
+        "Cód / Cód Barras": "008578 7908137910502"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10112/produtos/1500/323a8744f44236aac9f72621424f3e50.jpg",
+        "codigo": "008577",
+        "cod_barras": "7908137910496",
+        "Tamanho": "6",
+        "Quantidade": "50",
+        "Peso": "0.8 g",
+        "Cód / Cód Barras": "008577 7908137910496"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10111/produtos/1500/cd3be2ee910a74fafa21efa4215109b5.jpg",
+        "codigo": "008576",
+        "cod_barras": "7908137910489",
+        "Tamanho": "4",
+        "Quantidade": "50",
+        "Peso": "1.05 g",
+        "Cód / Cód Barras": "008576 7908137910489"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11753/produtos/1500/1512faa04e57fe7295809cac441dc8f3.jpg",
+        "codigo": "010177",
+        "cod_barras": "7908137919178",
+        "Tamanho": "3",
+        "Quantidade": "50",
+        "Peso": "1.36 g",
+        "Cód / Cód Barras": "010177 7908137919178"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10110/produtos/1500/ce9e4e7cdbca4e9ec15c55325127a13e.jpg",
+        "codigo": "008575",
+        "cod_barras": "7908137910472",
+        "Tamanho": "2",
+        "Quantidade": "50",
+        "Peso": "1.4 g",
+        "Cód / Cód Barras": "008575 7908137910472"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10109/produtos/1500/9ce9d990baf6438da32bdec057956907.jpg",
+        "codigo": "008574",
+        "cod_barras": "7908137910465",
+        "Tamanho": "1",
+        "Quantidade": "30",
+        "Peso": "1.95 g",
+        "Cód / Cód Barras": "008574 7908137910465"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10118/produtos/1500/GARATEIA-SANKEN-10-CX-codigo-008583.png",
+        "codigo": "008583",
+        "cod_barras": "7908137910557",
+        "Tamanho": "1/0",
+        "Quantidade": "30",
+        "Peso": "2.3 g",
+        "Cód / Cód Barras": "008583 7908137910557"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10119/produtos/1500/GARATEIA-SANKEN-20-CX-codigo-008584.png",
+        "codigo": "008584",
+        "cod_barras": "7908137910564",
+        "Tamanho": "2/0",
+        "Quantidade": "30",
+        "Peso": "3.2 g",
+        "Cód / Cód Barras": "008584 7908137910564"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9969/produtos/1500/24534e5b0adfdf633a579dc647bf7f30.jpg",
+        "codigo": "008421",
+        "cod_barras": "7908137910274",
+        "Tamanho": "16",
+        "Quantidade": "16",
+        "Peso": "0.13 g",
+        "Cód / Cód Barras": "008421 7908137910274"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9968/produtos/1500/3cf22f5d270b9ed67af3e7c1943925c1.jpg",
+        "codigo": "008420",
+        "cod_barras": "7908137910267",
+        "Tamanho": "14",
+        "Quantidade": "16",
+        "Peso": "0.19 g",
+        "Cód / Cód Barras": "008420 7908137910267"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9967/produtos/1500/3b78d52297f18dd760cc41cff85a317c.jpg",
+        "codigo": "008419",
+        "cod_barras": "7908137910250",
+        "Tamanho": "12",
+        "Quantidade": "16",
+        "Peso": "0.2 g",
+        "Cód / Cód Barras": "008419 7908137910250"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9966/produtos/1500/581c52dab385c6ea5a3f8c2591847248.jpg",
+        "codigo": "008418",
+        "cod_barras": "7908137910243",
+        "Tamanho": "10",
+        "Quantidade": "16",
+        "Peso": "0.3 g",
+        "Cód / Cód Barras": "008418 7908137910243"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9965/produtos/1500/d4594c7e291491aaac332dfb7e7b2fcf.jpg",
+        "codigo": "008417",
+        "cod_barras": "7908137910236",
+        "Tamanho": "8",
+        "Quantidade": "16",
+        "Peso": "0.55 g",
+        "Cód / Cód Barras": "008417 7908137910236"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9964/produtos/1500/53ec45d6cfea99565a57f327f39f5592.jpg",
+        "codigo": "008416",
+        "cod_barras": "7908137910229",
+        "Tamanho": "6",
+        "Quantidade": "16",
+        "Peso": "0.8 g",
+        "Cód / Cód Barras": "008416 7908137910229"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9963/produtos/1500/16687e8e8ae45783dcf5bae6c2e302b2.jpg",
+        "codigo": "008415",
+        "cod_barras": "7908137910212",
+        "Tamanho": "4",
+        "Quantidade": "12",
+        "Peso": "1.05 g",
+        "Cód / Cód Barras": "008415 7908137910212"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11752/produtos/1500/81ad3afa1923bca53a85a42d4ba7d222.jpg",
+        "codigo": "010176",
+        "cod_barras": "7908137919161",
+        "Tamanho": "3",
+        "Quantidade": "12",
+        "Peso": "1.36 g",
+        "Cód / Cód Barras": "010176 7908137919161"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9962/produtos/1500/7ea5888565808881a105d6c5550ee841.jpg",
+        "codigo": "008414",
+        "cod_barras": "7908137910205",
+        "Tamanho": "2",
+        "Quantidade": "12",
+        "Peso": "1.4 g",
+        "Cód / Cód Barras": "008414 7908137910205"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9961/produtos/1500/eb7433e68ae4663ff9701c905ded50af.jpg",
+        "codigo": "008413",
+        "cod_barras": "7908137910199",
+        "Tamanho": "1",
+        "Quantidade": "8",
+        "Peso": "1.95 g",
+        "Cód / Cód Barras": "008413 7908137910199"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9970/produtos/1500/30049598d9eba29222b65301dcecd296.jpg",
+        "codigo": "008422",
+        "cod_barras": "7908137910281",
+        "Tamanho": "1/0",
+        "Quantidade": "8",
+        "Peso": "2.3 g",
+        "Cód / Cód Barras": "008422 7908137910281"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/9971/produtos/1500/f6f39c74a2c82b13e732f256e075cd98.jpg",
+        "codigo": "008423",
+        "cod_barras": "7908137910298",
+        "Tamanho": "2/0",
+        "Quantidade": "8",
+        "Peso": "3.2 g",
+        "Cód / Cód Barras": "008423 7908137910298"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "GARATEIA SANKEN SHORT SHANK 4X RED",
+    "marca": "MARINE",
+    "descricao_longa": "A Garateia Sanken Short Shank 4X Red foi projetada para pescadores que exigem o máximo de resistência, precisão e durabilidade, mesmo nas condições mais extremas. Seu desenho de haste curta oferece melhor encaixe nas iscas artificiais, reduz enroscos entre as garateias e aumenta a eficiência nos ataques, garantindo desempenho superior tanto na água doce quanto na salgada. As pontas Super Sharp entregam perfuração rápida e precisa, assegurando fisgadas consistentes mesmo em peixes de comportamento agressivo. Sua construção 4X Hyper Strong oferece força excepcional, suportando grandes cargas sem deformações, enquanto o revestimento Ultra AntiRust Red aumenta significativamente a resistência contra corrosão, prolongando a vida útil da garateia em ambientes salinos.\n\nA Sanken Short Shank 4X Red é a escolha ideal para quem busca segurança, confiabilidade e alto desempenho em cada pescaria.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/garateia-sanken-short-shank-4x-red--11735.html",
+    "codigo": "010154",
+    "cod_barras": "7908137918942",
+    "imagem_url": "https://loja.marinefishing.com.br/img/11741/produtos/1500/7f7fd5e2da146b98500558162bd80ee0.jpg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11739/produtos/1500/e19a7322dd2c8d17a3278d34c558a8f3.jpg",
+        "codigo": "010154",
+        "cod_barras": "7908137918942",
+        "Tamanho": "8",
+        "Quantidade": "16",
+        "Cód / Cód Barras": "010154 7908137918942"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11738/produtos/1500/c840eaa529e27153d8df9ca19343090c.jpg",
+        "codigo": "010153",
+        "cod_barras": "7908137918935",
+        "Tamanho": "6",
+        "Quantidade": "16",
+        "Cód / Cód Barras": "010153 7908137918935"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11737/produtos/1500/404627ca05e4c89da7fd6fd72e3ec669.jpg",
+        "codigo": "010152",
+        "cod_barras": "7908137918928",
+        "Tamanho": "4",
+        "Quantidade": "12",
+        "Cód / Cód Barras": "010152 7908137918928"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11756/produtos/1500/6de902262a0269ba4b5711eca9e8821c.jpg",
+        "codigo": "010180",
+        "cod_barras": "7908137919208",
+        "Tamanho": "3",
+        "Quantidade": "12",
+        "Cód / Cód Barras": "010180 7908137919208"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11736/produtos/1500/17674e464dc61fee336363aa2cc707b2.jpg",
+        "codigo": "010151",
+        "cod_barras": "7908137918911",
+        "Tamanho": "2",
+        "Quantidade": "12",
+        "Cód / Cód Barras": "010151 7908137918911"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11735/produtos/1500/f07b1bb1b75df4bd7bf7c862282c006d.jpg",
+        "codigo": "010150",
+        "cod_barras": "7908137918904",
+        "Tamanho": "1",
+        "Quantidade": "8",
+        "Cód / Cód Barras": "010150 7908137918904"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11740/produtos/1500/4a2868660b0e7cac811c448003a32ac5.jpg",
+        "codigo": "010155",
+        "cod_barras": "7908137918959",
+        "Tamanho": "1/0",
+        "Quantidade": "8",
+        "Cód / Cód Barras": "010155 7908137918959"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11741/produtos/1500/7f7fd5e2da146b98500558162bd80ee0.jpg",
+        "codigo": "010156",
+        "cod_barras": "7908137918966",
+        "Tamanho": "2/0",
+        "Quantidade": "8",
+        "Cód / Cód Barras": "010156 7908137918966"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "GARATEIA Z-TN3X NICKEL",
+    "marca": "ZEST",
+    "descricao_longa": "A Garateia Z-TN3X Nickel é projetada para pescadores que exigem resistência e desempenho superiores em situações extremas. Produzida com aço carbono de alta qualidade e acabamento em níquel, oferece durabilidade e resistência excepcionais à corrosão, garantindo confiabilidade tanto em água doce quanto salgada.\n\nCom estrutura 3X reforçada, suporta a força dos peixes mais agressivos sem deformar ou perder o corte. Sua ponta superafiada proporciona penetração rápida e segura, assegurando fisgadas firmes e eficientes em cada ataque.\n\nDisponível em múltiplos tamanhos, adapta-se às mais diversas montagens e modalidades de pesca — desde o uso em iscas artificiais menores até montagens robustas para predadores de grande porte.\n\nCom sua combinação de força, precisão e durabilidade, a Garateia Zest Z-TN3X é a escolha perfeita para quem busca máxima eficiência e segurança nas pescarias mais desafiadoras.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/garateia-ztn3x-nickel-10081.html",
+    "codigo": "008550",
+    "cod_barras": "7908137910434",
+    "imagem_url": "https://loja.marinefishing.com.br/img/10087/produtos/1500/GARATEIA-Z-TN3X-codigo-008552.jpeg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10085/produtos/1500/GARATEIA-Z-TN3X-codigo-008550.jpeg",
+        "codigo": "008550",
+        "cod_barras": "7908137910434",
+        "Tamanho": "8",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "008550 7908137910434"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10084/produtos/1500/GARATEIA-Z-TN3X-codigo-008549.jpeg",
+        "codigo": "008549",
+        "cod_barras": "7908137910427",
+        "Tamanho": "6",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "008549 7908137910427"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10083/produtos/1500/GARATEIA-Z-TN3X-codigo-008548.jpeg",
+        "codigo": "008548",
+        "cod_barras": "7908137910410",
+        "Tamanho": "4",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "008548 7908137910410"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10082/produtos/1500/GARATEIA-Z-TN3X-codigo-008547.jpeg",
+        "codigo": "008547",
+        "cod_barras": "7908137910403",
+        "Tamanho": "2",
+        "Quantidade": "50",
+        "Cód / Cód Barras": "008547 7908137910403"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10081/produtos/1500/GARATEIA-Z-TN3X-codigo-008546.jpeg",
+        "codigo": "008546",
+        "cod_barras": "7908137910397",
+        "Tamanho": "1",
+        "Quantidade": "30",
+        "Cód / Cód Barras": "008546 7908137910397"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10086/produtos/1500/GARATEIA-Z-TN3X-codigo-008551.jpeg",
+        "codigo": "008551",
+        "cod_barras": "7908137910441",
+        "Tamanho": "1/0",
+        "Quantidade": "30",
+        "Cód / Cód Barras": "008551 7908137910441"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/10087/produtos/1500/GARATEIA-Z-TN3X-codigo-008552.jpeg",
+        "codigo": "008552",
+        "cod_barras": "7908137910458",
+        "Tamanho": "2/0",
+        "Quantidade": "30",
+        "Cód / Cód Barras": "008552 7908137910458"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "SABIKI SM-6H618",
+    "marca": "MARINE",
+    "descricao_longa": "O Sabiki SM-6H618 é um chicote pronto para uso, montado com 6 anzóis Maruseigo Gold preparados para simular pequenas presas. Cada anzol conta com pêlo sintético refletivo e material que imita pequenos peixes ou camarões, criando brilho e movimento na água para atrair peixes de cardume.Disponível em 8 tamanhos, com anzóis do nº 6 ao nº 20, o modelo conta com dois snaps com giradores: um para conexão à linha principal e outro para fixação do alimentador. É indicado para a captura de pequenos peixes como pargos, carapaus, xareletes, olho-de-cão e outras espécies de cardume.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/sabiki-sm6h618-187.html",
+    "codigo": "001968",
+    "cod_barras": "7898480922508",
+    "imagem_url": "https://loja.marinefishing.com.br/img/6582/produtos/1500/SABIKI-SM-6H618-20-MARINE.jpg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/187/produtos/1500/SABIKI-SM-6H618-6-ANZOL-SABIKI-SM-6H618-MARINE.jpg",
+        "codigo": "001968",
+        "cod_barras": "7898480922508",
+        "Tamanho": "6",
+        "Quantidade": "1",
+        "Cód / Cód Barras": "001968 7898480922508"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/188/produtos/1500/SABIKI-SM-6H618-8-MARINE.jpg",
+        "codigo": "001969",
+        "cod_barras": "7898480922515",
+        "Tamanho": "8",
+        "Quantidade": "1",
+        "Cód / Cód Barras": "001969 7898480922515"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/189/produtos/1500/SABIKI-SM-6H618-10-MARINE.jpg",
+        "codigo": "001970",
+        "cod_barras": "7898480922522",
+        "Tamanho": "10",
+        "Quantidade": "1",
+        "Cód / Cód Barras": "001970 7898480922522"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/190/produtos/1500/SABIKI-SM-6H618-12-MARINE.jpg",
+        "codigo": "001971",
+        "cod_barras": "7898480922539",
+        "Tamanho": "12",
+        "Quantidade": "1",
+        "Cód / Cód Barras": "001971 7898480922539"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/191/produtos/1500/SABIKI-SM-6H618-14-MARINE.jpg",
+        "codigo": "001972",
+        "cod_barras": "7898480922546",
+        "Tamanho": "14",
+        "Quantidade": "1",
+        "Cód / Cód Barras": "001972 7898480922546"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/192/produtos/1500/SABIKI-SM-6H618-16-MARINE.jpg",
+        "codigo": "001973",
+        "cod_barras": "7898480922553",
+        "Tamanho": "16",
+        "Quantidade": "1",
+        "Cód / Cód Barras": "001973 7898480922553"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/193/produtos/1500/SABIKI-SM-6H618-18-MARINE.jpg",
+        "codigo": "003081",
+        "cod_barras": "7898480933672",
+        "Tamanho": "18",
+        "Quantidade": "1",
+        "Cód / Cód Barras": "003081 7898480933672"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/6582/produtos/1500/SABIKI-SM-6H618-20-MARINE.jpg",
+        "codigo": "005261",
+        "cod_barras": "7898480950754",
+        "Tamanho": "20",
+        "Quantidade": "1",
+        "Cód / Cód Barras": "005261 7898480950754"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "SABIKI VERDE/ROSA",
+    "marca": "MARINE",
+    "descricao_longa": "O Sabiki Verde/Rosa é um chicote pronto para uso, montado com 6 anzóis Maruseigo Gold adornados com pêlo sintético refletivo e materiais que simulam pequenos peixes ou camarões. Nas cores verde e rosa, o conjunto cria brilho e movimento natural na água, ajudando a atrair peixes de cardume.Disponível em 5 tamanhos, com anzóis do nº 12 ao nº 20, o modelo possui dois snaps com giradores: um para conexão à linha principal e outro para fixação do alimentador. É uma opção produtiva para a captura de pequenos peixes como pargos, carapaus, xareletes, olho-de-cão e outras espécies de cardume.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/sabiki-verderosa-7604.html",
+    "codigo": "006564",
+    "cod_barras": "7898480959870",
+    "imagem_url": "https://loja.marinefishing.com.br/img/7603/produtos/1500/SABIKI-VERDEROSA-SM-6H625-20-MARINE.jpg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/7604/produtos/1500/SABIKI-VERDEROSA-SM-6H625-12-ANZOL-SABIKI-VERDEROSA-MARINE.jpg",
+        "codigo": "006564",
+        "cod_barras": "7898480959870",
+        "Tamanho": "12",
+        "Quantidade": "1",
+        "Cód / Cód Barras": "006564 7898480959870"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/7600/produtos/1500/SABIKI-VERDEROSA-SM-6H625-14-MARINE.jpg",
+        "codigo": "006565",
+        "cod_barras": "7898480959887",
+        "Tamanho": "14",
+        "Quantidade": "1",
+        "Cód / Cód Barras": "006565 7898480959887"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/7601/produtos/1500/SABIKI-VERDEROSA-SM-6H625-16-MARINE.jpg",
+        "codigo": "006566",
+        "cod_barras": "7898480959894",
+        "Tamanho": "16",
+        "Quantidade": "1",
+        "Cód / Cód Barras": "006566 7898480959894"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/7602/produtos/1500/SABIKI-VERDEROSA-SM-6H625-18-MARINE.jpg",
+        "codigo": "006567",
+        "cod_barras": "7898480959900",
+        "Tamanho": "18",
+        "Quantidade": "1",
+        "Cód / Cód Barras": "006567 7898480959900"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/7603/produtos/1500/SABIKI-VERDEROSA-SM-6H625-20-MARINE.jpg",
+        "codigo": "006568",
+        "cod_barras": "7898480959917",
+        "Tamanho": "20",
+        "Quantidade": "1",
+        "Cód / Cód Barras": "006568 7898480959917"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "GARATEIA NICKEL",
+    "marca": "MARINE",
+    "descricao_longa": "A Garateia Nickel da Marine é reconhecida pela resistência, afiação e acabamento superior, sendo ideal para pescadores que buscam desempenho e durabilidade em suas iscas artificiais ou naturais.\n\nProduzida em aço carbono de alta qualidade, a garateia passa por rigoroso processo de têmpera que garante alta resistência à tração e excelente penetração, mesmo em peixes de mandíbulas mais firmes. Seu acabamento Nickel assegura proteção contra corrosão e desgaste, mantendo o desempenho mesmo após diversas pescarias em ambientes de água doce ou salgada.\n\nProjetada para ótima fixação e equilíbrio, a Garateia Nickel é amplamente utilizada na substituição ou customização de iscas artificiais, garantindo maior eficiência nas fisgadas e durabilidade do conjunto.\n\nDurável, afiada e confiável, a Garateia Nickel Marine é a escolha certa para quem busca performance, resistência e acabamento premium em qualquer modalidade de pesca.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/garateia-nickel-133.html",
+    "codigo": "001326",
+    "cod_barras": "7898480922676",
+    "imagem_url": "https://loja.marinefishing.com.br/img/147/produtos/1500/GARATEIA-50-C100-GARATEIA-50-CAIXA-COM-100-UNIDADES-MARINE.jpg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/142/produtos/1500/GARATEIA-18-C100-GARATEIA-18-COM-100-PEAS-MARINE.jpg",
+        "codigo": "001326",
+        "cod_barras": "7898480922676",
+        "Tamanho": "18",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001326 7898480922676"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/141/produtos/1500/GARATEIA-16-C100-GARATEIA-16-COM-100-PEAS-MARINE.jpg",
+        "codigo": "001325",
+        "cod_barras": "7898480922669",
+        "Tamanho": "16",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001325 7898480922669"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/140/produtos/1500/GARATEIA-14-C100-GARATEIA-14-COM-100-PEAS-MARINE.jpg",
+        "codigo": "001324",
+        "cod_barras": "7898480922652",
+        "Tamanho": "14",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001324 7898480922652"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/139/produtos/1500/GARATEIA-12-C100-GARATEIA-12-COM-100-PEAS-MARINE.jpg",
+        "codigo": "001323",
+        "cod_barras": "7898480922645",
+        "Tamanho": "12",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001323 7898480922645"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/138/produtos/1500/GARATEIA-10-C100-GARATEIA-10-COM-100-PEAS-MARINE.jpg",
+        "codigo": "001322",
+        "cod_barras": "7898480922638",
+        "Tamanho": "10",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001322 7898480922638"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/137/produtos/1500/GARATEIA-8-C100-GARATEIA-8-COM-100-PEAS-MARINE.jpg",
+        "codigo": "001321",
+        "cod_barras": "7898480922621",
+        "Tamanho": "8",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001321 7898480922621"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/136/produtos/1500/GARATEIA-6-C100-GARATEIA-6-COM-100-PEAS-MARINE.jpg",
+        "codigo": "001320",
+        "cod_barras": "7898480922614",
+        "Tamanho": "6",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001320 7898480922614"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/135/produtos/1500/GARATEIA-4-C100-GARATEIA-4-COM-100-PEAS-MARINE.jpg",
+        "codigo": "001319",
+        "cod_barras": "7898480922607",
+        "Tamanho": "4",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001319 7898480922607"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/134/produtos/1500/GARATEIA-2-C100-GARATEIA-NICKEL-2-COM-100-PEAS-MARINE.jpg",
+        "codigo": "001318",
+        "cod_barras": "7898480922591",
+        "Tamanho": "2",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001318 7898480922591"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/133/produtos/1500/GARATEIA-1-C100-GARATEIA-NICKEL-MARINE.jpg",
+        "codigo": "001317",
+        "cod_barras": "7898480922584",
+        "Tamanho": "1",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001317 7898480922584"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/5988/produtos/1500/GARATEIA-10-C100-MARINE.jpg",
+        "codigo": "001327",
+        "cod_barras": "7898480922683",
+        "Tamanho": "1/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001327 7898480922683"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/144/produtos/1500/45e663224e7de021d20eb0b29c3a1ba6.jpg",
+        "codigo": "001328",
+        "cod_barras": "7898480922690",
+        "Tamanho": "2/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001328 7898480922690"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/145/produtos/1500/GARATEIA-30-C100-GARATEIA-30-CAIXA-COM-100-UNIDADES-MARINE.jpg",
+        "codigo": "001329",
+        "cod_barras": "7898480922706",
+        "Tamanho": "3/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001329 7898480922706"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/146/produtos/1500/GARATEIA-40-C100-GARATEIA-40-CAIXA-COM-100-UNIDADES-MARINE.jpg",
+        "codigo": "001330",
+        "cod_barras": "7898480922713",
+        "Tamanho": "4/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001330 7898480922713"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/147/produtos/1500/GARATEIA-50-C100-GARATEIA-50-CAIXA-COM-100-UNIDADES-MARINE.jpg",
+        "codigo": "001423",
+        "cod_barras": "7898480922720",
+        "Tamanho": "5/0",
+        "Quantidade": "100",
+        "Cód / Cód Barras": "001423 7898480922720"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "GARATEIA SANKEN SHORT SHANK 4X",
+    "marca": "MARINE",
+    "descricao_longa": "A Garateia Sanken Short Shank 4X foi desenvolvida para pescadores que buscam máxima resistência e performance, mesmo nas condições mais extremas. Seu design de haste curta (Short Shank) proporciona melhor adaptação às iscas artificiais, evitando enroscos entre as garateias e garantindo maior eficiência na fisgada.\n\nConstruída com tecnologia 4X Hyper Strong, suporta os peixes mais fortes sem comprometer a estrutura, enquanto as pontas Super Sharp asseguram fisgadas rápidas e precisas. Na cor Preto Fosco e com revestimento Ultra AntiRust oferece alta resistência à corrosão, ampliando a durabilidade em ambientes de água doce e salgada.\n\nDisponível em diversos tamanhos (8 ao 2/0), em blister e caixa, a Sanken Short Shank 4X é a escolha certa para quem exige segurança, durabilidade e confiança em cada pescaria.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/garateia-sanken-short-shank-4x--11195.html",
+    "codigo": "009656",
+    "cod_barras": "7908137915248",
+    "imagem_url": "https://loja.marinefishing.com.br/img/11201/produtos/1500/446517131f3817822b6779abe4487afc.jpg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11206/produtos/1500/88af76b5f646d2402a531da6f51723f9.jpg",
+        "codigo": "009656",
+        "cod_barras": "7908137915248",
+        "Tamanho": "8",
+        "Quantidade": "50",
+        "Peso": "0.73 g",
+        "Cód / Cód Barras": "009656 7908137915248"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11205/produtos/1500/321b9cbda2bd103a055f7b6a5c831d2d.jpg",
+        "codigo": "009655",
+        "cod_barras": "7908137915231",
+        "Tamanho": "6",
+        "Quantidade": "50",
+        "Peso": "0.84 g",
+        "Cód / Cód Barras": "009655 7908137915231"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11204/produtos/1500/fe16796711c96fd6760e38b282a50a09.jpg",
+        "codigo": "009654",
+        "cod_barras": "7908137915224",
+        "Tamanho": "4",
+        "Quantidade": "50",
+        "Peso": "1.29 g",
+        "Cód / Cód Barras": "009654 7908137915224"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11755/produtos/1500/7e5cbe5c070688245dd781437dd7119a.jpg",
+        "codigo": "010179",
+        "cod_barras": "7908137919192",
+        "Tamanho": "3",
+        "Quantidade": "50",
+        "Peso": "1.55 g",
+        "Cód / Cód Barras": "010179 7908137919192"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11203/produtos/1500/d1e9e8b799081fd12c844f6421c29fb9.jpg",
+        "codigo": "009653",
+        "cod_barras": "7908137915217",
+        "Tamanho": "2",
+        "Quantidade": "50",
+        "Peso": "1.68 g",
+        "Cód / Cód Barras": "009653 7908137915217"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11202/produtos/1500/2e3e5424674b1ae6b64f874484bb9a26.jpg",
+        "codigo": "009652",
+        "cod_barras": "7908137915200",
+        "Tamanho": "1",
+        "Quantidade": "30",
+        "Peso": "2.21 g",
+        "Cód / Cód Barras": "009652 7908137915200"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11207/produtos/1500/59214e330958c3b900125733937f3672.jpg",
+        "codigo": "009657",
+        "cod_barras": "7908137915255",
+        "Tamanho": "1/0",
+        "Quantidade": "30",
+        "Peso": "3.00 g",
+        "Cód / Cód Barras": "009657 7908137915255"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11208/produtos/1500/4fe76bcd4ce9d790434ee87262d6390a.jpg",
+        "codigo": "009658",
+        "cod_barras": "7908137915262",
+        "Tamanho": "2/0",
+        "Quantidade": "30",
+        "Peso": "4.00 g",
+        "Cód / Cód Barras": "009658 7908137915262"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11199/produtos/1500/b4456e2a010f6d42a6c809aa1577b3a5.jpg",
+        "codigo": "009649",
+        "cod_barras": "7908137915170",
+        "Tamanho": "8",
+        "Quantidade": "16",
+        "Peso": "0.73 g",
+        "Cód / Cód Barras": "009649 7908137915170"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11198/produtos/1500/27099a65af6babfcf2510d05ef5727bd.jpg",
+        "codigo": "009648",
+        "cod_barras": "7908137915163",
+        "Tamanho": "6",
+        "Quantidade": "16",
+        "Peso": "0.84 g",
+        "Cód / Cód Barras": "009648 7908137915163"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11197/produtos/1500/531ad57ea744ca70203cf95d813dacb7.jpg",
+        "codigo": "009647",
+        "cod_barras": "7908137915156",
+        "Tamanho": "4",
+        "Quantidade": "12",
+        "Peso": "1.29 g",
+        "Cód / Cód Barras": "009647 7908137915156"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11754/produtos/1500/2200d2e4178ab48adb1c259ed0e11227.jpg",
+        "codigo": "010178",
+        "cod_barras": "7908137919185",
+        "Tamanho": "3",
+        "Quantidade": "12",
+        "Peso": "1.55 g",
+        "Cód / Cód Barras": "010178 7908137919185"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11196/produtos/1500/1adf1e56c382012c41f643ffa4e1eccc.jpg",
+        "codigo": "009646",
+        "cod_barras": "7908137915149",
+        "Tamanho": "2",
+        "Quantidade": "12",
+        "Peso": "1.68 g",
+        "Cód / Cód Barras": "009646 7908137915149"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11195/produtos/1500/74bb8862317ae1b07b7db56901b9d132.jpg",
+        "codigo": "009645",
+        "cod_barras": "7908137915132",
+        "Tamanho": "1",
+        "Quantidade": "8",
+        "Peso": "2.21 g",
+        "Cód / Cód Barras": "009645 7908137915132"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11200/produtos/1500/38d90c3bd3bec37d94f14f83fafb8bfd.jpg",
+        "codigo": "009650",
+        "cod_barras": "7908137915187",
+        "Tamanho": "1/0",
+        "Quantidade": "8",
+        "Peso": "4.00 g",
+        "Cód / Cód Barras": "009650 7908137915187"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/11201/produtos/1500/446517131f3817822b6779abe4487afc.jpg",
+        "codigo": "009651",
+        "cod_barras": "7908137915194",
+        "Tamanho": "2/0",
+        "Quantidade": "8",
+        "Peso": "4.00 g",
+        "Cód / Cód Barras": "009651 7908137915194"
+      }
+    ]
+  },
+  {
+    "site": "marine",
+    "grupo": "ANZOL",
+    "subgrupo": "SABIKI SS-6H34",
+    "marca": "MARINE",
+    "descricao_longa": "O Sabiki SS-6H34 é um chicote pronto para uso, montado com 6 anzóis Sode preparados para simular pequenas presas. Cada anzol conta com material que imita pequenos peixes ou insetos, criando brilho e movimento natural na água para atrair peixes de cardume.Disponível em 2 tamanhos, com anzóis do nº 3 e nº 4, o modelo conta com dois snaps com giradores: um para conexão à linha principal e outro para fixação do alimentador. É uma opção produtiva para a captura de lambaris, sardinhas e outros pequenos peixes de cardume.",
+    "url_origem": "https://loja.marinefishing.com.br/produto/sabiki-ss6h34-194.html",
+    "codigo": "001974",
+    "cod_barras": "7898480922560",
+    "imagem_url": "https://loja.marinefishing.com.br/img/195/produtos/1500/SABIKI-SS-6H34-4-MARINE.jpg",
+    "variacoes": [
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/194/produtos/1500/SABIKI-SS-6H34-3-ANZOL-SABIKI-SS-6H34-MARINE.jpg",
+        "codigo": "001974",
+        "cod_barras": "7898480922560",
+        "Tamanho": "3",
+        "Quantidade": "1",
+        "Cód / Cód Barras": "001974 7898480922560"
+      },
+      {
+        "imagem": "https://loja.marinefishing.com.br/img/195/produtos/1500/SABIKI-SS-6H34-4-MARINE.jpg",
+        "codigo": "001975",
+        "cod_barras": "7898480922577",
+        "Tamanho": "4",
+        "Quantidade": "1",
+        "Cód / Cód Barras": "001975 7898480922577"
+      }
+    ]
+  }
+]
