@@ -11,7 +11,7 @@ const SUPABASE_KEY = process.env.SUPABASE_KEY;
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 app.use(express.json({ limit: '100mb' }));
-app.use(express.static(__dirname));
+app.use(express.static('.'));
 
 const soDigitos = (v) => String(v ?? '').replace(/\D/g, '');
 const num = (v) => {
@@ -25,7 +25,6 @@ const upload = multer({ storage: multer.memoryStorage() });
 // IMPORTAÇÕES
 // ==========================================
 
-// 1. IMPORTAR PLANILHA SISTEMA
 app.post('/api/importar/sistema', upload.single('arquivo'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ erro: 'Nenhum arquivo enviado.' });
@@ -68,7 +67,6 @@ app.post('/api/importar/sistema', upload.single('arquivo'), async (req, res) => 
   } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
-// 2. IMPORTAR SCRAPING
 app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ erro: 'Nenhum arquivo.' });
@@ -92,7 +90,6 @@ app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) =>
   } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
-// 3. IMPORTAR CLIENTES
 app.post('/api/importar/clientes', upload.single('arquivo'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ erro: 'Nenhum arquivo enviado.' });
