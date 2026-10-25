@@ -155,41 +155,75 @@ app.get('/api/status', async (req, res) => {
 // Manter APENAS UMA declaração da rota no arquivo (Substitua na Linha 148 e APAGUE a da Linha 225)
 app.get('/api/catalogo', async (req, res) => {
   try {
-    // 1. Tira o filtro .eq('ativo', 1) para não esconder itens importados da planilha
-    const { data: itensSis, error: errSis } = await supabase.from('itens_sistema').select('*');
-    if (errSis) throw errSis;
+    // 1. Busca TODOS os itens do sistema ERP (contornando o limite de 1000 do Supabase)
+    let todosItensSis = [];
+    let de = 0;
+    const tamanhoPagina = 1000;
+    let temMais = true;
 
-    const { data: itensScr, error: errScr } = await supabase.from('scraping_produtos').select('*');
-    if (errScr) throw errScr;
+    while (temMais) {
+      const { data, error } = await supabase
+        .from('itens_sistema')
+        .select('*')
+        .range(de, de + tamanhoPagina - 1);
 
-    // Função para remover zeros à esquerda
-    const norm = c => String(c ?? '').trim().replace(/^0+/, '').toLowerCase();
-
-    // Mapeia o scraping
-    const mapaScr = {};
-    if (itensScr) {
-      itensScr.forEach(s => { 
-        const chave = norm(s.codigo);
-        if (chave) mapaScr[chave] = s; 
-      });
+      if (error) throw error;
+      
+      if (data && data.length > 0) {
+        todosItensSis.push(...data);
+        de += tamanhoPagina;
+      } else {
+        temMais = false;
+      }
     }
 
-    let linhas = (itensSis || []).map(s => {
+    // 2. Busca TODOS os produtos do scraping (também com paginação por garantia)
+    let todosItensScr = [];
+    de = 0;
+    temMais = true;
+
+    while (temMais) {
+      const { data, error } = await supabase
+        .from('scraping_produtos')
+        .select('*')
+        .range(de, de + tamanhoPagina - 1);
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        todosItensScr.push(...data);
+        de += tamanhoPagina;
+      } else {
+        temMais = false;
+      }
+    }
+
+    // Função para normalizar códigos (remover zeros à esquerda)
+    const norm = c => String(c ?? '').trim().replace(/^0+/, '').toLowerCase();
+
+    // Mapeia os produtos do scraping
+    const mapaScr = {};
+    todosItensScr.forEach(s => {
+      const chave = norm(s.codigo);
+      if (chave) mapaScr[chave] = s;
+    });
+
+    // Junta com os produtos do ERP
+    const linhas = todosItensSis.map(s => {
       const chaveSis = norm(s.codigo);
       const scr = mapaScr[chaveSis] || {};
-      
+
       return {
-        codigo: s.codigo, 
-        cod_barras: s.cod_barras, 
+        codigo: s.codigo,
+        cod_barras: s.cod_barras,
         descricao_sistema: s.descricao,
-        estoque: s.estoque, 
+        estoque: s.estoque,
         preco_venda: s.preco_venda,
-        // Mantém o subgrupo do scraping se existir, se não mantém em branco para não poluir
-        subgrupo_scraping: scr.subgrupo || s.subgrupo || scr.grupo || '', 
+        subgrupo_scraping: scr.subgrupo || s.subgrupo || scr.grupo || '',
         grupo_scraping: scr.grupo || '',
-        marca: scr.marca || '', 
+        marca: scr.marca || '',
         descricao_longa: scr.descricao_longa || '',
-        imagem_url: scr.imagem_url || '', 
+        imagem_url: scr.imagem_url || '',
         url_origem: scr.url_origem || '',
         atributos_json: scr.atributos_json || '{}'
       };
