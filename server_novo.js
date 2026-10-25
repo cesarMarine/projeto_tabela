@@ -29,42 +29,46 @@ app.post('/api/importar/sistema', upload.single('arquivo'), async (req, res) => 
   try {
     if (!req.file) return res.status(400).json({ erro: 'Nenhum arquivo enviado.' });
     const wb = XLSX.read(req.file.buffer, { type: 'buffer' });
+    const abaGeral = wb.Sheets['GERAL'];
+    if (!abaGeral) return res.status(400).json({ erro: 'Aba GERAL não encontrada.' });
     
-    const nomeAbaGeral = wb.SheetNames.find(n => n.trim().toUpperCase() === 'GERAL');
-    if (!nomeAbaGeral) return res.status(400).json({ erro: 'Aba GERAL não encontrada.' });
-    const linhas = XLSX.utils.sheet_to_json(wb.Sheets[nomeAbaGeral], { defval: '' });
-    
-    const nomeAbaEstoque = wb.SheetNames.find(n => n.trim().toUpperCase() === 'ESTOQUE');
+    const linhas = XLSX.utils.sheet_to_json(abaGeral, { defval: '' });
     const mapaEstoque = new Map();
-    if (nomeAbaEstoque) {
-      const estoqueRows = XLSX.utils.sheet_to_json(wb.Sheets[nomeAbaEstoque], { defval: '' });
+    
+    if (wb.Sheets['Estoque']) {
+      const estoqueRows = XLSX.utils.sheet_to_json(wb.Sheets['Estoque'], { defval: '' });
       for (const r of estoqueRows) {
-        const cod = String(r['Cod. Produto'] ?? r['Código'] ?? r['codigo'] ?? '').trim();
-        const qtd = r['QTD'] ?? r['Qtd'] ?? r['Estoque'] ?? r['ESTOQUE'] ?? 0;
-        if (cod) mapaEstoque.set(cod, num(qtd));
+        const cod = String(r['Código'] ?? r['codigo'] ?? '').trim().replace(/^0+/, '');
+        if (cod) mapaEstoque.set(cod, num(r['Estoque'] ?? 0));
       }
     }
 
-    let inseridos = 0;
+    const batch = [];
     for (const r of linhas) {
-      const codigo = String(r['Código'] ?? r['codigo'] ?? '').trim();
+      const codigoBruto = String(r['Código'] ?? r['codigo'] ?? '').trim();
+      const codigo = codigoBruto.replace(/^0+/, ''); // REMOVE ZEROS À ESQUERDA
       if (!codigo) continue;
-      
-      const item = {
-        codigo,
+
+      batch.push({
+        codigo: codigo,
         cod_barras: soDigitos(r['Cod.Barra'] ?? ''),
         descricao: String(r['Descrição'] ?? r['descricao'] ?? '').trim(),
         estoque: mapaEstoque.get(codigo) ?? 0,
         preco_venda: num(r['P/Venda'] ?? r['preco_venda'] ?? 0),
         ativo: 1,
         atualizado_em: new Date().toISOString()
-      };
-      
-      const { error } = await supabase.from('itens_sistema').upsert(item, { onConflict: 'codigo' });
-      if (!error) inseridos++;
+      });
     }
-    res.json({ ok: true, inseridos });
-  } catch (e) { res.status(500).json({ erro: e.message }); }
+
+    if (batch.length > 0) {
+      const { error } = await supabase.from('itens_sistema').upsert(batch, { onConflict: 'codigo' });
+      if (error) throw new Error(error.message);
+    }
+
+    res.json({ ok: true, inseridos: batch.length });
+  } catch (e) { 
+    res.status(500).json({ erro: e.message }); 
+  }
 });
 
 // ==========================================
@@ -76,19 +80,20 @@ app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) =>
     const dados = JSON.parse(req.file.buffer.toString('utf8'));
     const lista = Array.isArray(dados) ? dados : (dados.produtos || []);
 
-    let inseridos = 0;
+    const limpaZero = (v) => String(v ?? '').trim().replace(/^0+/, '');
+    const batch = [];
 
     for (const p of lista) {
+      // Garante a extração de todas as variações do item
       const variacoes = (p.variacoes && p.variacoes.length > 0) ? p.variacoes : [p];
 
       for (const v of variacoes) {
-        // Limpa o código para garantir correspondência exata
-        const codVar = String(v.codigo || p.codigo || '').trim();
+        const codVar = limpaZero(v.codigo || p.codigo); // REMOVE ZEROS À ESQUERDA
         if (!codVar) continue;
 
         const { imagem, codigo, cod_barras, ...atributos } = v;
 
-        const itemScraping = {
+        batch.push({
           site: p.site || 'marine',
           grupo: p.grupo || '',
           subgrupo: p.subgrupo || '',
@@ -98,19 +103,18 @@ app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) =>
           codigo: codVar,
           cod_barras: soDigitos(cod_barras || p.cod_barras),
           imagem_url: imagem || p.imagem_url || '',
-          atributos_json: JSON.stringify(atributos || {})
-        };
-
-        const { error } = await supabase
-          .from('scraping_produtos')
-          .upsert(itemScraping, { onConflict: 'codigo' });
-
-        if (!error) inseridos++;
+          atributos_json: JSON.stringify(atributos || {}),
+          data_scraping: new Date().toISOString()
+        });
       }
     }
 
-    // Retorna 'inseridos' para o frontend exibir a mensagem correta em vez de 'undefined'
-    res.json({ ok: true, inseridos });
+    if (batch.length > 0) {
+      const { error } = await supabase.from('scraping_produtos').upsert(batch, { onConflict: 'codigo' });
+      if (error) throw new Error(error.message);
+    }
+
+    res.json({ ok: true, inseridos: batch.length });
   } catch (e) { 
     res.status(500).json({ erro: e.message }); 
   }
