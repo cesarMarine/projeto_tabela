@@ -155,12 +155,17 @@ app.get('/api/status', async (req, res) => {
 // Manter APENAS UMA declaração da rota no arquivo (Substitua na Linha 148 e APAGUE a da Linha 225)
 app.get('/api/catalogo', async (req, res) => {
   try {
-    const { data: itensSis } = await supabase.from('itens_sistema').select('*').eq('ativo', 1);
-    const { data: itensScr } = await supabase.from('scraping_produtos').select('*');
+    // 1. Tira o filtro .eq('ativo', 1) para não esconder itens importados da planilha
+    const { data: itensSis, error: errSis } = await supabase.from('itens_sistema').select('*');
+    if (errSis) throw errSis;
 
-    // Função para remover zeros à esquerda e converter para minúsculas
+    const { data: itensScr, error: errScr } = await supabase.from('scraping_produtos').select('*');
+    if (errScr) throw errScr;
+
+    // Função para remover zeros à esquerda
     const norm = c => String(c ?? '').trim().replace(/^0+/, '').toLowerCase();
 
+    // Mapeia o scraping
     const mapaScr = {};
     if (itensScr) {
       itensScr.forEach(s => { 
@@ -170,15 +175,17 @@ app.get('/api/catalogo', async (req, res) => {
     }
 
     let linhas = (itensSis || []).map(s => {
-      const scr = mapaScr[norm(s.codigo)] || {};
+      const chaveSis = norm(s.codigo);
+      const scr = mapaScr[chaveSis] || {};
+      
       return {
         codigo: s.codigo, 
         cod_barras: s.cod_barras, 
         descricao_sistema: s.descricao,
         estoque: s.estoque, 
         preco_venda: s.preco_venda,
-        // Garante que subgrupo_scraping receba o valor do scraping ou a descrição do sistema para a busca no Admin
-        subgrupo_scraping: scr.subgrupo || s.descricao || '', 
+        // Mantém o subgrupo do scraping se existir, se não mantém em branco para não poluir
+        subgrupo_scraping: scr.subgrupo || s.subgrupo || scr.grupo || '', 
         grupo_scraping: scr.grupo || '',
         marca: scr.marca || '', 
         descricao_longa: scr.descricao_longa || '',
