@@ -81,19 +81,20 @@ app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) =>
     const lista = Array.isArray(dados) ? dados : (dados.produtos || []);
 
     const limpaZero = (v) => String(v ?? '').trim().replace(/^0+/, '');
-    const batch = [];
+    
+    // Usamos um Map para garantir que o mesmo código não vá duplicado no mesmo lote enviando pro Supabase
+    const mapaLote = new Map();
 
     for (const p of lista) {
-      // Garante a extração de todas as variações do item
       const variacoes = (p.variacoes && p.variacoes.length > 0) ? p.variacoes : [p];
 
       for (const v of variacoes) {
-        const codVar = limpaZero(v.codigo || p.codigo); // REMOVE ZEROS À ESQUERDA
+        const codVar = limpaZero(v.codigo || p.codigo);
         if (!codVar) continue;
 
         const { imagem, codigo, cod_barras, ...atributos } = v;
 
-        batch.push({
+        mapaLote.set(codVar, {
           site: p.site || 'marine',
           grupo: p.grupo || '',
           subgrupo: p.subgrupo || '',
@@ -108,6 +109,8 @@ app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) =>
         });
       }
     }
+
+    const batch = Array.from(mapaLote.values());
 
     if (batch.length > 0) {
       const { error } = await supabase.from('scraping_produtos').upsert(batch, { onConflict: 'codigo' });
