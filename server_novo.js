@@ -128,27 +128,85 @@ app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) =>
 // ==========================================
 app.get('/api/status', async (req, res) => {
   try {
-    const { count: sis } = await supabase.from('itens_sistema').select('*', { count: 'exact', head: true });
-    const { count: scr } = await supabase.from('scraping_produtos').select('*', { count: 'exact', head: true });
-    
-    const { data: sisData } = await supabase.from('itens_sistema').select('codigo');
-    const { data: scrData } = await supabase.from('scraping_produtos').select('codigo');
-    
-    let cruzados = 0;
-    if (sisData && scrData) {
-      // Função para normalizar códigos tirando zeros à esquerda e espaços
-      const norm = c => String(c ?? '').trim().replace(/^0+/, '');
-      
-      const scrCodigos = new Set(scrData.map(s => norm(s.codigo)));
-      cruzados = sisData.filter(s => norm(s.codigo) !== '' && scrCodigos.has(norm(s.codigo))).length;
+    // 1. Contagens totais (utiliza exact count para não sofrer limitação de tabela)
+    const { count: sisCount, error: errSisCount } = await supabase
+      .from('itens_sistema')
+      .select('*', { count: 'exact', head: true });
+
+    const { count: scrCount, error: errScrCount } = await supabase
+      .from('scraping_produtos')
+      .select('*', { count: 'exact', head: true });
+
+    if (errSisCount || errScrCount) {
+      throw new Error(errSisCount?.message || errScrCount?.message);
     }
 
-    res.json({ itens_sistema: sis || 0, scraping_produtos: scr || 0, cruzados });
+    // 2. Busca paginada de TODOS os códigos do Sistema ERP
+    let todosSisData = [];
+    let de = 0;
+    let temMais = true;
+
+    while (temMais) {
+      const { data, error } = await supabase
+        .from('itens_sistema')
+        .select('codigo')
+        .range(de, de + 999);
+
+      if (error) throw error;
+      if (data && data.length > 0) {
+        todosSisData.push(...data);
+        de += 1000;
+      } else {
+        temMais = false;
+      }
+    }
+
+    // 3. Busca paginada de TODOS os códigos do Scraping
+    let todosScrData = [];
+    de = 0;
+    temMais = true;
+
+    while (temMais) {
+      const { data, error } = await supabase
+        .from('scraping_produtos')
+        .select('codigo')
+        .range(de, de + 999);
+
+      if (error) throw error;
+      if (data && data.length > 0) {
+        todosScrData.push(...data);
+        de += 1000;
+      } else {
+        temMais = false;
+      }
+    }
+
+    // 4. Normalização consistente (limpa espaços e zeros à esquerda, preservando caracteres)
+    const norm = c => String(c ?? '').trim().replace(/^0+/, '').toLowerCase();
+
+    const scrCodigosSet = new Set(
+      todosScrData.map(s => norm(s.codigo)).filter(Boolean)
+    );
+
+    // Conta o cruzamento real da base inteira
+    let cruzados = 0;
+    todosSisData.forEach(s => {
+      const cod = norm(s.codigo);
+      if (cod && scrCodigosSet.has(cod)) {
+        cruzados++;
+      }
+    });
+
+    res.json({
+      ok: true,
+      itens_sistema: sisCount || 0,
+      scraping_produtos: scrCount || 0,
+      cruzados: cruzados
+    });
   } catch (e) {
-    res.status(500).json({ erro: e.message });
+    res.status(500).json({ ok: false, erro: e.message });
   }
 });
-
 // ==========================================
 // ROTA DO CATÁLOGO COM PARSE DE CÓDIGO MELHORADO
 // ==========================================
@@ -274,25 +332,7 @@ app.post('/api/importar/clientes', upload.single('arquivo'), async (req, res) =>
 
 
 
-app.get('/api/status', async (req, res) => {
-  try {
-    const { count: sis } = await supabase.from('itens_sistema').select('*', { count: 'exact', head: true });
-    const { count: scr } = await supabase.from('scraping_produtos').select('*', { count: 'exact', head: true });
-    
-    const { data: sisData } = await supabase.from('itens_sistema').select('codigo');
-    const { data: scrData } = await supabase.from('scraping_produtos').select('codigo');
-    
-    let cruzados = 0;
-    if (sisData && scrData) {
-      const scrCodigos = new Set(scrData.map(s => String(parseInt(s.codigo))));
-      cruzados = sisData.filter(s => scrCodigos.has(String(parseInt(s.codigo)))).length;
-    }
 
-    res.json({ itens_sistema: sis || 0, scraping_produtos: scr || 0, cruzados });
-  } catch (e) {
-    res.status(500).json({ erro: e.message });
-  }
-});
 
 // ==========================================
 // FAMÍLIAS
