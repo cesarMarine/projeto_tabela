@@ -6,23 +6,36 @@
 <title>Admin — Gestão de Produtos</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
-  body { background: #0f172a; color: #e2e8f0; padding: 40px 20px; min-height: 100vh; }
+  body { background: #0f172a; color: #e2e8f0; display: flex; min-height: 100vh; }
+  
+  /* SIDEBAR LATERAL DE MENUS */
+  aside { width: 240px; background: #1e293b; border-right: 1px solid #334155; padding: 24px 16px; display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+  aside .logo { font-size: 18px; font-weight: 800; color: #38bdf8; padding: 0 12px 20px 12px; border-bottom: 1px solid #334155; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  aside nav a { display: flex; align-items: center; gap: 12px; padding: 12px; color: #94a3b8; text-decoration: none; font-weight: 600; border-radius: 8px; font-size: 14px; transition: all 0.2s; }
+  aside nav a:hover, aside nav a.active { background: #0f172a; color: #38bdf8; }
+
+  /* CONTEÚDO PRINCIPAL */
+  main { flex: 1; padding: 40px; overflow-y: auto; }
   .wrap { max-width: 1200px; margin: 0 auto; }
   header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 32px; border-bottom: 1px solid #334155; padding-bottom: 16px; }
   h1 { font-size: 26px; font-weight: 800; color: #f8fafc; }
+  h1 span { font-weight: 400; color: #94a3b8; font-size: 18px; margin-left: 8px; }
   .btn-refresh { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; border-radius: 8px; padding: 10px 16px; cursor: pointer; }
+  
   .status-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 40px; }
   .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; }
   .card .label { font-size: 12px; color: #94a3b8; text-transform: uppercase; font-weight: 700; }
   .card .value { font-size: 36px; font-weight: 800; margin-top: 8px; color: #38bdf8; }
   .card.roxo .value { color: #a78bfa; }
   .card.verde .value { color: #10b981; }
+
   .painel { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 24px; margin-bottom: 20px; }
   .file-area { display: flex; gap: 12px; align-items: center; margin-top: 16px; }
   input[type="file"] { background: #0f172a; border: 1px dashed #475569; border-radius: 8px; padding: 12px; color: #e2e8f0; flex: 1; }
   button.btn-primario { background: #2563eb; color: white; border: none; border-radius: 8px; padding: 12px 20px; font-weight: 700; cursor: pointer; }
   button.btn-vincular { background: #10b981; color: white; border: none; border-radius: 8px; padding: 14px 24px; font-size: 16px; font-weight: 800; cursor: pointer; width: 100%; margin-top: 12px; }
   button.btn-vincular:disabled { opacity: 0.5; cursor: not-allowed; }
+  
   .msg { font-size: 14px; margin-top: 12px; padding: 10px 14px; border-radius: 8px; display: none; }
   .msg.ok { display: block; background: #064e3b; color: #6ee7b7; }
   .msg.err { display: block; background: #7f1d1d; color: #fca5a5; }
@@ -51,7 +64,6 @@
   .card-familia-head strong { color: #38bdf8; font-size: 18px; }
   .btn-add-sub { background: #334155; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; }
   .btn-del { background: #991b1b; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; margin-left: 8px; }
-  .subdivisao-lista { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
   .sub-item { display: flex; justify-content: space-between; background: #1e293b; padding: 8px 12px; border-radius: 6px; font-size: 13px; border-left: 3px solid #a78bfa; }
 
   .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 100; }
@@ -65,72 +77,87 @@
   .modal-actions { display: flex; justify-content: flex-end; gap: 12px; }
   .btn-cancel { background: none; border: 1px solid #475569; color: white; padding: 10px 16px; border-radius: 8px; cursor: pointer; }
   .btn-save { background: #10b981; border: none; color: white; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-  @media(max-width: 800px) { .status-cards, .familia-grid { grid-template-columns: 1fr; } }
+  @media(max-width: 800px) { body { flex-direction: column; } aside { width: 100%; } .status-cards, .familia-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <h1>Admin <span>Gestão de Produtos</span></h1>
-    <button class="btn-refresh" onclick="carregarStatus()">⟳ Atualizar Status</button>
-  </header>
 
-  <div class="status-cards">
-    <div class="card"><div class="label">Itens Sistema</div><div class="value" id="cnt-sistema">—</div></div>
-    <div class="card roxo"><div class="label">Scraping Produtos</div><div class="value" id="cnt-scraping">—</div></div>
-    <div class="card verde"><div class="label">Cruzados</div><div class="value" id="cnt-cruzados">—</div></div>
-  </div>
+<!-- SIDEBAR COM OS MENUS NAVEGÁVEIS -->
+<aside>
+  <div class="logo">⚙️ Admin</div>
+  <nav>
+    <a href="#" class="active">🕹️ Importar</a>
+    <a href="#area-familias">👨‍👩‍👧‍👦 Famílias</a>
+    <a href="#">👤 Clientes</a>
+    <a href="#">💸 Acréscimos por UF</a>
+    <a href="#">👔 Vendedores</a>
+  </nav>
+</aside>
 
-  <div class="painel">
-    <h2>1) Importar Planilha do Sistema</h2>
-    <div class="file-area">
-      <input type="file" id="file-sistema" accept=".xlsx">
-      <button class="btn-primario" id="btn-sistema" onclick="upload('sistema')">Importar</button>
+<main>
+  <div class="wrap">
+    <header>
+      <h1>Admin <span>Gestão de Produtos</span></h1>
+      <button class="btn-refresh" onclick="carregarStatus()">⟳ Atualizar Status</button>
+    </header>
+
+    <div class="status-cards">
+      <div class="card"><div class="label">Itens Sistema</div><div class="value" id="cnt-sistema">—</div></div>
+      <div class="card roxo"><div class="label">Scraping Produtos</div><div class="value" id="cnt-scraping">—</div></div>
+      <div class="card verde"><div class="label">Cruzados</div><div class="value" id="cnt-cruzados">—</div></div>
     </div>
-    <div class="msg" id="msg-sistema"></div>
-  </div>
 
-  <div class="painel">
-    <h2>2) Importar Scraping JSON</h2>
-    <div class="file-area">
-      <input type="file" id="file-scraping" accept=".json">
-      <button class="btn-primario" id="btn-scraping" onclick="upload('scraping')">Importar</button>
-    </div>
-    <div class="msg" id="msg-scraping"></div>
-  </div>
-
-  <!-- NOVO PAINEL DE VINCULAÇÃO DE DADOS -->
-  <div class="painel" style="border: 1px solid #10b981;">
-    <h2>3) Processar Match de Produtos</h2>
-    <p style="font-size:14px; color:#94a3b8; margin-top:6px;">Após importar o sistema e o scraping, clique abaixo para cruzar os códigos tirando zeros à esquerda e atualizar a base do catálogo.</p>
-    <button class="btn-vincular" id="btn-vincular" onclick="processarMatch()">⚡ Processar Match / Vincular Dados</button>
-    <div class="msg" id="msg-vincular"></div>
-  </div>
-
-  <div class="familia-area">
-    <h2>4) Criar Família de Produtos</h2>
-    <p style="font-size:14px; color:#94a3b8; margin-bottom:16px;">Selecione os subgrupos que pertencem à mesma família.</p>
-    <div class="familia-grid">
-      <div class="col-subgrupos">
-        <input type="text" class="busca-subgrupo" id="busca-subgrupo" placeholder="Buscar subgrupo..." oninput="filtrarListaSubgrupos()">
-        <div class="lista-subgrupos" id="lista-subgrupos"></div>
+    <div class="painel">
+      <h2>1) Importar Planilha do Sistema</h2>
+      <div class="file-area">
+        <input type="file" id="file-sistema" accept=".xlsx">
+        <button class="btn-primario" id="btn-sistema" onclick="upload('sistema')">Importar</button>
       </div>
-      <div class="col-selecionados">
-        <h3>Subgrupos Selecionados</h3>
-        <div class="lista-selecionados" id="lista-selecionados"></div>
-        <div class="input-nome-familia">
-          <label>Nome da Família (Pai)</label>
-          <input type="text" id="nome-familia" placeholder="Ex: Anzol Chinu" oninput="verificarBotaoSalvar()">
-          <button class="btn-salvar-familia" id="btn-salvar-familia" onclick="criarFamilia()" disabled>Salvar Família</button>
+      <div class="msg" id="msg-sistema"></div>
+    </div>
+
+    <div class="painel">
+      <h2>2) Importar Scraping JSON</h2>
+      <div class="file-area">
+        <input type="file" id="file-scraping" accept=".json">
+        <button class="btn-primario" id="btn-scraping" onclick="upload('scraping')">Importar</button>
+      </div>
+      <div class="msg" id="msg-scraping"></div>
+    </div>
+
+    <!-- PAINEL DE PROCESSAR MATCH -->
+    <div class="painel" style="border: 1px solid #10b981;">
+      <h2>3) Processar Match de Produtos</h2>
+      <p style="font-size:14px; color:#94a3b8; margin-top:6px;">Após importar o sistema e o scraping, clique abaixo para cruzar os códigos tirando zeros à esquerda e atualizar a base do catálogo.</p>
+      <button class="btn-vincular" id="btn-vincular" onclick="processarMatch()">⚡ Processar Match / Vincular Dados</button>
+      <div class="msg" id="msg-vincular"></div>
+    </div>
+
+    <div class="familia-area" id="area-familias">
+      <h2>4) Criar Família de Produtos</h2>
+      <p style="font-size:14px; color:#94a3b8; margin-bottom:16px;">Selecione os subgrupos que pertencem à mesma família.</p>
+      <div class="familia-grid">
+        <div class="col-subgrupos">
+          <input type="text" class="busca-subgrupo" id="busca-subgrupo" placeholder="Buscar subgrupo..." oninput="filtrarListaSubgrupos()">
+          <div class="lista-subgrupos" id="lista-subgrupos"></div>
+        </div>
+        <div class="col-selecionados">
+          <h3>Subgrupos Selecionados</h3>
+          <div class="lista-selecionados" id="lista-selecionados"></div>
+          <div class="input-nome-familia">
+            <label>Nome da Família (Pai)</label>
+            <input type="text" id="nome-familia" placeholder="Ex: Anzol Chinu" oninput="verificarBotaoSalvar()">
+            <button class="btn-salvar-familia" id="btn-salvar-familia" onclick="criarFamilia()" disabled>Salvar Família</button>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="familias-criadas">
-      <h3>Famílias já Criadas</h3>
-      <div id="lista-familias-criadas"></div>
+      <div class="familias-criadas">
+        <h3>Famílias já Criadas</h3>
+        <div id="lista-familias-criadas"></div>
+      </div>
     </div>
   </div>
-</div>
+</main>
 
 <div class="modal-bg" id="modalSubBg">
   <div class="modal">
