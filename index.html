@@ -232,7 +232,8 @@ function normalizarItem(it) {
     get preco() { return calcularPrecoFinal(this.precoBase); },
     grupo: (it.grupo_scraping || '').trim(),
     marca: (it.marca || '').trim(),
-    atributos: parseAtributos(it.atributos_json) 
+    atributos: parseAtributos(it.atributos_json),
+    estoque: Number(it.estoque) || 0 // <-- Adicionado
   };
 }
 
@@ -355,7 +356,12 @@ async function carregar() {
     if (jf.ok) todasFamilias = jf.familias;
     const r = await fetch('/api/catalogo'); const j = await r.json();
     if (!j.ok) throw new Error('Erro API');
-    todosItens = j.itens.map(normalizarItem).filter(it => it.grupo.length > 0);
+    
+    // FILTRA APENAS ITENS COM ESTOQUE > 0
+    todosItens = j.itens
+      .map(normalizarItem)
+      .filter(it => it.grupo.length > 0 && it.estoque > 0);
+    
     montarChips(); renderizar();
   } catch (e) {
     document.getElementById('conteudo').innerHTML = '<div class="loading">Erro: ' + e.message + '</div>';
@@ -474,7 +480,8 @@ function renderFamiliaMolinete(fam, itens) {
   if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Produtos', itens: fam.itens }];
 
   const blocosTabelas = subdivisoes.map(sub => {
-    const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo));
+    // FILTRA APENAS ITENS COM ESTOQUE > 0
+    const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
     if (itensDaSub.length === 0) return '';
     itensDaSub.sort((a, b) => analisarMolinete(a).modelo.localeCompare(analisarMolinete(b).modelo, undefined, { numeric: true }));
     return `
@@ -525,14 +532,15 @@ function renderFamiliaCarretilha(fam, itens) {
   let subdivisoes = fam.subdivisoes || [];
   if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Todos', itens: fam.itens }];
 
-  const miniaturasHtml = itens.map(it => {
+  // FILTRA MINIATURAS COM ESTOQUE > 0
+  const miniaturasHtml = itens.filter(it => it.estoque > 0).map(it => {
     const info = analisarMolinete(it);
     const labelMini = [info.modelo, info.ladoManivela].filter(Boolean).join(' ');
     return `<div class="filho-mini" id="mini-${it.codigo}" onclick="selecionarCarretilha('${fam.id}', '${it.codigo}', '${it.imagem_url}')"><img src="${it.imagem_url}" alt="${escapeHtml(labelMini)}"><div class="mini-info"><span class="mini-nome">${escapeHtml(labelMini)}</span></div></div>`;
   }).join('');
 
   const blocosTabelas = subdivisoes.map(sub => {
-    const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo));
+    const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
     if (itensDaSub.length === 0) return '';
     return `
       <div class="sub-bloco" style="margin-top: 24px;">
@@ -588,7 +596,7 @@ function renderFamiliaVara(fam, itens) {
   const colunas = Array.from(colunasSet);
 
   const blocosTabelas = subdivisoes.map(sub => {
-    const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo));
+    const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
     if (itensDaSub.length === 0) return '';
     itensDaSub.sort((a, b) => analisarVara(a).modeloJson.localeCompare(analisarVara(b).modeloJson));
 
@@ -669,7 +677,7 @@ function renderFamiliaLinha(fam, itens) {
   const colunas = Array.from(colunasSet);
 
   const blocosTabelas = subdivisoes.map(sub => {
-    const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo));
+    const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
     if (itensDaSub.length === 0) return '';
     itensDaSub.sort((a, b) => {
       const infoA = analisarLinha(a); const infoB = analisarLinha(b);
@@ -754,7 +762,7 @@ function renderFamiliaEmpate(fam, itens) {
   const colunas = Array.from(colunasSet);
 
   const blocosTabelas = subdivisoes.map(sub => {
-    const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo));
+    const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
     if (itensDaSub.length === 0) return '';
     itensDaSub.sort((a, b) => {
       const infoA = analisarEmpate(a).especificacoes; const infoB = analisarEmpate(b).especificacoes;
@@ -826,7 +834,7 @@ function renderFamiliaGrade(fam, itens) {
   if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Produtos', itens: fam.itens }];
 
   const blocosTabelas = subdivisoes.map(sub => {
-    const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo));
+    const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
     if (itensDaSub.length === 0) return '';
     itensDaSub.sort((a, b) => a.subgrupo.localeCompare(b.subgrupo));
 
@@ -907,7 +915,8 @@ function renderFamiliaIsca(fam, itens) {
   const primeiroItem = itens[0];
   const imgInicial = primeiroItem?.imagem_url || '';
   const modelosMap = new Map();
-  itens.forEach(it => {
+  // FILTRA ITENS COM ESTOQUE > 0
+  itens.filter(it => it.estoque > 0).forEach(it => {
     const info = analisarIsca(it);
     const chave = info.modelo || it.subgrupo; 
     if (!modelosMap.has(chave)) modelosMap.set(chave, { nome: chave, tamanho: info.tamanho, peso: info.peso, itens: [] });
@@ -915,10 +924,10 @@ function renderFamiliaIsca(fam, itens) {
   });
   const modelos = Array.from(modelosMap.values());
   const tabsHtml = modelos.map((mod, idx) => `<button class="isca-modelo-btn ${idx===0?'ativo':''}" onclick="trocarModeloIsca('${fam.id}', '${escapeHtml(mod.nome)}')">${escapeHtml(mod.nome)}</button>`).join('');
-  const coresHtml = modelos[0].itens.map(it => {
+  const coresHtml = modelos[0] ? modelos[0].itens.map(it => {
     const info = analisarIsca(it); const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
     return `<div class="isca-cor-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" onclick="selecionarIsca('${fam.id}', '${it.codigo}', '${it.imagem_url}')"><span class="isca-badge">${q}</span><img src="${it.imagem_url}"><div class="cor-nome">${escapeHtml(info.cor || 'Padrão')}</div><div class="cor-preco">R$ ${fmtMoeda(it.preco)}</div><div class="isca-qtd-ctrl" onclick="event.stopPropagation()"><button onclick="mudarQtd('${it.codigo}', -1)">−</button><input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)"><button onclick="mudarQtd('${it.codigo}', 1)">+</button></div></div>`;
-  }).join('');
+  }).join('') : '';
   window.iscasData = window.iscasData || {}; window.iscasData[fam.id] = modelos;
   
   return `
@@ -962,14 +971,22 @@ function renderFamiliaAnzol(fam, itens) {
   const imgInicial = primeiroItem?.imagem_url || '';
   let subdivisoes = fam.subdivisoes || [];
   if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Todos', itens: fam.itens }];
+  
+  // FILTRA APENAS ITENS COM ESTOQUE > 0
+  const itensComEstoque = itens.filter(it => it.estoque > 0);
+  if (itensComEstoque.length === 0) return '';
+  
   const tabsHtml = subdivisoes.map((sub, idx) => `<button class="anzol-tab ${idx===0?'ativo':''}" onclick="trocarTipoAnzol('${fam.id}', ${idx})">${sub.nome}</button>`).join('');
-  const itensIniciais = itens.filter(it => subdivisoes[0].itens.includes(it.codigo));
+  
+  const itensIniciais = itensComEstoque.filter(it => subdivisoes[0].itens.includes(it.codigo));
   itensIniciais.sort((a, b) => analisarAnzol(a).numero.localeCompare(analisarAnzol(b).numero, undefined, { numeric: true }));
   const numerosHtml = itensIniciais.map(it => {
     const info = analisarAnzol(it); const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
     return `<div class="anzol-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" onclick="selecionarAnzol('${fam.id}', '${it.codigo}', '${it.imagem_url}')"><span class="anzol-badge">${q}</span><div class="anzol-numero">${info.numero}</div><div class="anzol-preco">R$ ${fmtMoeda(it.preco)}</div><div class="anzol-qtd-ctrl" onclick="event.stopPropagation()"><button onclick="mudarQtd('${it.codigo}', -1)">−</button><input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)"><button onclick="mudarQtd('${it.codigo}', 1)">+</button></div></div>`;
   }).join('');
-  window.anzolData = window.anzolData || {}; window.anzolData[fam.id] = { subdivisoes, itens };
+  
+  window.anzolData = window.anzolData || {}; window.anzolData[fam.id] = { subdivisoes, itens: itensComEstoque };
+  
   return `
     <div class="familia-bloco">
       <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
@@ -992,10 +1009,16 @@ function trocarTipoAnzol(famId, subIndex) {
   const data = window.anzolData[famId]; const sub = data.subdivisoes[subIndex];
   const card = document.getElementById(`card-fam-${famId}`);
   card.querySelectorAll('.anzol-tab').forEach(b => b.classList.remove('ativo'));
-  document.getElementById(`grade-numeros-${famId}`).innerHTML = data.itens.filter(it => sub.itens.includes(it.codigo)).sort((a, b) => analisarAnzol(a).numero.localeCompare(analisarAnzol(b).numero, undefined, { numeric: true })).map(it => {
-    const info = analisarAnzol(it); const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
-    return `<div class="anzol-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}"><span class="anzol-badge">${q}</span><div class="anzol-numero">${info.numero}</div><div class="anzol-preco">R$ ${fmtMoeda(it.preco)}</div><div class="anzol-qtd-ctrl" onclick="event.stopPropagation()"><button onclick="mudarQtd('${it.codigo}', -1)">−</button><input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)"><button onclick="mudarQtd('${it.codigo}', 1)">+</button></div></div>`;
-  }).join('');
+  
+  // FILTRA APENAS ITENS COM ESTOQUE > 0
+  const itensFiltrados = data.itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
+  
+  document.getElementById(`grade-numeros-${famId}`).innerHTML = itensFiltrados
+    .sort((a, b) => analisarAnzol(a).numero.localeCompare(analisarAnzol(b).numero, undefined, { numeric: true }))
+    .map(it => {
+      const info = analisarAnzol(it); const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+      return `<div class="anzol-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}"><span class="anzol-badge">${q}</span><div class="anzol-numero">${info.numero}</div><div class="anzol-preco">R$ ${fmtMoeda(it.preco)}</div><div class="anzol-qtd-ctrl" onclick="event.stopPropagation()"><button onclick="mudarQtd('${it.codigo}', -1)">−</button><input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)"><button onclick="mudarQtd('${it.codigo}', 1)">+</button></div></div>`;
+    }).join('');
 }
 
 function selecionarAnzol(famId, codigo, url) {
@@ -1008,7 +1031,11 @@ function selecionarAnzol(famId, codigo, url) {
 function renderFamiliaComum(fam, itens) {
   const primeiroItem = itens[0];
   const imgInicial = primeiroItem?.imagem_url || '';
-  const linhasHtml = itens.map(it => {
+  // FILTRA APENAS ITENS COM ESTOQUE > 0
+  const itensComEstoque = itens.filter(it => it.estoque > 0);
+  if (itensComEstoque.length === 0) return '';
+  
+  const linhasHtml = itensComEstoque.map(it => {
     const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
     return `
       <div class="linha-filho">
