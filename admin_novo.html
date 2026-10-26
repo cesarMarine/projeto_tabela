@@ -380,6 +380,10 @@ async function carregarDados() {
     const r = await fetch('/api/catalogo'); const j = await r.json();
     todosOsProdutos = j.itens;
 
+const re = await fetch('/api/estoque-subgrupos'); const je = await re.json();
+window.estoquePorSub = je.estoquePorSub || {};
+window.estoquePorFamilia = je.estoquePorFamilia || {};
+
     const map = {};
     j.itens.forEach(i => { 
       if(i.subgrupo_scraping) map[i.subgrupo_scraping] = (map[i.subgrupo_scraping]||0)+1; 
@@ -402,7 +406,16 @@ function filtrarListaSubgrupos() {
   const t = document.getElementById('busca-subgrupo').value.toLowerCase();
   const d = document.getElementById('lista-subgrupos');
   const f = todosSubgrupos.filter(s => s.nome.toLowerCase().includes(t));
-  d.innerHTML = f.map(s => `<label class="item-subgrupo"><input type="checkbox" value="${s.nome.replace(/"/g,'&quot;')}" onchange="toggleSel(this)" ${selecionados.has(s.nome)?'checked':''}><span>${s.nome}</span><span style="margin-left:auto;font-size:12px;color:#64748b">${s.qtd} itens</span></label>`).join('') || '<div style="padding:10px;color:#64748b">Nenhum subgrupo.</div>';
+  d.innerHTML = f.map(s => {
+    const estoqueSub = window.estoquePorSub[s.nome] || 0;
+    return `<label class="item-subgrupo">
+      <input type="checkbox" value="${s.nome.replace(/"/g,'&quot;')}" onchange="toggleSel(this)" ${selecionados.has(s.nome)?'checked':''}>
+      <span>${s.nome}</span>
+      <span style="margin-left:auto;font-size:12px;color:#64748b">
+        ${s.qtd} itens | Estoque: <strong style="color:${estoqueSub > 0 ? '#10b981' : '#64748b'}">${estoqueSub}</strong>
+      </span>
+    </label>`;
+  }).join('') || '<div style="padding:10px;color:#64748b">Nenhum subgrupo.</div>';
 }
 
 function toggleSel(c) { 
@@ -451,12 +464,25 @@ async function carregarFamiliasCriadas() {
   const r = await fetch('/api/familias'); const j = await r.json();
   if(!j.ok || !j.familias.length) { d.innerHTML = '<span style="color:#64748b">Nenhuma.</span>'; return; }
   
-  d.innerHTML = j.familias.map(f => `
+  d.innerHTML = j.familias.map(f => {
+    const estoqueFam = window.estoquePorFamilia[f.id] || 0;
+    return `
     <div class="card-familia-criada">
-      <div class="card-familia-head"><strong>${f.nome}</strong><div><button class="btn-add-sub" onclick="abrirModalSub(${f.id})">+ Subdivisão</button><button class="btn-del" onclick="deletarFamilia(${f.id})">Excluir</button></div></div>
+      <div class="card-familia-head">
+        <strong>${f.nome}</strong>
+        <div style="display:flex; align-items:center; gap:16px;">
+          <span style="font-size:13px; color:#10b981; font-weight:800;">
+            Estoque total: ${estoqueFam}
+          </span>
+          <div>
+            <button class="btn-add-sub" onclick="abrirModalSub(${f.id})">+ Subdivisão</button>
+            <button class="btn-del" onclick="deletarFamilia(${f.id})">Excluir</button>
+          </div>
+        </div>
+      </div>
       ${f.subdivisoes.length ? f.subdivisoes.map(s=>`<div class="sub-item"><strong>${s.nome}</strong><span>${s.itens.length} produtos</span></div>`).join('') : '<div style="font-size:12px;color:#64748b">Sem subdivisões.</div>'}
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 async function abrirModalSub(id) {

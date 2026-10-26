@@ -236,59 +236,54 @@ app.get('/api/status', async (req, res) => {
 
 // ESTOQUE POR SUBGRUPO E POR FAMÍLIA
 // ESTOQUE POR SUBGRUPO E POR FAMÍLIA
+// ESTOQUE POR SUBGRUPO E POR FAMÍLIA
 app.get('/api/estoque-subgrupos', async (req, res) => {
   try {
-    // Pega os itens do sistema (com estoque)
+    // Pega todos os itens do sistema com estoque
     const { data: itens } = await supabase.from('itens_sistema').select('codigo, estoque').eq('ativo', 1);
     
-    // Pega os produtos do scraping (com subgrupo)
-    const { data: scraping } = await supabase.from('scraping_produtos').select('codigo, subgrupo');
-    
-    // Cria um mapa de código -> subgrupo (normalizado)
-    const mapaSub = {};
-    if (scraping) {
-      scraping.forEach(s => {
-        const codNormalizado = String(parseInt(s.codigo || '0'));
-        if (s.subgrupo) mapaSub[codNormalizado] = s.subgrupo;
+    // Cria um mapa de código -> estoque
+    const mapaEstoque = {};
+    if (itens) {
+      itens.forEach(it => {
+        mapaEstoque[String(parseInt(it.codigo))] = Number(it.estoque) || 0;
       });
     }
 
-    // Agrupa estoque por subgrupo
-    const estoquePorSub = {};
-    if (itens) {
-      itens.forEach(it => {
-        const codNormalizado = String(parseInt(it.codigo || '0'));
-        const sub = mapaSub[codNormalizado];
-        if (sub) {
-          if (!estoquePorSub[sub]) estoquePorSub[sub] = 0;
-          estoquePorSub[sub] += Number(it.estoque) || 0;
+    // Pega todas as famílias criadas
+    const { data: familias } = await supabase.from('catalogo_familias').select('id, itens, subgrupos');
+    
+    const estoquePorFamilia = {};
+    const estoquePorSubgrupo = {};
+
+    if (familias) {
+      familias.forEach(fam => {
+        // Soma o estoque de todos os itens da família
+        const codigosFam = JSON.parse(fam.itens || '[]');
+        let totalFam = 0;
+        codigosFam.forEach(cod => {
+          const codNormalizado = String(parseInt(cod));
+          totalFam += mapaEstoque[codNormalizado] || 0;
+        });
+        estoquePorFamilia[fam.id] = totalFam;
+      });
+    }
+
+    // Calcula o estoque por subgrupo (para a lista de "Criar Família")
+    // Os subgrupos estão nos itens do scraping
+    const { data: scraping } = await supabase.from('scraping_produtos').select('codigo, subgrupo');
+    if (scraping && itens) {
+      scraping.forEach(s => {
+        const codNormalizado = String(parseInt(s.codigo));
+        const estoqueItem = mapaEstoque[codNormalizado] || 0;
+        if (s.subgrupo) {
+          if (!estoquePorSubgrupo[s.subgrupo]) estoquePorSubgrupo[s.subgrupo] = 0;
+          estoquePorSubgrupo[s.subgrupo] += estoqueItem;
         }
       });
     }
 
-    // Calcula o estoque por família
-    const { data: familias } = await supabase.from('catalogo_familias').select('id, itens');
-    const estoquePorFamilia = {};
-    if (familias && itens) {
-      // Cria um mapa de código -> estoque
-      const mapaEstoque = {};
-      itens.forEach(it => {
-        const codNormalizado = String(parseInt(it.codigo || '0'));
-        mapaEstoque[codNormalizado] = Number(it.estoque) || 0;
-      });
-
-      familias.forEach(fam => {
-        const codigosFam = JSON.parse(fam.itens || '[]');
-        let total = 0;
-        codigosFam.forEach(cod => {
-          const codNormalizado = String(parseInt(cod || '0'));
-          total += mapaEstoque[codNormalizado] || 0;
-        });
-        estoquePorFamilia[fam.id] = total;
-      });
-    }
-
-    res.json({ ok: true, estoquePorSub, estoquePorFamilia });
+    res.json({ ok: true, estoquePorSub: estoquePorSubgrupo, estoquePorFamilia });
   } catch (e) { 
     console.error("Erro estoque-subgrupos:", e);
     res.status(500).json({ ok: false, erro: e.message }); 
