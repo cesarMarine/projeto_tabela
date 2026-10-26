@@ -394,7 +394,10 @@ app.get('/api/familias', async (req, res) => {
     const { data, error } = await supabase.from('catalogo_familias').select('*').order('id', { ascending: false });
     if (error) throw error;
     const familias = (data || []).map(f => ({ 
-      ...f, itens: JSON.parse(f.subgrupos || '[]'), subdivisoes: JSON.parse(f.subdivisoes || '[]') 
+      ...f, 
+      itens: JSON.parse(f.subgrupos || '[]'), 
+      subdivisoes: JSON.parse(f.subdivisoes || '[]'),
+      ordem_customizada: JSON.parse(f.ordem_customizada || '[]') // 👈 NOVO
     }));
     res.json({ ok: true, familias });
   } catch (e) { res.status(500).json({ erro: e.message }); }
@@ -402,9 +405,12 @@ app.get('/api/familias', async (req, res) => {
 
 app.post('/api/familias', async (req, res) => {
   try {
-    const { nome, itens, subdivisoes } = req.body;
+    const { nome, itens, subdivisoes, ordem_customizada } = req.body;
     const { data, error } = await supabase.from('catalogo_familias').insert({
-      nome, subgrupos: JSON.stringify(itens), subdivisoes: JSON.stringify(subdivisoes || [])
+      nome, 
+      subgrupos: JSON.stringify(itens), 
+      subdivisoes: JSON.stringify(subdivisoes || []),
+      ordem_customizada: JSON.stringify(ordem_customizada || []) // 👈 NOVO
     }).select();
     if (error) throw error;
     res.json({ ok: true, id: data[0].id });
@@ -414,17 +420,15 @@ app.post('/api/familias', async (req, res) => {
 app.put('/api/familias/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { nome, itens, subdivisoes } = req.body;
+    const { nome, itens, subdivisoes, ordem_customizada } = req.body;
     await supabase.from('catalogo_familias').update({
-      nome, subgrupos: JSON.stringify(itens), subdivisoes: JSON.stringify(subdivisoes || [])
+      nome, 
+      subgrupos: JSON.stringify(itens), 
+      subdivisoes: JSON.stringify(subdivisoes || []),
+      ordem_customizada: JSON.stringify(ordem_customizada || []) // 👈 NOVO
     }).eq('id', id);
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ erro: e.message }); }
-});
-
-app.delete('/api/familias/:id', async (req, res) => {
-  await supabase.from('catalogo_familias').delete().eq('id', req.params.id);
-  res.json({ ok: true });
 });
 
 // ==========================================

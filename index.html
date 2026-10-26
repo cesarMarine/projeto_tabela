@@ -233,7 +233,9 @@ function normalizarItem(it) {
     grupo: (it.grupo_scraping || '').trim(),
     marca: (it.marca || '').trim(),
     atributos: parseAtributos(it.atributos_json),
-    estoque: Number(it.estoque) || 0 // <-- Adicionado
+    estoque: Number(it.estoque) || 0,
+    ordem_excel: Number(it.ordem_excel) || 999999,
+    ordem_customizada_pos: 999999 // 👈 A mágica para a ordem manual
   };
 }
 
@@ -357,7 +359,6 @@ async function carregar() {
     const r = await fetch('/api/catalogo'); const j = await r.json();
     if (!j.ok) throw new Error('Erro API');
     
-    // FILTRA APENAS ITENS COM ESTOQUE > 0
     todosItens = j.itens
       .map(normalizarItem)
       .filter(it => it.grupo.length > 0 && it.estoque > 0);
@@ -369,7 +370,7 @@ async function carregar() {
 }
 
 // ==========================================
-// FILTROS
+// FILTROS E RENDERIZAÇÃO
 // ==========================================
 function montarChips() {
   const contagem = {};
@@ -406,11 +407,18 @@ function renderizar() {
   todasFamilias.forEach(fam => {
     const filhos = lista.filter(it => fam.itens.includes(it.codigo));
     if (filhos.length > 0) {
+      // 👇 AQUI: Aplica a ordem customizada se existir
+      if (fam.ordem_customizada && fam.ordem_customizada.length > 0) {
+        filhos.forEach(f => {
+          const pos = fam.ordem_customizada.indexOf(f.subgrupo);
+          if (pos !== -1) f.ordem_customizada_pos = pos;
+        });
+      }
+
       let tipo = 'comum';
       const primeiroItem = filhos[0];
       const attrs = Object.keys(primeiroItem.atributos).map(k => k.toUpperCase());
       const grupoItem = primeiroItem.grupo.toUpperCase();
-      
       const nomeFam = fam.nome.toUpperCase();
 
       if (nomeFam.includes('VARA')) tipo = 'vara';
@@ -480,10 +488,14 @@ function renderFamiliaMolinete(fam, itens) {
   if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Produtos', itens: fam.itens }];
 
   const blocosTabelas = subdivisoes.map(sub => {
-    // FILTRA APENAS ITENS COM ESTOQUE > 0
     const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
     if (itensDaSub.length === 0) return '';
-    itensDaSub.sort((a, b) => analisarMolinete(a).modelo.localeCompare(analisarMolinete(b).modelo, undefined, { numeric: true }));
+    
+    itensDaSub.sort((a, b) => {
+      if (a.ordem_customizada_pos !== 999999 || b.ordem_customizada_pos !== 999999) return a.ordem_customizada_pos - b.ordem_customizada_pos;
+      return a.ordem_excel - b.ordem_excel;
+    });
+
     return `
       <div class="sub-bloco" style="margin-top: 28px;">
         <div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>
@@ -532,7 +544,6 @@ function renderFamiliaCarretilha(fam, itens) {
   let subdivisoes = fam.subdivisoes || [];
   if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Todos', itens: fam.itens }];
 
-  // FILTRA MINIATURAS COM ESTOQUE > 0
   const miniaturasHtml = itens.filter(it => it.estoque > 0).map(it => {
     const info = analisarMolinete(it);
     const labelMini = [info.modelo, info.ladoManivela].filter(Boolean).join(' ');
@@ -542,6 +553,12 @@ function renderFamiliaCarretilha(fam, itens) {
   const blocosTabelas = subdivisoes.map(sub => {
     const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
     if (itensDaSub.length === 0) return '';
+
+    itensDaSub.sort((a, b) => {
+      if (a.ordem_customizada_pos !== 999999 || b.ordem_customizada_pos !== 999999) return a.ordem_customizada_pos - b.ordem_customizada_pos;
+      return a.ordem_excel - b.ordem_excel;
+    });
+
     return `
       <div class="sub-bloco" style="margin-top: 24px;">
         ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
@@ -598,7 +615,11 @@ function renderFamiliaVara(fam, itens) {
   const blocosTabelas = subdivisoes.map(sub => {
     const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
     if (itensDaSub.length === 0) return '';
-    itensDaSub.sort((a, b) => analisarVara(a).modeloJson.localeCompare(analisarVara(b).modeloJson));
+    
+    itensDaSub.sort((a, b) => {
+      if (a.ordem_customizada_pos !== 999999 || b.ordem_customizada_pos !== 999999) return a.ordem_customizada_pos - b.ordem_customizada_pos;
+      return a.ordem_excel - b.ordem_excel;
+    });
 
     const linhas = itensDaSub.map(it => {
       const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
@@ -679,11 +700,10 @@ function renderFamiliaLinha(fam, itens) {
   const blocosTabelas = subdivisoes.map(sub => {
     const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
     if (itensDaSub.length === 0) return '';
+
     itensDaSub.sort((a, b) => {
-      const infoA = analisarLinha(a); const infoB = analisarLinha(b);
-      const qtdA = parseInt(infoA.metragem) || 0; const qtdB = parseInt(infoB.metragem) || 0;
-      if (qtdA !== qtdB) return qtdA - qtdB;
-      return (infoA.especificacoes['mm'] || '').localeCompare(infoB.especificacoes['mm'] || '');
+      if (a.ordem_customizada_pos !== 999999 || b.ordem_customizada_pos !== 999999) return a.ordem_customizada_pos - b.ordem_customizada_pos;
+      return a.ordem_excel - b.ordem_excel;
     });
 
     const linhas = itensDaSub.map(it => {
@@ -764,10 +784,10 @@ function renderFamiliaEmpate(fam, itens) {
   const blocosTabelas = subdivisoes.map(sub => {
     const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
     if (itensDaSub.length === 0) return '';
+
     itensDaSub.sort((a, b) => {
-      const infoA = analisarEmpate(a).especificacoes; const infoB = analisarEmpate(b).especificacoes;
-      const valA = infoA['Modelo'] || infoA[Object.keys(infoA)[0]] || ''; const valB = infoB['Modelo'] || infoB[Object.keys(infoB)[0]] || '';
-      return valA.localeCompare(valB, undefined, { numeric: true });
+      if (a.ordem_customizada_pos !== 999999 || b.ordem_customizada_pos !== 999999) return a.ordem_customizada_pos - b.ordem_customizada_pos;
+      return a.ordem_excel - b.ordem_excel;
     });
 
     const linhas = itensDaSub.map(it => {
@@ -836,7 +856,11 @@ function renderFamiliaGrade(fam, itens) {
   const blocosTabelas = subdivisoes.map(sub => {
     const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
     if (itensDaSub.length === 0) return '';
-    itensDaSub.sort((a, b) => a.subgrupo.localeCompare(b.subgrupo));
+
+    itensDaSub.sort((a, b) => {
+      if (a.ordem_customizada_pos !== 999999 || b.ordem_customizada_pos !== 999999) return a.ordem_customizada_pos - b.ordem_customizada_pos;
+      return a.ordem_excel - b.ordem_excel;
+    });
 
     const cardsHtml = itensDaSub.map((it, index) => {
       const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
@@ -915,14 +939,22 @@ function renderFamiliaIsca(fam, itens) {
   const primeiroItem = itens[0];
   const imgInicial = primeiroItem?.imagem_url || '';
   const modelosMap = new Map();
-  // FILTRA ITENS COM ESTOQUE > 0
+  
   itens.filter(it => it.estoque > 0).forEach(it => {
     const info = analisarIsca(it);
     const chave = info.modelo || it.subgrupo; 
     if (!modelosMap.has(chave)) modelosMap.set(chave, { nome: chave, tamanho: info.tamanho, peso: info.peso, itens: [] });
     modelosMap.get(chave).itens.push(it);
   });
+  
   const modelos = Array.from(modelosMap.values());
+  modelos.forEach(m => {
+    m.itens.sort((a, b) => {
+      if (a.ordem_customizada_pos !== 999999 || b.ordem_customizada_pos !== 999999) return a.ordem_customizada_pos - b.ordem_customizada_pos;
+      return a.ordem_excel - b.ordem_excel;
+    });
+  });
+
   const tabsHtml = modelos.map((mod, idx) => `<button class="isca-modelo-btn ${idx===0?'ativo':''}" onclick="trocarModeloIsca('${fam.id}', '${escapeHtml(mod.nome)}')">${escapeHtml(mod.nome)}</button>`).join('');
   const coresHtml = modelos[0] ? modelos[0].itens.map(it => {
     const info = analisarIsca(it); const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
@@ -972,14 +1004,18 @@ function renderFamiliaAnzol(fam, itens) {
   let subdivisoes = fam.subdivisoes || [];
   if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Todos', itens: fam.itens }];
   
-  // FILTRA APENAS ITENS COM ESTOQUE > 0
   const itensComEstoque = itens.filter(it => it.estoque > 0);
   if (itensComEstoque.length === 0) return '';
   
   const tabsHtml = subdivisoes.map((sub, idx) => `<button class="anzol-tab ${idx===0?'ativo':''}" onclick="trocarTipoAnzol('${fam.id}', ${idx})">${sub.nome}</button>`).join('');
   
   const itensIniciais = itensComEstoque.filter(it => subdivisoes[0].itens.includes(it.codigo));
-  itensIniciais.sort((a, b) => analisarAnzol(a).numero.localeCompare(analisarAnzol(b).numero, undefined, { numeric: true }));
+  
+  itensIniciais.sort((a, b) => {
+    if (a.ordem_customizada_pos !== 999999 || b.ordem_customizada_pos !== 999999) return a.ordem_customizada_pos - b.ordem_customizada_pos;
+    return a.ordem_excel - b.ordem_excel;
+  });
+
   const numerosHtml = itensIniciais.map(it => {
     const info = analisarAnzol(it); const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
     return `<div class="anzol-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" onclick="selecionarAnzol('${fam.id}', '${it.codigo}', '${it.imagem_url}')"><span class="anzol-badge">${q}</span><div class="anzol-numero">${info.numero}</div><div class="anzol-preco">R$ ${fmtMoeda(it.preco)}</div><div class="anzol-qtd-ctrl" onclick="event.stopPropagation()"><button onclick="mudarQtd('${it.codigo}', -1)">−</button><input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)"><button onclick="mudarQtd('${it.codigo}', 1)">+</button></div></div>`;
@@ -1010,11 +1046,14 @@ function trocarTipoAnzol(famId, subIndex) {
   const card = document.getElementById(`card-fam-${famId}`);
   card.querySelectorAll('.anzol-tab').forEach(b => b.classList.remove('ativo'));
   
-  // FILTRA APENAS ITENS COM ESTOQUE > 0
   const itensFiltrados = data.itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
   
+  itensFiltrados.sort((a, b) => {
+    if (a.ordem_customizada_pos !== 999999 || b.ordem_customizada_pos !== 999999) return a.ordem_customizada_pos - b.ordem_customizada_pos;
+    return a.ordem_excel - b.ordem_excel;
+  });
+
   document.getElementById(`grade-numeros-${famId}`).innerHTML = itensFiltrados
-    .sort((a, b) => analisarAnzol(a).numero.localeCompare(analisarAnzol(b).numero, undefined, { numeric: true }))
     .map(it => {
       const info = analisarAnzol(it); const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
       return `<div class="anzol-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}"><span class="anzol-badge">${q}</span><div class="anzol-numero">${info.numero}</div><div class="anzol-preco">R$ ${fmtMoeda(it.preco)}</div><div class="anzol-qtd-ctrl" onclick="event.stopPropagation()"><button onclick="mudarQtd('${it.codigo}', -1)">−</button><input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)"><button onclick="mudarQtd('${it.codigo}', 1)">+</button></div></div>`;
@@ -1031,9 +1070,13 @@ function selecionarAnzol(famId, codigo, url) {
 function renderFamiliaComum(fam, itens) {
   const primeiroItem = itens[0];
   const imgInicial = primeiroItem?.imagem_url || '';
-  // FILTRA APENAS ITENS COM ESTOQUE > 0
   const itensComEstoque = itens.filter(it => it.estoque > 0);
   if (itensComEstoque.length === 0) return '';
+
+  itensComEstoque.sort((a, b) => {
+    if (a.ordem_customizada_pos !== 999999 || b.ordem_customizada_pos !== 999999) return a.ordem_customizada_pos - b.ordem_customizada_pos;
+    return a.ordem_excel - b.ordem_excel;
+  });
   
   const linhasHtml = itensComEstoque.map(it => {
     const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;

@@ -65,11 +65,9 @@
   .card-familia-head strong { color: #38bdf8; font-size: 18px; }
   .btn-add-sub { background: #334155; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; }
   .btn-del { background: #991b1b; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; margin-left: 8px; }
-  .btn-reord { background: #7c3aed; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; margin-left: 8px; }
-  .btn-reord:hover { background: #6d28d9; }
+  .btn-reord { background: #eab308; color: #000; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; margin-left: 8px; font-weight: 700; }
+  .btn-reord:hover { background: #ca8a04; }
   .sub-item { display: flex; justify-content: space-between; background: #1e293b; padding: 8px 12px; border-radius: 6px; font-size: 13px; border-left: 3px solid #a78bfa; margin-bottom: 6px; }
-
-  .badge-ordem { display: inline-block; background: #1e3a8a; color: #93c5fd; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-left: 6px; }
 
   .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 100; }
   .modal-bg.on { display: flex; }
@@ -118,9 +116,6 @@
           <button class="btn-primario" id="btn-sistema" onclick="upload('sistema')">Importar</button>
         </div>
         <div class="msg" id="msg-sistema"></div>
-        <p style="font-size:12px; color:#64748b; margin-top:8px;">
-          💡 A ordem das linhas do Excel é salva em <code>ordem_excel</code>. Produtos da mesma família aparecem no catálogo seguindo essa ordem.
-        </p>
       </div>
 
       <div class="painel">
@@ -145,10 +140,7 @@
     <section class="page" id="page-familias">
       <div class="painel">
         <h2>Criar Família de Produtos</h2>
-        <p style="font-size:14px; color:#94a3b8; margin-bottom:16px;">
-          Selecione os subgrupos que pertencem à mesma família.
-          <span id="aviso-ordem" style="display:none; color:#93c5fd;">&nbsp;• Os subgrupos estão ordenados pela planilha do sistema.</span>
-        </p>
+        <p style="font-size:14px; color:#94a3b8; margin-bottom:16px;">Selecione os subgrupos que pertencem à mesma família.</p>
         <div class="familia-grid">
           <div class="col-subgrupos">
             <input type="text" class="busca-subgrupo" id="busca-subgrupo" placeholder="Buscar subgrupo..." oninput="filtrarListaSubgrupos()" style="margin-bottom:12px;">
@@ -243,7 +235,6 @@
       <div class="painel">
         <h2>👤 Vendedores Cadastrados</h2>
         <p style="font-size:14px; color:#94a3b8; margin-bottom:16px;">Defina a senha de acesso para os vendedores entrarem no Painel do Vendedor.</p>
-        
         <table id="tabVendedores">
           <thead>
             <tr>
@@ -258,7 +249,6 @@
         </table>
       </div>
     </section>
-
   </main>
 </div>
 
@@ -275,18 +265,12 @@
 </div>
 
 <script>
-// ================================================================
-// ESTADO GLOBAL
-// ================================================================
 let todosSubgrupos = [], selecionados = new Set(), familiaAtualParaSub = null;
-let todosOsProdutos = [];
-let familiasCache = [];              // 👈 NOVO: cache de famílias
+let todosOsProdutos = []; 
+let familiasCache = [];
 let pagClientes = 1, totPagClientes = 1, timeoutCli = null;
 let gruposAcrescimoCache = [], ufsAcrescimoCache = [];
 
-// ================================================================
-// NAVEGAÇÃO
-// ================================================================
 document.querySelectorAll('.sidebar button').forEach(b => {
   b.onclick = () => {
     document.querySelectorAll('.sidebar button').forEach(x => x.classList.remove('active'));
@@ -294,27 +278,20 @@ document.querySelectorAll('.sidebar button').forEach(b => {
     b.classList.add('active');
     
     const pageId = b.dataset.page;
-    const target = document.getElementById('page-' + pageId);
-    if (target) target.classList.add('active');
+    document.getElementById('page-' + pageId)?.classList.add('active');
 
-    if (pageId === 'importar') { carregarStatus(); }
-    if (pageId === 'familias') { carregarDados(); }
-    if (pageId === 'clientes') { carregarClientes(1); }
-    if (pageId === 'acrescimos') { carregarAcrescimos(); }
-    if (pageId === 'vendedores') { carregarVendedores(); }
+    if (pageId === 'importar') carregarStatus();
+    if (pageId === 'familias') carregarDados();
+    if (pageId === 'clientes') carregarClientes(1);
+    if (pageId === 'acrescimos') carregarAcrescimos();
+    if (pageId === 'vendedores') carregarVendedores();
   };
 });
 
-// ================================================================
-// HELPERS
-// ================================================================
 function alerta(msg, tipo = 'ok') {
   const el = document.getElementById('alerta');
-  el.style.display = 'block';
-  el.style.padding = '12px 16px';
-  el.style.borderRadius = '8px';
-  el.style.marginBottom = '16px';
-  el.style.fontWeight = '600';
+  el.style.display = 'block'; el.style.padding = '12px 16px'; el.style.borderRadius = '8px';
+  el.style.marginBottom = '16px'; el.style.fontWeight = '600';
   el.style.background = tipo === 'ok' ? '#064e3b' : '#7f1d1d';
   el.style.color = tipo === 'ok' ? '#6ee7b7' : '#fca5a5';
   el.textContent = msg;
@@ -326,21 +303,15 @@ function debounceClientes() {
   timeoutCli = setTimeout(() => carregarClientes(1), 400);
 }
 
-// ================================================================
-// STATUS
-// ================================================================
 async function carregarStatus() {
   try {
     const r = await fetch('/api/status'); const j = await r.json();
     document.getElementById('cnt-sistema').textContent = j.itens_sistema || 0;
     document.getElementById('cnt-scraping').textContent = j.scraping_produtos || 0;
     document.getElementById('cnt-cruzados').textContent = j.cruzados || 0;
-  } catch(e) { console.error(e); }
+  } catch(e) {}
 }
 
-// ================================================================
-// IMPORTAR
-// ================================================================
 async function upload(tipo) {
   const fi = document.getElementById('file-' + tipo), btn = document.getElementById('btn-' + tipo), msg = document.getElementById('msg-' + tipo);
   if (!fi.files.length) return;
@@ -351,71 +322,44 @@ async function upload(tipo) {
     const r = await fetch('/api/importar/' + tipo, { method: 'POST', body: fd });
     const j = await r.json();
     if (!r.ok || j.erro) throw new Error(j.erro);
-    
-    msg.className = 'msg ok'; msg.style.background = '#064e3b'; msg.style.color = '#6ee7b7'; msg.textContent = `Sucesso: ${j.inseridos} itens importados.`;
+    msg.textContent = `Sucesso: ${j.inseridos} itens`;
     carregarStatus(); 
     if (tipo === 'scraping') carregarDados();
   } catch(e) { 
-    msg.className = 'msg err'; msg.style.background = '#7f1d1d'; msg.style.color = '#fca5a5'; msg.textContent = e.message; 
+    msg.textContent = e.message; 
   } finally { btn.disabled = false; }
 }
 
-// ================================================================
-// FAMÍLIAS
-// ================================================================
 async function carregarDados() {
   try {
     const rf = await fetch('/api/familias'); const jf = await rf.json();
-    
     const codigosOcupados = new Set();
-    if (jf.ok) {
-      jf.familias.forEach(f => f.itens.forEach(codigo => codigosOcupados.add(codigo)));
-    }
+    if (jf.ok) jf.familias.forEach(f => f.itens.forEach(c => codigosOcupados.add(c)));
 
     const r = await fetch('/api/catalogo'); const j = await r.json();
     todosOsProdutos = j.itens;
 
-    // 👇 Estoque + ordem por subgrupo (a rota precisa devolver ordemPorSubgrupo)
     const re = await fetch('/api/estoque-subgrupos'); const je = await re.json();
     window.estoquePorSub = je.estoquePorSub || {};
     window.estoquePorFamilia = je.estoquePorFamilia || {};
-    window.ordemPorSub = je.ordemPorSubgrupo || {};   // 👈 NOVO
-
-    // 👇 Debug: mostra no console pra você conferir
-    console.log('📊 ordemPorSubgrupo:', window.ordemPorSub);
-    console.log('📊 Exemplo de item:', j.itens[0]);
+    window.ordemPorSub = je.ordemPorSubgrupo || {};
 
     const map = {};
-    j.itens.forEach(i => { 
-      if(i.subgrupo_scraping) map[i.subgrupo_scraping] = (map[i.subgrupo_scraping]||0)+1; 
-    });
+    j.itens.forEach(i => { if(i.subgrupo_scraping) map[i.subgrupo_scraping] = (map[i.subgrupo_scraping]||0)+1; });
     
-    // 👇 NOVO: ordena subgrupos por ordem_excel (se disponível), senão alfabético
-    const ordemPorSub = window.ordemPorSub;
-    const temOrdemExcel = Object.keys(ordemPorSub).length > 0;
-
-    todosSubgrupos = Object.keys(map)
-      .sort((a, b) => {
-        if (temOrdemExcel) {
-          const oa = ordemPorSub[a] ?? 999999;
-          const ob = ordemPorSub[b] ?? 999999;
-          if (oa !== ob) return oa - ob;
-        }
-        return a.localeCompare(b);
-      })
-      .map(s => {
-        const todosItensDoSub = j.itens.filter(i => i.subgrupo_scraping === s);
-        const todosOcupados = todosItensDoSub.every(i => codigosOcupados.has(i.codigo));
-        return { nome: s, qtd: map[s], ocupado: todosOcupados, ordem: ordemPorSub[s] ?? null };
-      })
+    const temOrdemExcel = Object.keys(window.ordemPorSub).length > 0;
+    todosSubgrupos = Object.keys(map).sort((a, b) => {
+      if (temOrdemExcel) {
+        const oa = window.ordemPorSub[a] ?? 999999; const ob = window.ordemPorSub[b] ?? 999999;
+        if (oa !== ob) return oa - ob;
+      }
+      return a.localeCompare(b);
+    }).map(s => ({ nome: s, qtd: map[s], ocupado: j.itens.filter(i => i.subgrupo_scraping === s).every(i => codigosOcupados.has(i.codigo)) }))
       .filter(s => !s.ocupado);
-
-    // Mostra aviso se tem ordem disponível
-    document.getElementById('aviso-ordem').style.display = temOrdemExcel ? 'inline' : 'none';
       
     filtrarListaSubgrupos(); 
     await carregarFamiliasCriadas();
-  } catch(e) { console.error(e); alerta('Erro ao carregar dados: ' + e.message, 'erro'); }
+  } catch(e) { console.error(e); }
 }
 
 function filtrarListaSubgrupos() {
@@ -424,70 +368,44 @@ function filtrarListaSubgrupos() {
   const f = todosSubgrupos.filter(s => s.nome.toLowerCase().includes(t));
   d.innerHTML = f.map(s => {
     const estoqueSub = window.estoquePorSub[s.nome] || 0;
-    const badgeOrdem = s.ordem !== null ? `<span class="badge-ordem">#${s.ordem}</span>` : '';
     return `<label class="item-subgrupo">
       <input type="checkbox" value="${s.nome.replace(/"/g,'&quot;')}" onchange="toggleSel(this)" ${selecionados.has(s.nome)?'checked':''}>
-      <span>${s.nome}${badgeOrdem}</span>
-      <span style="margin-left:auto;font-size:12px;color:#64748b">
-        ${s.qtd} itens | Estoque: <strong style="color:${estoqueSub > 0 ? '#10b981' : '#64748b'}">${estoqueSub}</strong>
-      </span>
+      <span>${s.nome}</span>
+      <span style="margin-left:auto;font-size:12px;color:#64748b">${s.qtd} itens | Estoque: <strong style="color:${estoqueSub > 0 ? '#10b981' : '#64748b'}">${estoqueSub}</strong></span>
     </label>`;
   }).join('') || '<div style="padding:10px;color:#64748b">Nenhum subgrupo.</div>';
 }
 
-function toggleSel(c) { 
-  if(c.checked) selecionados.add(c.value); 
-  else selecionados.delete(c.value); 
-  renderSel(); 
-}
+function toggleSel(c) { if(c.checked) selecionados.add(c.value); else selecionados.delete(c.value); renderSel(); }
 
 function renderSel() {
   const d = document.getElementById('lista-selecionados');
-  if(!selecionados.size) { 
-    d.innerHTML = '<div style="color:#64748b;text-align:center;margin-top:20px">Nenhum</div>'; 
-    document.getElementById('btn-salvar-familia').disabled = true; 
-    return; 
-  }
-  d.innerHTML = Array.from(selecionados).map(s => 
-    `<div class="sel-item"><span>${s}</span><button onclick="remSel('${s.replace(/'/g,"\\'")}')">✕</button></div>`
-  ).join('');
+  if(!selecionados.size) { d.innerHTML = '<div style="color:#64748b;text-align:center;margin-top:20px">Nenhum</div>'; document.getElementById('btn-salvar-familia').disabled = true; return; }
+  d.innerHTML = Array.from(selecionados).map(s => `<div class="sel-item"><span>${s}</span><button onclick="remSel('${s.replace(/'/g,"\\'")}')">✕</button></div>`).join('');
   verificarBotaoSalvar();
 }
 
 function remSel(s) { selecionados.delete(s); renderSel(); filtrarListaSubgrupos(); }
-function verificarBotaoSalvar() { 
-  document.getElementById('btn-salvar-familia').disabled = !(document.getElementById('nome-familia').value.trim() && selecionados.size); 
-}
+function verificarBotaoSalvar() { document.getElementById('btn-salvar-familia').disabled = !(document.getElementById('nome-familia').value.trim() && selecionados.size); }
 
 async function criarFamilia() {
   const nome = document.getElementById('nome-familia').value.trim();
   if(!nome || !selecionados.size) return;
 
-  const codigos = todosOsProdutos
-    .filter(it => selecionados.has(it.subgrupo_scraping))
-    .map(it => it.codigo);
-
-  const r = await fetch('/api/familias', { 
-    method: 'POST', 
-    headers: { 'Content-Type': 'application/json' }, 
-    body: JSON.stringify({ nome, itens: codigos }) 
-  });
+  const codigos = todosOsProdutos.filter(it => selecionados.has(it.subgrupo_scraping)).map(it => it.codigo);
+  const r = await fetch('/api/familias', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome, itens: codigos }) });
   const j = await r.json();
   
   if (j.ok && j.id) {
     alert('Família criada! Agora vamos criar as subdivisões.');
-    selecionados.clear(); 
-    document.getElementById('nome-familia').value = ''; 
-    renderSel();
+    selecionados.clear(); document.getElementById('nome-familia').value = ''; renderSel();
     await carregarDados();
     abrirModalSub(j.id);
-  } else {
-    alert('❌ Erro ao criar família: ' + (j.erro || 'ID não retornado'));
   }
 }
 
 async function deletarFamilia(id) {
-  if(!confirm('Excluir família? Os produtos voltarão a ficar disponíveis.')) return;
+  if(!confirm('Excluir família?')) return;
   await fetch('/api/familias/'+id, {method:'DELETE'}); 
   await carregarDados();
 }
@@ -495,15 +413,9 @@ async function deletarFamilia(id) {
 async function carregarFamiliasCriadas() {
   const d = document.getElementById('lista-familias-criadas');
   const r = await fetch('/api/familias'); const j = await r.json();
+  if(!j.ok || !j.familias.length) { d.innerHTML = '<span style="color:#64748b">Nenhuma.</span>'; familiasCache = []; return; }
   
-  if(!j.ok || !j.familias.length) { 
-    d.innerHTML = '<span style="color:#64748b">Nenhuma.</span>'; 
-    familiasCache = [];
-    return; 
-  }
-
-  familiasCache = j.familias;   // 👈 guarda cache
-  
+  familiasCache = j.familias;
   d.innerHTML = j.familias.map(f => {
     const estoqueFam = window.estoquePorFamilia[f.id] || 0;
     return `
@@ -511,52 +423,65 @@ async function carregarFamiliasCriadas() {
       <div class="card-familia-head">
         <strong>${f.nome}</strong>
         <div style="display:flex; align-items:center; gap:16px;">
-          <span style="font-size:13px; color:#10b981; font-weight:800;">
-            Estoque total: ${estoqueFam}
-          </span>
+          <span style="font-size:13px; color:#10b981; font-weight:800;">Estoque total: ${estoqueFam}</span>
           <div>
             <button class="btn-add-sub" onclick="abrirModalSub(${f.id})">+ Subdivisão</button>
-            <button class="btn-reord" onclick="reordenarFamilia(${f.id})" title="Reordenar subdivisões pela ordem do Excel">↕ Reordenar</button>
+            <button class="btn-reord" onclick="ordenarTamanhosAnzol(${f.id})" title="Ordenar tamanhos de anzol (18, 16, 14...)">📏 Ordenar Tamanhos</button>
             <button class="btn-del" onclick="deletarFamilia(${f.id})">Excluir</button>
           </div>
         </div>
       </div>
-      ${f.subdivisoes.length 
-        ? f.subdivisoes.map(s=>`<div class="sub-item"><strong>${s.nome}</strong><span>${s.itens.length} produtos</span></div>`).join('') 
-        : '<div style="font-size:12px;color:#64748b">Sem subdivisões.</div>'}
+      ${f.subdivisoes.length ? f.subdivisoes.map(s=>`<div class="sub-item"><strong>${s.nome}</strong><span>${s.itens.length} produtos</span></div>`).join('') : '<div style="font-size:12px;color:#64748b">Sem subdivisões.</div>'}
     </div>`;
   }).join('');
 }
 
-// 👇 NOVO: reordena as subdivisões de uma família pela menor ordem_excel dos itens
-async function reordenarFamilia(id) {
-  const fam = familiasCache.find(f => f.id === id);
-  if (!fam || !fam.subdivisoes?.length) return alert('Sem subdivisões para reordenar.');
+// 👇 A MÁGICA ESTÁ AQUI
+function ordenarTamanhosAnzol(famId) {
+  const fam = familiasCache.find(f => f.id === famId);
+  if (!fam) return;
 
-  const ordemPorCodigo = {};
-  todosOsProdutos.forEach(p => { ordemPorCodigo[p.codigo] = p.ordem_excel ?? 999999; });
+  const itensDaFamilia = todosOsProdutos.filter(p => fam.itens.includes(p.codigo));
+  
+  const pesoDoAnzol = (subgrupo) => {
+    const match = String(subgrupo).match(/(\d+(?:\/\d)?)/g);
+    if (!match) return 9999; 
+    
+    const numStr = match[0];
+    if (numStr.includes('/')) {
+      const [num] = numStr.split('/').map(Number);
+      return 10000 + (num * 10); 
+    } else {
+      const n = Number(numStr);
+      if (n === 1) return 1000; 
+      if (n % 2 === 0) return 2000 - n; 
+      return 3000 + n;
+    }
+  };
 
-  const novasSubs = fam.subdivisoes.map(s => {
-    const menorOrdem = Math.min(...s.itens.map(c => ordemPorCodigo[c] ?? 999999));
-    return { ...s, _ordem: menorOrdem };
-  }).sort((a, b) => a._ordem - b._ordem).map(({ _ordem, ...rest }) => rest);
+  const subgruposUnicos = [...new Set(itensDaFamilia.map(p => p.subgrupo_scraping))];
+  const ordemFinal = subgruposUnicos.sort((a, b) => pesoDoAnzol(a) - pesoDoAnzol(b));
 
-  const r = await fetch('/api/familias/' + id, {
+  fetch('/api/familias/' + famId, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ nome: fam.nome, itens: fam.itens, subdivisoes: novasSubs })
+    body: JSON.stringify({ 
+      nome: fam.nome, 
+      itens: fam.itens, 
+      subdivisoes: fam.subdivisoes, 
+      ordem_customizada: ordemFinal 
+    })
+  }).then(res => {
+    if(res.ok) {
+      alert('✅ Tamanhos reordenados com sucesso!\n\nNova ordem:\n' + ordemFinal.join(' → '));
+      carregarFamiliasCriadas();
+    } else {
+      alert('❌ Erro ao salvar a nova ordem.');
+    }
   });
-
-  if (r.ok) {
-    alert('✅ Subdivisões reordenadas!');
-    await carregarFamiliasCriadas();
-  } else {
-    alert('❌ Erro ao reordenar.');
-  }
 }
 
 async function abrirModalSub(id) {
-  // Usa cache se possível, senão busca
   let fam = familiasCache.find(f => f.id === id);
   if (!fam) {
     const r = await fetch('/api/familias'); const j = await r.json();
@@ -566,25 +491,17 @@ async function abrirModalSub(id) {
   if(!familiaAtualParaSub) return;
   
   document.getElementById('subNome').value = '';
-  const codigosFam = familiaAtualParaSub.itens; 
   const codigosUsados = new Set();
   familiaAtualParaSub.subdivisoes.forEach(s => s.itens.forEach(c => codigosUsados.add(c)));
 
   const produtosDisponiveis = todosOsProdutos
-    .filter(p => codigosFam.includes(p.codigo) && !codigosUsados.has(p.codigo))
-    .sort((a, b) => (a.ordem_excel ?? 999999) - (b.ordem_excel ?? 999999));  // 👈 ordena por Excel
+    .filter(p => familiaAtualParaSub.itens.includes(p.codigo) && !codigosUsados.has(p.codigo))
+    .sort((a, b) => (a.ordem_excel ?? 999999) - (b.ordem_excel ?? 999999));
 
-  if (produtosDisponiveis.length === 0) {
-    alert('Todos os itens desta família já estão em subdivisões.');
-    return;
-  }
+  if (produtosDisponiveis.length === 0) return alert('Todos os itens já estão em subdivisões.');
 
   document.getElementById('modalListaItens').innerHTML = produtosDisponiveis.map(p => `
-    <label>
-      <input type="checkbox" value="${p.codigo}">
-      <span>${p.codigo} - ${p.descricao_sistema || p.subgrupo_scraping}</span>
-      ${p.ordem_excel ? `<span style="margin-left:auto; color:#64748b; font-size:11px;">#${p.ordem_excel}</span>` : ''}
-    </label>
+    <label><input type="checkbox" value="${p.codigo}"><span>${p.codigo} - ${p.descricao_sistema}</span></label>
   `).join('');
 
   document.getElementById('modalSubBg').classList.add('on');
@@ -605,51 +522,40 @@ async function salvarSubdivisao() {
   const r = await fetch('/api/familias/' + familiaAtualParaSub.id, { 
     method: 'PUT', 
     headers: { 'Content-Type': 'application/json' }, 
-    body: JSON.stringify({ nome: familiaAtualParaSub.nome, itens: familiaAtualParaSub.itens, subdivisoes: novas })
+    body: JSON.stringify({ 
+      nome: familiaAtualParaSub.nome, 
+      itens: familiaAtualParaSub.itens, 
+      subdivisoes: novas,
+      ordem_customizada: familiaAtualParaSub.ordem_customizada || []
+    })
   });
 
   if (r.ok) {
     alert('✅ Subdivisão salva!');
     fecharModalSub();
     await carregarFamiliasCriadas();
-    
-    const usados = new Set();
-    novas.forEach(s => s.itens.forEach(c => usados.add(c)));
-    const faltam = familiaAtualParaSub.itens.filter(c => !usados.has(c));
-    
-    if (faltam.length > 0) {
-      if (confirm(`Ainda restam ${faltam.length} produtos. Deseja criar outra subdivisão?`)) {
-        abrirModalSub(familiaAtualParaSub.id);
-      }
+    const usados = new Set(); novas.forEach(s => s.itens.forEach(c => usados.add(c)));
+    if (familiaAtualParaSub.itens.filter(c => !usados.has(c)).length > 0) {
+      if (confirm(`Restam produtos. Deseja criar outra subdivisão?`)) abrirModalSub(familiaAtualParaSub.id);
     }
-  } else {
-    alert('❌ Erro ao salvar.');
   }
 }
 
-// ================================================================
-// CLIENTES
-// ================================================================
 async function carregarClientes(pagina = 1) {
   const busca = document.getElementById('buscaClientes').value.trim();
   pagClientes = pagina;
-  
   const tbody = document.querySelector('#tabClientes tbody');
   tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#94a3b8;">Carregando...</td></tr>';
 
   try {
     const r = await fetch(`/api/clientes?busca=${encodeURIComponent(busca)}&pagina=${pagina}&limite=50`);
     const j = await r.json();
-    
-    if (!j.ok) throw new Error(j.erro);
-
-    document.getElementById('resumoClientes').textContent = `${j.total} cliente(s) encontrado(s) — Página ${j.pagina} de ${j.totalPaginas}`;
+    document.getElementById('resumoClientes').textContent = `${j.total} cliente(s) — Página ${j.pagina} de ${j.totalPaginas}`;
     totPagClientes = j.totalPaginas;
 
     if (!j.clientes.length) {
       tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#94a3b8;">Nenhum cliente encontrado.</td></tr>';
-      document.getElementById('paginacaoClientes').innerHTML = '';
-      return;
+      document.getElementById('paginacaoClientes').innerHTML = ''; return;
     }
 
     tbody.innerHTML = j.clientes.map(c => `
@@ -661,7 +567,6 @@ async function carregarClientes(pagina = 1) {
         <td>${c.codigo_representante || '<span style="color:#94a3b8">—</span>'}</td>
       </tr>
     `).join('');
-
     renderPaginacaoClientes();
   } catch (e) {
     tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Erro: ${e.message}</td></tr>`;
@@ -671,104 +576,54 @@ async function carregarClientes(pagina = 1) {
 function renderPaginacaoClientes() {
   const cont = document.getElementById('paginacaoClientes');
   if (totPagClientes <= 1) { cont.innerHTML = ''; return; }
-  
   let html = `<button class="btn-primario btn-mini" ${pagClientes===1?'disabled':''} onclick="carregarClientes(${pagClientes-1})">← Anterior</button>`;
   html += `<span style="display:flex; align-items:center; padding:0 12px; font-size:.85rem; font-weight:600; color:#94a3b8;">Página ${pagClientes} de ${totPagClientes}</span>`;
   html += `<button class="btn-primario btn-mini" ${pagClientes===totPagClientes?'disabled':''} onclick="carregarClientes(${pagClientes+1})">Próxima →</button>`;
   cont.innerHTML = html;
 }
 
-// ================================================================
-// ACRÉSCIMOS
-// ================================================================
-async function carregarAcrescimos() {
-  await carregarGruposAcrescimo();
-  await carregarUFsAcrescimo();
-}
+async function carregarAcrescimos() { await carregarGruposAcrescimo(); await carregarUFsAcrescimo(); }
 
 async function carregarGruposAcrescimo() {
-  const grid = document.getElementById('gridGruposAcrescimo');
-  grid.innerHTML = 'Carregando...';
-  
+  const grid = document.getElementById('gridGruposAcrescimo'); grid.innerHTML = 'Carregando...';
   try {
     const r = await fetch('/api/acrescimos/grupos'); const j = await r.json();
-    if (!j.ok) throw new Error(j.erro);
-    
     gruposAcrescimoCache = j.grupos;
-    if (!j.grupos.length) {
-      grid.innerHTML = '<div style="color:#94a3b8">Nenhum grupo criado.</div>';
-      return;
-    }
-
+    if (!j.grupos.length) return grid.innerHTML = '<div style="color:#94a3b8">Nenhum grupo.</div>';
     grid.innerHTML = j.grupos.map(g => `
-      <div style="background:#1e293b; border:1px solid #475569; border-left:4px solid #38bdf8; border-radius:8px; padding:16px; width:200px; cursor:pointer;" onclick="editarGrupo(${g.id})" title="Clique para editar">
+      <div style="background:#1e293b; border:1px solid #475569; border-left:4px solid #38bdf8; border-radius:8px; padding:16px; width:200px; cursor:pointer;" onclick="editarGrupo(${g.id})">
         <div style="font-size:20px; font-weight:800; color:#f8fafc; margin-bottom:4px;">Grupo ${g.nome}</div>
         <div style="font-size:16px; font-weight:700; color:#10b981;">+ ${Number(g.acrescimo).toFixed(2)}%</div>
-        <div style="font-size:12px; color:#94a3b8; margin-top:8px;">${g.total_ufs} UF(s) vinculada(s)</div>
-      </div>
-    `).join('');
-  } catch (e) {
-    grid.innerHTML = `<div style="color:red">Erro: ${e.message}</div>`;
-  }
+        <div style="font-size:12px; color:#94a3b8; margin-top:8px;">${g.total_ufs} UF(s)</div>
+      </div>`).join('');
+  } catch (e) { grid.innerHTML = `<div style="color:red">Erro: ${e.message}</div>`; }
 }
 
 async function editarGrupo(id) {
-  const g = gruposAcrescimoCache.find(x => x.id === id);
-  if (!g) return;
-
-  const novoNome = prompt('Nome do grupo:', g.nome);
-  if (novoNome === null) return;
-
-  const novoPct = prompt('Acréscimo (%):', g.acrescimo);
-  if (novoPct === null) return;
-
-  const r = await fetch('/api/acrescimos/grupos', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id: g.id, nome: novoNome, acrescimo: parseFloat(novoPct.replace(',', '.')) })
-  });
-  
-  if (r.ok) {
-    await carregarGruposAcrescimo();
-    await carregarUFsAcrescimo();
-  }
+  const g = gruposAcrescimoCache.find(x => x.id === id); if (!g) return;
+  const novoNome = prompt('Nome do grupo:', g.nome); if (novoNome === null) return;
+  const novoPct = prompt('Acréscimo (%):', g.acrescimo); if (novoPct === null) return;
+  await fetch('/api/acrescimos/grupos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: g.id, nome: novoNome, acrescimo: parseFloat(novoPct.replace(',', '.')) }) });
+  await carregarGruposAcrescimo(); await carregarUFsAcrescimo();
 }
 
 async function salvarGrupo() {
   const nome = document.getElementById('novoGrupoNome').value.trim();
   const pct = parseFloat(document.getElementById('novoGrupoPct').value.replace(',', '.'));
-  
-  if (!nome || isNaN(pct)) return alert('Preencha o nome e a % corretamente.');
-
-  const r = await fetch('/api/acrescimos/grupos', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ nome, acrescimo: pct })
-  });
-
-  if (r.ok) {
-    document.getElementById('novoGrupoNome').value = '';
-    document.getElementById('novoGrupoPct').value = '';
-    await carregarGruposAcrescimo();
-  }
+  if (!nome || isNaN(pct)) return alert('Preencha corretamente.');
+  await fetch('/api/acrescimos/grupos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome, acrescimo: pct }) });
+  document.getElementById('novoGrupoNome').value = ''; document.getElementById('novoGrupoPct').value = '';
+  await carregarGruposAcrescimo();
 }
 
 async function carregarUFsAcrescimo() {
-  const grid = document.getElementById('gridUFs');
-  grid.innerHTML = 'Carregando...';
-  
+  const grid = document.getElementById('gridUFs'); grid.innerHTML = 'Carregando...';
   try {
     const r = await fetch('/api/acrescimos/ufs'); const j = await r.json();
-    if (!j.ok) throw new Error(j.erro);
-
     ufsAcrescimoCache = j.ufs;
-    
     const todasUFs = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'];
-
     grid.innerHTML = todasUFs.map(uf => {
-      const ufData = ufsAcrescimoCache.find(u => u.uf === uf);
-      const grupoAtual = ufData ? ufData.grupo_id : '';
-
+      const grupoAtual = ufsAcrescimoCache.find(u => u.uf === uf)?.grupo_id || '';
       return `
         <div style="background:#1e293b; padding:10px; border-radius:8px; border:1px solid #334155; text-align:center;">
           <div style="font-weight:800; font-size:16px; margin-bottom:6px; color:#f8fafc;">${uf}</div>
@@ -776,121 +631,55 @@ async function carregarUFsAcrescimo() {
             <option value="">— Sem Grupo —</option>
             ${gruposAcrescimoCache.map(g => `<option value="${g.id}" ${grupoAtual == g.id ? 'selected' : ''}>Grupo ${g.nome}</option>`).join('')}
           </select>
-        </div>
-      `;
+        </div>`;
     }).join('');
-  } catch (e) {
-    grid.innerHTML = `<div style="color:red">Erro: ${e.message}</div>`;
-  }
+  } catch (e) { grid.innerHTML = `<div style="color:red">Erro: ${e.message}</div>`; }
 }
 
 async function mudarGrupoUF(uf, grupoId) {
-  try {
-    await fetch('/api/acrescimos/uf', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ uf, grupo_id: grupoId ? parseInt(grupoId) : null })
-    });
-    await carregarGruposAcrescimo();
-  } catch (e) {
-    alert('Erro ao salvar UF.');
-  }
+  await fetch('/api/acrescimos/uf', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ uf, grupo_id: grupoId ? parseInt(grupoId) : null }) });
+  await carregarGruposAcrescimo();
 }
 
-// ================================================================
-// VENDEDORES
-// ================================================================
 async function carregarVendedores() {
-  const tbody = document.querySelector('#tabVendedores tbody');
-  tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Carregando...</td></tr>';
-
+  const tbody = document.querySelector('#tabVendedores tbody'); tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Carregando...</td></tr>';
   try {
     const r = await fetch('/api/vendedores'); const j = await r.json();
-    if (!j.ok) throw new Error(j.erro);
-
-    if (!j.vendedores.length) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum vendedor encontrado.</td></tr>';
-      return;
-    }
-
+    if (!j.vendedores.length) return tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum vendedor.</td></tr>';
     tbody.innerHTML = j.vendedores.map(v => `
       <tr>
         <td><strong>${v.codigo_representante}</strong></td>
         <td>${v.nome}</td>
         <td>${v.ativo ? '<span style="background:#064e3b; color:#6ee7b7; padding:2px 8px; border-radius:4px; font-size:12px; font-weight:700;">Ativo</span>' : '<span style="background:#7f1d1d; color:#fca5a5; padding:2px 8px; border-radius:4px; font-size:12px; font-weight:700;">Inativo</span>'}</td>
         <td>${v.senha ? '<span style="color:#10b981; font-weight:bold;">Cadastrada</span>' : '<span style="color:#94a3b8;">Nenhuma</span>'}</td>
-        <td>
-          <button class="btn-primario btn-mini" onclick="editarSenhaVendedor(${v.vendedor_id}, '${v.nome}', ${v.senha ? 'true' : 'false'})">
-            ${v.senha ? '🔑 Alterar Senha' : '➕ Definir Senha'}
-          </button>
-        </td>
-      </tr>
-    `).join('');
-  } catch (e) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Erro: ${e.message}</td></tr>`;
-  }
+        <td><button class="btn-primario btn-mini" onclick="editarSenhaVendedor(${v.vendedor_id}, '${v.nome}', ${v.senha ? 'true' : 'false'})">${v.senha ? '🔑 Alterar' : '➕ Definir'}</button></td>
+      </tr>`).join('');
+  } catch (e) { tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Erro: ${e.message}</td></tr>`; }
 }
 
 async function editarSenhaVendedor(id, nome, temSenha) {
-  const acao = temSenha ? 'alterar a senha' : 'cadastrar a senha';
-  const novaSenha = prompt(`Digite a ${acao} para o vendedor ${nome}:`);
+  const novaSenha = prompt(`Digite a ${temSenha ? 'nova' : ''} senha para ${nome}:`);
   if (novaSenha === null) return;
-
-  if (novaSenha.length < 4) {
-    alert('A senha deve ter pelo menos 4 caracteres.');
-    return;
-  }
-
-  try {
-    const r = await fetch('/api/vendedores/senha', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ vendedor_id: id, senha: novaSenha })
-    });
-    const j = await r.json();
-    if (j.ok) {
-      alert('✅ Senha salva com sucesso!');
-      carregarVendedores();
-    } else {
-      alert('Erro: ' + j.erro);
-    }
-  } catch (e) {
-    alert('Erro de conexão.');
-  }
+  if (novaSenha.length < 4) return alert('Mínimo 4 caracteres.');
+  const r = await fetch('/api/vendedores/senha', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ vendedor_id: id, senha: novaSenha }) });
+  const j = await r.json();
+  if (j.ok) { alert('✅ Senha salva!'); carregarVendedores(); } else alert('Erro: ' + j.erro);
 }
 
 async function criarVendedor() {
   const nome = document.getElementById('novoVendedorNome').value.trim();
   const codigo = document.getElementById('novoVendedorCod').value.trim();
   const senha = document.getElementById('novoVendedorSenha').value.trim();
-
-  if (!nome || !codigo || !senha) {
-    return alert('Preencha todos os campos para cadastrar.');
-  }
-
-  try {
-    const r = await fetch('/api/vendedores', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nome, codigo_representante: codigo, senha })
-    });
-    const j = await r.json();
-
-    if (j.ok) {
-      alert('✅ Vendedor cadastrado com sucesso!');
-      document.getElementById('novoVendedorNome').value = '';
-      document.getElementById('novoVendedorCod').value = '';
-      document.getElementById('novoVendedorSenha').value = '';
-      carregarVendedores();
-    } else {
-      alert('❌ Erro: ' + j.erro);
-    }
-  } catch (e) {
-    alert('Erro de conexão.');
-  }
+  if (!nome || !codigo || !senha) return alert('Preencha todos os campos.');
+  const r = await fetch('/api/vendedores', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome, codigo_representante: codigo, senha }) });
+  const j = await r.json();
+  if (j.ok) {
+    alert('✅ Vendedor cadastrado!');
+    document.getElementById('novoVendedorNome').value = ''; document.getElementById('novoVendedorCod').value = ''; document.getElementById('novoVendedorSenha').value = '';
+    carregarVendedores();
+  } else alert('❌ Erro: ' + j.erro);
 }
 
-// INIT
 carregarStatus();
 </script>
 </body>
