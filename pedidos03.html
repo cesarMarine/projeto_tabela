@@ -110,7 +110,7 @@
   .linha-filho:hover { background:white; border:1px solid var(--azul-100); box-shadow:0 1px 4px rgba(0,0,0,.05); }
   .l-cod { font-family:monospace; font-weight:800; color:var(--azul-800); font-size:.8rem; }
   .l-nome { font-size:.8rem; font-weight:700; color:var(--texto); }
-  .l-var-col { display:flex; flex-direction:column; align-items:center; gap:2px; min-width:0; }
+  .l-var-col { display:flex; flex-direction:column; align-items:center; gap:4px; min-width:0; }
   .tag-var { background:#e0e7ff; color:#3730a3; padding:3px 8px; border-radius:4px; font-size:.66rem; font-weight:700; text-transform:uppercase; text-align:center; width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .l-preco { font-size:.9rem; font-weight:800; color:var(--azul-800); text-align:center; }
   .l-qtd { display:flex; justify-content:center; }
@@ -215,13 +215,7 @@ let todosItens = [], todasFamilias = [], grupoAtual = '__TODOS__', buscaAtual = 
 let clienteLogado = null;
 let porcentagemAcrescimo = 0; // Multiplicador (ex: 1.54 para 1.54%)
 
-const fmtMoeda = v => {
-  const num = Number(v) || 0;
-  return num.toLocaleString('pt-BR', { 
-    minimumFractionDigits: 2, 
-    maximumFractionDigits: 2 
-  });
-};
+const fmtMoeda = v => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
 const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 const parseAtributos = json => { try { return JSON.parse(json || '{}'); } catch { return {}; } };
 
@@ -401,12 +395,17 @@ function renderizar() {
       const primeiroItem = filhos[0];
       const attrs = Object.keys(primeiroItem.atributos).map(k => k.toUpperCase());
       const grupoItem = primeiroItem.grupo.toUpperCase();
+      
       const nomeFam = fam.nome.toUpperCase();
 
-      if (nomeFam.includes('VARA')) tipo = 'vara';
-      else if (nomeFam.includes('LINHA')) tipo = 'linha';
-      else if (nomeFam.includes('EMPATE')) tipo = 'empate';
-      else if (
+      // Lógica de detecção de tipo
+      if (nomeFam.includes('VARA')) {
+        tipo = 'vara';
+      } else if (nomeFam.includes('LINHA')) {
+        tipo = 'linha';
+      } else if (nomeFam.includes('EMPATE')) {
+        tipo = 'empate';
+      } else if (
         grupoItem.includes('ACESSORIO') || grupoItem.includes('ACESSÓRIO') || 
         grupoItem.includes('VESTUARIO') || grupoItem.includes('VESTUÁRIO') || 
         grupoItem.includes('MOTORES') || grupoItem.includes('MOTOR') || 
@@ -414,11 +413,17 @@ function renderizar() {
         nomeFam.includes('ALICATE') || nomeFam.includes('TESOURA') || 
         nomeFam.includes('VESTUARIO') || nomeFam.includes('VESTUÁRIO') ||
         nomeFam.includes('MOTOR')
-      ) { tipo = 'grade'; }
-      else if (nomeFam.includes('ISCA') || attrs.includes('CORES') || attrs.includes('COR')) tipo = 'isca';
-      else if (nomeFam.includes('ANZOL')) tipo = 'anzol';
-      else if (nomeFam.includes('MOLINETE')) tipo = 'molinete';
-      else if (nomeFam.includes('CARRETILHA')) tipo = 'carretilha';
+      ) { 
+        tipo = 'grade';
+      } else if (nomeFam.includes('ISCA') || attrs.includes('CORES') || attrs.includes('COR')) {
+        tipo = 'isca';
+      } else if (nomeFam.includes('ANZOL')) {
+        tipo = 'anzol';
+      } else if (nomeFam.includes('MOLINETE')) {
+        tipo = 'molinete';
+      } else if (nomeFam.includes('CARRETILHA')) {
+        tipo = 'carretilha';
+      }
       
       if (tipo === 'isca') html += renderFamiliaIsca(fam, filhos);
       else if (tipo === 'anzol') html += renderFamiliaAnzol(fam, filhos);
@@ -562,6 +567,9 @@ function selecionarCarretilha(famId, codigo, url) {
   document.getElementById(`foto-pai-${famId}`).innerHTML = `<img src="${url}">`;
 }
 
+// ==========================================
+// VARAS (Colunas Dinâmicas por Especificação)
+// ==========================================
 function analisarVara(it) {
   const attrs = it.atributos || {};
   const modeloJson = attrs['Modelo'] || attrs['MODELO'] || it.subgrupo || 'Vara';
@@ -643,6 +651,9 @@ function renderFamiliaVara(fam, itens) {
     </div>`;
 }
 
+// ==========================================
+// LINHAS (Tabela Dinâmica + Metragem)
+// ==========================================
 function analisarLinha(it) {
   const attrs = it.atributos || {};
   const metragem = attrs['QTD'] || attrs['Metragem'] || attrs['METRAGEM'] || '-';
@@ -729,6 +740,9 @@ function renderFamiliaLinha(fam, itens) {
     </div>`;
 }
 
+// ==========================================
+// EMPATES (Tabela Dinâmica Horizontal)
+// ==========================================
 function analisarEmpate(it) {
   const attrs = it.atributos || {};
   const ignorar = ['QTD', 'CX/CT']; 
@@ -814,6 +828,9 @@ function renderFamiliaEmpate(fam, itens) {
     </div>`;
 }
 
+// ==========================================
+// ACESSÓRIOS (Grade de Cards)
+// ==========================================
 function renderFamiliaGrade(fam, itens) {
   const primeiroItem = itens[0];
   const imgInicial = primeiroItem?.imagem_url || '';
@@ -893,6 +910,9 @@ function selecionarAcessorio(famId, codigo, url, descricao, nome) {
   }
 }
 
+// ==========================================
+// ISCAS
+// ==========================================
 function analisarIsca(it) {
   const attrs = it.atributos || {};
   const getVal = (arr) => { for (let k of arr) if (attrs[k]) return String(attrs[k]); return ''; };
@@ -953,6 +973,9 @@ function selecionarIsca(famId, codigo, url) {
   document.getElementById(`foto-pai-${famId}`).innerHTML = `<img src="${url}">`;
 }
 
+// ==========================================
+// ANZÓIS
+// ==========================================
 function renderFamiliaAnzol(fam, itens) {
   const primeiroItem = itens[0];
   const imgInicial = primeiroItem?.imagem_url || '';
@@ -1001,49 +1024,24 @@ function selecionarAnzol(famId, codigo, url) {
   document.getElementById(`foto-pai-${famId}`).innerHTML = `<img src="${url}">`;
 }
 
-function analisarAnzol(it) {
-  const attrs = it.atributos || {};
-  let numero = 'S/N';
-  if (attrs['Tamanho (cm)']) numero = attrs['Tamanho (cm)'];
-  else if (attrs['Tamanho']) numero = attrs['Tamanho'];
-  else if (attrs['TAMANHO']) numero = attrs['TAMANHO'];
-  if (numero === 'S/N') {
-    const match = (it.subgrupo || '').toUpperCase().match(/\s(\d{1,2}(?:\/\d)?)\s*(?:C\/|\s|$)/);
-    if (match) numero = match[1];
-  }
-  const loteMatch = (it.subgrupo || '').toUpperCase().match(/C\/\s*(\d+)/);
-  const lote = loteMatch ? loteMatch[1] + ' un' : '';
-  return { numero, lote };
-}
-function analisarMolinete(it) {
-  const attrs = it.atributos || {};
-  let modelo = attrs['Modelo'] || attrs['MODELO'] || '';
-  const relacao = attrs['Relação de recolhimento'] || attrs['relacao_recolhimento'] || '';
-  const capacidade = attrs['Capacidade de linha (mm-m)'] || attrs['capacidade_linha'] || '';
-  const ladoManivela = attrs['Lado Manivela'] || attrs['LADO MANIVELA'] || attrs['lado_manivela'] || '';
-  const velMax = attrs['Velocidade Máxima'] || attrs['velocidade_maxima'] || '';
-
-  if (!modelo) {
-    const partes = (it.subgrupo || '').trim().split(/\s+/);
-    modelo = partes.slice(-2).join(' ') || it.subgrupo;
-  }
-
-  const partesVar = [];
-  if (relacao) partesVar.push(relacao);
-  if (capacidade) partesVar.push(capacidade);
-  if (ladoManivela) partesVar.push(ladoManivela);
-  if (velMax) partesVar.push(velMax);
-  
-  const variacao = partesVar.join(' • ');
-  return { modelo, relacao, capacidade, ladoManivela, variacao };
-}
-
+// ==========================================
+// COMUM (Fallback)
+// ==========================================
 function renderFamiliaComum(fam, itens) {
   const primeiroItem = itens[0];
   const imgInicial = primeiroItem?.imagem_url || '';
   const linhasHtml = itens.map(it => {
     const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
-    return `<div class="linha-filho"><div class="l-cod">${it.codigo}</div><div class="l-nome">${escapeHtml(it.subgrupo)}</div><div class="l-var-col"></div><div class="l-preco">R$ ${fmtMoeda(it.preco)}</div><div class="l-qtd" onclick="event.stopPropagation()"><div class="qtd-ctrl"><button onclick="mudarQtd('${it.codigo}', -1)">−</button><input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)"><button onclick="mudarQtd('${it.codigo}', 1)">+</button></div></div></div>`;
+    return `
+      <div class="linha-filho">
+        <div class="l-cod">${it.codigo}</div>
+        <div class="l-nome">${escapeHtml(it.subgrupo)}</div>
+        <div class="l-var-col"></div>
+        <div class="l-preco">R$ ${fmtMoeda(it.preco)}</div>
+        <div class="l-qtd" onclick="event.stopPropagation()">
+          <div class="qtd-ctrl"><button onclick="mudarQtd('${it.codigo}', -1)">−</button><input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)"><button onclick="mudarQtd('${it.codigo}', 1)">+</button></div>
+        </div>
+      </div>`;
   }).join('');
   return `
     <div class="familia-bloco">
