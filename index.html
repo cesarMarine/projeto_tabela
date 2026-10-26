@@ -18,7 +18,6 @@
   body { font-family:'Inter','Segoe UI',system-ui,sans-serif; background:var(--cinza-50); color:var(--texto); -webkit-font-smoothing:antialiased; min-height:100vh; }
   button { font-family:inherit; cursor:pointer; }
 
-  /* TELA DE LOGIN */
   #telaLogin { position:fixed; inset:0; z-index:9999; background:linear-gradient(135deg, #001f3f 0%, #003366 100%); display:flex; align-items:center; justify-content:center; padding:20px; }
   .login-box { background:white; border-radius:16px; padding:40px; width:100%; max-width:400px; box-shadow:0 20px 60px rgba(0,0,0,0.4); text-align:center; }
   .login-box h1 { color:var(--azul-800); font-size:1.5rem; font-weight:800; margin-bottom:8px; }
@@ -157,7 +156,6 @@
 </head>
 <body>
 
-<!-- TELA DE LOGIN -->
 <div id="telaLogin">
   <div class="login-box">
     <h1>Catálogo B2B</h1>
@@ -172,7 +170,6 @@
   <div class="topo-inner">
     <div class="topo-logo-area"><strong>📋 Catálogo</strong></div>
     
-    <!-- Info do Cliente Logado -->
     <div class="info-cliente" id="infoCliente" style="display:none;">
       <span id="nomeCliente">—</span>
       <span class="badge-uf" id="badgeUf">—</span>
@@ -213,13 +210,12 @@
 <script>
 let todosItens = [], todasFamilias = [], grupoAtual = '__TODOS__', buscaAtual = '', carrinho = {};
 let clienteLogado = null;
-let porcentagemAcrescimo = 0; // Multiplicador (ex: 1.54 para 1.54%)
+let porcentagemAcrescimo = 0;
 
 const fmtMoeda = v => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
 const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 const parseAtributos = json => { try { return JSON.parse(json || '{}'); } catch { return {}; } };
 
-// AQUI ESTÁ O CÁLCULO DO PREÇO COM ACÉSCIMO
 function calcularPrecoFinal(precoBase) {
   if (!precoBase) return 0;
   const acrescimo = (precoBase * porcentagemAcrescimo) / 100;
@@ -232,8 +228,8 @@ function normalizarItem(it) {
     subgrupo: (it.subgrupo_scraping || '').trim(), 
     descricao_longa: it.descricao_longa || '', 
     imagem_url: it.imagem_url || '',
-    precoBase: Number(it.preco_venda) || 0, // O preço cru que vem do banco
-    get preco() { return calcularPrecoFinal(this.precoBase); }, // O preço com acréscimo
+    precoBase: Number(it.preco_venda) || 0,
+    get preco() { return calcularPrecoFinal(this.precoBase); },
     grupo: (it.grupo_scraping || '').trim(),
     marca: (it.marca || '').trim(),
     atributos: parseAtributos(it.atributos_json) 
@@ -241,7 +237,48 @@ function normalizarItem(it) {
 }
 
 // ==========================================
-// LOGIN E CARREGAMENTO
+// FUNÇÕES DE ANÁLISE
+// ==========================================
+function analisarAnzol(it) {
+  const attrs = it.atributos || {};
+  let numero = 'S/N';
+  if (attrs['Tamanho (cm)']) numero = attrs['Tamanho (cm)'];
+  else if (attrs['Tamanho']) numero = attrs['Tamanho'];
+  else if (attrs['TAMANHO']) numero = attrs['TAMANHO'];
+  if (numero === 'S/N') {
+    const match = (it.subgrupo || '').toUpperCase().match(/\s(\d{1,2}(?:\/\d)?)\s*(?:C\/|\s|$)/);
+    if (match) numero = match[1];
+  }
+  const loteMatch = (it.subgrupo || '').toUpperCase().match(/C\/\s*(\d+)/);
+  const lote = loteMatch ? loteMatch[1] + ' un' : '';
+  return { numero, lote };
+}
+
+function analisarMolinete(it) {
+  const attrs = it.atributos || {};
+  let modelo = attrs['Modelo'] || attrs['MODELO'] || '';
+  const relacao = attrs['Relação de recolhimento'] || '';
+  const capacidade = attrs['Capacidade de linha (mm-m)'] || '';
+  const ladoManivela = attrs['Lado Manivela'] || attrs['LADO MANIVELA'] || '';
+  const velMax = attrs['Velocidade Máxima'] || '';
+
+  if (!modelo) {
+    const partes = (it.subgrupo || '').trim().split(/\s+/);
+    modelo = partes.slice(-2).join(' ') || it.subgrupo;
+  }
+
+  const partesVar = [];
+  if (relacao) partesVar.push(relacao);
+  if (capacidade) partesVar.push(capacidade);
+  if (ladoManivela) partesVar.push(ladoManivela);
+  if (velMax) partesVar.push(velMax);
+  
+  const variacao = partesVar.join(' • ');
+  return { modelo, relacao, capacidade, ladoManivela, variacao };
+}
+
+// ==========================================
+// LOGIN
 // ==========================================
 async function fazerLogin() {
   const cnpjInput = document.getElementById('inputCnpj');
@@ -264,17 +301,14 @@ async function fazerLogin() {
       return;
     }
 
-    // Sucesso no Login
     clienteLogado = j.cliente;
-    porcentagemAcrescimo = j.regra_acrescimo.porcentagem; // Ex: 1.54
+    porcentagemAcrescimo = j.regra_acrescimo.porcentagem;
 
-    // Atualiza UI
     document.getElementById('telaLogin').style.display = 'none';
     document.getElementById('infoCliente').style.display = 'flex';
     document.getElementById('nomeCliente').textContent = clienteLogado.nome;
     document.getElementById('badgeUf').textContent = clienteLogado.uf;
 
-    // Carrega o catálogo
     carregar();
   } catch (e) {
     erro.textContent = 'Erro de conexão com o servidor.';
@@ -285,59 +319,34 @@ async function fazerLogin() {
 async function finalizarPedido() {
   const itens = Object.keys(carrinho).map(cod => {
     const item = carrinho[cod];
-    const precoFinal = calcularPrecoFinal(item.precoBase); // Recalcula com o acréscimo
-    return {
-      codigo: cod,
-      desc: item.desc,
-      qtd: item.qtd,
-      precoBase: item.precoBase,
-      precoFinal: precoFinal
-    };
+    const precoFinal = calcularPrecoFinal(item.precoBase);
+    return { codigo: cod, desc: item.desc, qtd: item.qtd, precoBase: item.precoBase, precoFinal: precoFinal };
   });
 
-  if (itens.length === 0) {
-    alert('Seu carrinho está vazio.');
-    return;
-  }
+  if (itens.length === 0) { alert('Seu carrinho está vazio.'); return; }
 
-  // Calcula o total
   const total = itens.reduce((acc, it) => acc + (it.precoFinal * it.qtd), 0);
-
-  // Pega os dados do cliente logado
   const cnpj_cliente = clienteLogado.cnpj;
   const codigo_representante = clienteLogado.representante;
 
-  if (!confirm(`Deseja enviar este pedido no valor de R$ ${fmtMoeda(total)}?`)) {
-    return;
-  }
+  if (!confirm(`Deseja enviar este pedido no valor de R$ ${fmtMoeda(total)}?`)) return;
 
   try {
     const r = await fetch('/api/pedidos', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ cnpj_cliente, codigo_representante, total, itens })
     });
     
-    // Verifica se o servidor respondeu com status de erro (500, 400, etc)
-    if (!r.ok) {
-        const textoErro = await r.text();
-        throw new Error(`Status ${r.status}: ${textoErro}`);
-    }
-
+    if (!r.ok) { const textoErro = await r.text(); throw new Error(`Status ${r.status}: ${textoErro}`); }
     const j = await r.json();
 
     if (j.ok) {
       alert('✅ Pedido enviado com sucesso! Seu vendedor entrará em contato.');
-      carrinho = {}; // Limpa o carrinho
-      atualizarCarrinho(); // Atualiza a tela do carrinho (esvazia)
+      carrinho = {};
+      atualizarCarrinho();
       document.getElementById('pedidoRapido').classList.remove('on');
-    } else {
-      alert('❌ Erro ao enviar: ' + j.erro);
-    }
-  } catch (e) {
-    // Se cair aqui, vai mostrar exatamente qual foi o erro no banco ou no servidor
-    alert('❌ Erro ao enviar o pedido:\n' + e.message);
-  }
+    } else { alert('❌ Erro ao enviar: ' + j.erro); }
+  } catch (e) { alert('❌ Erro ao enviar o pedido:\n' + e.message); }
 }
 
 async function carregar() {
@@ -354,7 +363,7 @@ async function carregar() {
 }
 
 // ==========================================
-// FILTROS E RENDERIZAÇÃO (Inalterados)
+// FILTROS
 // ==========================================
 function montarChips() {
   const contagem = {};
@@ -398,14 +407,10 @@ function renderizar() {
       
       const nomeFam = fam.nome.toUpperCase();
 
-      // Lógica de detecção de tipo
-      if (nomeFam.includes('VARA')) {
-        tipo = 'vara';
-      } else if (nomeFam.includes('LINHA')) {
-        tipo = 'linha';
-      } else if (nomeFam.includes('EMPATE')) {
-        tipo = 'empate';
-      } else if (
+      if (nomeFam.includes('VARA')) tipo = 'vara';
+      else if (nomeFam.includes('LINHA')) tipo = 'linha';
+      else if (nomeFam.includes('EMPATE')) tipo = 'empate';
+      else if (
         grupoItem.includes('ACESSORIO') || grupoItem.includes('ACESSÓRIO') || 
         grupoItem.includes('VESTUARIO') || grupoItem.includes('VESTUÁRIO') || 
         grupoItem.includes('MOTORES') || grupoItem.includes('MOTOR') || 
@@ -413,17 +418,11 @@ function renderizar() {
         nomeFam.includes('ALICATE') || nomeFam.includes('TESOURA') || 
         nomeFam.includes('VESTUARIO') || nomeFam.includes('VESTUÁRIO') ||
         nomeFam.includes('MOTOR')
-      ) { 
-        tipo = 'grade';
-      } else if (nomeFam.includes('ISCA') || attrs.includes('CORES') || attrs.includes('COR')) {
-        tipo = 'isca';
-      } else if (nomeFam.includes('ANZOL')) {
-        tipo = 'anzol';
-      } else if (nomeFam.includes('MOLINETE')) {
-        tipo = 'molinete';
-      } else if (nomeFam.includes('CARRETILHA')) {
-        tipo = 'carretilha';
-      }
+      ) { tipo = 'grade'; }
+      else if (nomeFam.includes('ISCA') || attrs.includes('CORES') || attrs.includes('COR')) tipo = 'isca';
+      else if (nomeFam.includes('ANZOL')) tipo = 'anzol';
+      else if (nomeFam.includes('MOLINETE')) tipo = 'molinete';
+      else if (nomeFam.includes('CARRETILHA')) tipo = 'carretilha';
       
       if (tipo === 'isca') html += renderFamiliaIsca(fam, filhos);
       else if (tipo === 'anzol') html += renderFamiliaAnzol(fam, filhos);
@@ -447,7 +446,7 @@ function renderizar() {
 }
 
 // ==========================================
-// RENDERIZADORES (Chamando it.preco para pegar o valor calculado)
+// RENDERIZADORES
 // ==========================================
 function linhaMolinete(it) {
   const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
@@ -567,9 +566,6 @@ function selecionarCarretilha(famId, codigo, url) {
   document.getElementById(`foto-pai-${famId}`).innerHTML = `<img src="${url}">`;
 }
 
-// ==========================================
-// VARAS (Colunas Dinâmicas por Especificação)
-// ==========================================
 function analisarVara(it) {
   const attrs = it.atributos || {};
   const modeloJson = attrs['Modelo'] || attrs['MODELO'] || it.subgrupo || 'Vara';
@@ -651,9 +647,6 @@ function renderFamiliaVara(fam, itens) {
     </div>`;
 }
 
-// ==========================================
-// LINHAS (Tabela Dinâmica + Metragem)
-// ==========================================
 function analisarLinha(it) {
   const attrs = it.atributos || {};
   const metragem = attrs['QTD'] || attrs['Metragem'] || attrs['METRAGEM'] || '-';
@@ -740,9 +733,6 @@ function renderFamiliaLinha(fam, itens) {
     </div>`;
 }
 
-// ==========================================
-// EMPATES (Tabela Dinâmica Horizontal)
-// ==========================================
 function analisarEmpate(it) {
   const attrs = it.atributos || {};
   const ignorar = ['QTD', 'CX/CT']; 
@@ -828,9 +818,6 @@ function renderFamiliaEmpate(fam, itens) {
     </div>`;
 }
 
-// ==========================================
-// ACESSÓRIOS (Grade de Cards)
-// ==========================================
 function renderFamiliaGrade(fam, itens) {
   const primeiroItem = itens[0];
   const imgInicial = primeiroItem?.imagem_url || '';
@@ -910,9 +897,6 @@ function selecionarAcessorio(famId, codigo, url, descricao, nome) {
   }
 }
 
-// ==========================================
-// ISCAS
-// ==========================================
 function analisarIsca(it) {
   const attrs = it.atributos || {};
   const getVal = (arr) => { for (let k of arr) if (attrs[k]) return String(attrs[k]); return ''; };
@@ -973,9 +957,6 @@ function selecionarIsca(famId, codigo, url) {
   document.getElementById(`foto-pai-${famId}`).innerHTML = `<img src="${url}">`;
 }
 
-// ==========================================
-// ANZÓIS
-// ==========================================
 function renderFamiliaAnzol(fam, itens) {
   const primeiroItem = itens[0];
   const imgInicial = primeiroItem?.imagem_url || '';
@@ -1024,9 +1005,6 @@ function selecionarAnzol(famId, codigo, url) {
   document.getElementById(`foto-pai-${famId}`).innerHTML = `<img src="${url}">`;
 }
 
-// ==========================================
-// COMUM (Fallback)
-// ==========================================
 function renderFamiliaComum(fam, itens) {
   const primeiroItem = itens[0];
   const imgInicial = primeiroItem?.imagem_url || '';
@@ -1114,7 +1092,6 @@ document.getElementById('busca').addEventListener('input', e => {
   clearTimeout(deb); deb = setTimeout(() => { buscaAtual = e.target.value; renderizar(); }, 200);
 });
 
-// Formatação automática do CNPJ no input
 document.getElementById('inputCnpj').addEventListener('input', function(e) {
   let v = e.target.value.replace(/\D/g, '');
   if (v.length > 14) v = v.slice(0, 14);
@@ -1125,7 +1102,6 @@ document.getElementById('inputCnpj').addEventListener('input', function(e) {
   e.target.value = v;
 });
 
-// Enter para logar
 document.getElementById('inputCnpj').addEventListener('keypress', function(e) {
   if (e.key === 'Enter') fazerLogin();
 });
