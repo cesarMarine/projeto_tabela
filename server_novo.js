@@ -25,48 +25,120 @@ const upload = multer({ storage: multer.memoryStorage() });
 // IMPORTAÇÕES
 // ==========================================
 
+// IMPORTAR PLANILHA
 app.post('/api/importar/sistema', upload.single('arquivo'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ erro: 'Nenhum arquivo enviado.' });
     const wb = XLSX.read(req.file.buffer, { type: 'buffer' });
-    const abaGeral = wb.Sheets['GERAL'];
-    if (!abaGeral) return res.status(400).json({ erro: 'Aba GERAL não encontrada.' });
     
-    const linhas = XLSX.utils.sheet_to_json(abaGeral, { defval: '' });
+    // 1. Encontra a aba GERAL (ignorando maiúsculas/minúsculas)
+    const nomeAbaGeral = wb.SheetNames.find(n => n.trim().toUpperCase() === 'GERAL');
+    if (!nomeAbaGeral) return res.status(400).json({ erro: 'Aba GERAL não encontrada.' });
+    const linhas = XLSX.utils.sheet_to_json(wb.Sheets[nomeAbaGeral], { defval: '' });
+    
+    // 2. Encontra a aba ESTOQUE (qualquer variação)
+    const nomeAbaEstoque = wb.SheetNames.find(n => 
+      n.trim().toUpperCase() === 'ESTOQUE' || 
+      n.trim().toLowerCase() === 'estoque' || 
+      n.trim().toUpperCase() === 'ESTOQUE '
+    );
+    
     const mapaEstoque = new Map();
     
-    if (wb.Sheets['Estoque']) {
-      const estoqueRows = XLSX.utils.sheet_to_json(wb.Sheets['Estoque'], { defval: '' });
-      for (const r of estoqueRows) {
-        const cod = String(r['Código'] ?? r['codigo'] ?? '').trim().replace(/^0+/, '');
-        if (cod) mapaEstoque.set(cod, num(r['Estoque'] ?? 0));
+    if (nomeAbaEstoque) {
+      const estoqueRows = XLSX.utils.sheet_to_json(wb.Sheets[nomeAbaEstoque], { defval: '' });
+      
+      // Mostra no terminal quais colunas a planilha tem
+      if (estoqueRows.length > 0) {
+        console.log('📋 Colunas da aba Estoque:', Object.keys(estoqueRows[0]));
       }
+      
+      for (const r of estoqueRows) {
+        // Tenta encontrar a coluna do código de várias formas
+        const cod = String(
+          r['Cod. Produto'] ?? 
+          r['Código'] ?? 
+          r['codigo'] ?? 
+          r['Cód'] ?? 
+          r['Cod'] ?? 
+          r['CODIGO'] ?? 
+          r['Código Produto'] ?? 
+          ''
+        ).trim();
+        
+        // Tenta encontrar a coluna de estoque de várias formas
+        const qtd = r['QTD'] ?? 
+                   r['Qtd'] ?? 
+                   r['qtd'] ?? 
+                   r['Estoque'] ?? 
+                   r['ESTOQUE'] ?? 
+                   r['estoque'] ?? 
+                   r['Quantidade'] ?? 
+                   r['QUANTIDADE'] ?? 
+                   r['Saldo'] ?? 
+                   r['SALDO'] ?? 
+                   0;
+        
+        if (cod) mapaEstoque.set(cod, num(qtd));
+      }
+      console.log(`✅ Aba de estoque ("${nomeAbaEstoque}") encontrada. ${mapaEstoque.size} produtos com saldo carregados.`);
+    } else {
+      console.log(`⚠️ Aba "Estoque" não encontrada! Verifique o nome da aba na planilha.`);
     }
 
-    const batch = [];
+    let inseridos = 0;
+    let comEstoque = 0;
+    
     for (const r of linhas) {
-      const codigoBruto = String(r['Código'] ?? r['codigo'] ?? '').trim();
-      const codigo = codigoBruto.replace(/^0+/, ''); // REMOVE ZEROS À ESQUERDA
+      const codigo = String(
+        r['Código'] ?? 
+        r['codigo'] ?? 
+        r['Cód'] ?? 
+        r['Cod'] ?? 
+        r['CODIGO'] ?? 
+        ''
+      ).trim();
+      
       if (!codigo) continue;
-
-      batch.push({
-        codigo: codigo,
-        cod_barras: soDigitos(r['Cod.Barra'] ?? ''),
+      
+      // Busca o estoque no mapa (considerando que o código pode ter zeros à esquerda)
+      const codigoNormalizado = String(parseInt(codigo));
+      let estoqueEncontrado = 0;
+      
+      // Tenta encontrar o estoque de várias formas
+      if (mapaEstoque.has(codigo)) {
+        estoqueEncontrado = mapaEstoque.get(codigo);
+      } else if (mapaEstoque.has(codigoNormalizado)) {
+        estoqueEncontrado = mapaEstoque.get(codigoNormalizado);
+      } else {
+        // Procura no mapa ignorando zeros à esquerda
+        for (const [key, val] of mapaEstoque.entries()) {
+          if (String(parseInt(key)) === codigoNormalizado) {
+            estoqueEncontrado = val;
+            break;
+          }
+        }
+      }
+      
+      if (estoqueEncontrado > 0) comEstoque++;
+      
+      const item = {
+        codigo,
+        cod_barras: soDigitos(r['Cod.Barra'] ?? r['cod_barras'] ?? ''),
         descricao: String(r['Descrição'] ?? r['descricao'] ?? '').trim(),
-        estoque: mapaEstoque.get(codigo) ?? 0,
+        estoque: estoqueEncontrado,
         preco_venda: num(r['P/Venda'] ?? r['preco_venda'] ?? 0),
         ativo: 1,
         atualizado_em: new Date().toISOString()
-      });
+      };
+      
+      const { error } = await supabase.from('itens_sistema').upsert(item, { onConflict: 'codigo' });
+      if (!error) inseridos++;
     }
-
-    if (batch.length > 0) {
-      const { error } = await supabase.from('itens_sistema').upsert(batch, { onConflict: 'codigo' });
-      if (error) throw new Error(error.message);
-    }
-
-    res.json({ ok: true, inseridos: batch.length });
+    
+    res.json({ ok: true, inseridos, comEstoque });
   } catch (e) { 
+    console.error("Erro importação sistema:", e);
     res.status(500).json({ erro: e.message }); 
   }
 });
