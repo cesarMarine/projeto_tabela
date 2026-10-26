@@ -207,6 +207,47 @@ app.get('/api/status', async (req, res) => {
     res.status(500).json({ ok: false, erro: e.message });
   }
 });
+
+// ESTOQUE POR SUBGRUPO E POR FAMÍLIA
+app.get('/api/estoque-subgrupos', async (req, res) => {
+  try {
+    const { data: itens } = await supabase.from('itens_sistema').select('codigo, estoque').eq('ativo', 1);
+    const { data: scraping } = await supabase.from('scraping_produtos').select('codigo, subgrupo');
+    
+    const mapaScr = {};
+    if (scraping) {
+      scraping.forEach(s => { mapaScr[String(parseInt(s.codigo))] = s.subgrupo; });
+    }
+
+    const estoquePorSub = {};
+    if (itens) {
+      itens.forEach(it => {
+        const sub = mapaScr[String(parseInt(it.codigo))];
+        if (sub) {
+          if (!estoquePorSub[sub]) estoquePorSub[sub] = 0;
+          estoquePorSub[sub] += Number(it.estoque) || 0;
+        }
+      });
+    }
+
+    // Calcula o estoque por família
+    const { data: familias } = await supabase.from('catalogo_familias').select('id, itens');
+    const estoquePorFamilia = {};
+    if (familias && itens) {
+      familias.forEach(fam => {
+        const codigosFam = JSON.parse(fam.itens || '[]');
+        let total = 0;
+        codigosFam.forEach(cod => {
+          const item = itens.find(i => String(parseInt(i.codigo)) === String(parseInt(cod)));
+          if (item) total += Number(item.estoque) || 0;
+        });
+        estoquePorFamilia[fam.id] = total;
+      });
+    }
+
+    res.json({ ok: true, estoquePorSub, estoquePorFamilia });
+  } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }
+});
 // ==========================================
 // ROTA DO CATÁLOGO COM PARSE DE CÓDIGO MELHORADO
 // ==========================================
