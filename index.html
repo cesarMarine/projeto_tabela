@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catálogo — Tabela de Preços</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  :root {
+    --azul-900:#001f3f; --azul-800:#003366; --azul-700:#004080;
+    --azul-500:#2563eb; --azul-100:#dbeafe; --azul-50:#eff6ff;
+    --branco:#ffffff; --cinza-50:#f8fafc; --cinza-100:#f1f5f9;
+    --cinza-200:#e2e8f0; --cinza-300:#cbd5e1; --cinza-400:#94a3b8;
+    --cinza-500:#64748b; --cinza-700:#334155; --texto:#1a2a3a;
+    --verde:#10b981; --verde-hover:#059669;
+    --vermelho:#ef4444; --vermelho-suave:#fee2e2;
+  }
+  body { font-family:'Inter','Segoe UI',system-ui,sans-serif; background:var(--cinza-50); color:var(--texto); -webkit-font-smoothing:antialiased; min-height:100vh; }
+  button { font-family:inherit; cursor:pointer; }
+
+  /* TELA DE LOGIN */
+  #telaLogin { position:fixed; inset:0; z-index:9999; background:linear-gradient(135deg, #001f3f 0%, #003366 100%); display:flex; align-items:center; justify-content:center; padding:20px; }
+  .login-box { background:white; border-radius:16px; padding:40px; width:100%; max-width:400px; box-shadow:0 20px 60px rgba(0,0,0,0.4); text-align:center; }
+  .login-box h1 { color:var(--azul-800); font-size:1.5rem; font-weight:800; margin-bottom:8px; }
+  .login-box p { color:var(--cinza-500); font-size:.9rem; margin-bottom:24px; }
+  .login-box input { width:100%; padding:14px 16px; border:2px solid var(--cinza-200); border-radius:10px; font-size:1.1rem; text-align:center; font-weight:700; letter-spacing:1px; margin-bottom:16px; }
+  .login-box input:focus { outline:none; border-color:var(--azul-500); }
+  .login-box button { width:100%; padding:14px; background:var(--azul-800); color:white; border:none; border-radius:10px; font-size:1rem; font-weight:800; transition:.2s; }
+  .login-box button:hover { background:var(--azul-700); }
+  .login-erro { color:var(--vermelho); font-size:.85rem; font-weight:700; margin-bottom:12px; display:none; }
+
+  .topo { background:linear-gradient(135deg, #001f3f 0%, #003366 100%); color:white; position:sticky; top:0; z-index:100; box-shadow:0 4px 24px rgba(0,51,102,.25); }
+  .topo-inner { max-width:1500px; margin:0 auto; padding:14px 28px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+  .topo-logo-area strong { font-size:1.1rem; font-weight:800; letter-spacing:-.3px; }
+  
+  .info-cliente { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.1); padding:6px 12px; border-radius:8px; font-size:.8rem; }
+  .badge-uf { background:var(--verde); color:white; padding:2px 8px; border-radius:4px; font-weight:800; }
+
+  .busca-wrap { flex:1; min-width:240px; max-width:420px; }
+  .busca-wrap input { width:100%; padding:11px 16px; border:none; border-radius:12px; font-family:inherit; font-size:.9rem; background:rgba(255,255,255,.12); color:white; }
+  .busca-wrap input::placeholder { color:rgba(255,255,255,.55); }
+  .busca-wrap input:focus { outline:none; background:rgba(255,255,255,.2); }
+  .btn-carrinho { background:white; color:var(--azul-800); padding:10px 18px; border-radius:12px; border:none; font-weight:800; font-size:.88rem; display:flex; align-items:center; gap:8px; box-shadow:0 4px 14px rgba(0,0,0,.15); transition:.2s; }
+  .btn-carrinho:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(0,0,0,.2); }
+  .btn-carrinho .carrinho-qtd { background:var(--azul-800); color:white; font-size:.72rem; min-width:20px; height:20px; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; padding:0 6px; }
+
+  .chips-wrap { background:white; border-bottom:1px solid var(--cinza-100); position:sticky; top:68px; z-index:90; overflow-x:auto; }
+  .chips { max-width:1500px; margin:0 auto; padding:12px 24px; display:flex; gap:8px; flex-wrap:nowrap; }
+  .chip { padding:9px 16px; border-radius:20px; background:var(--cinza-100); border:1px solid transparent; color:var(--cinza-700); font-size:.82rem; font-weight:700; cursor:pointer; white-space:nowrap; transition:.2s; text-transform:uppercase; }
+  .chip:hover { background:var(--cinza-200); }
+  .chip.ativo { background:linear-gradient(135deg, var(--azul-800), var(--azul-700)); color:white; border-color:var(--azul-800); }
+  .chip small { opacity:.6; margin-left:4px; }
+
+  .conteudo { padding:20px 24px 100px; max-width:1500px; margin:0 auto; }
+  .loading { text-align:center; padding:80px 20px; color:var(--cinza-400); }
+  
+  .familia-bloco { margin-bottom:24px; }
+  .familia-head { display:flex; align-items:baseline; gap:12px; padding-bottom:10px; margin-bottom:12px; border-bottom:2px solid var(--azul-100); }
+  .familia-head h2 { color:var(--azul-800); font-size:1.2rem; font-weight:800; }
+  .familia-head .marca-badge { background:var(--azul-50); color:var(--azul-800); padding:4px 12px; border-radius:20px; font-size:.72rem; font-weight:800; text-transform:uppercase; }
+
+  .sub-grupo-header { background: var(--azul-50); color: var(--azul-800); padding: 8px 14px; border-radius: 6px; border-left: 4px solid var(--azul-500); font-size: 0.9rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; margin-bottom: 8px; }
+  
+  .familia-card, .isca-card, .anzol-card, .molinete-card { display:grid; grid-template-columns:240px 1fr; gap:24px; background:white; border:1px solid var(--cinza-200); border-radius:12px; padding:20px; box-shadow:0 4px 16px rgba(0,0,0,.05); }
+  .familia-side { display:flex; flex-direction:column; gap:12px; }
+  .familia-foto-principal { background:var(--cinza-50); border:1px solid var(--cinza-100); border-radius:10px; padding:16px; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:sticky; top:120px; }
+  .familia-foto-principal img { max-width:100%; max-height:100%; object-fit:contain; }
+  .isca-desc { font-size:.85rem; color:var(--cinza-700); line-height:1.5; white-space:pre-wrap; max-height:250px; overflow-y:auto; }
+  
+  .familia-info, .isca-info, .anzol-info, .molinete-info { display:flex; flex-direction:column; }
+  
+  .btn-detalhes { background:var(--cinza-50); border:1px solid var(--cinza-200); color:var(--azul-800); border-radius:6px; font-size:.65rem; font-weight:800; text-transform:uppercase; letter-spacing:.5px; cursor:pointer; display:inline-flex; align-items:center; gap:4px; padding:6px 12px; margin-bottom:12px; align-self:flex-start; transition: .2s; }
+  .btn-detalhes:hover { background:var(--azul-50); border-color:var(--azul-300); }
+
+  .topo-miniaturas { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid var(--cinza-100); }
+  .filho-mini { width: 90px; background:white; border:2px solid var(--cinza-200); border-radius:6px; padding:4px; cursor:pointer; transition:.2s; display:flex; flex-direction:column; align-items:center; justify-content:space-between; }
+  .filho-mini img { width:100%; aspect-ratio:1; object-fit:contain; margin-bottom:4px; }
+  .mini-info { width:100%; text-align:center; line-height:1.1; }
+  .mini-nome { font-size:.6rem; font-weight:800; color:var(--azul-800); text-transform:uppercase; display:block; }
+  .filho-mini:hover, .filho-mini.ativa { border-color:var(--azul-800); box-shadow:0 2px 6px rgba(0,51,102,.1); }
+  .filho-mini.ativa { background:var(--azul-50); }
+
+  .isca-modelos-tabs, .anzol-tabs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; border-bottom:1px solid var(--cinza-200); padding-bottom:16px; }
+  .isca-modelo-btn, .anzol-tab { padding:8px 16px; border-radius:8px; border:1px solid var(--cinza-200); background:var(--cinza-50); color:var(--azul-800); font-size:.85rem; font-weight:800; cursor:pointer; transition:.2s; text-transform:uppercase; }
+  .isca-modelo-btn:hover, .anzol-tab:hover { background:var(--azul-100); }
+  .isca-modelo-btn.ativo, .anzol-tab.ativo { background:var(--azul-800); color:white; border-color:var(--azul-800); }
+  .isca-titulo-cores { font-size:.8rem; font-weight:800; color:var(--azul-800); text-transform:uppercase; margin-bottom:12px; display:flex; justify-content:space-between; }
+  
+  .isca-grade, .anzol-grade { display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:12px; }
+  .isca-cor-card, .anzol-numero-card { background:white; border:2px solid var(--cinza-200); border-radius:10px; padding:8px; cursor:pointer; transition:.2s; display:flex; flex-direction:column; align-items:center; position:relative; }
+  .isca-cor-card:hover, .anzol-numero-card:hover { border-color:var(--azul-500); transform:translateY(-2px); }
+  .isca-cor-card.ativa, .anzol-numero-card.ativa { border-color:var(--azul-800); background:var(--azul-50); }
+  .isca-cor-card img { width:100%; aspect-ratio:1; object-fit:contain; margin-bottom:6px; }
+  .isca-cor-card .cor-nome, .anzol-numero { font-size:.85rem; font-weight:800; color:var(--texto); text-align:center; }
+  .anzol-numero { font-size:1.6rem; color:var(--azul-800); line-height:1; margin-bottom:4px; }
+  .isca-cor-card .cor-preco, .anzol-preco { font-size:.8rem; font-weight:800; color:var(--verde); margin-top:2px; }
+
+  .isca-badge, .anzol-badge { position:absolute; top:-6px; right:-6px; min-width:24px; height:24px; background:var(--verde); color:white; border-radius:12px; font-size:12px; font-weight:900; display:none; align-items:center; justify-content:center; border:2px solid white; z-index:3; }
+  .isca-cor-card.tem-qtd .isca-badge, .anzol-numero-card.tem-qtd .anzol-badge { display:flex; }
+  .isca-cor-card.tem-qtd, .anzol-numero-card.tem-qtd { border-color:var(--verde); background:#f0fdf4; }
+  
+  .isca-qtd-ctrl, .anzol-qtd-ctrl { display:flex; align-items:center; gap:4px; margin-top:8px; width:100%; justify-content:center; }
+  .isca-qtd-ctrl button, .anzol-qtd-ctrl button { width:26px; height:26px; border-radius:6px; border:1px solid var(--cinza-300); background:white; font-weight:800; }
+  .isca-qtd-ctrl input, .anzol-qtd-ctrl input { width:34px; height:26px; border:1px solid var(--cinza-300); border-radius:6px; text-align:center; font-weight:800; -moz-appearance:textfield; }
+
+  .lista-filhos { display:flex; flex-direction:column; gap:2px; }
+  .lista-header { display:grid; grid-template-columns: 70px 1fr 300px 100px 110px; gap:8px; padding:0 10px 6px; font-size:.65rem; font-weight:800; color:var(--cinza-500); text-transform:uppercase; border-bottom:1px solid var(--cinza-200); }
+  .lista-header div:nth-child(3), .lista-header div:nth-child(4), .lista-header div:nth-child(5) { text-align:center; }
+  .linha-filho { display:grid; grid-template-columns: 70px 1fr 300px 100px 110px; gap:8px; align-items:center; padding:8px 10px; border-radius:6px; background:var(--cinza-50); margin-bottom:2px; transition:.15s; }
+  .linha-filho:hover { background:white; border:1px solid var(--azul-100); box-shadow:0 1px 4px rgba(0,0,0,.05); }
+  .l-cod { font-family:monospace; font-weight:800; color:var(--azul-800); font-size:.8rem; }
+  .l-nome { font-size:.8rem; font-weight:700; color:var(--texto); }
+  .l-var-col { display:flex; flex-direction:column; align-items:center; gap:4px; min-width:0; }
+  .tag-var { background:#e0e7ff; color:#3730a3; padding:3px 8px; border-radius:4px; font-size:.66rem; font-weight:700; text-transform:uppercase; text-align:center; width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .l-preco { font-size:.9rem; font-weight:800; color:var(--azul-800); text-align:center; }
+  .l-qtd { display:flex; justify-content:center; }
+
+  .qtd-ctrl { display:inline-flex; align-items:center; border:1px solid var(--cinza-300); border-radius:6px; background:white; }
+  .qtd-ctrl button { width:24px; height:26px; border:none; background:transparent; font-weight:800; color:var(--azul-800); }
+  .qtd-ctrl button:hover { background:var(--azul-50); }
+  .qtd-ctrl input { width:30px; text-align:center; border:none; font-weight:800; color:var(--azul-800); -moz-appearance:textfield; }
+  .qtd-ctrl input:focus { outline:none; }
+
+  .grade-soltos { display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:16px; }
+  .card-solto { background:white; border:1px solid var(--cinza-200); border-radius:10px; padding:12px; text-align:center; }
+  .card-solto .img { width:100%; aspect-ratio:1; background:var(--cinza-50); display:flex; align-items:center; justify-content:center; border-radius:8px; margin-bottom:8px; font-size:2rem; color:var(--cinza-300); overflow:hidden; }
+  .card-solto .img img { width:100%; height:100%; object-fit:contain; }
+  .card-solto .nome { font-size:.8rem; font-weight:700; color:var(--azul-800); margin-bottom:4px; line-height:1.2; }
+  .card-solto .preco { font-size:.9rem; font-weight:800; color:var(--verde); }
+
+  .pedido-rapido { position:fixed; bottom:0; width:100%; background:white; border-top:3px solid #f8b81f; display:none; flex-direction:column; z-index:150; box-shadow:0 -4px 20px rgba(0,0,0,.1); }
+  .pedido-rapido.on { display:flex; }
+  .pedido-rapido-head { padding:10px 24px; background:var(--azul-800); color:white; font-weight:800; cursor:pointer; }
+  .pedido-rapido-lista { padding:10px 24px; display:flex; flex-direction:column; gap:4px; max-height:200px; overflow-y:auto; }
+  .pedido-item { display:grid; grid-template-columns:36px 1fr auto auto auto; gap:12px; align-items:center; padding:6px 10px; background:var(--cinza-50); border-radius:6px; border-left:3px solid var(--azul-500); font-size:.85rem; }
+  .pedido-item img { width:28px; height:28px; object-fit:contain; }
+  .pedido-rapido-foot { display:flex; justify-content:space-between; padding:12px 24px; font-weight:800; font-size:1.1rem; }
+  .btn-finalizar { background:var(--verde); color:white; border:none; padding:10px 20px; border-radius:8px; font-weight:800; }
+
+  .modal-bg { position:fixed; inset:0; z-index:500; background:rgba(0,15,30,.85); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; padding:20px; opacity:0; pointer-events:none; transition:.25s; }
+  .modal-bg.on { opacity:1; pointer-events:auto; }
+  .modal { background:white; border-radius:16px; max-width:800px; width:100%; max-height:90vh; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 25px 80px rgba(0,0,0,.5); }
+  .modal-head { background:var(--azul-800); color:white; padding:16px 20px; display:flex; justify-content:space-between; align-items:center; }
+  .modal-head h3 { font-size:1rem; font-weight:800; }
+  .modal-x { background:rgba(255,255,255,.15); border:none; color:white; width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:14px; }
+  .modal-body { padding:20px; overflow-y:auto; }
+  .modal-body p { font-size:.9rem; color:var(--cinza-700); line-height:1.6; white-space:pre-wrap; margin-bottom:16px; }
+
+  @media(max-width:900px) {
+    .familia-card, .isca-card, .anzol-card, .molinete-card { grid-template-columns:1fr; padding:16px; }
+    .familia-foto-principal { position:static; max-width:200px; margin:0 auto; }
+    .lista-header { display:none; }
+    .linha-filho { grid-template-columns:1fr auto; grid-template-areas: "cod qtd" "nome qtd" "var qtd" "preco qtd"; gap:4px 12px; padding:10px; }
+    .l-cod { grid-area:cod; } .l-nome { grid-area:nome; } .l-var-col { grid-area:var; margin: 4px 0; align-items:flex-start; } .l-preco { grid-area:preco; text-align:left; } .l-qtd { grid-area:qtd; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TELA DE LOGIN -->
+<div id="telaLogin">
+  <div class="login-box">
+    <h1>Catálogo B2B</h1>
+    <p>Digite o seu CNPJ para acessar a tabela de preços.</p>
+    <div class="login-erro" id="loginErro">CNPJ não encontrado ou inativo.</div>
+    <input type="text" id="inputCnpj" placeholder="00.000.000/0000-00" autocomplete="off">
+    <button onclick="fazerLogin()">Acessar Catálogo</button>
+  </div>
+</div>
+
+<header class="topo">
+  <div class="topo-inner">
+    <div class="topo-logo-area"><strong>📋 Catálogo</strong></div>
+    
+    <!-- Info do Cliente Logado -->
+    <div class="info-cliente" id="infoCliente" style="display:none;">
+      <span id="nomeCliente">—</span>
+      <span class="badge-uf" id="badgeUf">—</span>
+    </div>
+
+    <div class="busca-wrap"><input type="search" id="busca" placeholder="Buscar..." autocomplete="off"></div>
+    <button class="btn-carrinho" onclick="togglePedido()">
+      <span>🛒 Pedido</span><span class="carrinho-qtd" id="topoQtd">0</span>
+    </button>
+  </div>
+</header>
+
+<div class="chips-wrap"><div class="chips" id="chips"></div></div>
+
+<main class="conteudo" id="conteudo">
+  <div class="loading">Carregando catálogo…</div>
+</main>
+
+<div class="modal-bg" id="modalBg" onclick="fecharModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <h3 id="modalTitulo">—</h3>
+      <button class="modal-x" onclick="fecharModal(null, true)">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<div class="pedido-rapido" id="pedidoRapido">
+  <div class="pedido-rapido-head" onclick="togglePedido()">🛒 Seu pedido até agora ▼</div>
+  <div class="pedido-rapido-lista" id="pedidoLista"></div>
+  <div class="pedido-rapido-foot">
+    <span id="pedidoTotal">Total: R$ 0,00</span>
+    <button class="btn-finalizar" onclick="finalizarPedido()">Finalizar Pedido</button>
+  </div>
+</div>
+
+<script>
+let todosItens = [], todasFamilias = [], grupoAtual = '__TODOS__', buscaAtual = '', carrinho = {};
+let clienteLogado = null;
+let porcentagemAcrescimo = 0; // Multiplicador (ex: 1.54 para 1.54%)
+
+const fmtMoeda = v => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const parseAtributos = json => { try { return JSON.parse(json || '{}'); } catch { return {}; } };
+
+// AQUI ESTÁ O CÁLCULO DO PREÇO COM ACÉSCIMO
+function calcularPrecoFinal(precoBase) {
+  if (!precoBase) return 0;
+  const acrescimo = (precoBase * porcentagemAcrescimo) / 100;
+  return precoBase + acrescimo;
+}
+
+function normalizarItem(it) {
+  return {
+    codigo: String(it.codigo ?? ''),
+    subgrupo: (it.subgrupo_scraping || '').trim(), 
+    descricao_longa: it.descricao_longa || '', 
+    imagem_url: it.imagem_url || '',
+    precoBase: Number(it.preco_venda) || 0, // O preço cru que vem do banco
+    get preco() { return calcularPrecoFinal(this.precoBase); }, // O preço com acréscimo
+    grupo: (it.grupo_scraping || '').trim(),
+    marca: (it.marca || '').trim(),
+    atributos: parseAtributos(it.atributos_json) 
+  };
+}
+
+// ==========================================
+// LOGIN E CARREGAMENTO
+// ==========================================
+async function fazerLogin() {
+  const cnpjInput = document.getElementById('inputCnpj');
+  const cnpj = cnpjInput.value.replace(/\D/g, '');
+  const erro = document.getElementById('loginErro');
+  
+  if (cnpj.length < 11) {
+    erro.textContent = 'Digite um CNPJ válido.';
+    erro.style.display = 'block';
+    return;
+  }
+
+  try {
+    const r = await fetch('/api/login/' + cnpj);
+    const j = await r.json();
+
+    if (!j.ok) {
+      erro.textContent = j.erro || 'Erro ao validar CNPJ.';
+      erro.style.display = 'block';
+      return;
+    }
+
+    // Sucesso no Login
+    clienteLogado = j.cliente;
+    porcentagemAcrescimo = j.regra_acrescimo.porcentagem; // Ex: 1.54
+
+    // Atualiza UI
+    document.getElementById('telaLogin').style.display = 'none';
+    document.getElementById('infoCliente').style.display = 'flex';
+    document.getElementById('nomeCliente').textContent = clienteLogado.nome;
+    document.getElementById('badgeUf').textContent = clienteLogado.uf;
+
+    // Carrega o catálogo
+    carregar();
+  } catch (e) {
+    erro.textContent = 'Erro de conexão com o servidor.';
+    erro.style.display = 'block';
+  }
+}
+
+async function finalizarPedido() {
+  const itens = Object.keys(carrinho).map(cod => {
+    const item = carrinho[cod];
+    const precoFinal = calcularPrecoFinal(item.precoBase); // Recalcula com o acréscimo
+    return {
+      codigo: cod,
+      desc: item.desc,
+      qtd: item.qtd,
+      precoBase: item.precoBase,
+      precoFinal: precoFinal
+    };
+  });
+
+  if (itens.length === 0) {
+    alert('Seu carrinho está vazio.');
+    return;
+  }
+
+  // Calcula o total
+  const total = itens.reduce((acc, it) => acc + (it.precoFinal * it.qtd), 0);
+
+  // Pega os dados do cliente logado
+  const cnpj_cliente = clienteLogado.cnpj;
+  const codigo_representante = clienteLogado.representante;
+
+  if (!confirm(`Deseja enviar este pedido no valor de R$ ${fmtMoeda(total)}?`)) {
+    return;
+  }
+
+  try {
+    const r = await fetch('/api/pedidos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cnpj_cliente, codigo_representante, total, itens })
+    });
+    
+    // Verifica se o servidor respondeu com status de erro (500, 400, etc)
+    if (!r.ok) {
+        const textoErro = await r.text();
+        throw new Error(`Status ${r.status}: ${textoErro}`);
+    }
+
+    const j = await r.json();
+
+    if (j.ok) {
+      alert('✅ Pedido enviado com sucesso! Seu vendedor entrará em contato.');
+      carrinho = {}; // Limpa o carrinho
+      atualizarCarrinho(); // Atualiza a tela do carrinho (esvazia)
+      document.getElementById('pedidoRapido').classList.remove('on');
+    } else {
+      alert('❌ Erro ao enviar: ' + j.erro);
+    }
+  } catch (e) {
+    // Se cair aqui, vai mostrar exatamente qual foi o erro no banco ou no servidor
+    alert('❌ Erro ao enviar o pedido:\n' + e.message);
+  }
+}
+
+async function carregar() {
+  try {
+    const rf = await fetch('/api/familias'); const jf = await rf.json();
+    if (jf.ok) todasFamilias = jf.familias;
+    const r = await fetch('/api/catalogo'); const j = await r.json();
+    if (!j.ok) throw new Error('Erro API');
+    todosItens = j.itens.map(normalizarItem).filter(it => it.grupo.length > 0);
+    montarChips(); renderizar();
+  } catch (e) {
+    document.getElementById('conteudo').innerHTML = '<div class="loading">Erro: ' + e.message + '</div>';
+  }
+}
+
+// ==========================================
+// FILTROS E RENDERIZAÇÃO (Inalterados)
+// ==========================================
+function montarChips() {
+  const contagem = {};
+  todosItens.forEach(it => contagem[it.grupo] = (contagem[it.grupo] || 0) + 1);
+  const grupos = Object.keys(contagem).sort((a, b) => contagem[b] - contagem[a]);
+  document.getElementById('chips').innerHTML = `
+    <button class="chip ativo" onclick="trocarGrupo('__TODOS__', this)">Todos <small>${todosItens.length}</small></button>
+    ${grupos.map(g => `<button class="chip" onclick="trocarGrupo('${g}', this)">${g} <small>${contagem[g]}</small></button>`).join('')}
+  `;
+}
+
+function trocarGrupo(grupo, btn) {
+  grupoAtual = grupo;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('ativo'));
+  btn.classList.add('ativo'); renderizar();
+}
+
+function filtrar() {
+  let lista = todosItens;
+  if (grupoAtual !== '__TODOS__') lista = lista.filter(it => it.grupo === grupoAtual);
+  if (buscaAtual) {
+    const q = buscaAtual.toLowerCase();
+    lista = lista.filter(it => it.codigo.includes(q) || it.subgrupo.toLowerCase().includes(q) || it.marca.toLowerCase().includes(q));
+  }
+  return lista;
+}
+
+function renderizar() {
+  const lista = filtrar();
+  const cont = document.getElementById('conteudo');
+  if (!lista.length) { cont.innerHTML = '<div class="loading">Nenhum produto.</div>'; return; }
+  const processados = new Set(); let html = '';
+
+  todasFamilias.forEach(fam => {
+    const filhos = lista.filter(it => fam.itens.includes(it.codigo));
+    if (filhos.length > 0) {
+      let tipo = 'comum';
+      const primeiroItem = filhos[0];
+      const attrs = Object.keys(primeiroItem.atributos).map(k => k.toUpperCase());
+      const grupoItem = primeiroItem.grupo.toUpperCase();
+      
+      const nomeFam = fam.nome.toUpperCase();
+
+      // Lógica de detecção de tipo
+      if (nomeFam.includes('VARA')) {
+        tipo = 'vara';
+      } else if (nomeFam.includes('LINHA')) {
+        tipo = 'linha';
+      } else if (nomeFam.includes('EMPATE')) {
+        tipo = 'empate';
+      } else if (
+        grupoItem.includes('ACESSORIO') || grupoItem.includes('ACESSÓRIO') || 
+        grupoItem.includes('VESTUARIO') || grupoItem.includes('VESTUÁRIO') || 
+        grupoItem.includes('MOTORES') || grupoItem.includes('MOTOR') || 
+        nomeFam.includes('ACESSORIO') || nomeFam.includes('ACESSÓRIO') || 
+        nomeFam.includes('ALICATE') || nomeFam.includes('TESOURA') || 
+        nomeFam.includes('VESTUARIO') || nomeFam.includes('VESTUÁRIO') ||
+        nomeFam.includes('MOTOR')
+      ) { 
+        tipo = 'grade';
+      } else if (nomeFam.includes('ISCA') || attrs.includes('CORES') || attrs.includes('COR')) {
+        tipo = 'isca';
+      } else if (nomeFam.includes('ANZOL')) {
+        tipo = 'anzol';
+      } else if (nomeFam.includes('MOLINETE')) {
+        tipo = 'molinete';
+      } else if (nomeFam.includes('CARRETILHA')) {
+        tipo = 'carretilha';
+      }
+      
+      if (tipo === 'isca') html += renderFamiliaIsca(fam, filhos);
+      else if (tipo === 'anzol') html += renderFamiliaAnzol(fam, filhos);
+      else if (tipo === 'molinete') html += renderFamiliaMolinete(fam, filhos);
+      else if (tipo === 'carretilha') html += renderFamiliaCarretilha(fam, filhos);
+      else if (tipo === 'vara') html += renderFamiliaVara(fam, filhos);
+      else if (tipo === 'linha') html += renderFamiliaLinha(fam, filhos);
+      else if (tipo === 'empate') html += renderFamiliaEmpate(fam, filhos);
+      else if (tipo === 'grade') html += renderFamiliaGrade(fam, filhos);
+      else html += renderFamiliaComum(fam, filhos);
+      
+      filhos.forEach(it => processados.add(it.codigo));
+    }
+  });
+
+  const soltos = lista.filter(it => !processados.has(it.codigo));
+  if (soltos.length > 0) {
+    html += `<div class="familia-bloco"><div class="familia-head"><h2>Outros Produtos</h2></div><div class="grade-soltos">${soltos.map(cardSoltos).join('')}</div></div>`;
+  }
+  cont.innerHTML = html;
+}
+
+// ==========================================
+// RENDERIZADORES (Chamando it.preco para pegar o valor calculado)
+// ==========================================
+function linhaMolinete(it) {
+  const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+  const info = analisarMolinete(it);
+  return `
+    <div class="linha-filho">
+      <div class="l-cod">${it.codigo}</div>
+      <div class="l-nome">${escapeHtml(info.modelo)}</div>
+      <div class="l-var-col"><span class="tag-var" title="${escapeHtml(info.variacao)}">${escapeHtml(info.variacao || '—')}</span></div>
+      <div class="l-preco">R$ ${fmtMoeda(it.preco)}</div>
+      <div class="l-qtd" onclick="event.stopPropagation()">
+        <div class="qtd-ctrl">
+          <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+          <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+          <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderFamiliaMolinete(fam, itens) {
+  const primeiroItem = itens[0];
+  const imgInicial = primeiroItem?.imagem_url || '';
+  let subdivisoes = fam.subdivisoes || [];
+  if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Produtos', itens: fam.itens }];
+
+  const blocosTabelas = subdivisoes.map(sub => {
+    const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo));
+    if (itensDaSub.length === 0) return '';
+    itensDaSub.sort((a, b) => analisarMolinete(a).modelo.localeCompare(analisarMolinete(b).modelo, undefined, { numeric: true }));
+    return `
+      <div class="sub-bloco" style="margin-top: 28px;">
+        <div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>
+        <div class="lista-filhos" style="margin-top: 12px;">
+          <div class="lista-header"><div>Código</div><div>Modelo</div><div style="text-align:center">Variação</div><div>Preço</div><div style="text-align:center">Qtd</div></div>
+          ${itensDaSub.map(linhaMolinete).join('')}
+        </div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="familia-bloco">
+      <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
+      <div class="molinete-card" id="card-fam-${fam.id}">
+        <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
+        <div class="molinete-info">
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes do produto</button>
+          ${blocosTabelas}
+        </div>
+      </div>
+    </div>`;
+}
+
+function linhaCarretilha(it) {
+  const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+  const info = analisarMolinete(it);
+  return `
+    <div class="linha-filho">
+      <div class="l-cod">${it.codigo}</div>
+      <div class="l-nome">${escapeHtml(info.modelo)}</div>
+      <div class="l-var-col"><span class="tag-var" title="${escapeHtml(info.variacao)}">${escapeHtml(info.variacao || '—')}</span></div>
+      <div class="l-preco">R$ ${fmtMoeda(it.preco)}</div>
+      <div class="l-qtd" onclick="event.stopPropagation()">
+        <div class="qtd-ctrl">
+          <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+          <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+          <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderFamiliaCarretilha(fam, itens) {
+  const primeiroItem = itens[0];
+  const imgInicial = primeiroItem?.imagem_url || '';
+  let subdivisoes = fam.subdivisoes || [];
+  if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Todos', itens: fam.itens }];
+
+  const miniaturasHtml = itens.map(it => {
+    const info = analisarMolinete(it);
+    const labelMini = [info.modelo, info.ladoManivela].filter(Boolean).join(' ');
+    return `<div class="filho-mini" id="mini-${it.codigo}" onclick="selecionarCarretilha('${fam.id}', '${it.codigo}', '${it.imagem_url}')"><img src="${it.imagem_url}" alt="${escapeHtml(labelMini)}"><div class="mini-info"><span class="mini-nome">${escapeHtml(labelMini)}</span></div></div>`;
+  }).join('');
+
+  const blocosTabelas = subdivisoes.map(sub => {
+    const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo));
+    if (itensDaSub.length === 0) return '';
+    return `
+      <div class="sub-bloco" style="margin-top: 24px;">
+        ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
+        <div class="lista-filhos" style="margin-top: 12px;">
+          <div class="lista-header"><div>Código</div><div>Produto</div><div style="text-align:center">Variação</div><div>Preço</div><div style="text-align:center">Qtd</div></div>
+          ${itensDaSub.map(linhaCarretilha).join('')}
+        </div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="familia-bloco">
+      <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
+      <div class="molinete-card" id="card-fam-${fam.id}">
+        <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
+        <div class="molinete-info">
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes do produto</button>
+          <div class="topo-miniaturas">${miniaturasHtml}</div>
+          ${blocosTabelas}
+        </div>
+      </div>
+    </div>`;
+}
+
+function selecionarCarretilha(famId, codigo, url) {
+  const card = document.getElementById(`card-fam-${famId}`);
+  card.querySelectorAll('.filho-mini').forEach(m => m.classList.remove('ativa'));
+  const miniatura = document.getElementById(`mini-${codigo}`);
+  if (miniatura) miniatura.classList.add('ativa');
+  document.getElementById(`foto-pai-${famId}`).innerHTML = `<img src="${url}">`;
+}
+
+// ==========================================
+// VARAS (Colunas Dinâmicas por Especificação)
+// ==========================================
+function analisarVara(it) {
+  const attrs = it.atributos || {};
+  const modeloJson = attrs['Modelo'] || attrs['MODELO'] || it.subgrupo || 'Vara';
+  const ignorar = ['QTD', 'CX/CT', 'Modelo', 'MODELO']; 
+  const especificacoes = {};
+  for (const [chave, valor] of Object.entries(attrs)) {
+    if (!ignorar.includes(chave) && valor) especificacoes[chave] = valor;
+  }
+  return { modeloJson, especificacoes };
+}
+
+function renderFamiliaVara(fam, itens) {
+  const primeiroItem = itens[0];
+  const imgInicial = primeiroItem?.imagem_url || '';
+  let subdivisoes = fam.subdivisoes || [];
+  if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Produtos', itens: fam.itens }];
+
+  const colunasSet = new Set();
+  itens.forEach(it => { Object.keys(analisarVara(it).especificacoes).forEach(k => colunasSet.add(k)); });
+  const colunas = Array.from(colunasSet);
+
+  const blocosTabelas = subdivisoes.map(sub => {
+    const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo));
+    if (itensDaSub.length === 0) return '';
+    itensDaSub.sort((a, b) => analisarVara(a).modeloJson.localeCompare(analisarVara(b).modeloJson));
+
+    const linhas = itensDaSub.map(it => {
+      const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+      const info = analisarVara(it);
+      const celulasSpecs = colunas.map(c => {
+        const val = info.especificacoes[c] || '-';
+        return `<td style="text-align:center; font-size:0.75rem; color:var(--cinza-700);">${escapeHtml(val)}</td>`;
+      }).join('');
+
+      return `
+        <tr class="linha-tabela-vara">
+          <td class="l-cod" style="font-family:monospace; font-weight:800; color:var(--azul-800);">${it.codigo}</td>
+          <td style="font-weight:800; color:var(--azul-800); font-size:0.8rem;">${escapeHtml(info.modeloJson)}</td>
+          ${celulasSpecs}
+          <td style="text-align:center; font-weight:800; color:var(--azul-800);">R$ ${fmtMoeda(it.preco)}</td>
+          <td style="text-align:center;" onclick="event.stopPropagation()">
+            <div class="qtd-ctrl" style="display:inline-flex;">
+              <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+              <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+              <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
+
+    return `
+      <div class="sub-bloco" style="margin-top: 16px;">
+        ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
+        <div style="overflow-x: auto; width: 100%; margin-top: 8px; background: white; border-radius: 8px; border: 1px solid var(--cinza-200);">
+          <table style="width: 100%; border-collapse: collapse; min-width: max-content;">
+            <thead>
+              <tr style="background: var(--cinza-50); border-bottom: 1px solid var(--cinza-200); font-size: 0.65rem; font-weight: 800; color: var(--cinza-500); text-transform: uppercase;">
+                <th style="padding: 10px; text-align: left;">Código</th><th style="padding: 10px; text-align: left;">Modelo</th>
+                ${colunas.map(c => `<th style="padding: 10px; text-align: center;">${escapeHtml(c)}</th>`).join('')}
+                <th style="padding: 10px; text-align: center;">Preço</th><th style="padding: 10px; text-align: center;">Qtd</th>
+              </tr>
+            </thead>
+            <tbody>${linhas}</tbody>
+          </table>
+        </div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="familia-bloco">
+      <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
+      <div class="molinete-card" id="card-fam-${fam.id}">
+        <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
+        <div class="molinete-info" style="overflow: hidden;">
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes do produto</button>
+          ${blocosTabelas}
+        </div>
+      </div>
+    </div>`;
+}
+
+// ==========================================
+// LINHAS (Tabela Dinâmica + Metragem)
+// ==========================================
+function analisarLinha(it) {
+  const attrs = it.atributos || {};
+  const metragem = attrs['QTD'] || attrs['Metragem'] || attrs['METRAGEM'] || '-';
+  const ignorar = ['CX/CT', 'Modelo', 'MODELO', 'QTD', 'Metragem', 'METRAGEM']; 
+  const especificacoes = {};
+  for (const [chave, valor] of Object.entries(attrs)) {
+    if (!ignorar.includes(chave) && valor) especificacoes[chave] = valor;
+  }
+  return { metragem, especificacoes };
+}
+
+function renderFamiliaLinha(fam, itens) {
+  const primeiroItem = itens[0];
+  const imgInicial = primeiroItem?.imagem_url || '';
+  let subdivisoes = fam.subdivisoes || [];
+  if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Produtos', itens: fam.itens }];
+
+  const colunasSet = new Set();
+  itens.forEach(it => { Object.keys(analisarLinha(it).especificacoes).forEach(k => colunasSet.add(k)); });
+  const colunas = Array.from(colunasSet);
+
+  const blocosTabelas = subdivisoes.map(sub => {
+    const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo));
+    if (itensDaSub.length === 0) return '';
+    itensDaSub.sort((a, b) => {
+      const infoA = analisarLinha(a); const infoB = analisarLinha(b);
+      const qtdA = parseInt(infoA.metragem) || 0; const qtdB = parseInt(infoB.metragem) || 0;
+      if (qtdA !== qtdB) return qtdA - qtdB;
+      return (infoA.especificacoes['mm'] || '').localeCompare(infoB.especificacoes['mm'] || '');
+    });
+
+    const linhas = itensDaSub.map(it => {
+      const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+      const info = analisarLinha(it);
+      const celulasSpecs = colunas.map(c => {
+        const val = info.especificacoes[c] || '-';
+        return `<td style="text-align:center; font-size:0.75rem; color:var(--cinza-700);">${escapeHtml(val)}</td>`;
+      }).join('');
+
+      return `
+        <tr class="linha-tabela-vara">
+          <td class="l-cod" style="font-family:monospace; font-weight:800; color:var(--azul-800);">${it.codigo}</td>
+          <td style="text-align:center; font-weight:800; color:var(--azul-800); font-size:0.8rem;">${escapeHtml(info.metragem)}</td>
+          ${celulasSpecs}
+          <td style="text-align:center; font-weight:800; color:var(--azul-800);">R$ ${fmtMoeda(it.preco)}</td>
+          <td style="text-align:center;" onclick="event.stopPropagation()">
+            <div class="qtd-ctrl" style="display:inline-flex;">
+              <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+              <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+              <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
+
+    return `
+      <div class="sub-bloco" style="margin-top: 16px;">
+        ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
+        <div style="overflow-x: auto; width: 100%; margin-top: 8px; background: white; border-radius: 8px; border: 1px solid var(--cinza-200);">
+          <table style="width: 100%; border-collapse: collapse; min-width: max-content;">
+            <thead>
+              <tr style="background: var(--cinza-50); border-bottom: 1px solid var(--cinza-200); font-size: 0.65rem; font-weight: 800; color: var(--cinza-500); text-transform: uppercase;">
+                <th style="padding: 10px; text-align: left;">Código</th><th style="padding: 10px; text-align: center;">Metragem</th>
+                ${colunas.map(c => `<th style="padding: 10px; text-align: center;">${escapeHtml(c)}</th>`).join('')}
+                <th style="padding: 10px; text-align: center;">Preço</th><th style="padding: 10px; text-align: center;">Qtd</th>
+              </tr>
+            </thead>
+            <tbody>${linhas}</tbody>
+          </table>
+        </div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="familia-bloco">
+      <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
+      <div class="molinete-card" id="card-fam-${fam.id}">
+        <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
+        <div class="molinete-info" style="overflow: hidden;">
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes do produto</button>
+          ${blocosTabelas}
+        </div>
+      </div>
+    </div>`;
+}
+
+// ==========================================
+// EMPATES (Tabela Dinâmica Horizontal)
+// ==========================================
+function analisarEmpate(it) {
+  const attrs = it.atributos || {};
+  const ignorar = ['QTD', 'CX/CT']; 
+  const especificacoes = {};
+  for (const [chave, valor] of Object.entries(attrs)) {
+    if (!ignorar.includes(chave) && valor) especificacoes[chave] = valor;
+  }
+  return { especificacoes };
+}
+
+function renderFamiliaEmpate(fam, itens) {
+  const primeiroItem = itens[0];
+  const imgInicial = primeiroItem?.imagem_url || '';
+  let subdivisoes = fam.subdivisoes || [];
+  if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Produtos', itens: fam.itens }];
+
+  const colunasSet = new Set();
+  itens.forEach(it => { Object.keys(analisarEmpate(it).especificacoes).forEach(k => colunasSet.add(k)); });
+  const colunas = Array.from(colunasSet);
+
+  const blocosTabelas = subdivisoes.map(sub => {
+    const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo));
+    if (itensDaSub.length === 0) return '';
+    itensDaSub.sort((a, b) => {
+      const infoA = analisarEmpate(a).especificacoes; const infoB = analisarEmpate(b).especificacoes;
+      const valA = infoA['Modelo'] || infoA[Object.keys(infoA)[0]] || ''; const valB = infoB['Modelo'] || infoB[Object.keys(infoB)[0]] || '';
+      return valA.localeCompare(valB, undefined, { numeric: true });
+    });
+
+    const linhas = itensDaSub.map(it => {
+      const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+      const info = analisarEmpate(it);
+      const celulasSpecs = colunas.map(c => {
+        const val = info.especificacoes[c] || '-';
+        const isModelo = c.toUpperCase().includes('MODELO');
+        const style = isModelo ? 'text-align:center; font-weight:800; color:var(--azul-800); font-size:0.8rem;' : 'text-align:center; font-size:0.75rem; color:var(--cinza-700);';
+        return `<td style="${style}">${escapeHtml(val)}</td>`;
+      }).join('');
+
+      return `
+        <tr class="linha-tabela-vara">
+          <td class="l-cod" style="font-family:monospace; font-weight:800; color:var(--azul-800);">${it.codigo}</td>
+          ${celulasSpecs}
+          <td style="text-align:center; font-weight:800; color:var(--azul-800);">R$ ${fmtMoeda(it.preco)}</td>
+          <td style="text-align:center;" onclick="event.stopPropagation()">
+            <div class="qtd-ctrl" style="display:inline-flex;">
+              <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+              <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+              <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
+
+    return `
+      <div class="sub-bloco" style="margin-top: 16px;">
+        ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
+        <div style="overflow-x: auto; width: 100%; margin-top: 8px; background: white; border-radius: 8px; border: 1px solid var(--cinza-200);">
+          <table style="width: 100%; border-collapse: collapse; min-width: max-content;">
+            <thead>
+              <tr style="background: var(--cinza-50); border-bottom: 1px solid var(--cinza-200); font-size: 0.65rem; font-weight: 800; color: var(--cinza-500); text-transform: uppercase;">
+                <th style="padding: 10px; text-align: left;">Código</th>
+                ${colunas.map(c => `<th style="padding: 10px; text-align: center;">${escapeHtml(c)}</th>`).join('')}
+                <th style="padding: 10px; text-align: center;">Preço</th><th style="padding: 10px; text-align: center;">Qtd</th>
+              </tr>
+            </thead>
+            <tbody>${linhas}</tbody>
+          </table>
+        </div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="familia-bloco">
+      <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
+      <div class="molinete-card" id="card-fam-${fam.id}">
+        <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
+        <div class="molinete-info" style="overflow: hidden;">
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes do produto</button>
+          ${blocosTabelas}
+        </div>
+      </div>
+    </div>`;
+}
+
+// ==========================================
+// ACESSÓRIOS (Grade de Cards)
+// ==========================================
+function renderFamiliaGrade(fam, itens) {
+  const primeiroItem = itens[0];
+  const imgInicial = primeiroItem?.imagem_url || '';
+  const descInicial = primeiroItem?.descricao_longa || '';
+  let subdivisoes = fam.subdivisoes || [];
+  if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Produtos', itens: fam.itens }];
+
+  const blocosTabelas = subdivisoes.map(sub => {
+    const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo));
+    if (itensDaSub.length === 0) return '';
+    itensDaSub.sort((a, b) => a.subgrupo.localeCompare(b.subgrupo));
+
+    const cardsHtml = itensDaSub.map((it, index) => {
+      const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+      const temImagem = it.imagem_url && it.imagem_url.trim() !== '';
+      const isAtivo = index === 0 ? 'ativa' : '';
+      
+      return `
+        <div class="card-solto ${isAtivo}" id="mini-${it.codigo}" 
+             style="position:relative; display:flex; flex-direction:column; justify-content:space-between; padding:16px; height: 100%; cursor:pointer; transition: 0.2s;"
+             onclick="selecionarAcessorio('${fam.id}', '${it.codigo}', '${it.imagem_url}', \`${escapeHtml(it.descricao_longa).replace(/`/g, '')}\`, \`${escapeHtml(it.subgrupo).replace(/`/g, '')}\`)">
+          
+          ${q > 0 ? `<div style="position:absolute; top:8px; right:8px; background:var(--verde); color:white; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:900; border:2px solid white; z-index:3;">${q}</div>` : ''}
+
+          <div class="img" style="margin-bottom:16px; aspect-ratio:1; background:var(--cinza-50); border-radius:8px; overflow:hidden;">
+            ${temImagem ? `<img src="${it.imagem_url}" alt="${escapeHtml(it.subgrupo)}" style="width:100%; height:100%; object-fit:contain;">` : '🖼️'}
+          </div>
+          
+          <div style="flex:1; display:flex; flex-direction:column; justify-content:flex-start;">
+            <div class="nome" style="font-size:0.85rem; font-weight:800; color:var(--azul-800); margin-bottom:8px; line-height:1.3; text-align:left;">${escapeHtml(it.subgrupo)}</div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:12px; margin-top:8px;">
+            <div class="preco" style="font-size:1.1rem; font-weight:900; color:var(--verde); text-align:left;">R$ ${fmtMoeda(it.preco)}</div>
+            
+            <div class="qtd-ctrl" style="display:flex; width:100%; justify-content:space-between;" onclick="event.stopPropagation()">
+              <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+              <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)" style="flex:1;">
+              <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="sub-bloco" style="margin-top: 16px;">
+        ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
+        <div class="grade-soltos" style="margin-top: 12px; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
+          ${cardsHtml}
+        </div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="familia-bloco">
+      <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
+      <div class="molinete-card" id="card-fam-${fam.id}">
+        <div class="familia-side">
+          <div class="familia-foto-principal" id="foto-pai-${fam.id}">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div>
+          <button class="btn-detalhes" id="btn-detalhes-${fam.id}" data-titulo="${escapeHtml(primeiroItem.subgrupo || fam.nome)}" data-desc="${escapeHtml(descInicial)}" onclick="abrirModalPorBotao(this)" style="justify-content:center; width:100%;">🔍 Ver detalhes do produto</button>
+        </div>
+        <div class="molinete-info" style="overflow: hidden;">${blocosTabelas}</div>
+      </div>
+    </div>`;
+}
+
+function selecionarAcessorio(famId, codigo, url, descricao, nome) {
+  const cardFam = document.getElementById(`card-fam-${famId}`);
+  if (cardFam) {
+    cardFam.querySelectorAll('.card-solto').forEach(c => c.style.borderColor = 'var(--cinza-200)');
+    const cardAtivo = document.getElementById(`mini-${codigo}`);
+    if (cardAtivo) cardAtivo.style.borderColor = 'var(--azul-800)';
+    const fotoPai = document.getElementById(`foto-pai-${famId}`);
+    if (fotoPai) fotoPai.innerHTML = url && url.trim() !== '' ? `<img src="${url}">` : '🖼️';
+    const btnDetalhes = document.getElementById(`btn-detalhes-${famId}`);
+    if (btnDetalhes) { btnDetalhes.setAttribute('data-titulo', nome); btnDetalhes.setAttribute('data-desc', descricao); }
+  }
+}
+
+// ==========================================
+// ISCAS
+// ==========================================
+function analisarIsca(it) {
+  const attrs = it.atributos || {};
+  const getVal = (arr) => { for (let k of arr) if (attrs[k]) return String(attrs[k]); return ''; };
+  return { modelo: getVal(['Modelo', 'MODELO']), cor: getVal(['Cores', 'COR', 'Cor']), tamanho: getVal(['Tamanho (cm)', 'TAMANHO']), peso: getVal(['Peso (g)', 'PESO']) };
+}
+
+function renderFamiliaIsca(fam, itens) {
+  const primeiroItem = itens[0];
+  const imgInicial = primeiroItem?.imagem_url || '';
+  const modelosMap = new Map();
+  itens.forEach(it => {
+    const info = analisarIsca(it);
+    const chave = info.modelo || it.subgrupo; 
+    if (!modelosMap.has(chave)) modelosMap.set(chave, { nome: chave, tamanho: info.tamanho, peso: info.peso, itens: [] });
+    modelosMap.get(chave).itens.push(it);
+  });
+  const modelos = Array.from(modelosMap.values());
+  const tabsHtml = modelos.map((mod, idx) => `<button class="isca-modelo-btn ${idx===0?'ativo':''}" onclick="trocarModeloIsca('${fam.id}', '${escapeHtml(mod.nome)}')">${escapeHtml(mod.nome)}</button>`).join('');
+  const coresHtml = modelos[0].itens.map(it => {
+    const info = analisarIsca(it); const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+    return `<div class="isca-cor-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" onclick="selecionarIsca('${fam.id}', '${it.codigo}', '${it.imagem_url}')"><span class="isca-badge">${q}</span><img src="${it.imagem_url}"><div class="cor-nome">${escapeHtml(info.cor || 'Padrão')}</div><div class="cor-preco">R$ ${fmtMoeda(it.preco)}</div><div class="isca-qtd-ctrl" onclick="event.stopPropagation()"><button onclick="mudarQtd('${it.codigo}', -1)">−</button><input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)"><button onclick="mudarQtd('${it.codigo}', 1)">+</button></div></div>`;
+  }).join('');
+  window.iscasData = window.iscasData || {}; window.iscasData[fam.id] = modelos;
+  
+  return `
+    <div class="familia-bloco">
+      <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
+      <div class="isca-card" id="card-fam-${fam.id}">
+        <div class="familia-side">
+          <div class="familia-foto-principal" id="foto-pai-${fam.id}">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div>
+          <div class="isca-desc">${escapeHtml(primeiroItem.descricao_longa)}</div>
+        </div>
+        <div class="isca-info">
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes completo</button>
+          <div class="isca-modelos-tabs">${tabsHtml}</div>
+          <div class="isca-titulo-cores">Cores</div>
+          <div class="isca-grade" id="grade-cores-${fam.id}">${coresHtml}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function trocarModeloIsca(famId, modeloNome) {
+  const modelos = window.iscasData[famId]; const modelo = modelos.find(m => m.nome === modeloNome);
+  const card = document.getElementById(`card-fam-${famId}`);
+  card.querySelectorAll('.isca-modelo-btn').forEach(b => b.classList.remove('ativo'));
+  const grade = document.getElementById(`grade-cores-${famId}`);
+  grade.innerHTML = modelo.itens.map(it => {
+    const info = analisarIsca(it); const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+    return `<div class="isca-cor-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}"><span class="isca-badge">${q}</span><img src="${it.imagem_url}"><div class="cor-nome">${escapeHtml(info.cor || 'Padrão')}</div><div class="cor-preco">R$ ${fmtMoeda(it.preco)}</div><div class="isca-qtd-ctrl" onclick="event.stopPropagation()"><button onclick="mudarQtd('${it.codigo}', -1)">−</button><input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)"><button onclick="mudarQtd('${it.codigo}', 1)">+</button></div></div>`;
+  }).join('');
+}
+
+function selecionarIsca(famId, codigo, url) {
+  const card = document.getElementById(`card-fam-${famId}`);
+  card.querySelectorAll('.isca-cor-card').forEach(m => m.classList.remove('ativa'));
+  document.getElementById(`mini-${codigo}`).classList.add('ativa');
+  document.getElementById(`foto-pai-${famId}`).innerHTML = `<img src="${url}">`;
+}
+
+// ==========================================
+// ANZÓIS
+// ==========================================
+function renderFamiliaAnzol(fam, itens) {
+  const primeiroItem = itens[0];
+  const imgInicial = primeiroItem?.imagem_url || '';
+  let subdivisoes = fam.subdivisoes || [];
+  if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Todos', itens: fam.itens }];
+  const tabsHtml = subdivisoes.map((sub, idx) => `<button class="anzol-tab ${idx===0?'ativo':''}" onclick="trocarTipoAnzol('${fam.id}', ${idx})">${sub.nome}</button>`).join('');
+  const itensIniciais = itens.filter(it => subdivisoes[0].itens.includes(it.codigo));
+  itensIniciais.sort((a, b) => analisarAnzol(a).numero.localeCompare(analisarAnzol(b).numero, undefined, { numeric: true }));
+  const numerosHtml = itensIniciais.map(it => {
+    const info = analisarAnzol(it); const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+    return `<div class="anzol-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" onclick="selecionarAnzol('${fam.id}', '${it.codigo}', '${it.imagem_url}')"><span class="anzol-badge">${q}</span><div class="anzol-numero">${info.numero}</div><div class="anzol-preco">R$ ${fmtMoeda(it.preco)}</div><div class="anzol-qtd-ctrl" onclick="event.stopPropagation()"><button onclick="mudarQtd('${it.codigo}', -1)">−</button><input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)"><button onclick="mudarQtd('${it.codigo}', 1)">+</button></div></div>`;
+  }).join('');
+  window.anzolData = window.anzolData || {}; window.anzolData[fam.id] = { subdivisoes, itens };
+  return `
+    <div class="familia-bloco">
+      <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
+      <div class="anzol-card" id="card-fam-${fam.id}">
+        <div class="familia-side">
+          <div class="familia-foto-principal" id="foto-pai-${fam.id}">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div>
+          <div class="isca-desc">${escapeHtml(primeiroItem.descricao_longa)}</div>
+        </div>
+        <div class="anzol-info">
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes completo</button>
+          <div class="anzol-tabs">${tabsHtml}</div>
+          <div class="isca-titulo-cores">Números</div>
+          <div class="anzol-grade" id="grade-numeros-${fam.id}">${numerosHtml}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function trocarTipoAnzol(famId, subIndex) {
+  const data = window.anzolData[famId]; const sub = data.subdivisoes[subIndex];
+  const card = document.getElementById(`card-fam-${famId}`);
+  card.querySelectorAll('.anzol-tab').forEach(b => b.classList.remove('ativo'));
+  document.getElementById(`grade-numeros-${famId}`).innerHTML = data.itens.filter(it => sub.itens.includes(it.codigo)).sort((a, b) => analisarAnzol(a).numero.localeCompare(analisarAnzol(b).numero, undefined, { numeric: true })).map(it => {
+    const info = analisarAnzol(it); const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+    return `<div class="anzol-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}"><span class="anzol-badge">${q}</span><div class="anzol-numero">${info.numero}</div><div class="anzol-preco">R$ ${fmtMoeda(it.preco)}</div><div class="anzol-qtd-ctrl" onclick="event.stopPropagation()"><button onclick="mudarQtd('${it.codigo}', -1)">−</button><input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)"><button onclick="mudarQtd('${it.codigo}', 1)">+</button></div></div>`;
+  }).join('');
+}
+
+function selecionarAnzol(famId, codigo, url) {
+  const card = document.getElementById(`card-fam-${famId}`);
+  card.querySelectorAll('.anzol-numero-card').forEach(m => m.classList.remove('ativa'));
+  document.getElementById(`mini-${codigo}`).classList.add('ativa');
+  document.getElementById(`foto-pai-${famId}`).innerHTML = `<img src="${url}">`;
+}
+
+// ==========================================
+// COMUM (Fallback)
+// ==========================================
+function renderFamiliaComum(fam, itens) {
+  const primeiroItem = itens[0];
+  const imgInicial = primeiroItem?.imagem_url || '';
+  const linhasHtml = itens.map(it => {
+    const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+    return `
+      <div class="linha-filho">
+        <div class="l-cod">${it.codigo}</div>
+        <div class="l-nome">${escapeHtml(it.subgrupo)}</div>
+        <div class="l-var-col"></div>
+        <div class="l-preco">R$ ${fmtMoeda(it.preco)}</div>
+        <div class="l-qtd" onclick="event.stopPropagation()">
+          <div class="qtd-ctrl"><button onclick="mudarQtd('${it.codigo}', -1)">−</button><input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)"><button onclick="mudarQtd('${it.codigo}', 1)">+</button></div>
+        </div>
+      </div>`;
+  }).join('');
+  return `
+    <div class="familia-bloco">
+      <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
+      <div class="familia-card" id="card-fam-${fam.id}">
+        <div class="familia-side"><div class="familia-foto-principal">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
+        <div class="familia-info">
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes</button>
+          <div class="lista-filhos"><div class="lista-header"><div>Código</div><div>Produto</div><div>Variação</div><div>Preço</div><div>Qtd</div></div>${linhasHtml}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function cardSoltos(it) {
+  return `<div class="card-solto"><div class="img">${it.imagem_url ? `<img src="${it.imagem_url}">` : '🖼️'}</div><div class="nome">${escapeHtml(it.subgrupo)}</div><div class="preco">R$ ${fmtMoeda(it.preco)}</div></div>`;
+}
+
+function abrirModalDescricao(titulo, texto) {
+  if (!texto) texto = 'Este produto não possui descrição detalhada.';
+  document.getElementById('modalTitulo').textContent = titulo || 'Detalhes do Produto';
+  document.getElementById('modalBody').innerHTML = `<p>${escapeHtml(texto)}</p>`;
+  document.getElementById('modalBg').classList.add('on');
+}
+function abrirModalPorBotao(btn) {
+  abrirModalDescricao(btn.getAttribute('data-titulo'), btn.getAttribute('data-desc'));
+}
+function fecharModal(ev, force) {
+  if (!force && ev && ev.target && ev.target.id !== 'modalBg') return;
+  document.getElementById('modalBg').classList.remove('on');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') fecharModal(null, true); });
+
+function buscarItem(codigo) { return todosItens.find(i => i.codigo === codigo); }
+function mudarQtd(cod, delta) { const a = carrinho[cod] ? carrinho[cod].qtd : 0; setQtd(cod, a + delta); }
+function setQtd(cod, valor) {
+  const q = parseInt(valor) || 0; const item = buscarItem(cod);
+  if (q <= 0) delete carrinho[cod];
+  else carrinho[cod] = { qtd: q, precoBase: item.precoBase, desc: item.subgrupo, img: item.imagem_url };
+  document.querySelectorAll(`input[onchange*="'${cod}'"]`).forEach(inp => inp.value = q);
+  const card = document.getElementById(`mini-${cod}`);
+  if (card) {
+    const badge = card.querySelector('.isca-badge') || card.querySelector('.anzol-badge');
+    if (q > 0) { card.classList.add('tem-qtd'); if (badge) badge.textContent = q; }
+    else card.classList.remove('tem-qtd');
+  }
+  atualizarCarrinho();
+}
+function atualizarCarrinho() {
+  const itens = Object.keys(carrinho); let total = 0, qtdTotal = 0;
+  const html = itens.map(cod => {
+    const i = carrinho[cod];
+    const precoFinalUnitario = calcularPrecoFinal(i.precoBase);
+    const sub = precoFinalUnitario * i.qtd; 
+    total += sub; qtdTotal += i.qtd;
+    
+    return `<div class="pedido-item">${i.img?`<img src="${i.img}">`:'🖼️'} <div>${escapeHtml(i.desc)}</div> <span>${i.qtd}x</span> <strong>R$ ${fmtMoeda(sub)}</strong> <button onclick="setQtd('${cod}', 0)" style="background:none;border:none;color:red;cursor:pointer;">×</button></div>`;
+  }).join('');
+  document.getElementById('topoQtd').textContent = qtdTotal;
+  document.getElementById('pedidoTotal').textContent = `Total: R$ ${fmtMoeda(total)}`;
+  document.getElementById('pedidoLista').innerHTML = html;
+  document.getElementById('pedidoRapido').classList.toggle('on', itens.length > 0);
+}
+function togglePedido() {
+  const l = document.getElementById('pedidoLista');
+  l.style.display = (l.style.display === 'none') ? 'flex' : 'none';
+}
+let deb;
+document.getElementById('busca').addEventListener('input', e => {
+  clearTimeout(deb); deb = setTimeout(() => { buscaAtual = e.target.value; renderizar(); }, 200);
+});
+
+// Formatação automática do CNPJ no input
+document.getElementById('inputCnpj').addEventListener('input', function(e) {
+  let v = e.target.value.replace(/\D/g, '');
+  if (v.length > 14) v = v.slice(0, 14);
+  v = v.replace(/^(\d{2})(\d)/, '$1.$2');
+  v = v.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+  v = v.replace(/\.(\d{3})(\d)/, '.$1/$2');
+  v = v.replace(/(\d{4})(\d)/, '$1-$2');
+  e.target.value = v;
+});
+
+// Enter para logar
+document.getElementById('inputCnpj').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') fazerLogin();
+});
+</script>
+</body>
+</html>
