@@ -8,13 +8,11 @@
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
   body { background: #0f172a; color: #e2e8f0; min-height: 100vh; display: flex; flex-direction: column; }
   
-  /* HEADER */
   header { background: #1e293b; padding: 16px 24px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }
   header h1 { font-size: 20px; font-weight: 800; color: #f8fafc; }
   .btn-refresh { background: #334155; color: #e2e8f0; border: none; border-radius: 8px; padding: 8px 16px; cursor: pointer; font-weight: 600; transition: 0.2s; }
   .btn-refresh:hover { background: #475569; }
 
-  /* LAYOUT */
   .wrap { display: flex; flex: 1; overflow: hidden; }
   .sidebar { width: 220px; background: #1e293b; border-right: 1px solid #334155; padding: 16px 0; display: flex; flex-direction: column; }
   .sidebar button { background: none; border: none; color: #94a3b8; padding: 14px 24px; text-align: left; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.2s; border-left: 3px solid transparent; }
@@ -26,7 +24,6 @@
   .page.active { display: block; }
   @keyframes fade { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
 
-  /* CARDS E PAINÉIS */
   .status-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
   .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; }
   .card .label { font-size: 12px; color: #94a3b8; text-transform: uppercase; font-weight: 700; }
@@ -36,13 +33,11 @@
   .painel { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 24px; margin-bottom: 24px; }
   .painel h2 { font-size: 18px; margin-bottom: 16px; color: #f8fafc; }
   
-  /* TABELAS */
   table { width: 100%; border-collapse: collapse; margin-top: 12px; }
   th { text-align: left; padding: 12px; font-size: 12px; text-transform: uppercase; color: #94a3b8; border-bottom: 1px solid #334155; }
   td { padding: 12px; border-bottom: 1px solid #334155; font-size: 14px; }
   tr:hover td { background: #0f172a; }
 
-  /* INPUTS E BOTÕES */
   .row { display: flex; gap: 16px; align-items: flex-end; margin-bottom: 16px; flex-wrap: wrap; }
   .row > * { flex: 1; min-width: 200px; }
   label { display: block; font-size: 12px; font-weight: 700; color: #94a3b8; margin-bottom: 6px; text-transform: uppercase; }
@@ -55,7 +50,6 @@
   .btn-salvar:disabled { opacity: 0.5; cursor: not-allowed; }
   .btn-mini { padding: 6px 12px; font-size: 12px; border-radius: 6px; }
   
-  /* FAMILIAS */
   .familia-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 20px; }
   .lista-subgrupos { background: #0f172a; border: 1px solid #334155; border-radius: 8px; max-height: 400px; overflow-y: auto; padding: 8px; }
   .item-subgrupo { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 14px; }
@@ -67,13 +61,16 @@
   .sel-item button { background: none; border: none; color: #fca5a5; cursor: pointer; }
   
   .card-familia-criada { background: #0f172a; border: 1px solid #475569; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
-  .card-familia-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .card-familia-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 12px; }
   .card-familia-head strong { color: #38bdf8; font-size: 18px; }
   .btn-add-sub { background: #334155; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; }
   .btn-del { background: #991b1b; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; margin-left: 8px; }
+  .btn-reord { background: #7c3aed; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; margin-left: 8px; }
+  .btn-reord:hover { background: #6d28d9; }
   .sub-item { display: flex; justify-content: space-between; background: #1e293b; padding: 8px 12px; border-radius: 6px; font-size: 13px; border-left: 3px solid #a78bfa; margin-bottom: 6px; }
 
-  /* MODAIS */
+  .badge-ordem { display: inline-block; background: #1e3a8a; color: #93c5fd; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-left: 6px; }
+
   .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 100; }
   .modal-bg.on { display: flex; }
   .modal { background: #1e293b; padding: 24px; border-radius: 12px; width: 100%; max-width: 600px; border: 1px solid #475569; }
@@ -96,7 +93,6 @@
 </header>
 
 <div class="wrap">
-  <!-- SIDEBAR -->
   <aside class="sidebar">
     <button class="active" data-page="importar">📥 Importar</button>
     <button data-page="familias">👨‍👩‍👧‍👦 Famílias</button>
@@ -105,11 +101,9 @@
     <button data-page="vendedores">👤 Vendedores</button>
   </aside>
 
-  <!-- MAIN -->
   <main class="main">
     <div class="alerta" id="alerta"></div>
 
-    <!-- ═══════════ PÁGINA: IMPORTAR ═══════════ -->
     <section class="page active" id="page-importar">
       <div class="status-cards">
         <div class="card"><div class="label">Itens Sistema</div><div class="value" id="cnt-sistema">—</div></div>
@@ -124,6 +118,9 @@
           <button class="btn-primario" id="btn-sistema" onclick="upload('sistema')">Importar</button>
         </div>
         <div class="msg" id="msg-sistema"></div>
+        <p style="font-size:12px; color:#64748b; margin-top:8px;">
+          💡 A ordem das linhas do Excel é salva em <code>ordem_excel</code>. Produtos da mesma família aparecem no catálogo seguindo essa ordem.
+        </p>
       </div>
 
       <div class="painel">
@@ -145,11 +142,13 @@
       </div>
     </section>
 
-    <!-- ═══════════ PÁGINA: FAMÍLIAS ═══════════ -->
     <section class="page" id="page-familias">
       <div class="painel">
         <h2>Criar Família de Produtos</h2>
-        <p style="font-size:14px; color:#94a3b8; margin-bottom:16px;">Selecione os subgrupos que pertencem à mesma família.</p>
+        <p style="font-size:14px; color:#94a3b8; margin-bottom:16px;">
+          Selecione os subgrupos que pertencem à mesma família.
+          <span id="aviso-ordem" style="display:none; color:#93c5fd;">&nbsp;• Os subgrupos estão ordenados pela planilha do sistema.</span>
+        </p>
         <div class="familia-grid">
           <div class="col-subgrupos">
             <input type="text" class="busca-subgrupo" id="busca-subgrupo" placeholder="Buscar subgrupo..." oninput="filtrarListaSubgrupos()" style="margin-bottom:12px;">
@@ -173,7 +172,6 @@
       </div>
     </section>
 
-    <!-- ═══════════ PÁGINA: CLIENTES ═══════════ -->
     <section class="page" id="page-clientes">
       <div class="painel">
         <h2>👥 Clientes Cadastrados</h2>
@@ -208,7 +206,6 @@
       </div>
     </section>
 
-    <!-- ═══════════ PÁGINA: ACRÉSCIMOS ═══════════ -->
     <section class="page" id="page-acrescimos">
       <div class="painel">
         <h2>Grupos de Acréscimo</h2>
@@ -230,7 +227,6 @@
       </div>
     </section>
 
-    <!-- ═══════════ PÁGINA: VENDEDORES ═══════════ -->
     <section class="page" id="page-vendedores">
       <div class="painel" style="background:#0f172a; border:1px dashed #475569;">
         <h2 style="margin-bottom:16px;">➕ Novo Vendedor</h2>
@@ -266,7 +262,6 @@
   </main>
 </div>
 
-<!-- ═══════════ MODAL SUBDIVISÃO ═══════════ -->
 <div class="modal-bg" id="modalSubBg">
   <div class="modal">
     <h3>Criar Subdivisão</h3>
@@ -284,12 +279,13 @@
 // ESTADO GLOBAL
 // ================================================================
 let todosSubgrupos = [], selecionados = new Set(), familiaAtualParaSub = null;
-let todosOsProdutos = []; 
+let todosOsProdutos = [];
+let familiasCache = [];              // 👈 NOVO: cache de famílias
 let pagClientes = 1, totPagClientes = 1, timeoutCli = null;
 let gruposAcrescimoCache = [], ufsAcrescimoCache = [];
 
 // ================================================================
-// NAVEGAÇÃO DAS ABAS
+// NAVEGAÇÃO
 // ================================================================
 document.querySelectorAll('.sidebar button').forEach(b => {
   b.onclick = () => {
@@ -301,7 +297,6 @@ document.querySelectorAll('.sidebar button').forEach(b => {
     const target = document.getElementById('page-' + pageId);
     if (target) target.classList.add('active');
 
-    // Carregar dados ao entrar na aba
     if (pageId === 'importar') { carregarStatus(); }
     if (pageId === 'familias') { carregarDados(); }
     if (pageId === 'clientes') { carregarClientes(1); }
@@ -344,7 +339,7 @@ async function carregarStatus() {
 }
 
 // ================================================================
-// IMPORTAR (SISTEMA / SCRAPING / CLIENTES)
+// IMPORTAR
 // ================================================================
 async function upload(tipo) {
   const fi = document.getElementById('file-' + tipo), btn = document.getElementById('btn-' + tipo), msg = document.getElementById('msg-' + tipo);
@@ -357,7 +352,7 @@ async function upload(tipo) {
     const j = await r.json();
     if (!r.ok || j.erro) throw new Error(j.erro);
     
-    msg.className = 'msg ok'; msg.style.background = '#064e3b'; msg.style.color = '#6ee7b7'; msg.textContent = `Sucesso: ${j.inseridos}`;
+    msg.className = 'msg ok'; msg.style.background = '#064e3b'; msg.style.color = '#6ee7b7'; msg.textContent = `Sucesso: ${j.inseridos} itens importados.`;
     carregarStatus(); 
     if (tipo === 'scraping') carregarDados();
   } catch(e) { 
@@ -380,26 +375,47 @@ async function carregarDados() {
     const r = await fetch('/api/catalogo'); const j = await r.json();
     todosOsProdutos = j.itens;
 
-const re = await fetch('/api/estoque-subgrupos'); const je = await re.json();
-window.estoquePorSub = je.estoquePorSub || {};
-window.estoquePorFamilia = je.estoquePorFamilia || {};
+    // 👇 Estoque + ordem por subgrupo (a rota precisa devolver ordemPorSubgrupo)
+    const re = await fetch('/api/estoque-subgrupos'); const je = await re.json();
+    window.estoquePorSub = je.estoquePorSub || {};
+    window.estoquePorFamilia = je.estoquePorFamilia || {};
+    window.ordemPorSub = je.ordemPorSubgrupo || {};   // 👈 NOVO
+
+    // 👇 Debug: mostra no console pra você conferir
+    console.log('📊 ordemPorSubgrupo:', window.ordemPorSub);
+    console.log('📊 Exemplo de item:', j.itens[0]);
 
     const map = {};
     j.itens.forEach(i => { 
       if(i.subgrupo_scraping) map[i.subgrupo_scraping] = (map[i.subgrupo_scraping]||0)+1; 
     });
     
-    todosSubgrupos = Object.keys(map).sort()
+    // 👇 NOVO: ordena subgrupos por ordem_excel (se disponível), senão alfabético
+    const ordemPorSub = window.ordemPorSub;
+    const temOrdemExcel = Object.keys(ordemPorSub).length > 0;
+
+    todosSubgrupos = Object.keys(map)
+      .sort((a, b) => {
+        if (temOrdemExcel) {
+          const oa = ordemPorSub[a] ?? 999999;
+          const ob = ordemPorSub[b] ?? 999999;
+          if (oa !== ob) return oa - ob;
+        }
+        return a.localeCompare(b);
+      })
       .map(s => {
         const todosItensDoSub = j.itens.filter(i => i.subgrupo_scraping === s);
         const todosOcupados = todosItensDoSub.every(i => codigosOcupados.has(i.codigo));
-        return { nome: s, qtd: map[s], ocupado: todosOcupados };
+        return { nome: s, qtd: map[s], ocupado: todosOcupados, ordem: ordemPorSub[s] ?? null };
       })
       .filter(s => !s.ocupado);
+
+    // Mostra aviso se tem ordem disponível
+    document.getElementById('aviso-ordem').style.display = temOrdemExcel ? 'inline' : 'none';
       
     filtrarListaSubgrupos(); 
-    carregarFamiliasCriadas();
-  } catch(e) { console.error(e); }
+    await carregarFamiliasCriadas();
+  } catch(e) { console.error(e); alerta('Erro ao carregar dados: ' + e.message, 'erro'); }
 }
 
 function filtrarListaSubgrupos() {
@@ -408,9 +424,10 @@ function filtrarListaSubgrupos() {
   const f = todosSubgrupos.filter(s => s.nome.toLowerCase().includes(t));
   d.innerHTML = f.map(s => {
     const estoqueSub = window.estoquePorSub[s.nome] || 0;
+    const badgeOrdem = s.ordem !== null ? `<span class="badge-ordem">#${s.ordem}</span>` : '';
     return `<label class="item-subgrupo">
       <input type="checkbox" value="${s.nome.replace(/"/g,'&quot;')}" onchange="toggleSel(this)" ${selecionados.has(s.nome)?'checked':''}>
-      <span>${s.nome}</span>
+      <span>${s.nome}${badgeOrdem}</span>
       <span style="margin-left:auto;font-size:12px;color:#64748b">
         ${s.qtd} itens | Estoque: <strong style="color:${estoqueSub > 0 ? '#10b981' : '#64748b'}">${estoqueSub}</strong>
       </span>
@@ -426,13 +443,21 @@ function toggleSel(c) {
 
 function renderSel() {
   const d = document.getElementById('lista-selecionados');
-  if(!selecionados.size) { d.innerHTML = '<div style="color:#64748b;text-align:center;margin-top:20px">Nenhum</div>'; document.getElementById('btn-salvar-familia').disabled = true; return; }
-  d.innerHTML = Array.from(selecionados).map(s => `<div class="sel-item"><span>${s}</span><button onclick="remSel('${s.replace(/'/g,"\\'")}')">✕</button></div>`).join('');
+  if(!selecionados.size) { 
+    d.innerHTML = '<div style="color:#64748b;text-align:center;margin-top:20px">Nenhum</div>'; 
+    document.getElementById('btn-salvar-familia').disabled = true; 
+    return; 
+  }
+  d.innerHTML = Array.from(selecionados).map(s => 
+    `<div class="sel-item"><span>${s}</span><button onclick="remSel('${s.replace(/'/g,"\\'")}')">✕</button></div>`
+  ).join('');
   verificarBotaoSalvar();
 }
 
 function remSel(s) { selecionados.delete(s); renderSel(); filtrarListaSubgrupos(); }
-function verificarBotaoSalvar() { document.getElementById('btn-salvar-familia').disabled = !(document.getElementById('nome-familia').value.trim() && selecionados.size); }
+function verificarBotaoSalvar() { 
+  document.getElementById('btn-salvar-familia').disabled = !(document.getElementById('nome-familia').value.trim() && selecionados.size); 
+}
 
 async function criarFamilia() {
   const nome = document.getElementById('nome-familia').value.trim();
@@ -442,14 +467,22 @@ async function criarFamilia() {
     .filter(it => selecionados.has(it.subgrupo_scraping))
     .map(it => it.codigo);
 
-  const r = await fetch('/api/familias', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome: nome, itens: codigos }) });
+  const r = await fetch('/api/familias', { 
+    method: 'POST', 
+    headers: { 'Content-Type': 'application/json' }, 
+    body: JSON.stringify({ nome, itens: codigos }) 
+  });
   const j = await r.json();
   
-  if (j.ok) {
+  if (j.ok && j.id) {
     alert('Família criada! Agora vamos criar as subdivisões.');
-    selecionados.clear(); document.getElementById('nome-familia').value = ''; renderSel();
+    selecionados.clear(); 
+    document.getElementById('nome-familia').value = ''; 
+    renderSel();
     await carregarDados();
     abrirModalSub(j.id);
+  } else {
+    alert('❌ Erro ao criar família: ' + (j.erro || 'ID não retornado'));
   }
 }
 
@@ -462,7 +495,14 @@ async function deletarFamilia(id) {
 async function carregarFamiliasCriadas() {
   const d = document.getElementById('lista-familias-criadas');
   const r = await fetch('/api/familias'); const j = await r.json();
-  if(!j.ok || !j.familias.length) { d.innerHTML = '<span style="color:#64748b">Nenhuma.</span>'; return; }
+  
+  if(!j.ok || !j.familias.length) { 
+    d.innerHTML = '<span style="color:#64748b">Nenhuma.</span>'; 
+    familiasCache = [];
+    return; 
+  }
+
+  familiasCache = j.familias;   // 👈 guarda cache
   
   d.innerHTML = j.familias.map(f => {
     const estoqueFam = window.estoquePorFamilia[f.id] || 0;
@@ -476,18 +516,53 @@ async function carregarFamiliasCriadas() {
           </span>
           <div>
             <button class="btn-add-sub" onclick="abrirModalSub(${f.id})">+ Subdivisão</button>
+            <button class="btn-reord" onclick="reordenarFamilia(${f.id})" title="Reordenar subdivisões pela ordem do Excel">↕ Reordenar</button>
             <button class="btn-del" onclick="deletarFamilia(${f.id})">Excluir</button>
           </div>
         </div>
       </div>
-      ${f.subdivisoes.length ? f.subdivisoes.map(s=>`<div class="sub-item"><strong>${s.nome}</strong><span>${s.itens.length} produtos</span></div>`).join('') : '<div style="font-size:12px;color:#64748b">Sem subdivisões.</div>'}
+      ${f.subdivisoes.length 
+        ? f.subdivisoes.map(s=>`<div class="sub-item"><strong>${s.nome}</strong><span>${s.itens.length} produtos</span></div>`).join('') 
+        : '<div style="font-size:12px;color:#64748b">Sem subdivisões.</div>'}
     </div>`;
   }).join('');
 }
 
+// 👇 NOVO: reordena as subdivisões de uma família pela menor ordem_excel dos itens
+async function reordenarFamilia(id) {
+  const fam = familiasCache.find(f => f.id === id);
+  if (!fam || !fam.subdivisoes?.length) return alert('Sem subdivisões para reordenar.');
+
+  const ordemPorCodigo = {};
+  todosOsProdutos.forEach(p => { ordemPorCodigo[p.codigo] = p.ordem_excel ?? 999999; });
+
+  const novasSubs = fam.subdivisoes.map(s => {
+    const menorOrdem = Math.min(...s.itens.map(c => ordemPorCodigo[c] ?? 999999));
+    return { ...s, _ordem: menorOrdem };
+  }).sort((a, b) => a._ordem - b._ordem).map(({ _ordem, ...rest }) => rest);
+
+  const r = await fetch('/api/familias/' + id, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nome: fam.nome, itens: fam.itens, subdivisoes: novasSubs })
+  });
+
+  if (r.ok) {
+    alert('✅ Subdivisões reordenadas!');
+    await carregarFamiliasCriadas();
+  } else {
+    alert('❌ Erro ao reordenar.');
+  }
+}
+
 async function abrirModalSub(id) {
-  const r = await fetch('/api/familias'); const j = await r.json();
-  familiaAtualParaSub = j.familias.find(f => f.id === id);
+  // Usa cache se possível, senão busca
+  let fam = familiasCache.find(f => f.id === id);
+  if (!fam) {
+    const r = await fetch('/api/familias'); const j = await r.json();
+    fam = j.familias.find(f => f.id === id);
+  }
+  familiaAtualParaSub = fam;
   if(!familiaAtualParaSub) return;
   
   document.getElementById('subNome').value = '';
@@ -495,7 +570,9 @@ async function abrirModalSub(id) {
   const codigosUsados = new Set();
   familiaAtualParaSub.subdivisoes.forEach(s => s.itens.forEach(c => codigosUsados.add(c)));
 
-  const produtosDisponiveis = todosOsProdutos.filter(p => codigosFam.includes(p.codigo) && !codigosUsados.has(p.codigo));
+  const produtosDisponiveis = todosOsProdutos
+    .filter(p => codigosFam.includes(p.codigo) && !codigosUsados.has(p.codigo))
+    .sort((a, b) => (a.ordem_excel ?? 999999) - (b.ordem_excel ?? 999999));  // 👈 ordena por Excel
 
   if (produtosDisponiveis.length === 0) {
     alert('Todos os itens desta família já estão em subdivisões.');
@@ -503,7 +580,11 @@ async function abrirModalSub(id) {
   }
 
   document.getElementById('modalListaItens').innerHTML = produtosDisponiveis.map(p => `
-    <label><input type="checkbox" value="${p.codigo}"><span>${p.codigo} - ${p.descricao_sistema || p.subgrupo_scraping}</span></label>
+    <label>
+      <input type="checkbox" value="${p.codigo}">
+      <span>${p.codigo} - ${p.descricao_sistema || p.subgrupo_scraping}</span>
+      ${p.ordem_excel ? `<span style="margin-left:auto; color:#64748b; font-size:11px;">#${p.ordem_excel}</span>` : ''}
+    </label>
   `).join('');
 
   document.getElementById('modalSubBg').classList.add('on');
@@ -598,7 +679,7 @@ function renderPaginacaoClientes() {
 }
 
 // ================================================================
-// ACRÉSCIMOS POR UF
+// ACRÉSCIMOS
 // ================================================================
 async function carregarAcrescimos() {
   await carregarGruposAcrescimo();

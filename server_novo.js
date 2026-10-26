@@ -25,7 +25,8 @@ const upload = multer({ storage: multer.memoryStorage() });
 // IMPORTAÇÕES
 // ==========================================
 
-// IMPORTAR PLANILHA
+// IMPORTAR PLANILHA DO SISTEMA
+// Salva ordem_excel = posição da linha na planilha (linha 2 = 1, linha 3 = 2, ...)
 app.post('/api/importar/sistema', upload.single('arquivo'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ erro: 'Nenhum arquivo enviado.' });
@@ -36,7 +37,7 @@ app.post('/api/importar/sistema', upload.single('arquivo'), async (req, res) => 
     if (!nomeAbaGeral) return res.status(400).json({ erro: 'Aba GERAL não encontrada.' });
     const linhas = XLSX.utils.sheet_to_json(wb.Sheets[nomeAbaGeral], { defval: '' });
     
-    // 2. Encontra a aba ESTOQUE
+    // 2. Encontra a aba ESTOQUE (opcional)
     const nomeAbaEstoque = wb.SheetNames.find(n => n.trim().toUpperCase() === 'ESTOQUE');
     const mapaEstoque = new Map();
     
@@ -49,7 +50,7 @@ app.post('/api/importar/sistema', upload.single('arquivo'), async (req, res) => 
       
       for (const r of estoqueRows) {
         const codOriginal = String(r['Cod. Produto'] ?? r['Código'] ?? r['codigo'] ?? '').trim();
-        const codNormalizado = String(parseInt(codOriginal)); // Remove zeros à esquerda
+        const codNormalizado = String(parseInt(codOriginal));
         const qtd = r['QTD'] ?? r['Qtd'] ?? r['Estoque'] ?? r['ESTOQUE'] ?? 0;
         
         if (codOriginal) {
@@ -58,21 +59,26 @@ app.post('/api/importar/sistema', upload.single('arquivo'), async (req, res) => 
       }
       console.log(`✅ Aba de estoque encontrada. ${mapaEstoque.size} produtos com saldo.`);
     } else {
-      console.log(`⚠️ Aba "Estoque" não encontrada!`);
+      console.log(`⚠️ Aba "Estoque" não encontrada. Usando coluna "Estoque" da aba GERAL.`);
     }
 
     let inseridos = 0;
     let comEstoque = 0;
-    
+    let ordem = 0;
+
     for (const r of linhas) {
+      ordem++; // 👈 posição da linha no Excel: 1, 2, 3...
+      
       const codigoOriginal = String(r['Código'] ?? r['codigo'] ?? '').trim();
       if (!codigoOriginal) continue;
       
-      // Normaliza o código da aba GERAL da mesma forma
       const codigoNormalizado = String(parseInt(codigoOriginal));
       
-      // Busca o estoque no mapa normalizado
-      const estoque = mapaEstoque.get(codigoNormalizado) ?? 0;
+      // Estoque: prioriza aba ESTOQUE; se não existir, usa coluna "Estoque" da GERAL
+      let estoque = mapaEstoque.get(codigoNormalizado);
+      if (estoque === undefined) {
+        estoque = num(r['Estoque'] ?? r['ESTOQUE'] ?? r['estoque'] ?? 0);
+      }
       
       if (estoque > 0) comEstoque++;
       
@@ -82,6 +88,7 @@ app.post('/api/importar/sistema', upload.single('arquivo'), async (req, res) => 
         descricao: String(r['Descrição'] ?? r['descricao'] ?? '').trim(),
         estoque: estoque,
         preco_venda: num(r['P/Venda'] ?? r['preco_venda'] ?? 0),
+        ordem_excel: ordem, // 👈 ordem da linha no Excel
         ativo: 1,
         atualizado_em: new Date().toISOString()
       };
@@ -98,7 +105,7 @@ app.post('/api/importar/sistema', upload.single('arquivo'), async (req, res) => 
 });
 
 // ==========================================
-// ROTA DE IMPORTAÇÃO DE SCRAPING CORRIGIDA
+// IMPORTAÇÃO DE SCRAPING
 // ==========================================
 app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) => {
   try {
@@ -107,8 +114,6 @@ app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) =>
     const lista = Array.isArray(dados) ? dados : (dados.produtos || []);
 
     const limpaZero = (v) => String(v ?? '').trim().replace(/^0+/, '');
-    
-    // Usamos um Map para garantir que o mesmo código não vá duplicado no mesmo lote enviando pro Supabase
     const mapaLote = new Map();
 
     for (const p of lista) {
@@ -150,11 +155,10 @@ app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) =>
 });
 
 // ==========================================
-// ROTA DE STATUS COM PARSE DE CÓDIGO MELHORADO
+// STATUS
 // ==========================================
 app.get('/api/status', async (req, res) => {
   try {
-    // 1. Contagens totais (utiliza exact count para não sofrer limitação de tabela)
     const { count: sisCount, error: errSisCount } = await supabase
       .from('itens_sistema')
       .select('*', { count: 'exact', head: true });
@@ -167,98 +171,75 @@ app.get('/api/status', async (req, res) => {
       throw new Error(errSisCount?.message || errScrCount?.message);
     }
 
-    // 2. Busca paginada de TODOS os códigos do Sistema ERP
     let todosSisData = [];
     let de = 0;
     let temMais = true;
-
     while (temMais) {
-      const { data, error } = await supabase
-        .from('itens_sistema')
-        .select('codigo')
-        .range(de, de + 999);
-
+      const { data, error } = await supabase.from('itens_sistema').select('codigo').range(de, de + 999);
       if (error) throw error;
-      if (data && data.length > 0) {
-        todosSisData.push(...data);
-        de += 1000;
-      } else {
-        temMais = false;
-      }
+      if (data && data.length > 0) { todosSisData.push(...data); de += 1000; }
+      else { temMais = false; }
     }
 
-    // 3. Busca paginada de TODOS os códigos do Scraping
     let todosScrData = [];
     de = 0;
     temMais = true;
-
     while (temMais) {
-      const { data, error } = await supabase
-        .from('scraping_produtos')
-        .select('codigo')
-        .range(de, de + 999);
-
+      const { data, error } = await supabase.from('scraping_produtos').select('codigo').range(de, de + 999);
       if (error) throw error;
-      if (data && data.length > 0) {
-        todosScrData.push(...data);
-        de += 1000;
-      } else {
-        temMais = false;
-      }
+      if (data && data.length > 0) { todosScrData.push(...data); de += 1000; }
+      else { temMais = false; }
     }
 
-    // 4. Normalização consistente (limpa espaços e zeros à esquerda, preservando caracteres)
     const norm = c => String(c ?? '').trim().replace(/^0+/, '').toLowerCase();
+    const scrCodigosSet = new Set(todosScrData.map(s => norm(s.codigo)).filter(Boolean));
 
-    const scrCodigosSet = new Set(
-      todosScrData.map(s => norm(s.codigo)).filter(Boolean)
-    );
-
-    // Conta o cruzamento real da base inteira
     let cruzados = 0;
     todosSisData.forEach(s => {
       const cod = norm(s.codigo);
-      if (cod && scrCodigosSet.has(cod)) {
-        cruzados++;
-      }
+      if (cod && scrCodigosSet.has(cod)) cruzados++;
     });
 
     res.json({
       ok: true,
       itens_sistema: sisCount || 0,
       scraping_produtos: scrCount || 0,
-      cruzados: cruzados
+      cruzados
     });
   } catch (e) {
     res.status(500).json({ ok: false, erro: e.message });
   }
 });
 
-// ESTOQUE POR SUBGRUPO E POR FAMÍLIA
-// ESTOQUE POR SUBGRUPO E POR FAMÍLIA
-// ESTOQUE POR SUBGRUPO E POR FAMÍLIA
+// ==========================================
+// ESTOQUE POR SUBGRUPO / FAMÍLIA + ORDEM
+// ==========================================
 app.get('/api/estoque-subgrupos', async (req, res) => {
   try {
-    // Pega todos os itens do sistema com estoque
-    const { data: itens } = await supabase.from('itens_sistema').select('codigo, estoque').eq('ativo', 1);
+    // 👇 agora traz ordem_excel
+    const { data: itens } = await supabase
+      .from('itens_sistema')
+      .select('codigo, estoque, ordem_excel')
+      .eq('ativo', 1);
     
-    // Cria um mapa de código -> estoque
     const mapaEstoque = {};
+    const mapaOrdem = {};
     if (itens) {
       itens.forEach(it => {
-        mapaEstoque[String(parseInt(it.codigo))] = Number(it.estoque) || 0;
+        const cod = String(parseInt(it.codigo));
+        mapaEstoque[cod] = Number(it.estoque) || 0;
+        mapaOrdem[cod] = Number(it.ordem_excel) || 999999;
       });
     }
 
-    // Pega todas as famílias criadas
     const { data: familias } = await supabase.from('catalogo_familias').select('id, itens, subgrupos');
     
     const estoquePorFamilia = {};
     const estoquePorSubgrupo = {};
+    const ordemPorSubgrupo = {}; // 👈 NOVO
 
     if (familias) {
       familias.forEach(fam => {
-        // Soma o estoque de todos os itens da família
         const codigosFam = JSON.parse(fam.itens || '[]');
         let totalFam = 0;
         codigosFam.forEach(cod => {
@@ -269,89 +250,81 @@ app.get('/api/estoque-subgrupos', async (req, res) => {
       });
     }
 
-    // Calcula o estoque por subgrupo (para a lista de "Criar Família")
-    // Os subgrupos estão nos itens do scraping
     const { data: scraping } = await supabase.from('scraping_produtos').select('codigo, subgrupo');
     if (scraping && itens) {
       scraping.forEach(s => {
         const codNormalizado = String(parseInt(s.codigo));
         const estoqueItem = mapaEstoque[codNormalizado] || 0;
+        const ordemItem = mapaOrdem[codNormalizado] ?? 999999;
+        
         if (s.subgrupo) {
           if (!estoquePorSubgrupo[s.subgrupo]) estoquePorSubgrupo[s.subgrupo] = 0;
           estoquePorSubgrupo[s.subgrupo] += estoqueItem;
+
+          // 👇 menor ordem_excel de cada subgrupo
+          if (ordemPorSubgrupo[s.subgrupo] === undefined || ordemItem < ordemPorSubgrupo[s.subgrupo]) {
+            ordemPorSubgrupo[s.subgrupo] = ordemItem;
+          }
         }
       });
     }
 
-    res.json({ ok: true, estoquePorSub: estoquePorSubgrupo, estoquePorFamilia });
+    res.json({ 
+      ok: true, 
+      estoquePorSub: estoquePorSubgrupo, 
+      estoquePorFamilia,
+      ordemPorSubgrupo // 👈 o admin usa isso
+    });
   } catch (e) { 
     console.error("Erro estoque-subgrupos:", e);
     res.status(500).json({ ok: false, erro: e.message }); 
   }
 });
+
 // ==========================================
-// ROTA DO CATÁLOGO COM PARSE DE CÓDIGO MELHORADO
+// CATÁLOGO (item + scraping)
 // ==========================================
-// Manter APENAS UMA declaração da rota no arquivo (Substitua na Linha 148 e APAGUE a da Linha 225)
 app.get('/api/catalogo', async (req, res) => {
   try {
-    // 1. Busca TODOS os itens do sistema ERP (contornando o limite de 1000 do Supabase)
     let todosItensSis = [];
     let de = 0;
     const tamanhoPagina = 1000;
     let temMais = true;
 
     while (temMais) {
-      const { data, error } = await supabase
-        .from('itens_sistema')
-        .select('*')
-        .range(de, de + tamanhoPagina - 1);
-
+      const { data, error } = await supabase.from('itens_sistema').select('*').range(de, de + tamanhoPagina - 1);
       if (error) throw error;
-      
-      if (data && data.length > 0) {
-        todosItensSis.push(...data);
-        de += tamanhoPagina;
-      } else {
-        temMais = false;
-      }
+      if (data && data.length > 0) { todosItensSis.push(...data); de += tamanhoPagina; }
+      else { temMais = false; }
     }
 
-    // 2. Busca TODOS os produtos do scraping (também com paginação por garantia)
     let todosItensScr = [];
     de = 0;
     temMais = true;
 
     while (temMais) {
-      const { data, error } = await supabase
-        .from('scraping_produtos')
-        .select('*')
-        .range(de, de + tamanhoPagina - 1);
-
+      const { data, error } = await supabase.from('scraping_produtos').select('*').range(de, de + tamanhoPagina - 1);
       if (error) throw error;
-
-      if (data && data.length > 0) {
-        todosItensScr.push(...data);
-        de += tamanhoPagina;
-      } else {
-        temMais = false;
-      }
+      if (data && data.length > 0) { todosItensScr.push(...data); de += tamanhoPagina; }
+      else { temMais = false; }
     }
 
-    // Função para normalizar códigos (remover zeros à esquerda)
     const norm = c => String(c ?? '').trim().replace(/^0+/, '').toLowerCase();
 
-    // Mapeia os produtos do scraping
     const mapaScr = {};
     todosItensScr.forEach(s => {
       const chave = norm(s.codigo);
       if (chave) mapaScr[chave] = s;
     });
 
-    // Junta com os produtos do ERP
     const linhas = todosItensSis.map(s => {
       const chaveSis = norm(s.codigo);
       const scr = mapaScr[chaveSis] || {};
+
+      // 👇 ordem_excel: se for 0/vazio, joga pro fim (999999)
+      const ordemExcel = (s.ordem_excel && Number(s.ordem_excel) > 0)
+        ? Number(s.ordem_excel)
+        : 999999;
 
       return {
         codigo: s.codigo,
@@ -359,6 +332,8 @@ app.get('/api/catalogo', async (req, res) => {
         descricao_sistema: s.descricao,
         estoque: s.estoque,
         preco_venda: s.preco_venda,
+        ordem_excel: ordemExcel,
+        ordem_scraping: scr.ordem_excel ?? 0,
         subgrupo_scraping: scr.subgrupo || s.subgrupo || scr.grupo || '',
         grupo_scraping: scr.grupo || '',
         marca: scr.marca || '',
@@ -375,6 +350,9 @@ app.get('/api/catalogo', async (req, res) => {
   }
 });
 
+// ==========================================
+// CLIENTES (importar)
+// ==========================================
 app.post('/api/importar/clientes', upload.single('arquivo'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ erro: 'Nenhum arquivo enviado.' });
@@ -409,17 +387,8 @@ app.post('/api/importar/clientes', upload.single('arquivo'), async (req, res) =>
 });
 
 // ==========================================
-// CATÁLOGO E STATUS
-// ==========================================
-
-
-
-
-
-// ==========================================
 // FAMÍLIAS
 // ==========================================
-
 app.get('/api/familias', async (req, res) => {
   try {
     const { data, error } = await supabase.from('catalogo_familias').select('*').order('id', { ascending: false });
@@ -459,9 +428,8 @@ app.delete('/api/familias/:id', async (req, res) => {
 });
 
 // ==========================================
-// CLIENTES
+// CLIENTES (listar)
 // ==========================================
-
 app.get('/api/clientes', async (req, res) => {
   try {
     const { busca, pagina = 1, limite = 50 } = req.query;
@@ -478,9 +446,8 @@ app.get('/api/clientes', async (req, res) => {
 });
 
 // ==========================================
-// ACRÉSCIMOS E LOGIN DO CLIENTE
+// ACRÉSCIMOS
 // ==========================================
-
 app.get('/api/acrescimos/grupos', async (req, res) => {
   try {
     const { data: grupos, error } = await supabase.from('grupos_acrescimo').select('*').order('nome');
@@ -524,6 +491,9 @@ app.post('/api/acrescimos/uf', async (req, res) => {
   } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
 
+// ==========================================
+// LOGIN DO CLIENTE
+// ==========================================
 app.get('/api/login/:cnpj', async (req, res) => {
   try {
     const cnpjLimpo = String(req.params.cnpj).replace(/\D/g, '');
@@ -556,7 +526,6 @@ app.get('/api/login/:cnpj', async (req, res) => {
 // ==========================================
 // VENDEDORES
 // ==========================================
-
 app.get('/api/vendedores', async (req, res) => {
   try {
     const { data: vendedores, error } = await supabase.from('vendedores').select('*').order('nome');
@@ -624,7 +593,6 @@ app.put('/api/vendedor/cliente/:cnpj/acesso', async (req, res) => {
 // ==========================================
 // PEDIDOS
 // ==========================================
-
 app.post('/api/pedidos', async (req, res) => {
   try {
     const { cnpj_cliente, codigo_representante, total, itens } = req.body;
@@ -664,7 +632,7 @@ app.get('/api/vendedor/:codigo/pedidos', async (req, res) => {
   } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
 
-// ROTA PARA PROCESSAR VINCULAÇÃO E MATCH MANUALMENTE
+// VINCULAÇÃO MANUAL
 app.post('/api/vincular', async (req, res) => {
   try {
     const { data: sisData, error: err1 } = await supabase.from('itens_sistema').select('codigo');
