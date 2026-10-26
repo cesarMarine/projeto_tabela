@@ -6,163 +6,271 @@
 <title>Admin — Gestão de Produtos</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
-  body { background: #0f172a; color: #e2e8f0; display: flex; min-height: 100vh; }
+  body { background: #0f172a; color: #e2e8f0; min-height: 100vh; display: flex; flex-direction: column; }
   
-  /* SIDEBAR LATERAL DE MENUS */
-  aside { width: 240px; background: #1e293b; border-right: 1px solid #334155; padding: 24px 16px; display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
-  aside .logo { font-size: 18px; font-weight: 800; color: #38bdf8; padding: 0 12px 20px 12px; border-bottom: 1px solid #334155; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-  aside nav a { display: flex; align-items: center; gap: 12px; padding: 12px; color: #94a3b8; text-decoration: none; font-weight: 600; border-radius: 8px; font-size: 14px; transition: all 0.2s; }
-  aside nav a:hover, aside nav a.active { background: #0f172a; color: #38bdf8; }
+  /* HEADER */
+  header { background: #1e293b; padding: 16px 24px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }
+  header h1 { font-size: 20px; font-weight: 800; color: #f8fafc; }
+  .btn-refresh { background: #334155; color: #e2e8f0; border: none; border-radius: 8px; padding: 8px 16px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+  .btn-refresh:hover { background: #475569; }
 
-  /* CONTEÚDO PRINCIPAL */
-  main { flex: 1; padding: 40px; overflow-y: auto; }
-  .wrap { max-width: 1200px; margin: 0 auto; }
-  header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 32px; border-bottom: 1px solid #334155; padding-bottom: 16px; }
-  h1 { font-size: 26px; font-weight: 800; color: #f8fafc; }
-  h1 span { font-weight: 400; color: #94a3b8; font-size: 18px; margin-left: 8px; }
-  .btn-refresh { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; border-radius: 8px; padding: 10px 16px; cursor: pointer; }
+  /* LAYOUT */
+  .wrap { display: flex; flex: 1; overflow: hidden; }
+  .sidebar { width: 220px; background: #1e293b; border-right: 1px solid #334155; padding: 16px 0; display: flex; flex-direction: column; }
+  .sidebar button { background: none; border: none; color: #94a3b8; padding: 14px 24px; text-align: left; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.2s; border-left: 3px solid transparent; }
+  .sidebar button:hover { background: #0f172a; color: #f8fafc; }
+  .sidebar button.active { background: #0f172a; color: #38bdf8; border-left-color: #38bdf8; }
   
-  .status-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 40px; }
+  .main { flex: 1; padding: 24px; overflow-y: auto; }
+  .page { display: none; animation: fade 0.2s; }
+  .page.active { display: block; }
+  @keyframes fade { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+
+  /* CARDS E PAINÉIS */
+  .status-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
   .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; }
   .card .label { font-size: 12px; color: #94a3b8; text-transform: uppercase; font-weight: 700; }
-  .card .value { font-size: 36px; font-weight: 800; margin-top: 8px; color: #38bdf8; }
+  .card .value { font-size: 32px; font-weight: 800; margin-top: 8px; color: #38bdf8; }
   .card.roxo .value { color: #a78bfa; }
   .card.verde .value { color: #10b981; }
-
-  .painel { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 24px; margin-bottom: 20px; }
-  .file-area { display: flex; gap: 12px; align-items: center; margin-top: 16px; }
-  input[type="file"] { background: #0f172a; border: 1px dashed #475569; border-radius: 8px; padding: 12px; color: #e2e8f0; flex: 1; }
-  button.btn-primario { background: #2563eb; color: white; border: none; border-radius: 8px; padding: 12px 20px; font-weight: 700; cursor: pointer; }
-  button.btn-vincular { background: #10b981; color: white; border: none; border-radius: 8px; padding: 14px 24px; font-size: 16px; font-weight: 800; cursor: pointer; width: 100%; margin-top: 12px; }
-  button.btn-vincular:disabled { opacity: 0.5; cursor: not-allowed; }
+  .painel { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+  .painel h2 { font-size: 18px; margin-bottom: 16px; color: #f8fafc; }
   
-  .msg { font-size: 14px; margin-top: 12px; padding: 10px 14px; border-radius: 8px; display: none; }
-  .msg.ok { display: block; background: #064e3b; color: #6ee7b7; }
-  .msg.err { display: block; background: #7f1d1d; color: #fca5a5; }
+  /* TABELAS */
+  table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  th { text-align: left; padding: 12px; font-size: 12px; text-transform: uppercase; color: #94a3b8; border-bottom: 1px solid #334155; }
+  td { padding: 12px; border-bottom: 1px solid #334155; font-size: 14px; }
+  tr:hover td { background: #0f172a; }
 
-  .familia-area { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 24px; margin-bottom: 40px; }
+  /* INPUTS E BOTÕES */
+  .row { display: flex; gap: 16px; align-items: flex-end; margin-bottom: 16px; flex-wrap: wrap; }
+  .row > * { flex: 1; min-width: 200px; }
+  label { display: block; font-size: 12px; font-weight: 700; color: #94a3b8; margin-bottom: 6px; text-transform: uppercase; }
+  input[type="text"], input[type="file"], input[type="number"] { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; font-size: 14px; }
+  input:focus { outline: none; border-color: #38bdf8; }
+  
+  .btn-primario { background: #2563eb; color: white; border: none; border-radius: 8px; padding: 12px 24px; font-weight: 700; cursor: pointer; }
+  .btn-primario:hover { background: #1d4ed8; }
+  .btn-salvar { background: #10b981; color: white; border: none; border-radius: 8px; padding: 14px; font-weight: 800; cursor: pointer; width: 100%; margin-top: 12px; }
+  .btn-salvar:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-mini { padding: 6px 12px; font-size: 12px; border-radius: 6px; }
+  
+  /* FAMILIAS */
   .familia-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 20px; }
-  .col-subgrupos { display: flex; flex-direction: column; gap: 12px; }
-  .busca-subgrupo { background: #0f172a; border: 1px solid #475569; border-radius: 8px; padding: 12px; color: #e2e8f0; width: 100%; }
   .lista-subgrupos { background: #0f172a; border: 1px solid #334155; border-radius: 8px; max-height: 400px; overflow-y: auto; padding: 8px; }
   .item-subgrupo { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 14px; }
   .item-subgrupo:hover { background: #1e293b; }
-  .item-subgrupo input { accent-color: #2563eb; width: 18px; height: 18px; }
-  
+  .item-subgrupo input { width: 18px; height: 18px; cursor: pointer; }
   .col-selecionados { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 20px; display: flex; flex-direction: column; }
   .lista-selecionados { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; max-height: 300px; margin-bottom: 20px; }
   .sel-item { display: flex; justify-content: space-between; background: #1e293b; padding: 10px; border-radius: 6px; font-size: 13px; }
   .sel-item button { background: none; border: none; color: #fca5a5; cursor: pointer; }
-  .input-nome-familia { display: flex; flex-direction: column; gap: 8px; margin-top: auto; }
-  .input-nome-familia input { background: #0f172a; border: 1px solid #475569; border-radius: 8px; padding: 14px; color: #e2e8f0; font-size: 16px; }
-  button.btn-salvar-familia { background: #10b981; color: white; border: none; border-radius: 8px; padding: 16px; font-weight: 800; cursor: pointer; margin-top: 12px; }
-  button.btn-salvar-familia:disabled { opacity: 0.5; cursor: not-allowed; }
-
-  .familias-criadas { margin-top: 24px; border-top: 1px solid #334155; padding-top: 24px; }
+  
   .card-familia-criada { background: #0f172a; border: 1px solid #475569; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
   .card-familia-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
   .card-familia-head strong { color: #38bdf8; font-size: 18px; }
   .btn-add-sub { background: #334155; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; }
   .btn-del { background: #991b1b; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; margin-left: 8px; }
-  .sub-item { display: flex; justify-content: space-between; background: #1e293b; padding: 8px 12px; border-radius: 6px; font-size: 13px; border-left: 3px solid #a78bfa; }
+  .sub-item { display: flex; justify-content: space-between; background: #1e293b; padding: 8px 12px; border-radius: 6px; font-size: 13px; border-left: 3px solid #a78bfa; margin-bottom: 6px; }
 
+  /* MODAIS */
   .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 100; }
   .modal-bg.on { display: flex; }
   .modal { background: #1e293b; padding: 24px; border-radius: 12px; width: 100%; max-width: 600px; border: 1px solid #475569; }
-  .modal h3 { color: #38bdf8; margin-bottom: 8px; }
-  .modal input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; margin-bottom: 16px; }
+  .modal h3 { color: #38bdf8; margin-bottom: 16px; }
   .modal-lista { max-height: 250px; overflow-y: auto; background: #0f172a; padding: 8px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #334155; }
-  .modal-lista label { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid #334155; cursor: pointer; font-size: 14px; }
-  .modal-lista input { width: 18px; height: 18px; margin: 0; cursor: pointer; accent-color: #2563eb; }
+  .modal-lista label { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid #334155; cursor: pointer; font-size: 14px; text-transform: none; margin: 0; }
+  .modal-lista input { width: 18px; height: 18px; margin: 0; cursor: pointer; }
   .modal-actions { display: flex; justify-content: flex-end; gap: 12px; }
   .btn-cancel { background: none; border: 1px solid #475569; color: white; padding: 10px 16px; border-radius: 8px; cursor: pointer; }
   .btn-save { background: #10b981; border: none; color: white; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-  @media(max-width: 800px) { body { flex-direction: column; } aside { width: 100%; } .status-cards, .familia-grid { grid-template-columns: 1fr; } }
+  
+  @media(max-width: 800px) { .wrap { flex-direction: column; } .sidebar { width: 100%; flex-direction: row; overflow-x: auto; padding: 8px; } .sidebar button { white-space: nowrap; border-left: none; border-bottom: 3px solid transparent; } .sidebar button.active { border-left: none; border-bottom-color: #38bdf8; } .familia-grid, .status-cards { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
 
-<!-- SIDEBAR COM OS MENUS NAVEGÁVEIS -->
-<aside>
-  <div class="logo">⚙️ Admin</div>
-  <nav>
-    <a href="#" class="active">🕹️ Importar</a>
-    <a href="#area-familias">👨‍👩‍👧‍👦 Famílias</a>
-    <a href="#">👤 Clientes</a>
-    <a href="#">💸 Acréscimos por UF</a>
-    <a href="#">👔 Vendedores</a>
-  </nav>
-</aside>
+<header>
+  <h1>Admin <span>Gestão de Produtos</span></h1>
+  <button class="btn-refresh" onclick="carregarStatus()">⟳ Atualizar Status</button>
+</header>
 
-<main>
-  <div class="wrap">
-    <header>
-      <h1>Admin <span>Gestão de Produtos</span></h1>
-      <button class="btn-refresh" onclick="carregarStatus()">⟳ Atualizar Status</button>
-    </header>
+<div class="wrap">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <button class="active" data-page="importar">📥 Importar</button>
+    <button data-page="familias">👨‍👩‍👧‍👦 Famílias</button>
+    <button data-page="clientes">👥 Clientes</button>
+    <button data-page="acrescimos">💸 Acréscimos por UF</button>
+    <button data-page="vendedores">👤 Vendedores</button>
+  </aside>
 
-    <div class="status-cards">
-      <div class="card"><div class="label">Itens Sistema</div><div class="value" id="cnt-sistema">—</div></div>
-      <div class="card roxo"><div class="label">Scraping Produtos</div><div class="value" id="cnt-scraping">—</div></div>
-      <div class="card verde"><div class="label">Cruzados</div><div class="value" id="cnt-cruzados">—</div></div>
-    </div>
+  <!-- MAIN -->
+  <main class="main">
+    <div class="alerta" id="alerta"></div>
 
-    <div class="painel">
-      <h2>1) Importar Planilha do Sistema</h2>
-      <div class="file-area">
-        <input type="file" id="file-sistema" accept=".xlsx">
-        <button class="btn-primario" id="btn-sistema" onclick="upload('sistema')">Importar</button>
+    <!-- ═══════════ PÁGINA: IMPORTAR ═══════════ -->
+    <section class="page active" id="page-importar">
+      <div class="status-cards">
+        <div class="card"><div class="label">Itens Sistema</div><div class="value" id="cnt-sistema">—</div></div>
+        <div class="card roxo"><div class="label">Scraping Produtos</div><div class="value" id="cnt-scraping">—</div></div>
+        <div class="card verde"><div class="label">Cruzados</div><div class="value" id="cnt-cruzados">—</div></div>
       </div>
-      <div class="msg" id="msg-sistema"></div>
-    </div>
 
-    <div class="painel">
-      <h2>2) Importar Scraping JSON</h2>
-      <div class="file-area">
-        <input type="file" id="file-scraping" accept=".json">
-        <button class="btn-primario" id="btn-scraping" onclick="upload('scraping')">Importar</button>
-      </div>
-      <div class="msg" id="msg-scraping"></div>
-    </div>
-
-    <!-- PAINEL DE PROCESSAR MATCH -->
-    <div class="painel" style="border: 1px solid #10b981;">
-      <h2>3) Processar Match de Produtos</h2>
-      <p style="font-size:14px; color:#94a3b8; margin-top:6px;">Após importar o sistema e o scraping, clique abaixo para cruzar os códigos tirando zeros à esquerda e atualizar a base do catálogo.</p>
-      <button class="btn-vincular" id="btn-vincular" onclick="processarMatch()">⚡ Processar Match / Vincular Dados</button>
-      <div class="msg" id="msg-vincular"></div>
-    </div>
-
-    <div class="familia-area" id="area-familias">
-      <h2>4) Criar Família de Produtos</h2>
-      <p style="font-size:14px; color:#94a3b8; margin-bottom:16px;">Selecione os subgrupos que pertencem à mesma família.</p>
-      <div class="familia-grid">
-        <div class="col-subgrupos">
-          <input type="text" class="busca-subgrupo" id="busca-subgrupo" placeholder="Buscar subgrupo..." oninput="filtrarListaSubgrupos()">
-          <div class="lista-subgrupos" id="lista-subgrupos"></div>
+      <div class="painel">
+        <h2>1) Importar Planilha do Sistema</h2>
+        <div class="file-area">
+          <input type="file" id="file-sistema" accept=".xlsx">
+          <button class="btn-primario" id="btn-sistema" onclick="upload('sistema')">Importar</button>
         </div>
-        <div class="col-selecionados">
-          <h3>Subgrupos Selecionados</h3>
-          <div class="lista-selecionados" id="lista-selecionados"></div>
-          <div class="input-nome-familia">
-            <label>Nome da Família (Pai)</label>
-            <input type="text" id="nome-familia" placeholder="Ex: Anzol Chinu" oninput="verificarBotaoSalvar()">
-            <button class="btn-salvar-familia" id="btn-salvar-familia" onclick="criarFamilia()" disabled>Salvar Família</button>
+        <div class="msg" id="msg-sistema"></div>
+      </div>
+
+      <div class="painel">
+        <h2>2) Importar Scraping JSON</h2>
+        <div class="file-area">
+          <input type="file" id="file-scraping" accept=".json">
+          <button class="btn-primario" id="btn-scraping" onclick="upload('scraping')">Importar</button>
+        </div>
+        <div class="msg" id="msg-scraping"></div>
+      </div>
+
+      <div class="painel">
+        <h2>3) Importar Clientes</h2>
+        <div class="file-area">
+          <input type="file" id="file-clientes" accept=".xlsx, .xls, .csv">
+          <button class="btn-primario" id="btn-clientes" onclick="upload('clientes')">Importar</button>
+        </div>
+        <div class="msg" id="msg-clientes"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════ PÁGINA: FAMÍLIAS ═══════════ -->
+    <section class="page" id="page-familias">
+      <div class="painel">
+        <h2>Criar Família de Produtos</h2>
+        <p style="font-size:14px; color:#94a3b8; margin-bottom:16px;">Selecione os subgrupos que pertencem à mesma família.</p>
+        <div class="familia-grid">
+          <div class="col-subgrupos">
+            <input type="text" class="busca-subgrupo" id="busca-subgrupo" placeholder="Buscar subgrupo..." oninput="filtrarListaSubgrupos()" style="margin-bottom:12px;">
+            <div class="lista-subgrupos" id="lista-subgrupos"></div>
+          </div>
+          <div class="col-selecionados">
+            <h3 style="margin-bottom:12px;">Subgrupos Selecionados</h3>
+            <div class="lista-selecionados" id="lista-selecionados"></div>
+            <div class="input-nome-familia">
+              <label>Nome da Família (Pai)</label>
+              <input type="text" id="nome-familia" placeholder="Ex: Anzol Chinu" oninput="verificarBotaoSalvar()">
+              <button class="btn-salvar" id="btn-salvar-familia" onclick="criarFamilia()" disabled>Salvar Família</button>
+            </div>
           </div>
         </div>
       </div>
-      <div class="familias-criadas">
-        <h3>Famílias já Criadas</h3>
+
+      <div class="painel">
+        <h2>Famílias já Criadas</h2>
         <div id="lista-familias-criadas"></div>
       </div>
-    </div>
-  </div>
-</main>
+    </section>
 
+    <!-- ═══════════ PÁGINA: CLIENTES ═══════════ -->
+    <section class="page" id="page-clientes">
+      <div class="painel">
+        <h2>👥 Clientes Cadastrados</h2>
+        <div class="row">
+          <div style="flex:3">
+            <label>Buscar Cliente</label>
+            <input id="buscaClientes" placeholder="Nome, Razão Social ou CNPJ..." oninput="debounceClientes()">
+          </div>
+          <div style="flex:0 0 auto">
+            <button class="btn-primario" onclick="carregarClientes(1)">🔍 Buscar</button>
+          </div>
+        </div>
+        
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; margin-top:24px;">
+          <h3 style="margin:0" id="resumoClientes">—</h3>
+        </div>
+        
+        <table id="tabClientes">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Nome / Razão Social</th>
+              <th>CNPJ</th>
+              <th>UF</th>
+              <th>Representante</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        
+        <div id="paginacaoClientes" style="display:flex; justify-content:center; gap:8px; margin-top:16px;"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════ PÁGINA: ACRÉSCIMOS ═══════════ -->
+    <section class="page" id="page-acrescimos">
+      <div class="painel">
+        <h2>Grupos de Acréscimo</h2>
+        <div id="gridGruposAcrescimo" style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;"></div>
+        
+        <div style="background:#0f172a; padding:16px; border-radius:8px; border:1px dashed #475569;">
+          <h3 style="margin-bottom:12px; font-size:14px; color:#38bdf8;">+ Novo Grupo</h3>
+          <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
+            <div style="flex:1; min-width:200px;"><label>Nome (ex: 01, 02, Tabela A)</label><input type="text" id="novoGrupoNome"></div>
+            <div style="flex:1; min-width:200px;"><label>Acréscimo (%)</label><input type="number" step="0.01" id="novoGrupoPct"></div>
+            <button class="btn-primario" onclick="salvarGrupo()">Salvar Grupo</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="painel">
+        <h2>Definir Grupo por UF</h2>
+        <div id="gridUFs" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:12px;"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════ PÁGINA: VENDEDORES ═══════════ -->
+    <section class="page" id="page-vendedores">
+      <div class="painel" style="background:#0f172a; border:1px dashed #475569;">
+        <h2 style="margin-bottom:16px;">➕ Novo Vendedor</h2>
+        <div class="row">
+          <div><label>Nome</label><input type="text" id="novoVendedorNome" placeholder="Ex: LEANDRO"></div>
+          <div><label>Código Representante</label><input type="text" id="novoVendedorCod" placeholder="Ex: 36"></div>
+          <div><label>Senha de Acesso</label><input type="text" id="novoVendedorSenha" placeholder="Ex: 1234"></div>
+          <div style="flex:0 0 auto;">
+            <button class="btn-primario" style="background:#10b981;" onclick="criarVendedor()">Cadastrar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="painel">
+        <h2>👤 Vendedores Cadastrados</h2>
+        <p style="font-size:14px; color:#94a3b8; margin-bottom:16px;">Defina a senha de acesso para os vendedores entrarem no Painel do Vendedor.</p>
+        
+        <table id="tabVendedores">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Nome</th>
+              <th>Status</th>
+              <th>Senha Atual</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ═══════════ MODAL SUBDIVISÃO ═══════════ -->
 <div class="modal-bg" id="modalSubBg">
   <div class="modal">
     <h3>Criar Subdivisão</h3>
-    <input type="text" id="subNome" placeholder="Nome (ex: Cartela, Caixa)">
+    <input type="text" id="subNome" placeholder="Nome (ex: Cartela, Caixa)" style="margin-bottom:12px;">
     <div class="modal-lista" id="modalListaItens"></div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="fecharModalSub()">Cancelar</button>
@@ -172,80 +280,122 @@
 </div>
 
 <script>
-let todosSubgrupos = [], subgruposOcupados = new Set(), selecionados = new Set(), familiaAtualParaSub = null;
+// ================================================================
+// ESTADO GLOBAL
+// ================================================================
+let todosSubgrupos = [], selecionados = new Set(), familiaAtualParaSub = null;
 let todosOsProdutos = []; 
+let pagClientes = 1, totPagClientes = 1, timeoutCli = null;
+let gruposAcrescimoCache = [], ufsAcrescimoCache = [];
 
-async function carregarStatus() {
-  const r = await fetch('/api/status'); const j = await r.json();
-  document.getElementById('cnt-sistema').textContent = j.itens_sistema || 0;
-  document.getElementById('cnt-scraping').textContent = j.scraping_produtos || 0;
-  document.getElementById('cnt-cruzados').textContent = j.cruzados || 0;
-}
-
-async function processarMatch() {
-  const btn = document.getElementById('btn-vincular');
-  const msg = document.getElementById('msg-vincular');
-  btn.disabled = true;
-  msg.className = 'msg';
-  msg.textContent = 'Processando e cruzando produtos...';
-
-  try {
-    const r = await fetch('/api/vincular', { method: 'POST' });
-    const j = await r.json();
-    if (!r.ok || !j.ok) throw new Error(j.erro || 'Falha ao vincular');
+// ================================================================
+// NAVEGAÇÃO DAS ABAS
+// ================================================================
+document.querySelectorAll('.sidebar button').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('.sidebar button').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
     
-    msg.className = 'msg ok';
-    msg.textContent = `Match concluído com sucesso! Total de itens cruzados: ${j.cruzados}`;
-    await carregarStatus();
-    await carregarDados();
-  } catch(e) {
-    msg.className = 'msg err';
-    msg.textContent = e.message;
-  } finally {
-    btn.disabled = false;
-  }
+    const pageId = b.dataset.page;
+    const target = document.getElementById('page-' + pageId);
+    if (target) target.classList.add('active');
+
+    // Carregar dados ao entrar na aba
+    if (pageId === 'importar') { carregarStatus(); }
+    if (pageId === 'familias') { carregarDados(); }
+    if (pageId === 'clientes') { carregarClientes(1); }
+    if (pageId === 'acrescimos') { carregarAcrescimos(); }
+    if (pageId === 'vendedores') { carregarVendedores(); }
+  };
+});
+
+// ================================================================
+// HELPERS
+// ================================================================
+function alerta(msg, tipo = 'ok') {
+  const el = document.getElementById('alerta');
+  el.style.display = 'block';
+  el.style.padding = '12px 16px';
+  el.style.borderRadius = '8px';
+  el.style.marginBottom = '16px';
+  el.style.fontWeight = '600';
+  el.style.background = tipo === 'ok' ? '#064e3b' : '#7f1d1d';
+  el.style.color = tipo === 'ok' ? '#6ee7b7' : '#fca5a5';
+  el.textContent = msg;
+  setTimeout(() => { el.style.display = 'none'; }, 4000);
 }
 
+function debounceClientes() {
+  clearTimeout(timeoutCli);
+  timeoutCli = setTimeout(() => carregarClientes(1), 400);
+}
+
+// ================================================================
+// STATUS
+// ================================================================
+async function carregarStatus() {
+  try {
+    const r = await fetch('/api/status'); const j = await r.json();
+    document.getElementById('cnt-sistema').textContent = j.itens_sistema || 0;
+    document.getElementById('cnt-scraping').textContent = j.scraping_produtos || 0;
+    document.getElementById('cnt-cruzados').textContent = j.cruzados || 0;
+  } catch(e) { console.error(e); }
+}
+
+// ================================================================
+// IMPORTAR (SISTEMA / SCRAPING / CLIENTES)
+// ================================================================
 async function upload(tipo) {
   const fi = document.getElementById('file-' + tipo), btn = document.getElementById('btn-' + tipo), msg = document.getElementById('msg-' + tipo);
   if (!fi.files.length) return;
   const fd = new FormData(); fd.append('arquivo', fi.files[0]);
-  btn.disabled = true; msg.className = 'msg'; msg.textContent = 'Importando...';
+  btn.disabled = true; msg.className = 'msg'; msg.textContent = 'Importando...'; msg.style.display = 'block';
+  
   try {
     const r = await fetch('/api/importar/' + tipo, { method: 'POST', body: fd });
     const j = await r.json();
     if (!r.ok || j.erro) throw new Error(j.erro);
-    msg.className = 'msg ok'; msg.textContent = `Sucesso: ${j.inseridos}`;
-    carregarStatus(); if (tipo === 'scraping') carregarDados();
-  } catch(e) { msg.className = 'msg err'; msg.textContent = e.message; } finally { btn.disabled = false; }
+    
+    msg.className = 'msg ok'; msg.style.background = '#064e3b'; msg.style.color = '#6ee7b7'; msg.textContent = `Sucesso: ${j.inseridos}`;
+    carregarStatus(); 
+    if (tipo === 'scraping') carregarDados();
+  } catch(e) { 
+    msg.className = 'msg err'; msg.style.background = '#7f1d1d'; msg.style.color = '#fca5a5'; msg.textContent = e.message; 
+  } finally { btn.disabled = false; }
 }
 
+// ================================================================
+// FAMÍLIAS
+// ================================================================
 async function carregarDados() {
-  const rf = await fetch('/api/familias'); const jf = await rf.json();
-  
-  const codigosOcupados = new Set();
-  if (jf.ok) {
-    jf.familias.forEach(f => f.itens.forEach(codigo => codigosOcupados.add(codigo)));
-  }
-
-  const r = await fetch('/api/catalogo'); const j = await r.json();
-  todosOsProdutos = j.itens || [];
-
-  const map = {};
-  todosOsProdutos.forEach(i => { 
-    if(i.subgrupo_scraping) map[i.subgrupo_scraping] = (map[i.subgrupo_scraping]||0)+1; 
-  });
-  
-  todosSubgrupos = Object.keys(map).sort()
-    .map(s => {
-      const todosItensDoSub = todosOsProdutos.filter(i => i.subgrupo_scraping === s);
-      const todosOcupados = todosItensDoSub.every(i => codigosOcupados.has(i.codigo));
-      return { nome: s, qtd: map[s], ocupado: todosOcupados };
-    })
-    .filter(s => !s.ocupado);
+  try {
+    const rf = await fetch('/api/familias'); const jf = await rf.json();
     
-  filtrarListaSubgrupos(); 
-  carregarFamiliasCriadas();
+    const codigosOcupados = new Set();
+    if (jf.ok) {
+      jf.familias.forEach(f => f.itens.forEach(codigo => codigosOcupados.add(codigo)));
+    }
+
+    const r = await fetch('/api/catalogo'); const j = await r.json();
+    todosOsProdutos = j.itens;
+
+    const map = {};
+    j.itens.forEach(i => { 
+      if(i.subgrupo_scraping) map[i.subgrupo_scraping] = (map[i.subgrupo_scraping]||0)+1; 
+    });
+    
+    todosSubgrupos = Object.keys(map).sort()
+      .map(s => {
+        const todosItensDoSub = j.itens.filter(i => i.subgrupo_scraping === s);
+        const todosOcupados = todosItensDoSub.every(i => codigosOcupados.has(i.codigo));
+        return { nome: s, qtd: map[s], ocupado: todosOcupados };
+      })
+      .filter(s => !s.ocupado);
+      
+    filtrarListaSubgrupos(); 
+    carregarFamiliasCriadas();
+  } catch(e) { console.error(e); }
 }
 
 function filtrarListaSubgrupos() {
@@ -370,7 +520,271 @@ async function salvarSubdivisao() {
   }
 }
 
-carregarStatus(); carregarDados();
+// ================================================================
+// CLIENTES
+// ================================================================
+async function carregarClientes(pagina = 1) {
+  const busca = document.getElementById('buscaClientes').value.trim();
+  pagClientes = pagina;
+  
+  const tbody = document.querySelector('#tabClientes tbody');
+  tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#94a3b8;">Carregando...</td></tr>';
+
+  try {
+    const r = await fetch(`/api/clientes?busca=${encodeURIComponent(busca)}&pagina=${pagina}&limite=50`);
+    const j = await r.json();
+    
+    if (!j.ok) throw new Error(j.erro);
+
+    document.getElementById('resumoClientes').textContent = `${j.total} cliente(s) encontrado(s) — Página ${j.pagina} de ${j.totalPaginas}`;
+    totPagClientes = j.totalPaginas;
+
+    if (!j.clientes.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#94a3b8;">Nenhum cliente encontrado.</td></tr>';
+      document.getElementById('paginacaoClientes').innerHTML = '';
+      return;
+    }
+
+    tbody.innerHTML = j.clientes.map(c => `
+      <tr>
+        <td><strong>${c.codigo || '—'}</strong></td>
+        <td>${c.nome_fantasia || c.razao_social || '—'}</td>
+        <td>${c.cnpj || '—'}</td>
+        <td><span style="background:#1e293b; padding:2px 8px; border-radius:4px; font-size:12px; font-weight:700;">${c.uf || '—'}</span></td>
+        <td>${c.codigo_representante || '<span style="color:#94a3b8">—</span>'}</td>
+      </tr>
+    `).join('');
+
+    renderPaginacaoClientes();
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Erro: ${e.message}</td></tr>`;
+  }
+}
+
+function renderPaginacaoClientes() {
+  const cont = document.getElementById('paginacaoClientes');
+  if (totPagClientes <= 1) { cont.innerHTML = ''; return; }
+  
+  let html = `<button class="btn-primario btn-mini" ${pagClientes===1?'disabled':''} onclick="carregarClientes(${pagClientes-1})">← Anterior</button>`;
+  html += `<span style="display:flex; align-items:center; padding:0 12px; font-size:.85rem; font-weight:600; color:#94a3b8;">Página ${pagClientes} de ${totPagClientes}</span>`;
+  html += `<button class="btn-primario btn-mini" ${pagClientes===totPagClientes?'disabled':''} onclick="carregarClientes(${pagClientes+1})">Próxima →</button>`;
+  cont.innerHTML = html;
+}
+
+// ================================================================
+// ACRÉSCIMOS POR UF
+// ================================================================
+async function carregarAcrescimos() {
+  await carregarGruposAcrescimo();
+  await carregarUFsAcrescimo();
+}
+
+async function carregarGruposAcrescimo() {
+  const grid = document.getElementById('gridGruposAcrescimo');
+  grid.innerHTML = 'Carregando...';
+  
+  try {
+    const r = await fetch('/api/acrescimos/grupos'); const j = await r.json();
+    if (!j.ok) throw new Error(j.erro);
+    
+    gruposAcrescimoCache = j.grupos;
+    if (!j.grupos.length) {
+      grid.innerHTML = '<div style="color:#94a3b8">Nenhum grupo criado.</div>';
+      return;
+    }
+
+    grid.innerHTML = j.grupos.map(g => `
+      <div style="background:#1e293b; border:1px solid #475569; border-left:4px solid #38bdf8; border-radius:8px; padding:16px; width:200px; cursor:pointer;" onclick="editarGrupo(${g.id})" title="Clique para editar">
+        <div style="font-size:20px; font-weight:800; color:#f8fafc; margin-bottom:4px;">Grupo ${g.nome}</div>
+        <div style="font-size:16px; font-weight:700; color:#10b981;">+ ${Number(g.acrescimo).toFixed(2)}%</div>
+        <div style="font-size:12px; color:#94a3b8; margin-top:8px;">${g.total_ufs} UF(s) vinculada(s)</div>
+      </div>
+    `).join('');
+  } catch (e) {
+    grid.innerHTML = `<div style="color:red">Erro: ${e.message}</div>`;
+  }
+}
+
+async function editarGrupo(id) {
+  const g = gruposAcrescimoCache.find(x => x.id === id);
+  if (!g) return;
+
+  const novoNome = prompt('Nome do grupo:', g.nome);
+  if (novoNome === null) return;
+
+  const novoPct = prompt('Acréscimo (%):', g.acrescimo);
+  if (novoPct === null) return;
+
+  const r = await fetch('/api/acrescimos/grupos', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: g.id, nome: novoNome, acrescimo: parseFloat(novoPct.replace(',', '.')) })
+  });
+  
+  if (r.ok) {
+    await carregarGruposAcrescimo();
+    await carregarUFsAcrescimo();
+  }
+}
+
+async function salvarGrupo() {
+  const nome = document.getElementById('novoGrupoNome').value.trim();
+  const pct = parseFloat(document.getElementById('novoGrupoPct').value.replace(',', '.'));
+  
+  if (!nome || isNaN(pct)) return alert('Preencha o nome e a % corretamente.');
+
+  const r = await fetch('/api/acrescimos/grupos', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nome, acrescimo: pct })
+  });
+
+  if (r.ok) {
+    document.getElementById('novoGrupoNome').value = '';
+    document.getElementById('novoGrupoPct').value = '';
+    await carregarGruposAcrescimo();
+  }
+}
+
+async function carregarUFsAcrescimo() {
+  const grid = document.getElementById('gridUFs');
+  grid.innerHTML = 'Carregando...';
+  
+  try {
+    const r = await fetch('/api/acrescimos/ufs'); const j = await r.json();
+    if (!j.ok) throw new Error(j.erro);
+
+    ufsAcrescimoCache = j.ufs;
+    
+    const todasUFs = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'];
+
+    grid.innerHTML = todasUFs.map(uf => {
+      const ufData = ufsAcrescimoCache.find(u => u.uf === uf);
+      const grupoAtual = ufData ? ufData.grupo_id : '';
+
+      return `
+        <div style="background:#1e293b; padding:10px; border-radius:8px; border:1px solid #334155; text-align:center;">
+          <div style="font-weight:800; font-size:16px; margin-bottom:6px; color:#f8fafc;">${uf}</div>
+          <select style="width:100%; padding:6px; border-radius:4px; background:#0f172a; color:#e2e8f0; border:1px solid #475569; font-size:12px; cursor:pointer;" onchange="mudarGrupoUF('${uf}', this.value)">
+            <option value="">— Sem Grupo —</option>
+            ${gruposAcrescimoCache.map(g => `<option value="${g.id}" ${grupoAtual == g.id ? 'selected' : ''}>Grupo ${g.nome}</option>`).join('')}
+          </select>
+        </div>
+      `;
+    }).join('');
+  } catch (e) {
+    grid.innerHTML = `<div style="color:red">Erro: ${e.message}</div>`;
+  }
+}
+
+async function mudarGrupoUF(uf, grupoId) {
+  try {
+    await fetch('/api/acrescimos/uf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ uf, grupo_id: grupoId ? parseInt(grupoId) : null })
+    });
+    await carregarGruposAcrescimo();
+  } catch (e) {
+    alert('Erro ao salvar UF.');
+  }
+}
+
+// ================================================================
+// VENDEDORES
+// ================================================================
+async function carregarVendedores() {
+  const tbody = document.querySelector('#tabVendedores tbody');
+  tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Carregando...</td></tr>';
+
+  try {
+    const r = await fetch('/api/vendedores'); const j = await r.json();
+    if (!j.ok) throw new Error(j.erro);
+
+    if (!j.vendedores.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum vendedor encontrado.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = j.vendedores.map(v => `
+      <tr>
+        <td><strong>${v.codigo_representante}</strong></td>
+        <td>${v.nome}</td>
+        <td>${v.ativo ? '<span style="background:#064e3b; color:#6ee7b7; padding:2px 8px; border-radius:4px; font-size:12px; font-weight:700;">Ativo</span>' : '<span style="background:#7f1d1d; color:#fca5a5; padding:2px 8px; border-radius:4px; font-size:12px; font-weight:700;">Inativo</span>'}</td>
+        <td>${v.senha ? '<span style="color:#10b981; font-weight:bold;">Cadastrada</span>' : '<span style="color:#94a3b8;">Nenhuma</span>'}</td>
+        <td>
+          <button class="btn-primario btn-mini" onclick="editarSenhaVendedor(${v.vendedor_id}, '${v.nome}', ${v.senha ? 'true' : 'false'})">
+            ${v.senha ? '🔑 Alterar Senha' : '➕ Definir Senha'}
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Erro: ${e.message}</td></tr>`;
+  }
+}
+
+async function editarSenhaVendedor(id, nome, temSenha) {
+  const acao = temSenha ? 'alterar a senha' : 'cadastrar a senha';
+  const novaSenha = prompt(`Digite a ${acao} para o vendedor ${nome}:`);
+  if (novaSenha === null) return;
+
+  if (novaSenha.length < 4) {
+    alert('A senha deve ter pelo menos 4 caracteres.');
+    return;
+  }
+
+  try {
+    const r = await fetch('/api/vendedores/senha', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vendedor_id: id, senha: novaSenha })
+    });
+    const j = await r.json();
+    if (j.ok) {
+      alert('✅ Senha salva com sucesso!');
+      carregarVendedores();
+    } else {
+      alert('Erro: ' + j.erro);
+    }
+  } catch (e) {
+    alert('Erro de conexão.');
+  }
+}
+
+async function criarVendedor() {
+  const nome = document.getElementById('novoVendedorNome').value.trim();
+  const codigo = document.getElementById('novoVendedorCod').value.trim();
+  const senha = document.getElementById('novoVendedorSenha').value.trim();
+
+  if (!nome || !codigo || !senha) {
+    return alert('Preencha todos os campos para cadastrar.');
+  }
+
+  try {
+    const r = await fetch('/api/vendedores', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nome, codigo_representante: codigo, senha })
+    });
+    const j = await r.json();
+
+    if (j.ok) {
+      alert('✅ Vendedor cadastrado com sucesso!');
+      document.getElementById('novoVendedorNome').value = '';
+      document.getElementById('novoVendedorCod').value = '';
+      document.getElementById('novoVendedorSenha').value = '';
+      carregarVendedores();
+    } else {
+      alert('❌ Erro: ' + j.erro);
+    }
+  } catch (e) {
+    alert('Erro de conexão.');
+  }
+}
+
+// INIT
+carregarStatus();
 </script>
 </body>
 </html>
