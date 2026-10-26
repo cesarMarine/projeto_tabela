@@ -31,102 +31,56 @@ app.post('/api/importar/sistema', upload.single('arquivo'), async (req, res) => 
     if (!req.file) return res.status(400).json({ erro: 'Nenhum arquivo enviado.' });
     const wb = XLSX.read(req.file.buffer, { type: 'buffer' });
     
-    // 1. Encontra a aba GERAL (ignorando maiúsculas/minúsculas)
+    // 1. Encontra a aba GERAL
     const nomeAbaGeral = wb.SheetNames.find(n => n.trim().toUpperCase() === 'GERAL');
     if (!nomeAbaGeral) return res.status(400).json({ erro: 'Aba GERAL não encontrada.' });
     const linhas = XLSX.utils.sheet_to_json(wb.Sheets[nomeAbaGeral], { defval: '' });
     
-    // 2. Encontra a aba ESTOQUE (qualquer variação)
-    const nomeAbaEstoque = wb.SheetNames.find(n => 
-      n.trim().toUpperCase() === 'ESTOQUE' || 
-      n.trim().toLowerCase() === 'estoque' || 
-      n.trim().toUpperCase() === 'ESTOQUE '
-    );
-    
+    // 2. Encontra a aba ESTOQUE
+    const nomeAbaEstoque = wb.SheetNames.find(n => n.trim().toUpperCase() === 'ESTOQUE');
     const mapaEstoque = new Map();
     
     if (nomeAbaEstoque) {
       const estoqueRows = XLSX.utils.sheet_to_json(wb.Sheets[nomeAbaEstoque], { defval: '' });
       
-      // Mostra no terminal quais colunas a planilha tem
       if (estoqueRows.length > 0) {
         console.log('📋 Colunas da aba Estoque:', Object.keys(estoqueRows[0]));
       }
       
       for (const r of estoqueRows) {
-        // Tenta encontrar a coluna do código de várias formas
-        const cod = String(
-          r['Cod. Produto'] ?? 
-          r['Código'] ?? 
-          r['codigo'] ?? 
-          r['Cód'] ?? 
-          r['Cod'] ?? 
-          r['CODIGO'] ?? 
-          r['Código Produto'] ?? 
-          ''
-        ).trim();
+        const codOriginal = String(r['Cod. Produto'] ?? r['Código'] ?? r['codigo'] ?? '').trim();
+        const codNormalizado = String(parseInt(codOriginal)); // Remove zeros à esquerda
+        const qtd = r['QTD'] ?? r['Qtd'] ?? r['Estoque'] ?? r['ESTOQUE'] ?? 0;
         
-        // Tenta encontrar a coluna de estoque de várias formas
-        const qtd = r['QTD'] ?? 
-                   r['Qtd'] ?? 
-                   r['qtd'] ?? 
-                   r['Estoque'] ?? 
-                   r['ESTOQUE'] ?? 
-                   r['estoque'] ?? 
-                   r['Quantidade'] ?? 
-                   r['QUANTIDADE'] ?? 
-                   r['Saldo'] ?? 
-                   r['SALDO'] ?? 
-                   0;
-        
-        if (cod) mapaEstoque.set(cod, num(qtd));
+        if (codOriginal) {
+          mapaEstoque.set(codNormalizado, num(qtd));
+        }
       }
-      console.log(`✅ Aba de estoque ("${nomeAbaEstoque}") encontrada. ${mapaEstoque.size} produtos com saldo carregados.`);
+      console.log(`✅ Aba de estoque encontrada. ${mapaEstoque.size} produtos com saldo.`);
     } else {
-      console.log(`⚠️ Aba "Estoque" não encontrada! Verifique o nome da aba na planilha.`);
+      console.log(`⚠️ Aba "Estoque" não encontrada!`);
     }
 
     let inseridos = 0;
     let comEstoque = 0;
     
     for (const r of linhas) {
-      const codigo = String(
-        r['Código'] ?? 
-        r['codigo'] ?? 
-        r['Cód'] ?? 
-        r['Cod'] ?? 
-        r['CODIGO'] ?? 
-        ''
-      ).trim();
+      const codigoOriginal = String(r['Código'] ?? r['codigo'] ?? '').trim();
+      if (!codigoOriginal) continue;
       
-      if (!codigo) continue;
+      // Normaliza o código da aba GERAL da mesma forma
+      const codigoNormalizado = String(parseInt(codigoOriginal));
       
-      // Busca o estoque no mapa (considerando que o código pode ter zeros à esquerda)
-      const codigoNormalizado = String(parseInt(codigo));
-      let estoqueEncontrado = 0;
+      // Busca o estoque no mapa normalizado
+      const estoque = mapaEstoque.get(codigoNormalizado) ?? 0;
       
-      // Tenta encontrar o estoque de várias formas
-      if (mapaEstoque.has(codigo)) {
-        estoqueEncontrado = mapaEstoque.get(codigo);
-      } else if (mapaEstoque.has(codigoNormalizado)) {
-        estoqueEncontrado = mapaEstoque.get(codigoNormalizado);
-      } else {
-        // Procura no mapa ignorando zeros à esquerda
-        for (const [key, val] of mapaEstoque.entries()) {
-          if (String(parseInt(key)) === codigoNormalizado) {
-            estoqueEncontrado = val;
-            break;
-          }
-        }
-      }
-      
-      if (estoqueEncontrado > 0) comEstoque++;
+      if (estoque > 0) comEstoque++;
       
       const item = {
-        codigo,
+        codigo: codigoOriginal,
         cod_barras: soDigitos(r['Cod.Barra'] ?? r['cod_barras'] ?? ''),
         descricao: String(r['Descrição'] ?? r['descricao'] ?? '').trim(),
-        estoque: estoqueEncontrado,
+        estoque: estoque,
         preco_venda: num(r['P/Venda'] ?? r['preco_venda'] ?? 0),
         ativo: 1,
         atualizado_em: new Date().toISOString()
