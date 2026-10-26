@@ -209,7 +209,7 @@ app.get('/api/status', async (req, res) => {
 });
 
 // ESTOQUE POR SUBGRUPO E POR FAMÍLIA
-ap// ESTOQUE POR SUBGRUPO E POR FAMÍLIA
+// ESTOQUE POR SUBGRUPO E POR FAMÍLIA
 app.get('/api/estoque-subgrupos', async (req, res) => {
   try {
     // Pega os itens do sistema (com estoque)
