@@ -89,13 +89,13 @@
   .isca-titulo-cores { font-size:.75rem; font-weight:800; color:var(--cinza-500); text-transform:uppercase; margin-bottom:10px; }
   
   /* GRADES */
-  .isca-grade, .anzol-grade { display:grid; grid-template-columns:repeat(auto-fill, minmax(95px, 1fr)); gap:10px; }
+  .isca-grade, .anzol-grade { display:grid; grid-template-columns:repeat(auto-fill, minmax(105px, 1fr)); gap:10px; }
   .isca-cor-card, .anzol-numero-card { background:white; border:1px solid var(--cinza-200); border-radius:8px; padding:8px; cursor:pointer; transition:.2s; display:flex; flex-direction:column; align-items:center; position:relative; }
   .isca-cor-card:hover, .anzol-numero-card:hover { border-color:var(--azul-500); }
   .isca-cor-card.ativa, .anzol-numero-card.ativa { border-color:var(--azul-800); box-shadow:0 0 0 1px var(--azul-800); }
   .isca-cor-card img { width:100%; aspect-ratio:1; object-fit:contain; margin-bottom:4px; }
   .isca-cor-card .cor-nome, .anzol-numero { font-size:.85rem; font-weight:800; color:var(--azul-800); text-align:center; word-break:break-word; }
-  .anzol-numero { font-size:1.1rem; color:var(--azul-800); line-height:1.2; margin-bottom:4px; }
+  .anzol-numero { font-size:1rem; color:var(--azul-800); line-height:1.2; margin-bottom:4px; text-transform:uppercase; }
   .isca-cor-card .cor-preco, .anzol-preco { font-size:.75rem; font-weight:800; color:var(--verde); margin-top:2px; }
 
   /* BADGES DE QTD */
@@ -363,29 +363,39 @@ function normalizarItem(it) {
   };
 }
 
-// EXTRAI O NÚMERO / TAMANHO PARA ANZÓIS, GIRADORES, SNAPS E EMPATES
+// EXTRAI AUTOMATICAMENTE A ESPECIFICAÇÃO DE ANZÓIS, GIRADORES, CABOS DE AÇO, SNAPS E LUVAS
 function analisarAnzol(it) {
   const attrs = it.atributos || {};
   let numero = '';
   
-  const chavesNum = ['Tamanho (cm)', 'Tamanho', 'TAMANHO', 'Numero', 'NÚMERO', 'Número', 'Bitola', 'Modelo', 'MODELO'];
+  // 1. Busca nos atributos do JSON (Libragem, Comprimento, Tamanho, etc.)
+  const chavesNum = ['Resistência (lb)', 'Resistencia', 'Libragem', 'Tamanho (cm)', 'Tamanho', 'TAMANHO', 'Numero', 'NÚMERO', 'Número', 'Bitola', 'Modelo', 'MODELO'];
   for (let k of chavesNum) {
     if (attrs[k]) { numero = String(attrs[k]); break; }
   }
   
+  // 2. Inteligência para Cabos de Aço em Rolo / Luvas / Snaps (analisa o nome do subgrupo)
   if (!numero || numero === 'S/N') {
     const subUpper = (it.subgrupo || '').toUpperCase();
-    const match = subUpper.match(/(?:Nº?|Nº|NUMERO|TAMANHO)?\s*(\d{1,2}(?:\/\d)?(?:\s*CM|\s*MM)?)(?:\s*C\/|\s|$)/i);
-    if (match) numero = match[1];
-    else numero = it.subgrupo.replace(it.grupo, '').trim() || 'S/N';
+    
+    // Identifica Cabo de Aço (ex: 10LB, 20LB, 10M, etc.)
+    const matchCabo = subUpper.match(/(\d+\s*LBS?|\d+\s*KG|\d+\s*M(?:ETROS)?)/i);
+    if (matchCabo) {
+      numero = matchCabo[1];
+    } else {
+      // Identifica Números/Tamanhos normais (ex: Nº 1, 1/0, P, M, G, etc.)
+      const match = subUpper.match(/(?:Nº?|Nº|NUMERO|TAMANHO)?\s*(\d{1,2}(?:\/\d)?(?:\s*CM|\s*MM)?|\b[PMGG]{1,3}\b)(?:\s*C\/|\s|$)/i);
+      if (match) numero = match[1];
+      else numero = it.subgrupo.replace(it.grupo, '').trim() || 'S/N';
+    }
   }
 
+  // Extrai quantidade/embalagem se houver (ex: Rolo c/ 10m, C/100)
   let qtd = '';
-  const chavesQtd = ['Quantidade', 'QUANTIDADE', 'Qtd', 'QTD', 'Qtd. Embalagem', 'Qtd Embalagem', 'Quantidade (un)'];
+  const chavesQtd = ['Comprimento (m)', 'Comprimento', 'Quantidade', 'QUANTIDADE', 'Qtd', 'QTD', 'Qtd. Embalagem', 'Qtd Embalagem'];
   for (let k of chavesQtd) {
     if (attrs[k]) { qtd = String(attrs[k]); break; }
   }
-  if (qtd && !qtd.toLowerCase().includes('un')) qtd = qtd + ' un';
 
   return { numero, qtd };
 }
@@ -565,8 +575,11 @@ function renderizar() {
         nomeFam.includes('VESTUARIO') || nomeFam.includes('MOTOR')
       ) { tipo = 'grade'; }
       else if (nomeFam.includes('ISCA') || attrs.includes('CORES') || attrs.includes('COR')) tipo = 'isca';
-      // EMPATE, GIRADORES, SNAPS E ANZÓIS AGORA USAM A MESMA APRESENTAÇÃO DE GRADE POR NÚMERO
-      else if (nomeFam.includes('ANZOL') || nomeFam.includes('EMPATE') || nomeFam.includes('GIRADOR') || nomeFam.includes('SNAP')) tipo = 'anzol';
+      // ANZÓIS, GIRADORES, SNAPS, CABOS DE AÇO E LUVAS USAM O LAYOUT LIMPO POR NÚMERO / ESPECIFICAÇÃO
+      else if (
+        nomeFam.includes('ANZOL') || nomeFam.includes('EMPATE') || nomeFam.includes('GIRADOR') || 
+        nomeFam.includes('SNAP') || nomeFam.includes('CABO') || nomeFam.includes('LUVA')
+      ) tipo = 'anzol';
       else if (nomeFam.includes('MOLINETE')) tipo = 'molinete';
       else if (nomeFam.includes('CARRETILHA')) tipo = 'carretilha';
       
@@ -576,7 +589,6 @@ function renderizar() {
       else if (tipo === 'carretilha') html += renderFamiliaCarretilha(fam, filhos);
       else if (tipo === 'vara') html += renderFamiliaVara(fam, filhos);
       else if (tipo === 'linha') html += renderFamiliaLinha(fam, filhos);
-      else if (tipo === 'empate') html += renderFamiliaEmpate(fam, filhos);
       else if (tipo === 'grade') html += renderFamiliaGrade(fam, filhos);
       else html += renderFamiliaComum(fam, filhos);
       
@@ -1133,7 +1145,7 @@ function selecionarIsca(famId, codigo, url) {
   document.getElementById(`foto-pai-${famId}`).innerHTML = `<img src="${url}">`;
 }
 
-// RENDERIZADOR USADO PARA ANZÓIS, GIRADORES, SNAPS E EMPATES
+// RENDERIZADOR USADO PARA ANZÓIS, GIRADORES, SNAPS, CABOS DE AÇO E LUVAS
 function renderFamiliaAnzol(fam, itens) {
   const primeiroItem = itens[0];
   const imgInicial = primeiroItem?.imagem_url || '';
@@ -1157,8 +1169,8 @@ function renderFamiliaAnzol(fam, itens) {
     return `
       <div class="anzol-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" onclick="selecionarAnzol('${fam.id}', '${it.codigo}', '${it.imagem_url}')">
         <span class="anzol-badge">${q}</span>
-        <div class="anzol-numero">${info.numero}</div>
-        ${info.qtd ? `<div style="font-size:.65rem; color:var(--cinza-500); font-weight:700; margin-bottom:4px;">${escapeHtml(info.qtd)}</div>` : ''}
+        <div class="anzol-numero">${escapeHtml(info.numero)}</div>
+        ${info.qtd ? `<div style="font-size:.65rem; color:var(--cinza-500); font-weight:700; margin-bottom:4px; text-align:center;">${escapeHtml(info.qtd)}</div>` : ''}
         <div class="anzol-preco">R$ ${fmtMoeda(it.preco)}</div>
         <div class="anzol-qtd-ctrl" onclick="event.stopPropagation()">
           <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
@@ -1181,7 +1193,7 @@ function renderFamiliaAnzol(fam, itens) {
         <div class="anzol-info">
           <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver descrição</button>
           ${subdivisoes.length > 1 ? `<div class="anzol-tabs">${tabsHtml}</div>` : ''}
-          <div class="isca-titulo-cores">Números / Tamanhos</div>
+          <div class="isca-titulo-cores">Opções / Especificações</div>
           <div class="anzol-grade" id="grade-numeros-${fam.id}">${numerosHtml}</div>
         </div>
       </div>
@@ -1209,8 +1221,8 @@ function trocarTipoAnzol(famId, subIndex) {
       return `
         <div class="anzol-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}">
           <span class="anzol-badge">${q}</span>
-          <div class="anzol-numero">${info.numero}</div>
-          ${info.qtd ? `<div style="font-size:.65rem; color:var(--cinza-500); font-weight:700; margin-bottom:4px;">${escapeHtml(info.qtd)}</div>` : ''}
+          <div class="anzol-numero">${escapeHtml(info.numero)}</div>
+          ${info.qtd ? `<div style="font-size:.65rem; color:var(--cinza-500); font-weight:700; margin-bottom:4px; text-align:center;">${escapeHtml(info.qtd)}</div>` : ''}
           <div class="anzol-preco">R$ ${fmtMoeda(it.preco)}</div>
           <div class="anzol-qtd-ctrl" onclick="event.stopPropagation()">
             <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
