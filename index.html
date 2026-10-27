@@ -730,7 +730,6 @@ function renderFamiliaLinha(fam, itens) {
       return a.ordem_excel - b.ordem_excel;
     });
 
-    // Gera os "cards" de linha
     const cardsHtml = itensDaSub.map(it => {
       const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
       const info = analisarLinha(it);
@@ -738,22 +737,22 @@ function renderFamiliaLinha(fam, itens) {
       return `
         <div class="isca-cor-card" style="padding: 12px; justify-content: flex-start;">
           
-          <!-- Bitola em Destaque -->
-          <div style="font-size: 1.6rem; font-weight: 900; color: var(--azul-800); line-height: 1; margin-bottom: 4px; text-align: center;">
+          <!-- BITOLA (Tamanho da linha) com fonte equilibrada -->
+          <div style="font-size: 1.1rem; font-weight: 900; color: var(--azul-800); line-height: 1; margin-bottom: 6px; text-align: center; text-transform: uppercase;">
             ${escapeHtml(info.bitola)}
           </div>
           
-          <!-- Resistência Discreta -->
+          <!-- RESISTÊNCIA (LBS/KG) discreta -->
           ${info.resistencia ? `
-            <div style="font-size: .75rem; font-weight: 700; color: var(--cinza-500); text-align: center; margin-bottom: 12px; line-height: 1.2;">
+            <div style="font-size: .7rem; font-weight: 700; color: var(--cinza-500); text-align: center; margin-bottom: 12px; line-height: 1.2;">
               ${escapeHtml(info.resistencia)}
             </div>
-          ` : '<div style="height: 22px;"></div>'} <!-- Espaçador se não tiver resistência -->
+          ` : '<div style="height: 20px;"></div>'}
           
-          <!-- Preço -->
+          <!-- PREÇO -->
           <div class="cor-preco" style="font-size: 1rem; margin-bottom: 8px;">R$ ${fmtMoeda(it.preco)}</div>
           
-          <!-- Controle de Quantidade -->
+          <!-- CONTROLE DE QTD -->
           <div class="qtd-ctrl" style="display: flex; width: 100%; justify-content: space-between;" onclick="event.stopPropagation()">
             <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
             <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)" style="flex: 1; max-width: 50px;">
@@ -766,7 +765,7 @@ function renderFamiliaLinha(fam, itens) {
     return `
       <div class="sub-bloco" style="margin-top: 16px;">
         ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
-        <div class="isca-grade" style="margin-top: 12px;">
+        <div class="isca-grade" style="margin-top: 12px; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));">
           ${cardsHtml}
         </div>
       </div>`;
@@ -784,6 +783,7 @@ function renderFamiliaLinha(fam, itens) {
       </div>
     </div>`;
 }
+
 function analisarEmpate(it) {
   const attrs = it.atributos || {};
   const ignorar = ['QTD', 'CX/CT']; 
