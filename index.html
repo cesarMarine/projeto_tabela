@@ -799,18 +799,6 @@ function renderFamiliaLinha(fam, itens) {
       </div>
     </div>`;
 }
-  return `
-    <div class="familia-bloco">
-      <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
-      <div class="molinete-card" id="card-fam-${fam.id}">
-        <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
-        <div class="molinete-info" style="overflow: hidden;">
-          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes do produto</button>
-          ${blocosTabelas}
-        </div>
-      </div>
-    </div>`;
-}
 
 function analisarEmpate(it) {
   const attrs = it.atributos || {};
