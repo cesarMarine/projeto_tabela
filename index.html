@@ -89,13 +89,13 @@
   .isca-titulo-cores { font-size:.75rem; font-weight:800; color:var(--cinza-500); text-transform:uppercase; margin-bottom:10px; }
   
   /* GRADES */
-  .isca-grade, .anzol-grade { display:grid; grid-template-columns:repeat(auto-fill, minmax(90px, 1fr)); gap:10px; }
+  .isca-grade, .anzol-grade { display:grid; grid-template-columns:repeat(auto-fill, minmax(95px, 1fr)); gap:10px; }
   .isca-cor-card, .anzol-numero-card { background:white; border:1px solid var(--cinza-200); border-radius:8px; padding:8px; cursor:pointer; transition:.2s; display:flex; flex-direction:column; align-items:center; position:relative; }
   .isca-cor-card:hover, .anzol-numero-card:hover { border-color:var(--azul-500); }
   .isca-cor-card.ativa, .anzol-numero-card.ativa { border-color:var(--azul-800); box-shadow:0 0 0 1px var(--azul-800); }
   .isca-cor-card img { width:100%; aspect-ratio:1; object-fit:contain; margin-bottom:4px; }
-  .isca-cor-card .cor-nome, .anzol-numero { font-size:.8rem; font-weight:800; color:var(--texto); text-align:center; }
-  .anzol-numero { font-size:1.4rem; color:var(--azul-800); line-height:1; margin-bottom:4px; }
+  .isca-cor-card .cor-nome, .anzol-numero { font-size:.85rem; font-weight:800; color:var(--azul-800); text-align:center; word-break:break-word; }
+  .anzol-numero { font-size:1.1rem; color:var(--azul-800); line-height:1.2; margin-bottom:4px; }
   .isca-cor-card .cor-preco, .anzol-preco { font-size:.75rem; font-weight:800; color:var(--verde); margin-top:2px; }
 
   /* BADGES DE QTD */
@@ -108,7 +108,7 @@
   .isca-qtd-ctrl button, .anzol-qtd-ctrl button { width:24px; height:24px; border-radius:4px; border:1px solid var(--cinza-300); background:white; font-weight:800; color:var(--azul-800); }
   .isca-qtd-ctrl input, .anzol-qtd-ctrl input { width:28px; height:24px; border:1px solid var(--cinza-300); border-radius:4px; text-align:center; font-weight:800; -moz-appearance:textfield; color:var(--azul-800); }
 
-  /* LISTAS (MOLINETES, CARRETILHAS) */
+  /* LISTAS */
   .lista-filhos { display:flex; flex-direction:column; gap:4px; }
   
   .linha-filho-container {
@@ -363,16 +363,21 @@ function normalizarItem(it) {
   };
 }
 
+// EXTRAI O NÚMERO / TAMANHO PARA ANZÓIS, GIRADORES, SNAPS E EMPATES
 function analisarAnzol(it) {
   const attrs = it.atributos || {};
-  let numero = 'S/N';
-  if (attrs['Tamanho (cm)']) numero = attrs['Tamanho (cm)'];
-  else if (attrs['Tamanho']) numero = attrs['Tamanho'];
-  else if (attrs['TAMANHO']) numero = attrs['TAMANHO'];
+  let numero = '';
   
-  if (numero === 'S/N') {
-    const match = (it.subgrupo || '').toUpperCase().match(/\s(\d{1,2}(?:\/\d)?)\s*(?:C\/|\s|$)/);
+  const chavesNum = ['Tamanho (cm)', 'Tamanho', 'TAMANHO', 'Numero', 'NÚMERO', 'Número', 'Bitola', 'Modelo', 'MODELO'];
+  for (let k of chavesNum) {
+    if (attrs[k]) { numero = String(attrs[k]); break; }
+  }
+  
+  if (!numero || numero === 'S/N') {
+    const subUpper = (it.subgrupo || '').toUpperCase();
+    const match = subUpper.match(/(?:Nº?|Nº|NUMERO|TAMANHO)?\s*(\d{1,2}(?:\/\d)?(?:\s*CM|\s*MM)?)(?:\s*C\/|\s|$)/i);
     if (match) numero = match[1];
+    else numero = it.subgrupo.replace(it.grupo, '').trim() || 'S/N';
   }
 
   let qtd = '';
@@ -406,7 +411,6 @@ function analisarMolinete(it) {
   return { modelo, relacao, capacidade, ladoManivela, variacao };
 }
 
-// ANALISADOR EXCLUSIVO PARA CARRETILHA (IDENTIFICA ESQUERDA/DIREITA)
 function analisarCarretilha(it) {
   const attrs = it.atributos || {};
   let modelo = attrs['Modelo'] || attrs['MODELO'] || '';
@@ -555,14 +559,14 @@ function renderizar() {
 
       if (nomeFam.includes('VARA')) tipo = 'vara';
       else if (nomeFam.includes('LINHA')) tipo = 'linha';
-      else if (nomeFam.includes('EMPATE')) tipo = 'empate';
       else if (
         grupoItem.includes('ACESSORIO') || grupoItem.includes('VESTUARIO') || grupoItem.includes('MOTOR') || 
         nomeFam.includes('ACESSORIO') || nomeFam.includes('ALICATE') || nomeFam.includes('TESOURA') || 
         nomeFam.includes('VESTUARIO') || nomeFam.includes('MOTOR')
       ) { tipo = 'grade'; }
       else if (nomeFam.includes('ISCA') || attrs.includes('CORES') || attrs.includes('COR')) tipo = 'isca';
-      else if (nomeFam.includes('ANZOL')) tipo = 'anzol';
+      // EMPATE, GIRADORES, SNAPS E ANZÓIS AGORA USAM A MESMA APRESENTAÇÃO DE GRADE POR NÚMERO
+      else if (nomeFam.includes('ANZOL') || nomeFam.includes('EMPATE') || nomeFam.includes('GIRADOR') || nomeFam.includes('SNAP')) tipo = 'anzol';
       else if (nomeFam.includes('MOLINETE')) tipo = 'molinete';
       else if (nomeFam.includes('CARRETILHA')) tipo = 'carretilha';
       
@@ -933,91 +937,6 @@ function renderFamiliaLinha(fam, itens) {
     </div>`;
 }
 
-function analisarEmpate(it) {
-  const attrs = it.atributos || {};
-  const ignorar = ['QTD', 'CX/CT']; 
-  const especificacoes = {};
-  for (const [chave, valor] of Object.entries(attrs)) {
-    if (!ignorar.includes(chave) && valor) especificacoes[chave] = valor;
-  }
-  return { especificacoes };
-}
-
-function renderFamiliaEmpate(fam, itens) {
-  const primeiroItem = itens[0];
-  const imgInicial = primeiroItem?.imagem_url || '';
-  let subdivisoes = fam.subdivisoes || [];
-  if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Produtos', itens: fam.itens }];
-
-  const colunasSet = new Set();
-  itens.forEach(it => { Object.keys(analisarEmpate(it).especificacoes).forEach(k => colunasSet.add(k)); });
-  const colunas = Array.from(colunasSet);
-
-  const blocosTabelas = subdivisoes.map(sub => {
-    const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
-    if (itensDaSub.length === 0) return '';
-
-    itensDaSub.sort((a, b) => {
-      if (a.ordem_customizada_pos !== 999999 || b.ordem_customizada_pos !== 999999) return a.ordem_customizada_pos - b.ordem_customizada_pos;
-      return a.ordem_excel - b.ordem_excel;
-    });
-
-    const linhas = itensDaSub.map(it => {
-      const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
-      const info = analisarEmpate(it);
-      const celulasSpecs = colunas.map(c => {
-        const val = info.especificacoes[c] || '-';
-        const isModelo = c.toUpperCase().includes('MODELO');
-        const style = isModelo ? 'text-align:center; font-weight:800; color:var(--azul-800); font-size:0.75rem;' : 'text-align:center; font-size:0.7rem; color:var(--cinza-700);';
-        return `<td style="${style}">${escapeHtml(val)}</td>`;
-      }).join('');
-
-      return `
-        <tr class="linha-tabela-vara">
-          <td class="l-cod" style="font-family:monospace; font-weight:800; color:var(--azul-800);">${it.codigo}</td>
-          ${celulasSpecs}
-          <td style="text-align:center; font-weight:800; color:var(--azul-800);">R$ ${fmtMoeda(it.preco)}</td>
-          <td style="text-align:center;" onclick="event.stopPropagation()">
-            <div class="qtd-ctrl" style="display:inline-flex;">
-              <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
-              <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
-              <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
-            </div>
-          </td>
-        </tr>`;
-    }).join('');
-
-    return `
-      <div class="sub-bloco" style="margin-top: 16px;">
-        ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
-        <div style="overflow-x: auto; width: 100%; margin-top: 8px; background: white; border-radius: 6px; border: 1px solid var(--cinza-200);">
-          <table style="width: 100%; border-collapse: collapse; min-width: max-content;">
-            <thead>
-              <tr style="background: var(--cinza-50); border-bottom: 1px solid var(--cinza-200); font-size: 0.6rem; font-weight: 800; color: var(--cinza-500); text-transform: uppercase;">
-                <th style="padding: 8px; text-align: left;">Código</th>
-                ${colunas.map(c => `<th style="padding: 8px; text-align: center;">${escapeHtml(c)}</th>`).join('')}
-                <th style="padding: 8px; text-align: center;">Preço</th><th style="padding: 8px; text-align: center;">Qtd</th>
-              </tr>
-            </thead>
-            <tbody>${linhas}</tbody>
-          </table>
-        </div>
-      </div>`;
-  }).join('');
-
-  return `
-    <div class="familia-bloco">
-      <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
-      <div class="molinete-card" id="card-fam-${fam.id}">
-        <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
-        <div class="molinete-info" style="overflow: hidden;">
-          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes do produto</button>
-          ${blocosTabelas}
-        </div>
-      </div>
-    </div>`;
-}
-
 function renderFamiliaGrade(fam, itens) {
   const primeiroItem = itens[0];
   const imgInicial = primeiroItem?.imagem_url || '';
@@ -1214,6 +1133,7 @@ function selecionarIsca(famId, codigo, url) {
   document.getElementById(`foto-pai-${famId}`).innerHTML = `<img src="${url}">`;
 }
 
+// RENDERIZADOR USADO PARA ANZÓIS, GIRADORES, SNAPS E EMPATES
 function renderFamiliaAnzol(fam, itens) {
   const primeiroItem = itens[0];
   const imgInicial = primeiroItem?.imagem_url || '';
@@ -1260,8 +1180,8 @@ function renderFamiliaAnzol(fam, itens) {
         </div>
         <div class="anzol-info">
           <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver descrição</button>
-          <div class="anzol-tabs">${tabsHtml}</div>
-          <div class="isca-titulo-cores">Números</div>
+          ${subdivisoes.length > 1 ? `<div class="anzol-tabs">${tabsHtml}</div>` : ''}
+          <div class="isca-titulo-cores">Números / Tamanhos</div>
           <div class="anzol-grade" id="grade-numeros-${fam.id}">${numerosHtml}</div>
         </div>
       </div>
