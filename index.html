@@ -285,17 +285,28 @@ function normalizarItem(it) {
 // ==========================================
 function analisarAnzol(it) {
   const attrs = it.atributos || {};
+  
+  // Busca o número do anzol
   let numero = 'S/N';
   if (attrs['Tamanho (cm)']) numero = attrs['Tamanho (cm)'];
   else if (attrs['Tamanho']) numero = attrs['Tamanho'];
   else if (attrs['TAMANHO']) numero = attrs['TAMANHO'];
+  
   if (numero === 'S/N') {
     const match = (it.subgrupo || '').toUpperCase().match(/\s(\d{1,2}(?:\/\d)?)\s*(?:C\/|\s|$)/);
     if (match) numero = match[1];
   }
-  const loteMatch = (it.subgrupo || '').toUpperCase().match(/C\/\s*(\d+)/);
-  const lote = loteMatch ? loteMatch[1] + ' un' : '';
-  return { numero, lote };
+
+  // Busca a Quantidade (tenta várias nomenclaturas comuns do scraping)
+  let qtd = '';
+  const chavesQtd = ['Quantidade', 'QUANTIDADE', 'Qtd', 'QTD', 'Qtd. Embalagem', 'Qtd Embalagem', 'Quantidade (un)'];
+  for (let k of chavesQtd) {
+    if (attrs[k]) { qtd = String(attrs[k]); break; }
+  }
+  // Se achou a quantidade, formata (ex: "15 un")
+  if (qtd && !qtd.toLowerCase().includes('un')) qtd = qtd + ' un';
+
+  return { numero, qtd };
 }
 
 function analisarMolinete(it) {
@@ -1085,11 +1096,26 @@ function renderFamiliaAnzol(fam, itens) {
   });
 
   const numerosHtml = itensIniciais.map(it => {
-    const info = analisarAnzol(it); const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
-    return `<div class="anzol-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" onclick="selecionarAnzol('${fam.id}', '${it.codigo}', '${it.imagem_url}')"><span class="anzol-badge">${q}</span><div class="anzol-numero">${info.numero}</div><div class="anzol-preco">R$ ${fmtMoeda(it.preco)}</div><div class="anzol-qtd-ctrl" onclick="event.stopPropagation()"><button onclick="mudarQtd('${it.codigo}', -1)">−</button><input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)"><button onclick="mudarQtd('${it.codigo}', 1)">+</button></div></div>`;
+    const info = analisarAnzol(it); 
+    const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+    
+    // Monta o HTML do card do anzol
+    return `
+      <div class="anzol-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" onclick="selecionarAnzol('${fam.id}', '${it.codigo}', '${it.imagem_url}')">
+        <span class="anzol-badge">${q}</span>
+        <div class="anzol-numero">${info.numero}</div>
+        ${info.qtd ? `<div style="font-size:.65rem; color:var(--cinza-500); font-weight:700; margin-bottom:4px;">${escapeHtml(info.qtd)}</div>` : ''}
+        <div class="anzol-preco">R$ ${fmtMoeda(it.preco)}</div>
+        <div class="anzol-qtd-ctrl" onclick="event.stopPropagation()">
+          <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+          <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+          <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+        </div>
+      </div>`;
   }).join('');
   
-  window.anzolData = window.anzolData || {}; window.anzolData[fam.id] = { subdivisoes, itens: itensComEstoque };
+  window.anzolData = window.anzolData || {}; 
+  window.anzolData[fam.id] = { subdivisoes, itens: itensComEstoque };
   
   return `
     <div class="familia-bloco">
@@ -1109,9 +1135,12 @@ function renderFamiliaAnzol(fam, itens) {
 }
 
 function trocarTipoAnzol(famId, subIndex) {
-  const data = window.anzolData[famId]; const sub = data.subdivisoes[subIndex];
+  const data = window.anzolData[famId]; 
+  const sub = data.subdivisoes[subIndex];
   const card = document.getElementById(`card-fam-${famId}`);
   card.querySelectorAll('.anzol-tab').forEach(b => b.classList.remove('ativo'));
+  // Adiciona a classe ativo no botão clicado
+  card.querySelectorAll('.anzol-tab')[subIndex].classList.add('ativo');
   
   const itensFiltrados = data.itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
   
@@ -1122,11 +1151,22 @@ function trocarTipoAnzol(famId, subIndex) {
 
   document.getElementById(`grade-numeros-${famId}`).innerHTML = itensFiltrados
     .map(it => {
-      const info = analisarAnzol(it); const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
-      return `<div class="anzol-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}"><span class="anzol-badge">${q}</span><div class="anzol-numero">${info.numero}</div><div class="anzol-preco">R$ ${fmtMoeda(it.preco)}</div><div class="anzol-qtd-ctrl" onclick="event.stopPropagation()"><button onclick="mudarQtd('${it.codigo}', -1)">−</button><input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)"><button onclick="mudarQtd('${it.codigo}', 1)">+</button></div></div>`;
+      const info = analisarAnzol(it); 
+      const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+      return `
+        <div class="anzol-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}">
+          <span class="anzol-badge">${q}</span>
+          <div class="anzol-numero">${info.numero}</div>
+          ${info.qtd ? `<div style="font-size:.65rem; color:var(--cinza-500); font-weight:700; margin-bottom:4px;">${escapeHtml(info.qtd)}</div>` : ''}
+          <div class="anzol-preco">R$ ${fmtMoeda(it.preco)}</div>
+          <div class="anzol-qtd-ctrl" onclick="event.stopPropagation()">
+            <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+            <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+            <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+          </div>
+        </div>`;
     }).join('');
-}
-
+} 
 function selecionarAnzol(famId, codigo, url) {
   const card = document.getElementById(`card-fam-${famId}`);
   card.querySelectorAll('.anzol-numero-card').forEach(m => m.classList.remove('ativa'));
