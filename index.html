@@ -717,7 +717,22 @@ function renderFamiliaLinha(fam, itens) {
   if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Produtos', itens: fam.itens }];
 
   const colunasSet = new Set();
-  itens.forEach(it => { Object.keys(analisarLinha(it).especificacoes).forEach(k => colunasSet.add(k)); });
+  itens.forEach(it => { 
+    const info = analisarLinha(it);
+    Object.keys(info.especificacoes).forEach(k => {
+      // 👇 BLACKLIST: Ignora colunas que sujam a tela e são redundantes
+      const kUpper = k.toUpperCase();
+      if (
+        kUpper.includes('BARRAS') || 
+        kUpper.includes('COD') || 
+        kUpper.includes('METRAGEM') || 
+        kUpper.includes('QUANTIDADE (M)') ||
+        kUpper.includes('METROS')
+      ) return;
+      
+      colunasSet.add(k); 
+    }); 
+  });
   const colunas = Array.from(colunasSet);
 
   const blocosTabelas = subdivisoes.map(sub => {
@@ -732,6 +747,8 @@ function renderFamiliaLinha(fam, itens) {
     const linhas = itensDaSub.map(it => {
       const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
       const info = analisarLinha(it);
+      
+      // Renderiza apenas as colunas que passaram pelo filtro da blacklist
       const celulasSpecs = colunas.map(c => {
         const val = info.especificacoes[c] || '-';
         return `<td style="text-align:center; font-size:0.7rem; color:var(--cinza-700);">${escapeHtml(val)}</td>`;
@@ -740,9 +757,8 @@ function renderFamiliaLinha(fam, itens) {
       return `
         <tr class="linha-tabela-vara">
           <td class="l-cod" style="font-family:monospace; font-weight:800; color:var(--azul-800);">${it.codigo}</td>
-          <td style="text-align:center; font-weight:800; color:var(--azul-800); font-size:0.75rem;">${escapeHtml(info.metragem)}</td>
           ${celulasSpecs}
-          <td style="text-align:center; font-weight:800; color:var(--azul-800);">R$ ${fmtMoeda(it.preco)}</td>
+          <td style="text-align:center; font-weight:800; color:var(--azul-800); white-space: nowrap;">R$ ${fmtMoeda(it.preco)}</td>
           <td style="text-align:center;" onclick="event.stopPropagation()">
             <div class="qtd-ctrl" style="display:inline-flex;">
               <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
@@ -760,7 +776,7 @@ function renderFamiliaLinha(fam, itens) {
           <table style="width: 100%; border-collapse: collapse; min-width: max-content;">
             <thead>
               <tr style="background: var(--cinza-50); border-bottom: 1px solid var(--cinza-200); font-size: 0.6rem; font-weight: 800; color: var(--cinza-500); text-transform: uppercase;">
-                <th style="padding: 8px; text-align: left;">Código</th><th style="padding: 8px; text-align: center;">Metragem</th>
+                <th style="padding: 8px; text-align: left;">Cód.</th>
                 ${colunas.map(c => `<th style="padding: 8px; text-align: center;">${escapeHtml(c)}</th>`).join('')}
                 <th style="padding: 8px; text-align: center;">Preço</th><th style="padding: 8px; text-align: center;">Qtd</th>
               </tr>
@@ -771,6 +787,18 @@ function renderFamiliaLinha(fam, itens) {
       </div>`;
   }).join('');
 
+  return `
+    <div class="familia-bloco">
+      <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
+      <div class="molinete-card" id="card-fam-${fam.id}">
+        <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
+        <div class="molinete-info" style="overflow: hidden;">
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes do produto</button>
+          ${blocosTabelas}
+        </div>
+      </div>
+    </div>`;
+}
   return `
     <div class="familia-bloco">
       <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
