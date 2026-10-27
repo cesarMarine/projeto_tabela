@@ -93,6 +93,7 @@
 <div class="wrap">
   <aside class="sidebar">
     <button class="active" data-page="importar">📥 Importar</button>
+    <button data-page="ofertas">🔥 Ofertas</button>
     <button data-page="familias">👨‍👩‍👧‍👦 Famílias</button>
     <button data-page="clientes">👥 Clientes</button>
     <button data-page="acrescimos">💸 Acréscimos por UF</button>
@@ -134,6 +135,49 @@
           <button class="btn-primario" id="btn-clientes" onclick="upload('clientes')">Importar</button>
         </div>
         <div class="msg" id="msg-clientes"></div>
+      </div>
+    </section>
+
+    <!-- ABA DE GESTÃO DE OFERTAS -->
+    <section class="page" id="page-ofertas">
+      <div class="painel" style="background:#0f172a; border:1px dashed #ef4444;">
+        <h2 style="color:#f87171;">🔥 Cadastrar Produto em Oferta</h2>
+        <p style="font-size:14px; color:#94a3b8; margin-bottom:16px;">Pesquise pelo código ou nome do produto do scraping e aplique uma porcentagem de desconto sobre o preço base.</p>
+        <div class="row">
+          <div style="flex:2;">
+            <label>Buscar Produto (Código ou Subgrupo)</label>
+            <input type="text" id="buscaProdutoOferta" placeholder="Ex: 10023, Anzol Chinu, Carretilha..." oninput="filtrarProdutosOferta()">
+            <div id="dropdownProdutosOferta" style="position:relative;"></div>
+          </div>
+          <div style="flex:1;">
+            <label>Código Selecionado</label>
+            <input type="text" id="ofertaCod" readonly style="background:#1e293b; color:#38bdf8; font-weight:800;">
+          </div>
+          <div style="flex:1;">
+            <label>Desconto (%)</label>
+            <input type="number" id="ofertaPct" placeholder="Ex: 15" min="1" max="99">
+          </div>
+          <div style="flex:0 0 auto;">
+            <button class="btn-primario" style="background:#ef4444;" onclick="salvarOferta()">Colocar em Oferta</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="painel">
+        <h2>🔥 Produtos Atualmente em Oferta</h2>
+        <table id="tabOfertas">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Produto</th>
+              <th>Preço Base</th>
+              <th>Desconto</th>
+              <th>Preço c/ Desconto</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
       </div>
     </section>
 
@@ -270,6 +314,7 @@ let todosOsProdutos = [];
 let familiasCache = [];
 let pagClientes = 1, totPagClientes = 1, timeoutCli = null;
 let gruposAcrescimoCache = [], ufsAcrescimoCache = [];
+let ofertasCache = [];
 
 document.querySelectorAll('.sidebar button').forEach(b => {
   b.onclick = () => {
@@ -281,6 +326,7 @@ document.querySelectorAll('.sidebar button').forEach(b => {
     document.getElementById('page-' + pageId)?.classList.add('active');
 
     if (pageId === 'importar') carregarStatus();
+    if (pageId === 'ofertas') carregarOfertas();
     if (pageId === 'familias') carregarDados();
     if (pageId === 'clientes') carregarClientes(1);
     if (pageId === 'acrescimos') carregarAcrescimos();
@@ -362,6 +408,105 @@ async function carregarDados() {
   } catch(e) { console.error(e); }
 }
 
+// LÓGICA DE GESTÃO DE OFERTAS
+async function carregarOfertas() {
+  const tbody = document.querySelector('#tabOfertas tbody');
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Carregando ofertas...</td></tr>';
+  
+  if (!todosOsProdutos.length) {
+    const r = await fetch('/api/catalogo'); const j = await r.json();
+    todosOsProdutos = j.itens || [];
+  }
+
+  try {
+    const r = await fetch('/api/ofertas'); const j = await r.json();
+    ofertasCache = j.ofertas || [];
+    
+    if (!ofertasCache.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#94a3b8;">Nenhum produto em oferta no momento.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = ofertasCache.map(o => {
+      const prod = todosOsProdutos.find(p => p.codigo === o.codigo) || {};
+      const precoBase = Number(prod.preco_venda || o.preco_venda || 0);
+      const precoComDesconto = precoBase - (precoBase * o.desconto_porcentagem / 100);
+
+      return `
+        <tr>
+          <td><strong style="color:#38bdf8;">${o.codigo}</strong></td>
+          <td>${prod.subgrupo_scraping || prod.descricao_sistema || 'Produto ' + o.codigo}</td>
+          <td>R$ ${precoBase.toFixed(2)}</td>
+          <td><span style="background:#ef4444; color:white; padding:2px 8px; border-radius:12px; font-weight:800; font-size:12px;">-${o.desconto_porcentagem}%</span></td>
+          <td><strong style="color:#10b981;">R$ ${precoComDesconto.toFixed(2)}</strong></td>
+          <td><button class="btn-del" onclick="removerOferta('${o.codigo}')">Remover</button></td>
+        </tr>`;
+    }).join('');
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:red;">Erro ao carregar ofertas: ${e.message}</td></tr>`;
+  }
+}
+
+function filtrarProdutosOferta() {
+  const q = document.getElementById('buscaProdutoOferta').value.toLowerCase().trim();
+  const div = document.getElementById('dropdownProdutosOferta');
+  if (q.length < 2) { div.innerHTML = ''; return; }
+
+  const filtrados = todosOsProdutos.filter(p => 
+    p.codigo.toLowerCase().includes(q) || (p.subgrupo_scraping && p.subgrupo_scraping.toLowerCase().includes(q))
+  ).slice(0, 10);
+
+  if (!filtrados.length) {
+    div.innerHTML = '<div style="position:absolute; background:#1e293b; border:1px solid #475569; width:100%; padding:10px; color:#94a3b8; z-index:10;">Nenhum produto encontrado.</div>';
+    return;
+  }
+
+  div.innerHTML = `
+    <div style="position:absolute; background:#1e293b; border:1px solid #475569; width:100%; max-height:200px; overflow-y:auto; border-radius:8px; z-index:10; box-shadow:0 10px 25px rgba(0,0,0,0.5);">
+      ${filtrados.map(p => `
+        <div style="padding:10px; border-bottom:1px solid #334155; cursor:pointer;" onclick="selecionarProdutoOferta('${p.codigo}', \`${(p.subgrupo_scraping||p.codigo).replace(/`/g,'')}\`)">
+          <strong style="color:#38bdf8;">${p.codigo}</strong> — ${p.subgrupo_scraping || p.descricao_sistema}
+        </div>
+      `).join('')}
+    </div>`;
+}
+
+function selecionarProdutoOferta(cod, nome) {
+  document.getElementById('ofertaCod').value = cod;
+  document.getElementById('buscaProdutoOferta').value = `${cod} - ${nome}`;
+  document.getElementById('dropdownProdutosOferta').innerHTML = '';
+}
+
+async function salvarOferta() {
+  const codigo = document.getElementById('ofertaCod').value.trim();
+  const desconto = parseFloat(document.getElementById('ofertaPct').value);
+
+  if (!codigo || isNaN(desconto) || desconto <= 0) return alert('Selecione um produto e informe um desconto válido (%).');
+
+  const r = await fetch('/api/ofertas', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ codigo, desconto_porcentagem: desconto })
+  });
+  const j = await r.json();
+
+  if (j.ok) {
+    alert('🔥 Produto adicionado às ofertas com sucesso!');
+    document.getElementById('ofertaCod').value = '';
+    document.getElementById('buscaProdutoOferta').value = '';
+    document.getElementById('ofertaPct').value = '';
+    carregarOfertas();
+  } else {
+    alert('❌ Erro ao salvar oferta: ' + j.erro);
+  }
+}
+
+async function removerOferta(codigo) {
+  if (!confirm(`Deseja remover o produto ${codigo} das ofertas?`)) return;
+  await fetch('/api/ofertas/' + codigo, { method: 'DELETE' });
+  carregarOfertas();
+}
+
 function filtrarListaSubgrupos() {
   const t = document.getElementById('busca-subgrupo').value.toLowerCase();
   const d = document.getElementById('lista-subgrupos');
@@ -436,7 +581,6 @@ async function carregarFamiliasCriadas() {
   }).join('');
 }
 
-// 👇 A MÁGICA ESTÁ AQUI
 function ordenarTamanhosAnzol(famId) {
   const fam = familiasCache.find(f => f.id === famId);
   if (!fam) return;

@@ -43,13 +43,15 @@
   .busca-wrap input::placeholder { color:rgba(255,255,255,.55); }
   .busca-wrap input:focus { outline:none; background:rgba(255,255,255,.2); }
 
-  /* CHIPS */
+  /* CHIPS DE CATEGORIAS / OFERTAS */
   .chips-wrap { background:white; border-bottom:1px solid var(--cinza-100); position:sticky; top:62px; z-index:90; overflow-x:auto; }
   .chips { max-width:1500px; margin:0 auto; padding:12px 20px; display:flex; gap:8px; flex-wrap:nowrap; }
   .chip { padding:9px 16px; border-radius:20px; background:var(--cinza-100); border:1px solid transparent; color:var(--cinza-700); font-size:.82rem; font-weight:700; cursor:pointer; white-space:nowrap; transition:.2s; text-transform:uppercase; }
   .chip:hover { background:var(--cinza-200); }
   .chip.ativo { background:linear-gradient(135deg, var(--azul-800), var(--azul-700)); color:white; border-color:var(--azul-800); }
-  .chip small { opacity:.6; margin-left:4px; }
+  .chip.chip-oferta { background:#fee2e2; color:#ef4444; border-color:#fca5a5; }
+  .chip.chip-oferta.ativo { background:linear-gradient(135deg, #ef4444, #dc2626); color:white; border-color:#dc2626; }
+  .chip small { opacity:.8; margin-left:4px; }
 
   /* CONTEÚDO PRINCIPAL */
   .conteudo { padding:20px; max-width:1500px; margin:0 auto; }
@@ -123,7 +125,7 @@
   .l-cod { font-family:monospace; font-weight:800; color:var(--cinza-500); font-size:.75rem; background:var(--cinza-100); padding:2px 5px; border-radius:4px; white-space:nowrap; }
   .l-nome { font-size:.85rem; font-weight:800; color:var(--azul-800); line-height:1.2; word-break:break-word; }
 
-  /* TAG DESTACADA (MANIVELA OU POTÊNCIA DO MOTOR) */
+  /* TAG DESTACADA */
   .tag-lado {
     background: var(--azul-100); color: var(--azul-800); font-size: .68rem; font-weight: 800;
     padding: 2px 6px; border-radius: 4px; text-transform: uppercase; white-space: nowrap;
@@ -314,36 +316,41 @@
 </div>
 
 <script>
-let todosItens = [], todasFamilias = [], grupoAtual = '__TODOS__', buscaAtual = '', carrinho = {};
+let todosItens = [], todasFamilias = [], grupoAtual = '__OFERTAS__', buscaAtual = '', carrinho = {};
 let clienteLogado = null;
 let porcentagemAcrescimo = 0;
+let mapaOfertas = {}; // Guarda código -> porcentagem de desconto
 
 const fmtMoeda = v => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 const parseAtributos = json => { try { return JSON.parse(json || '{}'); } catch { return {}; } };
 
-// FUNÇÃO PARA ABRIR O POPUP COM ZOOM
 function abrirZoomImagem(elemento) {
   const img = elemento.querySelector('img');
   if (!img || !img.src) return;
-  
   const modalBg = document.getElementById('zoomModalBg');
   const modalImg = document.getElementById('zoomModalImg');
-  
   modalImg.src = img.src;
   modalBg.classList.add('on');
 }
 
-// FUNÇÃO PARA FECHAR O POPUP DE ZOOM
 function fecharZoomModal() {
   const modalBg = document.getElementById('zoomModalBg');
   if (modalBg) modalBg.classList.remove('on');
 }
 
-function calcularPrecoFinal(precoBase) {
+function calcularPrecoFinal(precoBase, codItem) {
   if (!precoBase) return 0;
-  const acrescimo = (precoBase * porcentagemAcrescimo) / 100;
-  return precoBase + acrescimo;
+  
+  // Aplica o desconto de oferta se o item estiver cadastrado em ofertas
+  let precoComDesconto = precoBase;
+  if (mapaOfertas[codItem]) {
+    const pctDesconto = mapaOfertas[codItem];
+    precoComDesconto = precoBase - (precoBase * pctDesconto / 100);
+  }
+
+  const acrescimo = (precoComDesconto * porcentagemAcrescimo) / 100;
+  return precoComDesconto + acrescimo;
 }
 
 function normalizarItem(it) {
@@ -353,7 +360,7 @@ function normalizarItem(it) {
     descricao_longa: it.descricao_longa || '', 
     imagem_url: it.imagem_url || '',
     precoBase: Number(it.preco_venda) || 0,
-    get preco() { return calcularPrecoFinal(this.precoBase); },
+    get preco() { return calcularPrecoFinal(this.precoBase, this.codigo); },
     grupo: (it.grupo_scraping || '').trim(),
     marca: (it.marca || '').trim(),
     atributos: parseAtributos(it.atributos_json),
@@ -363,7 +370,6 @@ function normalizarItem(it) {
   };
 }
 
-// EXTRAI AUTOMATICAMENTE A ESPECIFICAÇÃO DE ANZÓIS, GIRADORES, CABOS DE AÇO, SNAPS E LUVAS
 function analisarAnzol(it) {
   const attrs = it.atributos || {};
   let numero = '';
@@ -448,7 +454,6 @@ function analisarCarretilha(it) {
   };
 }
 
-// ANALISADOR EXCLUSIVO PARA MOTORES (HP, LB, POTÊNCIA, TENSÃO)
 function analisarMotor(it) {
   const attrs = it.atributos || {};
   let modelo = attrs['Modelo'] || attrs['MODELO'] || '';
@@ -462,7 +467,6 @@ function analisarMotor(it) {
     modelo = partes.slice(-2).join(' ') || it.subgrupo;
   }
 
-  // Identifica a potência / versão na tag (ex: 15 HP, 44 LB, 12V, etc)
   let tagPotencia = potencia;
   if (!tagPotencia) {
     const subUpper = (it.subgrupo || '').toUpperCase();
@@ -513,7 +517,7 @@ async function fazerLogin() {
 async function finalizarPedido() {
   const itens = Object.keys(carrinho).map(cod => {
     const item = carrinho[cod];
-    const precoFinal = calcularPrecoFinal(item.precoBase);
+    const precoFinal = calcularPrecoFinal(item.precoBase, cod);
     return { codigo: cod, desc: item.desc, qtd: item.qtd, precoBase: item.precoBase, precoFinal: precoFinal };
   });
 
@@ -536,6 +540,12 @@ async function finalizarPedido() {
 
 async function carregar() {
   try {
+    // Carrega a lista de ofertas do servidor
+    const ro = await fetch('/api/ofertas'); const jo = await ro.json();
+    if (jo.ok && jo.ofertas) {
+      jo.ofertas.forEach(o => mapaOfertas[o.codigo] = o.desconto_porcentagem);
+    }
+
     const rf = await fetch('/api/familias'); const jf = await rf.json();
     if (jf.ok) todasFamilias = jf.familias;
     const r = await fetch('/api/catalogo'); const j = await r.json();
@@ -550,10 +560,18 @@ async function carregar() {
 
 function montarChips() {
   const contagem = {};
-  todosItens.forEach(it => contagem[it.grupo] = (contagem[it.grupo] || 0) + 1);
+  let totalOfertas = 0;
+
+  todosItens.forEach(it => {
+    contagem[it.grupo] = (contagem[it.grupo] || 0) + 1;
+    if (mapaOfertas[it.codigo]) totalOfertas++;
+  });
+
   const grupos = Object.keys(contagem).sort((a, b) => contagem[b] - contagem[a]);
+  
+  // SUBSTITUI O BOTÃO "TODOS" PELA ABA "OFERTAS"
   document.getElementById('chips').innerHTML = `
-    <button class="chip ativo" onclick="trocarGrupo('__TODOS__', this)">Todos <small>${todosItens.length}</small></button>
+    <button class="chip chip-oferta ativo" onclick="trocarGrupo('__OFERTAS__', this)">🔥 Ofertas <small>${totalOfertas}</small></button>
     ${grupos.map(g => `<button class="chip" onclick="trocarGrupo('${g}', this)">${g} <small>${contagem[g]}</small></button>`).join('')}
   `;
 }
@@ -566,7 +584,14 @@ function trocarGrupo(grupo, btn) {
 
 function filtrar() {
   let lista = todosItens;
-  if (grupoAtual !== '__TODOS__') lista = lista.filter(it => it.grupo === grupoAtual);
+  
+  // SE A ABA "OFERTAS" ESTIVER ATIVA, FILTRA APENAS PRODUTOS COM DESCONTO
+  if (grupoAtual === '__OFERTAS__') {
+    lista = lista.filter(it => mapaOfertas[it.codigo]);
+  } else if (grupoAtual !== '__TODOS__') {
+    lista = lista.filter(it => it.grupo === grupoAtual);
+  }
+
   if (buscaAtual) {
     const q = buscaAtual.toLowerCase();
     lista = lista.filter(it => it.codigo.includes(q) || it.subgrupo.toLowerCase().includes(q) || it.marca.toLowerCase().includes(q));
@@ -577,7 +602,13 @@ function filtrar() {
 function renderizar() {
   const lista = filtrar();
   const cont = document.getElementById('conteudo');
-  if (!lista.length) { cont.innerHTML = '<div class="loading">Nenhum produto encontrado.</div>'; return; }
+  if (!lista.length) { 
+    cont.innerHTML = grupoAtual === '__OFERTAS__' 
+      ? '<div class="loading">Nenhuma oferta disponível no momento.</div>' 
+      : '<div class="loading">Nenhum produto encontrado.</div>'; 
+    return; 
+  }
+  
   const processados = new Set(); let html = '';
 
   todasFamilias.forEach(fam => {
@@ -610,7 +641,6 @@ function renderizar() {
       ) tipo = 'anzol';
       else if (nomeFam.includes('MOLINETE')) tipo = 'molinete';
       else if (nomeFam.includes('CARRETILHA')) tipo = 'carretilha';
-      // MOTORES AGORA SEGUEM O MESMO PADRÃO COMPACTO E ELEGANTE DE CARRETILHAS
       else if (nomeFam.includes('MOTOR') || grupoItem.includes('MOTOR')) tipo = 'motor';
       
       if (tipo === 'isca') html += renderFamiliaIsca(fam, filhos);
@@ -634,9 +664,7 @@ function renderizar() {
   cont.innerHTML = html;
 }
 
-// ==========================================
-// RENDERIZADORES
-// ==========================================
+// RENDERIZADORES COMPACTOS DE PRODUTO
 function linhaMolinete(it) {
   const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
   const info = analisarMolinete(it);
@@ -746,7 +774,6 @@ function toggleVariacao(codigo, event) {
   event.stopPropagation();
   const painel = document.getElementById(`var-panel-${codigo}`);
   const btn = event.currentTarget;
-  
   if (painel) {
     const estaAtivo = painel.classList.toggle('ativo');
     btn.classList.toggle('ativo', estaAtivo);
@@ -762,33 +789,20 @@ function renderFamiliaMolinete(fam, itens) {
   const blocosTabelas = subdivisoes.map(sub => {
     const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
     if (itensDaSub.length === 0) return '';
-    
-    itensDaSub.sort((a, b) => {
-      if (a.ordem_customizada_pos !== 999999 || b.ordem_customizada_pos !== 999999) return a.ordem_customizada_pos - b.ordem_customizada_pos;
-      return a.ordem_excel - b.ordem_excel;
-    });
+    itensDaSub.sort((a, b) => a.ordem_excel - b.ordem_excel);
 
     return `
       <div class="sub-bloco" style="margin-top: 10px;">
         ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
-        <div class="lista-filhos" style="margin-top: 6px;">
-          ${itensDaSub.map(linhaMolinete).join('')}
-        </div>
+        <div class="lista-filhos" style="margin-top: 6px;">${itensDaSub.map(linhaMolinete).join('')}</div>
       </div>`;
   }).join('');
 
   return `
     <div class="familia-bloco">
-      <div class="familia-head">
-        <h2>${escapeHtml(fam.nome)}</h2> 
-        <span class="marca-badge">${escapeHtml(itens[0].marca)}</span>
-      </div>
+      <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
       <div class="molinete-card" id="card-fam-${fam.id}">
-        <div class="familia-side">
-          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">
-            ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
-          </div>
-        </div>
+        <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
         <div class="molinete-info">
           <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes do produto</button>
           ${blocosTabelas}
@@ -816,18 +830,12 @@ function renderFamiliaCarretilha(fam, itens) {
   const blocosTabelas = subdivisoes.map(sub => {
     const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
     if (itensDaSub.length === 0) return '';
-
-    itensDaSub.sort((a, b) => {
-      if (a.ordem_customizada_pos !== 999999 || b.ordem_customizada_pos !== 999999) return a.ordem_customizada_pos - b.ordem_customizada_pos;
-      return a.ordem_excel - b.ordem_excel;
-    });
+    itensDaSub.sort((a, b) => a.ordem_excel - b.ordem_excel);
 
     return `
       <div class="sub-bloco" style="margin-top: 10px;">
         ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
-        <div class="lista-filhos" style="margin-top: 6px;">
-          ${itensDaSub.map(linhaCarretilha).join('')}
-        </div>
+        <div class="lista-filhos" style="margin-top: 6px;">${itensDaSub.map(linhaCarretilha).join('')}</div>
       </div>`;
   }).join('');
 
@@ -835,11 +843,7 @@ function renderFamiliaCarretilha(fam, itens) {
     <div class="familia-bloco">
       <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
       <div class="molinete-card" id="card-fam-${fam.id}">
-        <div class="familia-side">
-          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">
-            ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
-          </div>
-        </div>
+        <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
         <div class="molinete-info">
           <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes do produto</button>
           <div class="topo-miniaturas">${miniaturasHtml}</div>
@@ -868,18 +872,12 @@ function renderFamiliaMotor(fam, itens) {
   const blocosTabelas = subdivisoes.map(sub => {
     const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
     if (itensDaSub.length === 0) return '';
-
-    itensDaSub.sort((a, b) => {
-      if (a.ordem_customizada_pos !== 999999 || b.ordem_customizada_pos !== 999999) return a.ordem_customizada_pos - b.ordem_customizada_pos;
-      return a.ordem_excel - b.ordem_excel;
-    });
+    itensDaSub.sort((a, b) => a.ordem_excel - b.ordem_excel);
 
     return `
       <div class="sub-bloco" style="margin-top: 10px;">
         ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
-        <div class="lista-filhos" style="margin-top: 6px;">
-          ${itensDaSub.map(linhaMotor).join('')}
-        </div>
+        <div class="lista-filhos" style="margin-top: 6px;">${itensDaSub.map(linhaMotor).join('')}</div>
       </div>`;
   }).join('');
 
@@ -887,11 +885,7 @@ function renderFamiliaMotor(fam, itens) {
     <div class="familia-bloco">
       <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
       <div class="molinete-card" id="card-fam-${fam.id}">
-        <div class="familia-side">
-          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">
-            ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
-          </div>
-        </div>
+        <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
         <div class="molinete-info">
           <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes do produto</button>
           <div class="topo-miniaturas">${miniaturasHtml}</div>
@@ -932,19 +926,12 @@ function renderFamiliaVara(fam, itens) {
   const blocosTabelas = subdivisoes.map(sub => {
     const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
     if (itensDaSub.length === 0) return '';
-    
-    itensDaSub.sort((a, b) => {
-      if (a.ordem_customizada_pos !== 999999 || b.ordem_customizada_pos !== 999999) return a.ordem_customizada_pos - b.ordem_customizada_pos;
-      return a.ordem_excel - b.ordem_excel;
-    });
+    itensDaSub.sort((a, b) => a.ordem_excel - b.ordem_excel);
 
     const linhas = itensDaSub.map(it => {
       const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
       const info = analisarVara(it);
-      const celulasSpecs = colunas.map(c => {
-        const val = info.especificacoes[c] || '-';
-        return `<td style="text-align:center; font-size:0.7rem; color:var(--cinza-700);">${escapeHtml(val)}</td>`;
-      }).join('');
+      const celulasSpecs = colunas.map(c => `<td style="text-align:center; font-size:0.7rem; color:var(--cinza-700);">${escapeHtml(info.especificacoes[c] || '-')}</td>`).join('');
 
       return `
         <tr class="linha-tabela-vara">
@@ -1015,11 +1002,7 @@ function renderFamiliaLinha(fam, itens) {
   const blocosTabelas = subdivisoes.map(sub => {
     const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
     if (itensDaSub.length === 0) return '';
-
-    itensDaSub.sort((a, b) => {
-      if (a.ordem_customizada_pos !== 999999 || b.ordem_customizada_pos !== 999999) return a.ordem_customizada_pos - b.ordem_customizada_pos;
-      return a.ordem_excel - b.ordem_excel;
-    });
+    itensDaSub.sort((a, b) => a.ordem_excel - b.ordem_excel);
 
     const cardsHtml = itensDaSub.map(it => {
       const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
@@ -1027,30 +1010,21 @@ function renderFamiliaLinha(fam, itens) {
       
       return `
         <div class="isca-cor-card" style="padding: 12px; justify-content: flex-start;">
-          <div style="font-size: 1.1rem; font-weight: 900; color: var(--azul-800); line-height: 1; margin-bottom: 6px; text-align: center; text-transform: uppercase;">
-            ${escapeHtml(info.bitola)}
-          </div>
-          ${info.resistencia ? `
-            <div style="font-size: .7rem; font-weight: 700; color: var(--cinza-500); text-align: center; margin-bottom: 12px; line-height: 1.2;">
-              ${escapeHtml(info.resistencia)}
-            </div>
-          ` : '<div style="height: 20px;"></div>'}
+          <div style="font-size: 1.1rem; font-weight: 900; color: var(--azul-800); line-height: 1; margin-bottom: 6px; text-align: center; text-transform: uppercase;">${escapeHtml(info.bitola)}</div>
+          ${info.resistencia ? `<div style="font-size: .7rem; font-weight: 700; color: var(--cinza-500); text-align: center; margin-bottom: 12px; line-height: 1.2;">${escapeHtml(info.resistencia)}</div>` : '<div style="height: 20px;"></div>'}
           <div class="cor-preco" style="font-size: 1rem; margin-bottom: 8px;">R$ ${fmtMoeda(it.preco)}</div>
           <div class="qtd-ctrl" style="display: flex; width: 100%; justify-content: space-between;" onclick="event.stopPropagation()">
             <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
             <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)" style="flex: 1; max-width: 50px;">
             <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
           </div>
-        </div>
-      `;
+        </div>`;
     }).join('');
 
     return `
       <div class="sub-bloco" style="margin-top: 16px;">
         ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
-        <div class="isca-grade" style="margin-top: 12px; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));">
-          ${cardsHtml}
-        </div>
+        <div class="isca-grade" style="margin-top: 12px; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));">${cardsHtml}</div>
       </div>`;
   }).join('');
 
@@ -1077,11 +1051,7 @@ function renderFamiliaGrade(fam, itens) {
   const blocosTabelas = subdivisoes.map(sub => {
     const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
     if (itensDaSub.length === 0) return '';
-
-    itensDaSub.sort((a, b) => {
-      if (a.ordem_customizada_pos !== 999999 || b.ordem_customizada_pos !== 999999) return a.ordem_customizada_pos - b.ordem_customizada_pos;
-      return a.ordem_excel - b.ordem_excel;
-    });
+    itensDaSub.sort((a, b) => a.ordem_excel - b.ordem_excel);
 
     const cardsHtml = itensDaSub.map((it, index) => {
       const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
@@ -1092,20 +1062,13 @@ function renderFamiliaGrade(fam, itens) {
         <div class="card-solto ${isAtivo}" id="mini-${it.codigo}" 
              style="position:relative; display:flex; flex-direction:column; justify-content:space-between; padding:12px; height: 100%; cursor:pointer; transition: 0.2s;"
              onclick="selecionarAcessorio('${fam.id}', '${it.codigo}', '${it.imagem_url}', \`${escapeHtml(it.descricao_longa).replace(/`/g, '')}\`, \`${escapeHtml(it.subgrupo).replace(/`/g, '')}\`)">
-          
           ${q > 0 ? `<div style="position:absolute; top:6px; right:6px; background:var(--verde); color:white; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:900; border:2px solid white; z-index:3;">${q}</div>` : ''}
-
-          <div class="img" style="margin-bottom:12px; aspect-ratio:1; background:var(--cinza-50); border-radius:6px; overflow:hidden;">
-            ${temImagem ? `<img src="${it.imagem_url}" alt="${escapeHtml(it.subgrupo)}">` : '🖼️'}
-          </div>
-          
+          <div class="img" style="margin-bottom:12px; aspect-ratio:1; background:var(--cinza-50); border-radius:6px; overflow:hidden;">${temImagem ? `<img src="${it.imagem_url}" alt="${escapeHtml(it.subgrupo)}">` : '🖼️'}</div>
           <div style="flex:1; display:flex; flex-direction:column; justify-content:flex-start;">
             <div class="nome" style="font-size:0.75rem; font-weight:800; color:var(--azul-800); margin-bottom:8px; line-height:1.2; text-align:left;">${escapeHtml(it.subgrupo)}</div>
           </div>
-
           <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
             <div class="preco" style="font-size:.9rem; font-weight:900; color:var(--verde); text-align:left;">R$ ${fmtMoeda(it.preco)}</div>
-            
             <div class="qtd-ctrl" style="display:flex; width:100%; justify-content:space-between;" onclick="event.stopPropagation()">
               <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
               <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)" style="flex:1;">
@@ -1118,9 +1081,7 @@ function renderFamiliaGrade(fam, itens) {
     return `
       <div class="sub-bloco" style="margin-top: 16px;">
         ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
-        <div class="grade-soltos" style="margin-top: 8px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px;">
-          ${cardsHtml}
-        </div>
+        <div class="grade-soltos" style="margin-top: 8px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px;">${cardsHtml}</div>
       </div>`;
   }).join('');
 
@@ -1153,16 +1114,13 @@ function selecionarAcessorio(famId, codigo, url, descricao, nome) {
 function analisarIsca(it) {
   const attrs = it.atributos || {};
   const getVal = (arr) => { for (let k of arr) if (attrs[k]) return String(attrs[k]); return ''; };
-  
   const modelo = getVal(['Modelo', 'MODELO']);
   const cor = getVal(['Cores', 'COR', 'Cor']);
   const tamanho = getVal(['Tamanho (cm)', 'TAMANHO']);
   const peso = getVal(['Peso (g)', 'PESO']);
-
   let especificacoes = [];
   if (tamanho) especificacoes.push(tamanho);
   if (peso) especificacoes.push(peso);
-
   return { modelo, cor, tamanho, peso, especificacoes: especificacoes.join(' • ') };
 }
 
@@ -1179,12 +1137,7 @@ function renderFamiliaIsca(fam, itens) {
   });
   
   const modelos = Array.from(modelosMap.values());
-  modelos.forEach(m => {
-    m.itens.sort((a, b) => {
-      if (a.ordem_customizada_pos !== 999999 || b.ordem_customizada_pos !== 999999) return a.ordem_customizada_pos - b.ordem_customizada_pos;
-      return a.ordem_excel - b.ordem_excel;
-    });
-  });
+  modelos.forEach(m => m.itens.sort((a, b) => a.ordem_excel - b.ordem_excel));
 
   const tabsHtml = modelos.map((mod, idx) => `<button class="isca-modelo-btn ${idx===0?'ativo':''}" onclick="trocarModeloIsca('${fam.id}', '${escapeHtml(mod.nome)}')">${escapeHtml(mod.nome)}</button>`).join('');
   
@@ -1213,9 +1166,7 @@ function renderFamiliaIsca(fam, itens) {
     <div class="familia-bloco">
       <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
       <div class="isca-card" id="card-fam-${fam.id}">
-        <div class="familia-side">
-          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div>
-        </div>
+        <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
         <div class="isca-info">
           <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver descrição</button>
           <div class="isca-modelos-tabs">${tabsHtml}</div>
@@ -1263,7 +1214,6 @@ function selecionarIsca(famId, codigo, url) {
   document.getElementById(`foto-pai-${famId}`).innerHTML = `<img src="${url}">`;
 }
 
-// RENDERIZADOR USADO PARA ANZÓIS, GIRADORES, SNAPS, CABOS DE AÇO E LUVAS
 function renderFamiliaAnzol(fam, itens) {
   const primeiroItem = itens[0];
   const imgInicial = primeiroItem?.imagem_url || '';
@@ -1275,11 +1225,7 @@ function renderFamiliaAnzol(fam, itens) {
   
   const tabsHtml = subdivisoes.map((sub, idx) => `<button class="anzol-tab ${idx===0?'ativo':''}" onclick="trocarTipoAnzol('${fam.id}', ${idx})">${sub.nome}</button>`).join('');
   const itensIniciais = itensComEstoque.filter(it => subdivisoes[0].itens.includes(it.codigo));
-  
-  itensIniciais.sort((a, b) => {
-    if (a.ordem_customizada_pos !== 999999 || b.ordem_customizada_pos !== 999999) return a.ordem_customizada_pos - b.ordem_customizada_pos;
-    return a.ordem_excel - b.ordem_excel;
-  });
+  itensIniciais.sort((a, b) => a.ordem_excel - b.ordem_excel);
 
   const numerosHtml = itensIniciais.map(it => {
     const info = analisarAnzol(it); 
@@ -1305,9 +1251,7 @@ function renderFamiliaAnzol(fam, itens) {
     <div class="familia-bloco">
       <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
       <div class="anzol-card" id="card-fam-${fam.id}">
-        <div class="familia-side">
-          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div>
-        </div>
+        <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
         <div class="anzol-info">
           <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver descrição</button>
           ${subdivisoes.length > 1 ? `<div class="anzol-tabs">${tabsHtml}</div>` : ''}
@@ -1326,29 +1270,24 @@ function trocarTipoAnzol(famId, subIndex) {
   card.querySelectorAll('.anzol-tab')[subIndex].classList.add('ativo');
   
   const itensFiltrados = data.itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
-  
-  itensFiltrados.sort((a, b) => {
-    if (a.ordem_customizada_pos !== 999999 || b.ordem_customizada_pos !== 999999) return a.ordem_customizada_pos - b.ordem_customizada_pos;
-    return a.ordem_excel - b.ordem_excel;
-  });
+  itensFiltrados.sort((a, b) => a.ordem_excel - b.ordem_excel);
 
-  document.getElementById(`grade-numeros-${famId}`).innerHTML = itensFiltrados
-    .map(it => {
-      const info = analisarAnzol(it); 
-      const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
-      return `
-        <div class="anzol-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}">
-          <span class="anzol-badge">${q}</span>
-          <div class="anzol-numero">${escapeHtml(info.numero)}</div>
-          ${info.qtd ? `<div style="font-size:.65rem; color:var(--cinza-500); font-weight:700; margin-bottom:4px; text-align:center;">${escapeHtml(info.qtd)}</div>` : ''}
-          <div class="anzol-preco">R$ ${fmtMoeda(it.preco)}</div>
-          <div class="anzol-qtd-ctrl" onclick="event.stopPropagation()">
-            <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
-            <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
-            <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
-          </div>
-        </div>`;
-    }).join('');
+  document.getElementById(`grade-numeros-${famId}`).innerHTML = itensFiltrados.map(it => {
+    const info = analisarAnzol(it); 
+    const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+    return `
+      <div class="anzol-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}">
+        <span class="anzol-badge">${q}</span>
+        <div class="anzol-numero">${escapeHtml(info.numero)}</div>
+        ${info.qtd ? `<div style="font-size:.65rem; color:var(--cinza-500); font-weight:700; margin-bottom:4px; text-align:center;">${escapeHtml(info.qtd)}</div>` : ''}
+        <div class="anzol-preco">R$ ${fmtMoeda(it.preco)}</div>
+        <div class="anzol-qtd-ctrl" onclick="event.stopPropagation()">
+          <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+          <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+          <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+        </div>
+      </div>`;
+  }).join('');
 } 
 
 function selecionarAnzol(famId, codigo, url) {
@@ -1364,10 +1303,7 @@ function renderFamiliaComum(fam, itens) {
   const itensComEstoque = itens.filter(it => it.estoque > 0);
   if (itensComEstoque.length === 0) return '';
 
-  itensComEstoque.sort((a, b) => {
-    if (a.ordem_customizada_pos !== 999999 || b.ordem_customizada_pos !== 999999) return a.ordem_customizada_pos - b.ordem_customizada_pos;
-    return a.ordem_excel - b.ordem_excel;
-  });
+  itensComEstoque.sort((a, b) => a.ordem_excel - b.ordem_excel);
   
   const linhasHtml = itensComEstoque.map(it => {
     const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
@@ -1382,6 +1318,7 @@ function renderFamiliaComum(fam, itens) {
         </div>
       </div>`;
   }).join('');
+
   return `
     <div class="familia-bloco">
       <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
@@ -1447,7 +1384,7 @@ function atualizarCarrinho() {
   
   const html = itens.map(cod => {
     const i = carrinho[cod];
-    const precoFinalUnitario = calcularPrecoFinal(i.precoBase);
+    const precoFinalUnitario = calcularPrecoFinal(i.precoBase, cod);
     const sub = precoFinalUnitario * i.qtd; 
     total += sub; qtdTotal += i.qtd;
     
