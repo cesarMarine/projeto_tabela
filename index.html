@@ -944,7 +944,24 @@ function selecionarAcessorio(famId, codigo, url, descricao, nome) {
 function analisarIsca(it) {
   const attrs = it.atributos || {};
   const getVal = (arr) => { for (let k of arr) if (attrs[k]) return String(attrs[k]); return ''; };
-  return { modelo: getVal(['Modelo', 'MODELO']), cor: getVal(['Cores', 'COR', 'Cor']), tamanho: getVal(['Tamanho (cm)', 'TAMANHO']), peso: getVal(['Peso (g)', 'PESO']) };
+  
+  const modelo = getVal(['Modelo', 'MODELO']);
+  const cor = getVal(['Cores', 'COR', 'Cor']);
+  const tamanho = getVal(['Tamanho (cm)', 'TAMANHO']);
+  const peso = getVal(['Peso (g)', 'PESO']);
+
+  // Monta o texto de especificação (ex: "10 cm • 17.4 g")
+  let especificacoes = [];
+  if (tamanho) especificacoes.push(tamanho);
+  if (peso) especificacoes.push(peso);
+
+  return { 
+    modelo, 
+    cor, 
+    tamanho, 
+    peso, 
+    especificacoes: especificacoes.join(' • ') 
+  };
 }
 
 function renderFamiliaIsca(fam, itens) {
@@ -954,12 +971,17 @@ function renderFamiliaIsca(fam, itens) {
   
   itens.filter(it => it.estoque > 0).forEach(it => {
     const info = analisarIsca(it);
+    // Agrupa pelo Modelo. Se não tiver modelo, usa o subgrupo.
     const chave = info.modelo || it.subgrupo; 
-    if (!modelosMap.has(chave)) modelosMap.set(chave, { nome: chave, tamanho: info.tamanho, peso: info.peso, itens: [] });
+    
+    if (!modelosMap.has(chave)) {
+      modelosMap.set(chave, { nome: chave, itens: [] });
+    }
     modelosMap.get(chave).itens.push(it);
   });
   
   const modelos = Array.from(modelosMap.values());
+  
   modelos.forEach(m => {
     m.itens.sort((a, b) => {
       if (a.ordem_customizada_pos !== 999999 || b.ordem_customizada_pos !== 999999) return a.ordem_customizada_pos - b.ordem_customizada_pos;
@@ -968,11 +990,28 @@ function renderFamiliaIsca(fam, itens) {
   });
 
   const tabsHtml = modelos.map((mod, idx) => `<button class="isca-modelo-btn ${idx===0?'ativo':''}" onclick="trocarModeloIsca('${fam.id}', '${escapeHtml(mod.nome)}')">${escapeHtml(mod.nome)}</button>`).join('');
+  
+  // Monta o HTML inicial (primeiro modelo da lista)
   const coresHtml = modelos[0] ? modelos[0].itens.map(it => {
-    const info = analisarIsca(it); const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
-    return `<div class="isca-cor-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" onclick="selecionarIsca('${fam.id}', '${it.codigo}', '${it.imagem_url}')"><span class="isca-badge">${q}</span><img src="${it.imagem_url}"><div class="cor-nome">${escapeHtml(info.cor || 'Padrão')}</div><div class="cor-preco">R$ ${fmtMoeda(it.preco)}</div><div class="isca-qtd-ctrl" onclick="event.stopPropagation()"><button onclick="mudarQtd('${it.codigo}', -1)">−</button><input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)"><button onclick="mudarQtd('${it.codigo}', 1)">+</button></div></div>`;
+    const info = analisarIsca(it); 
+    const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+    return `
+      <div class="isca-cor-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" onclick="selecionarIsca('${fam.id}', '${it.codigo}', '${it.imagem_url}')">
+        <span class="isca-badge">${q}</span>
+        <img src="${it.imagem_url}">
+        <div class="cor-nome">${escapeHtml(info.cor || 'Padrão')}</div>
+        ${info.especificacoes ? `<div style="font-size:.65rem; color:var(--cinza-500); font-weight:600; text-align:center; margin-bottom:4px;">${info.especificacoes}</div>` : ''}
+        <div class="cor-preco">R$ ${fmtMoeda(it.preco)}</div>
+        <div class="isca-qtd-ctrl" onclick="event.stopPropagation()">
+          <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+          <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+          <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+        </div>
+      </div>`;
   }).join('') : '';
-  window.iscasData = window.iscasData || {}; window.iscasData[fam.id] = modelos;
+
+  window.iscasData = window.iscasData || {}; 
+  window.iscasData[fam.id] = modelos;
   
   return `
     <div class="familia-bloco">
@@ -984,21 +1023,39 @@ function renderFamiliaIsca(fam, itens) {
         <div class="isca-info">
           <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver descrição</button>
           <div class="isca-modelos-tabs">${tabsHtml}</div>
-          <div class="isca-titulo-cores">Cores</div>
+          <div class="isca-titulo-cores">Cores e Tamanhos</div>
           <div class="isca-grade" id="grade-cores-${fam.id}">${coresHtml}</div>
         </div>
       </div>
     </div>`;
 }
-
 function trocarModeloIsca(famId, modeloNome) {
-  const modelos = window.iscasData[famId]; const modelo = modelos.find(m => m.nome === modeloNome);
+  const modelos = window.iscasData[famId]; 
+  const modelo = modelos.find(m => m.nome === modeloNome);
   const card = document.getElementById(`card-fam-${famId}`);
-  card.querySelectorAll('.isca-modelo-btn').forEach(b => b.classList.remove('ativo'));
+  
+  card.querySelectorAll('.isca-modelo-btn').forEach(b => {
+    if(b.textContent.trim() === modeloNome) b.classList.add('ativo');
+    else b.classList.remove('ativo');
+  });
+
   const grade = document.getElementById(`grade-cores-${famId}`);
   grade.innerHTML = modelo.itens.map(it => {
-    const info = analisarIsca(it); const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
-    return `<div class="isca-cor-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}"><span class="isca-badge">${q}</span><img src="${it.imagem_url}"><div class="cor-nome">${escapeHtml(info.cor || 'Padrão')}</div><div class="cor-preco">R$ ${fmtMoeda(it.preco)}</div><div class="isca-qtd-ctrl" onclick="event.stopPropagation()"><button onclick="mudarQtd('${it.codigo}', -1)">−</button><input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)"><button onclick="mudarQtd('${it.codigo}', 1)">+</button></div></div>`;
+    const info = analisarIsca(it); 
+    const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+    return `
+      <div class="isca-cor-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" onclick="selecionarIsca('${famId}', '${it.codigo}', '${it.imagem_url}')">
+        <span class="isca-badge">${q}</span>
+        <img src="${it.imagem_url}">
+        <div class="cor-nome">${escapeHtml(info.cor || 'Padrão')}</div>
+        ${info.especificacoes ? `<div style="font-size:.65rem; color:var(--cinza-500); font-weight:600; text-align:center; margin-bottom:4px;">${info.especificacoes}</div>` : ''}
+        <div class="cor-preco">R$ ${fmtMoeda(it.preco)}</div>
+        <div class="isca-qtd-ctrl" onclick="event.stopPropagation()">
+          <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+          <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+          <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+        </div>
+      </div>`;
   }).join('');
 }
 
