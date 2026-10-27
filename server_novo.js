@@ -432,6 +432,58 @@ app.put('/api/familias/:id', async (req, res) => {
 });
 
 // ==========================================
+// OFERTAS
+// ==========================================
+
+// 1. Listar todas as ofertas ativas
+app.get('/api/ofertas', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('ofertas')
+      .select('*');
+    if (error) throw error;
+    res.json({ ok: true, ofertas: data || [] });
+  } catch (e) {
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
+
+// 2. Adicionar ou atualizar uma oferta
+app.post('/api/ofertas', async (req, res) => {
+  try {
+    const { codigo, desconto_porcentagem } = req.body;
+    if (!codigo || !desconto_porcentagem) {
+      return res.status(400).json({ ok: false, erro: 'Código e porcentagem são obrigatórios.' });
+    }
+
+    const { error } = await supabase
+      .from('ofertas')
+      .upsert({ codigo, desconto_porcentagem: Number(desconto_porcentagem) }, { onConflict: 'codigo' });
+
+    if (error) throw error;
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
+
+// 3. Remover produto das ofertas
+app.delete('/api/ofertas/:codigo', async (req, res) => {
+  try {
+    const { codigo } = req.params;
+    const { error } = await supabase
+      .from('ofertas')
+      .delete()
+      .eq('codigo', codigo);
+
+    if (error) throw error;
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
+
+// ==========================================
 // CLIENTES (listar)
 // ==========================================
 app.get('/api/clientes', async (req, res) => {
