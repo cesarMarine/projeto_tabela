@@ -233,14 +233,14 @@
   display: flex; 
   align-items: center; 
   justify-content: space-between; 
-  gap: 12px; 
-  padding: 8px 12px; 
+  gap: 8px; 
+  padding: 8px 10px; 
 }
 
 .l-info-main { 
   display: flex; 
   align-items: center; 
-  gap: 10px; 
+  gap: 6px; 
   flex: 1; 
   min-width: 0; 
 }
@@ -251,42 +251,54 @@
   color: var(--cinza-500); 
   font-size: .75rem; 
   background: var(--cinza-100); 
-  padding: 2px 6px; 
+  padding: 2px 5px; 
   border-radius: 4px; 
   white-space: nowrap; 
 }
 
+/* NOME COMPLETO (PERMITE QUEBRAR LINHA SE NECESSÁRIO E NÃO CORTA COM ...) */
 .l-nome { 
   font-size: .85rem; 
   font-weight: 800; 
   color: var(--azul-800); 
-  white-space: nowrap; 
-  overflow: hidden; 
-  text-overflow: ellipsis; 
+  line-height: 1.2;
+  word-break: break-word;
 }
 
-/* BOTÃO VER VARIAÇÃO */
+/* GRUPO DO OLHO + PREÇO APROXIMADOS DA DIREITA */
+.l-direita-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* BOTÃO APENAS COM O ÍCONE DO OLHO */
 .btn-toggle-var {
   background: var(--azul-50);
-  color: var(--azul-800);
-  border: 1px solid var(--azul-100);
-  border-radius: 4px;
-  padding: 2px 6px;
-  font-size: .7rem;
-  font-weight: 700;
+  border: 1px solid var(--azul-200);
+  border-radius: 6px;
+  padding: 3px 6px;
+  font-size: .85rem;
   cursor: pointer;
-  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: .2s;
+  line-height: 1;
 }
 
-.btn-toggle-var:hover { background: var(--azul-100); }
+.btn-toggle-var:hover, .btn-toggle-var.ativo {
+  background: var(--azul-100);
+  border-color: var(--azul-500);
+}
 
 .l-preco { 
-  font-size: .95rem; 
+  font-size: .9rem; 
   font-weight: 900; 
   color: var(--verde); 
   white-space: nowrap; 
-  margin: 0 8px; 
 }
 
 .l-qtd { 
@@ -299,7 +311,7 @@
   display: none;
   background: var(--cinza-50);
   border-top: 1px dashed var(--cinza-200);
-  padding: 6px 12px;
+  padding: 6px 10px;
   font-size: .75rem;
   color: var(--cinza-700);
   font-weight: 600;
@@ -307,7 +319,7 @@
 
 .painel-variacao-oculta.ativo { display: block; }
 
-/* CONTROLE DE QTD COMPACTO */
+/* CONTROLE DE QUANTIDADE */
 .qtd-ctrl { 
   display: inline-flex; 
   align-items: center; 
@@ -318,20 +330,20 @@
 }
 
 .qtd-ctrl button { 
-  width: 28px; 
-  height: 28px; 
+  width: 26px; 
+  height: 26px; 
   border: none; 
   background: var(--cinza-50); 
   font-weight: 800; 
   color: var(--azul-800); 
-  font-size: 1rem; 
+  font-size: .95rem; 
 }
 
 .qtd-ctrl button:hover { background: var(--azul-100); }
 
 .qtd-ctrl input { 
-  width: 32px; 
-  height: 28px; 
+  width: 28px; 
+  height: 26px; 
   text-align: center; 
   border: none; 
   font-weight: 800; 
@@ -690,14 +702,19 @@ function linhaMolinete(it) {
   return `
     <div class="linha-filho-container">
       <div class="linha-filho">
+        <!-- NOME COMPLETO DO PRODUTO -->
         <div class="l-info-main">
           <span class="l-cod">${it.codigo}</span>
           <span class="l-nome">${escapeHtml(info.modelo)}</span>
-          ${temVariacao ? `<button type="button" class="btn-toggle-var" onclick="toggleVariacao('${it.codigo}', event)">👁️ Ver</button>` : ''}
         </div>
         
-        <div class="l-preco">R$ ${fmtMoeda(it.preco)}</div>
+        <!-- OLHO + PREÇO APROXIMADOS -->
+        <div class="l-direita-wrap">
+          ${temVariacao ? `<button type="button" class="btn-toggle-var" title="Ver variação" onclick="toggleVariacao('${it.codigo}', event)">👁️</button>` : ''}
+          <div class="l-preco">R$ ${fmtMoeda(it.preco)}</div>
+        </div>
         
+        <!-- CONTROLE DE QTD -->
         <div class="l-qtd" onclick="event.stopPropagation()">
           <div class="qtd-ctrl">
             <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
@@ -707,6 +724,7 @@ function linhaMolinete(it) {
         </div>
       </div>
 
+      <!-- PAINEL RETRÁTIL DE VARIAÇÃO -->
       ${temVariacao ? `
         <div class="painel-variacao-oculta" id="var-panel-${it.codigo}">
           <strong>Variação / Especificações:</strong> ${escapeHtml(info.variacao)}
@@ -715,7 +733,6 @@ function linhaMolinete(it) {
     </div>`;
 }
 
-// FUNÇÃO PARA MOSTRAR/ESCONDER A VARIAÇÃO
 function toggleVariacao(codigo, event) {
   event.stopPropagation();
   const painel = document.getElementById(`var-panel-${codigo}`);
@@ -723,7 +740,7 @@ function toggleVariacao(codigo, event) {
   
   if (painel) {
     const estaAtivo = painel.classList.toggle('ativo');
-    btn.textContent = estaAtivo ? '✕ Ocultar' : '👁️ Ver';
+    btn.classList.toggle('ativo', estaAtivo);
   }
 }
 
