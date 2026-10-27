@@ -173,13 +173,54 @@
   .modal-body p { font-size:.9rem; color:var(--cinza-700); line-height:1.6; white-space:pre-wrap; }
 
   @media(max-width:800px) {
+    /* TOPO NO CELULAR */
+    .topo-inner { padding: 10px 12px; flex-direction: row; flex-wrap: wrap; gap: 8px; }
+    .topo-logo-area { display: none; } /* Remove "Catálogo" */
+    
+    .info-cliente { 
+      flex: 1; 
+      padding: 8px 12px; 
+      justify-content: center; 
+      font-size: .8rem; 
+      border-radius: 8px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .busca-wrap { 
+      flex: 1; 
+      max-width: none; 
+      min-width: 100%; /* Joga a busca para a linha de baixo */
+    }
+    .busca-wrap input { padding: 10px 14px; font-size: 1rem; }
+    
+    /* Chips sobem para colar no topo */
+    .chips-wrap { top: 108px; }
+    .chips { padding: 10px 12px; }
+    
+    /* RESTO DO CSS DO CELULAR (mantém o que você já tinha) */
     body { padding-bottom: 100px; }
     .familia-card, .isca-card, .anzol-card, .molinete-card { grid-template-columns:1fr; padding:12px; }
     .familia-foto-principal { max-width:160px; margin:0 auto; }
-    .lista-header { display:none; }
-    .linha-filho { grid-template-columns:1fr auto; grid-template-areas: "cod qtd" "nome qtd" "var qtd" "preco qtd"; gap:4px 8px; padding:8px; }
-    .l-cod { grid-area:cod; } .l-nome { grid-area:nome; } .l-var-col { grid-area:var; align-items:flex-start; } .l-preco { grid-area:preco; text-align:left; } .l-qtd { grid-area:qtd; }
     
+    .lista-header { display:none; }
+    .linha-filho { 
+      display: flex; flex-direction: column; gap: 6px; padding: 12px; 
+      background: white; border: 1px solid var(--cinza-200);
+      border-radius: 8px; margin-bottom: 8px;
+    }
+    .l-cod { display: none; }
+    .l-nome { font-size: 0.95rem; font-weight: 800; color: var(--azul-800); }
+    .l-var-col { align-items: flex-start; width: 100%; }
+    .tag-var { white-space: normal; text-align: left; font-size: 0.7rem; padding: 4px 8px; width: auto; display: inline-block; }
+    
+    .l-preco { text-align: left; font-size: 1.1rem; margin-top: 4px; }
+    .l-qtd { display: flex; justify-content: flex-start; width: 100%; margin-top: 4px; }
+    .l-qtd .qtd-ctrl { width: 100%; justify-content: space-between; }
+    .l-qtd .qtd-ctrl input { flex: 1; max-width: 80px; }
+    .l-qtd .qtd-ctrl button { width: 40px; height: 36px; font-size: 1.2rem; }
+
     .fab-carrinho { bottom:16px; right:16px; width:56px; height:56px; }
     .painel-carrinho { bottom:84px; right:16px; width:calc(100vw - 32px); }
   }
@@ -489,28 +530,58 @@ function linhaMolinete(it) {
   const info = analisarMolinete(it);
   
   return `
-    <div class="isca-cor-card" style="padding: 12px; justify-content: flex-start; text-align: center; position: relative;">
-      
-      <!-- Nome do Modelo -->
-      <div style="font-size: 0.75rem; font-weight: 800; color: var(--texto); line-height: 1.2; margin-bottom: 8px; height: 30px; display: flex; align-items: center; justify-content: center;">
-        ${escapeHtml(info.modelo)}
+    <div class="linha-filho">
+      <div class="l-nome">${escapeHtml(info.modelo)}</div>
+      <div class="l-var-col">
+        <span class="tag-var" title="${escapeHtml(info.variacao)}">${escapeHtml(info.variacao || 'Único')}</span>
       </div>
-      
-      <!-- Variação (Tamanho / Velocidade) -->
-      <div style="font-size: 0.65rem; font-weight: 700; color: #3730a3; background: #e0e7ff; padding: 4px; border-radius: 4px; margin-bottom: 12px; width: 100%;">
-        ${escapeHtml(info.variacao || 'Único')}
+      <div class="l-preco">R$ ${fmtMoeda(it.preco)}</div>
+      <div class="l-qtd" onclick="event.stopPropagation()">
+        <div class="qtd-ctrl">
+          <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+          <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+          <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+        </div>
       </div>
-      
-      <!-- Preço -->
-      <div class="cor-preco" style="font-size: 1.1rem; margin-bottom: 12px;">
-        R$ ${fmtMoeda(it.preco)}
-      </div>
-      
-      <!-- Controle de Quantidade -->
-      <div class="qtd-ctrl" style="display: flex; width: 100%; justify-content: space-between;" onclick="event.stopPropagation()">
-        <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
-        <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)" style="flex: 1; max-width: 50px;">
-        <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+    </div>`;
+}
+
+function renderFamiliaMolinete(fam, itens) {
+  const primeiroItem = itens[0];
+  const imgInicial = primeiroItem?.imagem_url || '';
+  let subdivisoes = fam.subdivisoes || [];
+  if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Produtos', itens: fam.itens }];
+
+  const blocosTabelas = subdivisoes.map(sub => {
+    const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
+    if (itensDaSub.length === 0) return '';
+    
+    itensDaSub.sort((a, b) => {
+      if (a.ordem_customizada_pos !== 999999 || b.ordem_customizada_pos !== 999999) return a.ordem_customizada_pos - b.ordem_customizada_pos;
+      return a.ordem_excel - b.ordem_excel;
+    });
+
+    return `
+      <div class="sub-bloco" style="margin-top: 16px;">
+        <div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>
+        <div class="lista-filhos" style="margin-top: 8px;">
+          <div class="lista-header">
+            <div>Produto</div><div style="text-align:center">Variação</div><div>Preço</div><div style="text-align:center">Qtd</div>
+          </div>
+          ${itensDaSub.map(linhaMolinete).join('')}
+        </div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="familia-bloco">
+      <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
+      <div class="molinete-card" id="card-fam-${fam.id}">
+        <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
+        <div class="molinete-info">
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes do produto</button>
+          ${blocosTabelas}
+        </div>
       </div>
     </div>`;
 }
