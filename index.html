@@ -211,55 +211,130 @@
   /* MOLINETES E CARRETILHAS - LINHA ÚNICA E INTUITIVA */
   .lista-header { display: none; } 
   
-  .linha-filho { 
+  /* LINHA ÚNICA LIMPA (DESKTOP E MOBILE) */
+.lista-filhos { display: flex; flex-direction: column; gap: 4px; }
+
+.linha-filho { 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  gap: 12px; 
+  padding: 8px 12px; 
+  background: white; 
+  border: 1px solid var(--cinza-200); 
+  border-radius: 8px; 
+  transition: .15s;
+}
+
+.linha-filho:hover { 
+  border-color: var(--azul-500); 
+  box-shadow: 0 2px 6px rgba(0,0,0,.04); 
+}
+
+.l-info-main { 
+  display: flex; 
+  align-items: center; 
+  gap: 10px; 
+  flex: 1; 
+  min-width: 0; 
+}
+
+.l-cod { 
+  font-family: monospace; 
+  font-weight: 800; 
+  color: var(--cinza-500); 
+  font-size: .75rem; 
+  background: var(--cinza-100); 
+  padding: 2px 6px; 
+  border-radius: 4px; 
+  white-space: nowrap; 
+}
+
+.l-nome { 
+  font-size: .85rem; 
+  font-weight: 800; 
+  color: var(--azul-800); 
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+}
+
+.l-preco { 
+  font-size: .95rem; 
+  font-weight: 900; 
+  color: var(--verde); 
+  white-space: nowrap; 
+  margin: 0 8px; 
+}
+
+.l-qtd { 
+  display: flex; 
+  align-items: center; 
+}
+
+/* CONTROLE DE QTD COMPACTO */
+.qtd-ctrl { 
+  display: inline-flex; 
+  align-items: center; 
+  border: 1px solid var(--cinza-300); 
+  border-radius: 6px; 
+  background: white; 
+  overflow: hidden; 
+}
+
+.qtd-ctrl button { 
+  width: 28px; 
+  height: 28px; 
+  border: none; 
+  background: var(--cinza-50); 
+  font-weight: 800; 
+  color: var(--azul-800); 
+  font-size: 1rem; 
+}
+
+.qtd-ctrl button:hover { background: var(--azul-100); }
+
+.qtd-ctrl input { 
+  width: 32px; 
+  height: 28px; 
+  text-align: center; 
+  border: none; 
+  font-weight: 800; 
+  color: var(--azul-800); 
+  font-size: .85rem; 
+}
+
+/* AJUSTES RESPONSIVOS MOBILE */
+@media(max-width: 800px) {
+  .familia-card, .molinete-card { 
+    display: flex !important; 
+    flex-direction: column !important; 
+    padding: 10px !important; 
+  }
+
+  .familia-side { 
+    width: 100%; 
     display: flex; 
-    flex-wrap: wrap; 
-    justify-content: space-between;
+    flex-direction: column; 
     align-items: center; 
-    padding: 10px; 
-    background: white; 
-    border: 1px solid var(--cinza-200); 
-    border-radius: 8px; 
-    margin-bottom: 8px; 
-    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
   }
-  
-  .l-cod { display: none; } /* Esconde o código na tabela */
-  
-  .l-nome { 
-    font-size: 0.85rem; font-weight: 800; color: var(--azul-800); 
-    width: 100%; margin-bottom: 6px;
+
+  .familia-foto-principal { max-width: 120px; }
+
+  .linha-filho { 
+    padding: 6px 8px; 
+    gap: 6px; 
   }
-  
-  .l-preco { 
-    font-size: 1rem; font-weight: 900; color: var(--verde); 
-    width: 50%; text-align: left; 
-  }
-  
-  /* VARIAÇÃO (Texto no canto direito) */
-  .l-var-col { 
-    width: 50%; display: flex; justify-content: flex-end;
-  }
-  .tag-var { 
-    background: var(--azul-50); color: var(--azul-800); 
-    border: 1px solid var(--azul-200); border-radius: 4px;
-    font-size: 0.65rem; padding: 3px 6px; font-weight: 700;
-    white-space: nowrap;
-  }
-  
-  /* BOTÃO DE QUANTIDADE (Largo e fácil de clicar) */
-  .l-qtd { 
-    width: 100%; display: flex; margin-top: 8px; 
-  }
-  .l-qtd .qtd-ctrl { 
-    width: 100%; justify-content: space-between; border: 1px solid var(--cinza-300); border-radius: 6px; padding: 2px; background: var(--cinza-50);
-  }
-  .l-qtd .qtd-ctrl button { 
-    width: 36px; height: 32px; font-size: 1.2rem; border: none; background: transparent; 
-  }
-  .l-qtd .qtd-ctrl input { 
-    flex: 1; max-width: 60px; height: 32px; border: none; background: transparent; font-size: 1rem; 
-  }
+
+  .l-cod { display: none; } /* Esconde o código no mobile para economizar espaço */
+
+  .l-nome { font-size: .8rem; }
+
+  .l-preco { font-size: .85rem; }
+
+  .qtd-ctrl button { width: 24px; height: 24px; font-size: .9rem; }
+  .qtd-ctrl input { width: 26px; height: 24px; font-size: .8rem; }
+}
 
   /* AJUSTES PARA ISCAS E ANZÓIS */
   .isca-grade, .anzol-grade { grid-template-columns: repeat(2, 1fr) !important; gap: 8px; }
@@ -578,18 +653,13 @@ function linhaMolinete(it) {
   
   return `
     <div class="linha-filho">
-      <!-- Nome -->
-      <div class="l-nome">${escapeHtml(info.modelo)}</div>
-      
-      <!-- Preço -->
-      <div class="l-preco">R$ ${fmtMoeda(it.preco)}</div>
-      
-      <!-- Variação (Texto técnico, sem botão de alerta) -->
-      <div class="l-var-col">
-        <span class="tag-var">${escapeHtml(info.variacao || 'Único')}</span>
+      <div class="l-info-main">
+        <span class="l-cod">${it.codigo}</span>
+        <span class="l-nome">${escapeHtml(info.modelo)}</span>
       </div>
       
-      <!-- Qtd -->
+      <div class="l-preco">R$ ${fmtMoeda(it.preco)}</div>
+      
       <div class="l-qtd" onclick="event.stopPropagation()">
         <div class="qtd-ctrl">
           <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
@@ -616,13 +686,9 @@ function renderFamiliaMolinete(fam, itens) {
     });
 
     return `
-      <div class="sub-bloco" style="margin-top: 16px;">
-        <div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>
-        <div class="lista-filhos" style="margin-top: 8px;">
-          <!-- Cabeçalho só aparece no PC -->
-          <div class="lista-header">
-            <div>Produto</div><div style="text-align:center">Variação</div><div>Preço</div><div style="text-align:center">Qtd</div>
-          </div>
+      <div class="sub-bloco" style="margin-top: 10px;">
+        ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
+        <div class="lista-filhos" style="margin-top: 6px;">
           ${itensDaSub.map(linhaMolinete).join('')}
         </div>
       </div>`;
@@ -630,9 +696,16 @@ function renderFamiliaMolinete(fam, itens) {
 
   return `
     <div class="familia-bloco">
-      <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
+      <div class="familia-head">
+        <h2>${escapeHtml(fam.nome)}</h2> 
+        <span class="marca-badge">${escapeHtml(itens[0].marca)}</span>
+      </div>
       <div class="molinete-card" id="card-fam-${fam.id}">
-        <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
+        <div class="familia-side">
+          <div class="familia-foto-principal" id="foto-pai-${fam.id}">
+            ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
+          </div>
+        </div>
         <div class="molinete-info">
           <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes do produto</button>
           ${blocosTabelas}
@@ -640,47 +713,6 @@ function renderFamiliaMolinete(fam, itens) {
       </div>
     </div>`;
 }
-
-function renderFamiliaMolinete(fam, itens) {
-  const primeiroItem = itens[0];
-  const imgInicial = primeiroItem?.imagem_url || '';
-  let subdivisoes = fam.subdivisoes || [];
-  if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Produtos', itens: fam.itens }];
-
-  const blocosTabelas = subdivisoes.map(sub => {
-    const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
-    if (itensDaSub.length === 0) return '';
-    
-    itensDaSub.sort((a, b) => {
-      if (a.ordem_customizada_pos !== 999999 || b.ordem_customizada_pos !== 999999) return a.ordem_customizada_pos - b.ordem_customizada_pos;
-      return a.ordem_excel - b.ordem_excel;
-    });
-
-    // Transforma cada item em um card usando a função linhaMolinete
-    const cardsHtml = itensDaSub.map(linhaMolinete).join('');
-
-    return `
-      <div class="sub-bloco" style="margin-top: 16px;">
-        <div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>
-        <div class="isca-grade" style="margin-top: 12px; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px;">
-          ${cardsHtml}
-        </div>
-      </div>`;
-  }).join('');
-
-  return `
-    <div class="familia-bloco">
-      <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
-      <div class="molinete-card" id="card-fam-${fam.id}">
-        <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
-        <div class="molinete-info">
-          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes do produto</button>
-          ${blocosTabelas}
-        </div>
-      </div>
-    </div>`;
-}
-
 function linhaCarretilha(it) {
   const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
   const info = analisarMolinete(it);
