@@ -487,18 +487,30 @@ function renderizar() {
 function linhaMolinete(it) {
   const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
   const info = analisarMolinete(it);
+  
   return `
-    <div class="linha-filho">
-      <div class="l-cod">${it.codigo}</div>
-      <div class="l-nome">${escapeHtml(info.modelo)}</div>
-      <div class="l-var-col"><span class="tag-var" title="${escapeHtml(info.variacao)}">${escapeHtml(info.variacao || '—')}</span></div>
-      <div class="l-preco">R$ ${fmtMoeda(it.preco)}</div>
-      <div class="l-qtd" onclick="event.stopPropagation()">
-        <div class="qtd-ctrl">
-          <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
-          <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
-          <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
-        </div>
+    <div class="isca-cor-card" style="padding: 12px; justify-content: flex-start; text-align: center; position: relative;">
+      
+      <!-- Nome do Modelo -->
+      <div style="font-size: 0.75rem; font-weight: 800; color: var(--texto); line-height: 1.2; margin-bottom: 8px; height: 30px; display: flex; align-items: center; justify-content: center;">
+        ${escapeHtml(info.modelo)}
+      </div>
+      
+      <!-- Variação (Tamanho / Velocidade) -->
+      <div style="font-size: 0.65rem; font-weight: 700; color: #3730a3; background: #e0e7ff; padding: 4px; border-radius: 4px; margin-bottom: 12px; width: 100%;">
+        ${escapeHtml(info.variacao || 'Único')}
+      </div>
+      
+      <!-- Preço -->
+      <div class="cor-preco" style="font-size: 1.1rem; margin-bottom: 12px;">
+        R$ ${fmtMoeda(it.preco)}
+      </div>
+      
+      <!-- Controle de Quantidade -->
+      <div class="qtd-ctrl" style="display: flex; width: 100%; justify-content: space-between;" onclick="event.stopPropagation()">
+        <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+        <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)" style="flex: 1; max-width: 50px;">
+        <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
       </div>
     </div>`;
 }
@@ -518,12 +530,14 @@ function renderFamiliaMolinete(fam, itens) {
       return a.ordem_excel - b.ordem_excel;
     });
 
+    // Transforma cada item em um card usando a função linhaMolinete
+    const cardsHtml = itensDaSub.map(linhaMolinete).join('');
+
     return `
       <div class="sub-bloco" style="margin-top: 16px;">
         <div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>
-        <div class="lista-filhos" style="margin-top: 8px;">
-          <div class="lista-header"><div>Código</div><div>Modelo</div><div style="text-align:center">Variação</div><div>Preço</div><div style="text-align:center">Qtd</div></div>
-          ${itensDaSub.map(linhaMolinete).join('')}
+        <div class="isca-grade" style="margin-top: 12px; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px;">
+          ${cardsHtml}
         </div>
       </div>`;
   }).join('');
@@ -532,9 +546,7 @@ function renderFamiliaMolinete(fam, itens) {
     <div class="familia-bloco">
       <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
       <div class="molinete-card" id="card-fam-${fam.id}">
-        <div class="familia-side">
-          <div class="familia-foto-principal" id="foto-pai-${fam.id}">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div>
-        </div>
+        <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
         <div class="molinete-info">
           <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes do produto</button>
           ${blocosTabelas}
