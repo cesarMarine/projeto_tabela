@@ -701,13 +701,18 @@ function renderFamiliaVara(fam, itens) {
 
 function analisarLinha(it) {
   const attrs = it.atributos || {};
-  const metragem = attrs['QTD'] || attrs['Metragem'] || attrs['METRAGEM'] || '-';
-  const ignorar = ['CX/CT', 'Modelo', 'MODELO', 'QTD', 'Metragem', 'METRAGEM']; 
-  const especificacoes = {};
-  for (const [chave, valor] of Object.entries(attrs)) {
-    if (!ignorar.includes(chave) && valor) especificacoes[chave] = valor;
-  }
-  return { metragem, especificacoes };
+  
+  // Busca a Bitola (MM)
+  let bitola = '-';
+  const chaveBitola = Object.keys(attrs).find(k => k.toUpperCase() === 'MM' || k.toUpperCase() === 'BITOLA');
+  if (chaveBitola) bitola = attrs[chaveBitola];
+
+  // Busca a Resistência (LBS / KG)
+  let resistencia = '';
+  const chaveLbs = Object.keys(attrs).find(k => k.toUpperCase().includes('LBS') || k.toUpperCase().includes('KG') || k.toUpperCase().includes('LIBRAS'));
+  if (chaveLbs) resistencia = attrs[chaveLbs];
+
+  return { bitola, resistencia };
 }
 
 function renderFamiliaLinha(fam, itens) {
@@ -715,25 +720,6 @@ function renderFamiliaLinha(fam, itens) {
   const imgInicial = primeiroItem?.imagem_url || '';
   let subdivisoes = fam.subdivisoes || [];
   if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Produtos', itens: fam.itens }];
-
-  const colunasSet = new Set();
-  itens.forEach(it => { 
-    const info = analisarLinha(it);
-    Object.keys(info.especificacoes).forEach(k => {
-      // 👇 BLACKLIST: Ignora colunas que sujam a tela e são redundantes
-      const kUpper = k.toUpperCase();
-      if (
-        kUpper.includes('BARRAS') || 
-        kUpper.includes('COD') || 
-        kUpper.includes('METRAGEM') || 
-        kUpper.includes('QUANTIDADE (M)') ||
-        kUpper.includes('METROS')
-      ) return;
-      
-      colunasSet.add(k); 
-    }); 
-  });
-  const colunas = Array.from(colunasSet);
 
   const blocosTabelas = subdivisoes.map(sub => {
     const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
@@ -744,45 +730,44 @@ function renderFamiliaLinha(fam, itens) {
       return a.ordem_excel - b.ordem_excel;
     });
 
-    const linhas = itensDaSub.map(it => {
+    // Gera os "cards" de linha
+    const cardsHtml = itensDaSub.map(it => {
       const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
       const info = analisarLinha(it);
       
-      // Renderiza apenas as colunas que passaram pelo filtro da blacklist
-      const celulasSpecs = colunas.map(c => {
-        const val = info.especificacoes[c] || '-';
-        return `<td style="text-align:center; font-size:0.7rem; color:var(--cinza-700);">${escapeHtml(val)}</td>`;
-      }).join('');
-
       return `
-        <tr class="linha-tabela-vara">
-          <td class="l-cod" style="font-family:monospace; font-weight:800; color:var(--azul-800);">${it.codigo}</td>
-          ${celulasSpecs}
-          <td style="text-align:center; font-weight:800; color:var(--azul-800); white-space: nowrap;">R$ ${fmtMoeda(it.preco)}</td>
-          <td style="text-align:center;" onclick="event.stopPropagation()">
-            <div class="qtd-ctrl" style="display:inline-flex;">
-              <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
-              <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
-              <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+        <div class="isca-cor-card" style="padding: 12px; justify-content: flex-start;">
+          
+          <!-- Bitola em Destaque -->
+          <div style="font-size: 1.6rem; font-weight: 900; color: var(--azul-800); line-height: 1; margin-bottom: 4px; text-align: center;">
+            ${escapeHtml(info.bitola)}
+          </div>
+          
+          <!-- Resistência Discreta -->
+          ${info.resistencia ? `
+            <div style="font-size: .75rem; font-weight: 700; color: var(--cinza-500); text-align: center; margin-bottom: 12px; line-height: 1.2;">
+              ${escapeHtml(info.resistencia)}
             </div>
-          </td>
-        </tr>`;
+          ` : '<div style="height: 22px;"></div>'} <!-- Espaçador se não tiver resistência -->
+          
+          <!-- Preço -->
+          <div class="cor-preco" style="font-size: 1rem; margin-bottom: 8px;">R$ ${fmtMoeda(it.preco)}</div>
+          
+          <!-- Controle de Quantidade -->
+          <div class="qtd-ctrl" style="display: flex; width: 100%; justify-content: space-between;" onclick="event.stopPropagation()">
+            <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+            <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)" style="flex: 1; max-width: 50px;">
+            <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+          </div>
+        </div>
+      `;
     }).join('');
 
     return `
       <div class="sub-bloco" style="margin-top: 16px;">
         ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
-        <div style="overflow-x: auto; width: 100%; margin-top: 8px; background: white; border-radius: 6px; border: 1px solid var(--cinza-200);">
-          <table style="width: 100%; border-collapse: collapse; min-width: max-content;">
-            <thead>
-              <tr style="background: var(--cinza-50); border-bottom: 1px solid var(--cinza-200); font-size: 0.6rem; font-weight: 800; color: var(--cinza-500); text-transform: uppercase;">
-                <th style="padding: 8px; text-align: left;">Cód.</th>
-                ${colunas.map(c => `<th style="padding: 8px; text-align: center;">${escapeHtml(c)}</th>`).join('')}
-                <th style="padding: 8px; text-align: center;">Preço</th><th style="padding: 8px; text-align: center;">Qtd</th>
-              </tr>
-            </thead>
-            <tbody>${linhas}</tbody>
-          </table>
+        <div class="isca-grade" style="margin-top: 12px;">
+          ${cardsHtml}
         </div>
       </div>`;
   }).join('');
@@ -799,7 +784,6 @@ function renderFamiliaLinha(fam, itens) {
       </div>
     </div>`;
 }
-
 function analisarEmpate(it) {
   const attrs = it.atributos || {};
   const ignorar = ['QTD', 'CX/CT']; 
