@@ -393,6 +393,73 @@
   .painel-carrinho { bottom: 84px; right: 16px; width: calc(100vw - 32px); }
 }
     }
+
+    /* CURSOR DE CLIQUE NA FOTO PRINCIPAL */
+.familia-foto-principal {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.familia-foto-principal:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* POPUP / MODAL DE ZOOM */
+.zoom-modal-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.zoom-modal-bg.on {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.zoom-modal-content {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.zoom-modal-content img {
+  max-width: 100%;
+  max-height: 85vh;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  background: white;
+  padding: 10px;
+}
+
+.zoom-x {
+  position: absolute;
+  top: -15px;
+  right: -15px;
+  background: var(--vermelho, #ef4444);
+  color: white;
+  border: 2px solid white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+}
 </style>
 </head>
 <body>
@@ -466,6 +533,29 @@ let porcentagemAcrescimo = 0;
 const fmtMoeda = v => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 const parseAtributos = json => { try { return JSON.parse(json || '{}'); } catch { return {}; } };
+
+// FUNÇÃO PARA ABRIR O POPUP COM ZOOM
+function abrirZoomImagem(elemento) {
+  const img = elemento.querySelector('img');
+  if (!img || !img.src) return;
+  
+  const modalBg = document.getElementById('zoomModalBg');
+  const modalImg = document.getElementById('zoomModalImg');
+  
+  modalImg.src = img.src;
+  modalBg.classList.add('on');
+}
+
+// FUNÇÃO PARA FECHAR O POPUP
+function fecharZoomModal() {
+  const modalBg = document.getElementById('zoomModalBg');
+  if (modalBg) modalBg.classList.remove('on');
+}
+
+// FECHAR AO APERTAR 'ESC'
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') fecharZoomModal();
+});
 
 function calcularPrecoFinal(precoBase) {
   if (!precoBase) return 0;
@@ -776,7 +866,8 @@ function renderFamiliaMolinete(fam, itens) {
       </div>
       <div class="molinete-card" id="card-fam-${fam.id}">
         <div class="familia-side">
-          <div class="familia-foto-principal" id="foto-pai-${fam.id}">
+          <!-- AQUI ENTRA O ONCLICK PARA ABRIR O ZOOM -->
+          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">
             ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
           </div>
         </div>
@@ -1565,5 +1656,13 @@ document.getElementById('inputCnpj').addEventListener('keypress', function(e) {
   if (e.key === 'Enter') fazerLogin();
 });
 </script>
+
+<!-- MODAL DE ZOOM DA IMAGEM -->
+<div class="zoom-modal-bg" id="zoomModalBg" onclick="fecharZoomModal()">
+  <div class="zoom-modal-content" onclick="event.stopPropagation()">
+    <button class="zoom-x" onclick="fecharZoomModal()">✕</button>
+    <img id="zoomModalImg" src="" alt="Imagem ampliada">
+  </div>
+</div>
 </body>
 </html>
