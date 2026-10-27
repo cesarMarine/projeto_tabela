@@ -123,7 +123,7 @@
   .l-cod { font-family:monospace; font-weight:800; color:var(--cinza-500); font-size:.75rem; background:var(--cinza-100); padding:2px 5px; border-radius:4px; white-space:nowrap; }
   .l-nome { font-size:.85rem; font-weight:800; color:var(--azul-800); line-height:1.2; word-break:break-word; }
 
-  /* TAG ESQUERDA / DIREITA */
+  /* TAG DESTACADA (MANIVELA OU POTÊNCIA DO MOTOR) */
   .tag-lado {
     background: var(--azul-100); color: var(--azul-800); font-size: .68rem; font-weight: 800;
     padding: 2px 6px; border-radius: 4px; text-transform: uppercase; white-space: nowrap;
@@ -368,29 +368,24 @@ function analisarAnzol(it) {
   const attrs = it.atributos || {};
   let numero = '';
   
-  // 1. Busca nos atributos do JSON (Libragem, Comprimento, Tamanho, etc.)
   const chavesNum = ['Resistência (lb)', 'Resistencia', 'Libragem', 'Tamanho (cm)', 'Tamanho', 'TAMANHO', 'Numero', 'NÚMERO', 'Número', 'Bitola', 'Modelo', 'MODELO'];
   for (let k of chavesNum) {
     if (attrs[k]) { numero = String(attrs[k]); break; }
   }
   
-  // 2. Inteligência para Cabos de Aço em Rolo / Luvas / Snaps (analisa o nome do subgrupo)
   if (!numero || numero === 'S/N') {
     const subUpper = (it.subgrupo || '').toUpperCase();
     
-    // Identifica Cabo de Aço (ex: 10LB, 20LB, 10M, etc.)
     const matchCabo = subUpper.match(/(\d+\s*LBS?|\d+\s*KG|\d+\s*M(?:ETROS)?)/i);
     if (matchCabo) {
       numero = matchCabo[1];
     } else {
-      // Identifica Números/Tamanhos normais (ex: Nº 1, 1/0, P, M, G, etc.)
       const match = subUpper.match(/(?:Nº?|Nº|NUMERO|TAMANHO)?\s*(\d{1,2}(?:\/\d)?(?:\s*CM|\s*MM)?|\b[PMGG]{1,3}\b)(?:\s*C\/|\s|$)/i);
       if (match) numero = match[1];
       else numero = it.subgrupo.replace(it.grupo, '').trim() || 'S/N';
     }
   }
 
-  // Extrai quantidade/embalagem se houver (ex: Rolo c/ 10m, C/100)
   let qtd = '';
   const chavesQtd = ['Comprimento (m)', 'Comprimento', 'Quantidade', 'QUANTIDADE', 'Qtd', 'QTD', 'Qtd. Embalagem', 'Qtd Embalagem'];
   for (let k of chavesQtd) {
@@ -450,6 +445,40 @@ function analisarCarretilha(it) {
     modelo, 
     ladoTag, 
     variacaoExtra: partesVar.join(' • ') 
+  };
+}
+
+// ANALISADOR EXCLUSIVO PARA MOTORES (HP, LB, POTÊNCIA, TENSÃO)
+function analisarMotor(it) {
+  const attrs = it.atributos || {};
+  let modelo = attrs['Modelo'] || attrs['MODELO'] || '';
+  const potencia = attrs['Potência'] || attrs['POTÊNCIA'] || attrs['HP'] || attrs['Libras'] || attrs['LIBRAS'] || '';
+  const tensao = attrs['Tensão'] || attrs['VOLTAGEM'] || attrs['Voltagem'] || '';
+  const tempo = attrs['Tempos'] || attrs['TEMPO'] || '';
+  const partida = attrs['Partida'] || attrs['PARTIDA'] || '';
+
+  if (!modelo) {
+    const partes = (it.subgrupo || '').trim().split(/\s+/);
+    modelo = partes.slice(-2).join(' ') || it.subgrupo;
+  }
+
+  // Identifica a potência / versão na tag (ex: 15 HP, 44 LB, 12V, etc)
+  let tagPotencia = potencia;
+  if (!tagPotencia) {
+    const subUpper = (it.subgrupo || '').toUpperCase();
+    const matchHp = subUpper.match(/(\d+(?:\.\d+)?\s*HP|\d+\s*LB|\d+\s*V)/i);
+    if (matchHp) tagPotencia = matchHp[1];
+  }
+
+  const partesVar = [];
+  if (tensao) partesVar.push(tensao);
+  if (tempo) partesVar.push(tempo);
+  if (partida) partesVar.push(partida);
+
+  return {
+    modelo,
+    tagPotencia,
+    variacaoExtra: partesVar.join(' • ')
   };
 }
 
@@ -570,23 +599,25 @@ function renderizar() {
       if (nomeFam.includes('VARA')) tipo = 'vara';
       else if (nomeFam.includes('LINHA')) tipo = 'linha';
       else if (
-        grupoItem.includes('ACESSORIO') || grupoItem.includes('VESTUARIO') || grupoItem.includes('MOTOR') || 
+        grupoItem.includes('ACESSORIO') || grupoItem.includes('VESTUARIO') || 
         nomeFam.includes('ACESSORIO') || nomeFam.includes('ALICATE') || nomeFam.includes('TESOURA') || 
-        nomeFam.includes('VESTUARIO') || nomeFam.includes('MOTOR')
+        nomeFam.includes('VESTUARIO')
       ) { tipo = 'grade'; }
       else if (nomeFam.includes('ISCA') || attrs.includes('CORES') || attrs.includes('COR')) tipo = 'isca';
-      // ANZÓIS, GIRADORES, SNAPS, CABOS DE AÇO E LUVAS USAM O LAYOUT LIMPO POR NÚMERO / ESPECIFICAÇÃO
       else if (
         nomeFam.includes('ANZOL') || nomeFam.includes('EMPATE') || nomeFam.includes('GIRADOR') || 
         nomeFam.includes('SNAP') || nomeFam.includes('CABO') || nomeFam.includes('LUVA')
       ) tipo = 'anzol';
       else if (nomeFam.includes('MOLINETE')) tipo = 'molinete';
       else if (nomeFam.includes('CARRETILHA')) tipo = 'carretilha';
+      // MOTORES AGORA SEGUEM O MESMO PADRÃO COMPACTO E ELEGANTE DE CARRETILHAS
+      else if (nomeFam.includes('MOTOR') || grupoItem.includes('MOTOR')) tipo = 'motor';
       
       if (tipo === 'isca') html += renderFamiliaIsca(fam, filhos);
       else if (tipo === 'anzol') html += renderFamiliaAnzol(fam, filhos);
       else if (tipo === 'molinete') html += renderFamiliaMolinete(fam, filhos);
       else if (tipo === 'carretilha') html += renderFamiliaCarretilha(fam, filhos);
+      else if (tipo === 'motor') html += renderFamiliaMotor(fam, filhos);
       else if (tipo === 'vara') html += renderFamiliaVara(fam, filhos);
       else if (tipo === 'linha') html += renderFamiliaLinha(fam, filhos);
       else if (tipo === 'grade') html += renderFamiliaGrade(fam, filhos);
@@ -671,6 +702,41 @@ function linhaCarretilha(it) {
       ${temVariacaoExtra ? `
         <div class="painel-variacao-oculta" id="var-panel-${it.codigo}">
           <strong>Ficha Técnica:</strong> ${escapeHtml(info.variacaoExtra)}
+        </div>
+      ` : ''}
+    </div>`;
+}
+
+function linhaMotor(it) {
+  const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+  const info = analisarMotor(it);
+  const temVariacaoExtra = Boolean(info.variacaoExtra && info.variacaoExtra.trim() !== '');
+
+  return `
+    <div class="linha-filho-container">
+      <div class="linha-filho">
+        <div class="l-info-main">
+          <span class="l-cod">${it.codigo}</span>
+          ${info.tagPotencia ? `<span class="tag-lado">${escapeHtml(info.tagPotencia)}</span>` : ''}
+        </div>
+        
+        <div class="l-direita-wrap">
+          ${temVariacaoExtra ? `<button type="button" class="btn-toggle-var" title="Ver especificações" onclick="toggleVariacao('${it.codigo}', event)">👁️</button>` : ''}
+          <div class="l-preco">R$ ${fmtMoeda(it.preco)}</div>
+        </div>
+        
+        <div class="l-qtd" onclick="event.stopPropagation()">
+          <div class="qtd-ctrl">
+            <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+            <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+            <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+          </div>
+        </div>
+      </div>
+
+      ${temVariacaoExtra ? `
+        <div class="painel-variacao-oculta" id="var-panel-${it.codigo}">
+          <strong>Especificações:</strong> ${escapeHtml(info.variacaoExtra)}
         </div>
       ` : ''}
     </div>`;
@@ -761,6 +827,58 @@ function renderFamiliaCarretilha(fam, itens) {
         ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
         <div class="lista-filhos" style="margin-top: 6px;">
           ${itensDaSub.map(linhaCarretilha).join('')}
+        </div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="familia-bloco">
+      <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
+      <div class="molinete-card" id="card-fam-${fam.id}">
+        <div class="familia-side">
+          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">
+            ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
+          </div>
+        </div>
+        <div class="molinete-info">
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes do produto</button>
+          <div class="topo-miniaturas">${miniaturasHtml}</div>
+          ${blocosTabelas}
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderFamiliaMotor(fam, itens) {
+  const primeiroItem = itens[0];
+  const imgInicial = primeiroItem?.imagem_url || '';
+  let subdivisoes = fam.subdivisoes || [];
+  if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Todos', itens: fam.itens }];
+
+  const miniaturasHtml = itens.filter(it => it.estoque > 0).map(it => {
+    const info = analisarMotor(it);
+    const labelMini = [info.modelo, info.tagPotencia].filter(Boolean).join(' ');
+    return `
+      <div class="filho-mini" id="mini-${it.codigo}" onclick="selecionarCarretilha('${fam.id}', '${it.codigo}', '${it.imagem_url}')">
+        <img src="${it.imagem_url}" alt="${escapeHtml(labelMini)}">
+        <div class="mini-info"><span class="mini-nome">${escapeHtml(labelMini)}</span></div>
+      </div>`;
+  }).join('');
+
+  const blocosTabelas = subdivisoes.map(sub => {
+    const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
+    if (itensDaSub.length === 0) return '';
+
+    itensDaSub.sort((a, b) => {
+      if (a.ordem_customizada_pos !== 999999 || b.ordem_customizada_pos !== 999999) return a.ordem_customizada_pos - b.ordem_customizada_pos;
+      return a.ordem_excel - b.ordem_excel;
+    });
+
+    return `
+      <div class="sub-bloco" style="margin-top: 10px;">
+        ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
+        <div class="lista-filhos" style="margin-top: 6px;">
+          ${itensDaSub.map(linhaMotor).join('')}
         </div>
       </div>`;
   }).join('');
