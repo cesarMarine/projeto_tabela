@@ -792,4 +792,75 @@ app.post('/api/ofertas', async (req, res) => {
   }
 });
 
+// ==========================================
+// ROTA: VENDEDOR CADASTRAR NOVO CLIENTE (Com código S1, S2...)
+// ==========================================
+app.post('/api/vendedor/cliente', async (req, res) => {
+  try {
+    const { cnpj, razao_social, uf, codigo_representante } = req.body;
+
+    if (!cnpj || !razao_social || !codigo_representante) {
+      return res.status(400).json({ ok: false, erro: 'CNPJ, Razão Social e Código de Vendedor são obrigatórios.' });
+    }
+
+    const cnpjLimpo = cnpj.replace(/\D/g, '');
+
+    // 1. Verifica se o CNPJ já existe na base
+    const { data: clienteExiste } = await supabase
+      .from('clientes')
+      .select('cnpj, razao_social')
+      .eq('cnpj', cnpjLimpo)
+      .maybeSingle();
+
+    if (clienteExiste) {
+      return res.status(400).json({ 
+        ok: false, 
+        erro: `O CNPJ ${cnpj} já está cadastrado para: "${clienteExiste.razao_social}".` 
+      });
+    }
+
+    // 2. Busca o último código com prefixo 'S' para gerar a sequência S1, S2, S3...
+    const { data: ultimosClientes } = await supabase
+      .from('clientes')
+      .select('codigo')
+      .ilike('codigo', 'S%');
+
+    let maiorNumero = 0;
+    if (ultimosClientes && ultimosClientes.length > 0) {
+      ultimosClientes.forEach(c => {
+        const num = parseInt(String(c.codigo).replace(/\D/g, ''), 10);
+        if (!isNaN(num) && num > maiorNumero) {
+          maiorNumero = num;
+        }
+      });
+    }
+
+    const novoCodigo = `S${maiorNumero + 1}`;
+
+    // 3. Insere o novo cliente liberado por padrão para este representante
+    const { error: errIns } = await supabase
+      .from('clientes')
+      .insert({
+        codigo: novoCodigo,
+        cnpj: cnpjLimpo,
+        razao_social: razao_social.trim().toUpperCase(),
+        uf: (uf || 'PR').trim().toUpperCase(),
+        representante: codigo_representante,
+        acesso_liberado: 1
+      });
+
+    if (errIns) throw errIns;
+
+    res.json({ 
+      ok: true, 
+      mensagem: `Cliente cadastrado com sucesso com o Código: ${novoCodigo}`,
+      codigo: novoCodigo 
+    });
+
+  } catch (e) {
+    console.error('Erro ao cadastrar cliente:', e);
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
+
 app.listen(PORT, () => console.log(`🚀 Servidor rodando em http://localhost:${PORT}`));

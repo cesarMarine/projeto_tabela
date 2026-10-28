@@ -30,6 +30,15 @@
   .card { background:white; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,.05); padding:24px; margin-bottom:24px; }
   .card h2 { color:#0d3b66; font-size:1.1rem; margin-bottom:16px; border-bottom:2px solid #eff6ff; padding-bottom:10px; }
 
+  /* FORMULÁRIO DE NOVO CLIENTE */
+  .form-novo-cliente { display:grid; grid-template-columns:180px 1fr 100px auto; gap:12px; align-items:end; margin-bottom:20px; background:#f8fafc; padding:16px; border-radius:10px; border:1px solid #e2e8f0; }
+  .field-group { display:flex; flex-direction:column; gap:4px; }
+  .field-group label { font-size:0.75rem; font-weight:800; color:#475569; text-transform:uppercase; }
+  .field-group input, .field-group select { padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:0.9rem; font-weight:700; color:#0f172a; }
+  .field-group input:focus { outline:none; border-color:#0d3b66; }
+  .btn-gravar-cli { background:#10b981; color:white; border:none; padding:11px 20px; border-radius:8px; font-weight:800; font-size:0.9rem; cursor:pointer; transition:0.2s; height:41px; }
+  .btn-gravar-cli:hover { background:#059669; }
+
   /* NAVEGAÇÃO DE ABAS */
   .tabs { display:flex; gap:10px; margin-bottom:24px; border-bottom:2px solid #e2e8f0; padding-bottom:10px; }
   .tab-btn { background:none; border:none; font-size:1rem; font-weight:700; color:#94a3b8; cursor:pointer; padding:10px 16px; border-radius:8px; transition:.2s; }
@@ -42,6 +51,7 @@
   td { padding:14px 10px; border-bottom:1px solid #f1f5f9; font-size:.9rem; vertical-align:middle; }
   tr:hover td { background:#f8fafc; }
   .badge-uf { background:#dbeafe; color:#1e40af; padding:4px 10px; border-radius:6px; font-weight:800; font-size:.75rem; }
+  .badge-cod { background:#f1f5f9; color:#475569; padding:4px 8px; border-radius:6px; font-weight:800; font-family:monospace; }
 
   /* TOGGLE (INTERRUPTOR) */
   .toggle { position:relative; display:inline-block; width:46px; height:24px; vertical-align:middle; }
@@ -101,6 +111,37 @@
 
   <!-- ABA CLIENTES -->
   <div id="abaClientes">
+    
+    <!-- CARD: CADASTRAR NOVO CLIENTE -->
+    <div class="card">
+      <h2>➕ Cadastrar Novo Cliente Manualmente</h2>
+      <p style="font-size:.85rem; color:#64748b; margin-bottom:16px;">
+        Insira os dados do cliente caso ele ainda não esteja cadastrado no sistema principal. O código será gerado automaticamente (ex: S1, S2...).
+      </p>
+
+      <div class="form-novo-cliente">
+        <div class="field-group">
+          <label>CNPJ</label>
+          <input type="text" id="novoCnpj" placeholder="00.000.000/0000-00" autocomplete="off">
+        </div>
+        <div class="field-group">
+          <label>Razão Social / Nome</label>
+          <input type="text" id="novoRazao" placeholder="Razão Social ou Nome Fantasia" autocomplete="off">
+        </div>
+        <div class="field-group">
+          <label>UF</label>
+          <select id="novoUf">
+            <option value="PR">PR</option><option value="SP">SP</option><option value="SC">SC</option>
+            <option value="RS">RS</option><option value="MS">MS</option><option value="MT">MT</option>
+            <option value="GO">GO</option><option value="MG">MG</option><option value="RJ">RJ</option>
+            <option value="BA">BA</option><option value="AM">AM</option><option value="PA">PA</option>
+          </select>
+        </div>
+        <button class="btn-gravar-cli" onclick="gravarNovoCliente()">💾 Gravar Cliente</button>
+      </div>
+    </div>
+
+    <!-- CARD: GESTÃO DE CLIENTES EXISTENTES -->
     <div class="card">
       <h2>Gestão de Acesso dos Clientes</h2>
       <p style="font-size:.85rem; color:#64748b; margin-bottom:20px;">
@@ -110,14 +151,15 @@
       <table id="tabClientes">
         <thead>
           <tr>
+            <th>Código</th>
             <th>CNPJ</th>
-            <th>Cliente</th>
-            <th>Cidade / UF</th>
+            <th>Cliente / Razão Social</th>
+            <th>UF</th>
             <th style="text-align:center;">Acesso à Tabela</th>
           </tr>
         </thead>
         <tbody>
-          <tr><td colspan="4" style="text-align:center; padding:20px; color:#94a3b8;">Carregando clientes...</td></tr>
+          <tr><td colspan="5" style="text-align:center; padding:20px; color:#94a3b8;">Carregando clientes...</td></tr>
         </tbody>
       </table>
     </div>
@@ -167,7 +209,6 @@ async function fazerLogin() {
       return;
     }
 
-    // Login com sucesso
     vendedorLogado = j.vendedor;
     document.getElementById('telaLogin').style.display = 'none';
     document.getElementById('headerApp').style.display = 'flex';
@@ -200,12 +241,60 @@ function mudarAba(aba) {
 }
 
 // ==========================================
+// GRAVAR NOVO CLIENTE (Com S1, S2...)
+// ==========================================
+async function gravarNovoCliente() {
+  const cnpjInput = document.getElementById('novoCnpj');
+  const razaoInput = document.getElementById('novoRazao');
+  const ufInput = document.getElementById('novoUf');
+
+  const cnpj = cnpjInput.value.replace(/\D/g, '');
+  const razao_social = razaoInput.value.trim();
+  const uf = ufInput.value;
+
+  if (cnpj.length < 14) {
+    alert('Por favor, informe um CNPJ válido com 14 dígitos.');
+    return;
+  }
+  if (!razao_social) {
+    alert('Por favor, informe a Razão Social ou Nome Fantasia.');
+    return;
+  }
+
+  try {
+    const r = await fetch('/api/vendedor/cliente', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        cnpj,
+        razao_social,
+        uf,
+        codigo_representante: vendedorLogado.codigo
+      })
+    });
+
+    const j = await r.json();
+
+    if (j.ok) {
+      alert(`✅ ${j.mensagem}`);
+      cnpjInput.value = '';
+      razaoInput.value = '';
+      carregarClientes(); // Recarrega a tabela de clientes
+    } else {
+      alert(`⚠️ ${j.erro}`);
+    }
+  } catch (e) {
+    alert('Erro ao conectar com o servidor para gravar cliente.');
+  }
+}
+
+// ==========================================
 // CLIENTES
 // ==========================================
 async function carregarClientes() {
   if (!vendedorLogado) return;
   const tbody = document.querySelector('#tabClientes tbody');
-  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#94a3b8;">Carregando...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#94a3b8;">Carregando...</td></tr>';
 
   try {
     const r = await fetch('/api/vendedor/' + vendedorLogado.codigo + '/clientes');
@@ -214,7 +303,7 @@ async function carregarClientes() {
     if (!j.ok) throw new Error(j.erro);
 
     if (j.clientes.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#94a3b8;">Nenhum cliente vinculado a você.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#94a3b8;">Nenhum cliente vinculado a você.</td></tr>';
       return;
     }
 
@@ -225,6 +314,7 @@ async function carregarClientes() {
       
       return `
         <tr>
+          <td><span class="badge-cod">${c.codigo || '—'}</span></td>
           <td><strong>${c.cnpj}</strong></td>
           <td>${c.nome_fantasia || c.razao_social}</td>
           <td><span class="badge-uf">${c.uf || '—'}</span></td>
@@ -239,7 +329,7 @@ async function carregarClientes() {
       `;
     }).join('');
   } catch (e) {
-    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#ef4444;">Erro: ${e.message}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#ef4444;">Erro: ${e.message}</td></tr>`;
   }
 }
 
@@ -337,14 +427,21 @@ async function carregarPedidos() {
   }
 }
 
-// ==========================================
-// LOGOUT
-// ==========================================
+// Máscara CNPJ no input
+document.getElementById('novoCnpj')?.addEventListener('input', function(e) {
+  let v = e.target.value.replace(/\D/g, '');
+  if (v.length > 14) v = v.slice(0, 14);
+  v = v.replace(/^(\d{2})(\d)/, '$1.$2');
+  v = v.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+  v = v.replace(/\.(\d{3})(\d)/, '.$1/$2');
+  v = v.replace(/(\d{4})(\d)/, '$1-$2');
+  e.target.value = v;
+});
+
 function sair() {
   window.location.reload();
 }
 
-// Logar ao apertar Enter
 document.getElementById('inputSenha').addEventListener('keypress', function(e) {
   if (e.key === 'Enter') fazerLogin();
 });
