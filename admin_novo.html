@@ -85,6 +85,99 @@
 </head>
 <body>
 
+    <!-- BOTÃO NO PAINEL ADMIN -->
+<button class="btn-admin" onclick="abrirModalRegras()" style="background:#003366; color:white; padding:10px 16px; border:none; border-radius:8px; font-weight:800; cursor:pointer;">
+  ⚙️ Regras e Validades
+</button>
+
+<!-- MODAL DE CONFIGURAÇÃO DAS REGRAS -->
+<div id="modalRegras" style="display:none; position:fixed; inset:0; z-index:99999; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; padding:16px;">
+  <div style="background:white; border-radius:12px; max-width:480px; width:100%; padding:20px; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h2 style="color:#003366; font-size:1.1rem; font-weight:800; margin:0;">⚙️ Validades e Regras do Catálogo</h2>
+      <button onclick="fecharModalRegras()" style="background:none; border:none; font-size:1.2rem; font-weight:bold; cursor:pointer;">✕</button>
+    </div>
+    <hr style="border:none; border-top:1px solid #e2e8f0; margin-bottom:16px;">
+    
+    <!-- REGRA DAS OFERTAS -->
+    <div style="background:#fef2f2; border:1px solid #fca5a5; padding:12px; border-radius:8px; margin-bottom:14px;">
+      <h3 style="color:#ef4444; font-size:0.85rem; font-weight:800; margin-bottom:8px; text-transform:uppercase;">🔥 Encarte de Ofertas</h3>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+        <div>
+          <label style="font-size:0.75rem; font-weight:700; color:#475569;">Data Inicial:</label>
+          <input type="date" id="regra_oferta_inicio" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.8rem;">
+        </div>
+        <div>
+          <label style="font-size:0.75rem; font-weight:700; color:#475569;">Data Final:</label>
+          <input type="date" id="regra_oferta_fim" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.8rem;">
+        </div>
+      </div>
+    </div>
+
+    <!-- REGRA DA TABELA DE PREÇOS -->
+    <div style="background:#eff6ff; border:1px solid #93c5fd; padding:12px; border-radius:8px; margin-bottom:20px;">
+      <h3 style="color:#1e40af; font-size:0.85rem; font-weight:800; margin-bottom:8px; text-transform:uppercase;">📋 Tabela Geral de Preços</h3>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+        <div>
+          <label style="font-size:0.75rem; font-weight:700; color:#475569;">Data Inicial:</label>
+          <input type="date" id="regra_tabela_inicio" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.8rem;">
+        </div>
+        <div>
+          <label style="font-size:0.75rem; font-weight:700; color:#475569;">Data Final:</label>
+          <input type="date" id="regra_tabela_fim" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.8rem;">
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; justify-content:flex-end; gap:8px;">
+      <button onclick="fecharModalRegras()" style="padding:8px 14px; background:#64748b; color:white; border:none; border-radius:6px; font-size:0.8rem; font-weight:700; cursor:pointer;">Cancelar</button>
+      <button onclick="salvarRegras()" style="padding:8px 14px; background:#10b981; color:white; border:none; border-radius:6px; font-size:0.8rem; font-weight:800; cursor:pointer;">💾 Salvar Regras</button>
+    </div>
+  </div>
+</div>
+
+<script>
+async function abrirModalRegras() {
+  try {
+    const r = await fetch('/api/regras');
+    const j = await r.json();
+    if (j.ok && j.regras) {
+      document.getElementById('regra_oferta_inicio').value = j.regras.ofertas_data_inicio || '';
+      document.getElementById('regra_oferta_fim').value = j.regras.ofertas_data_fim || '';
+      document.getElementById('regra_tabela_inicio').value = j.regras.tabela_data_inicio || '';
+      document.getElementById('regra_tabela_fim').value = j.regras.tabela_data_fim || '';
+    }
+  } catch (e) { console.error('Erro ao buscar regras:', e); }
+  document.getElementById('modalRegras').style.display = 'flex';
+}
+
+function fecharModalRegras() {
+  document.getElementById('modalRegras').style.display = 'none';
+}
+
+async function salvarRegras() {
+  const dados = {
+    ofertas_data_inicio: document.getElementById('regra_oferta_inicio').value,
+    ofertas_data_fim: document.getElementById('regra_oferta_fim').value,
+    tabela_data_inicio: document.getElementById('regra_tabela_inicio').value,
+    tabela_data_fim: document.getElementById('regra_tabela_fim').value
+  };
+
+  try {
+    const r = await fetch('/api/regras', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dados)
+    });
+    const j = await r.json();
+    if (j.ok) {
+      alert('✅ Regras gravadas com sucesso!');
+      fecharModalRegras();
+    }
+  } catch (e) { alert('❌ Erro ao guardar regras.'); }
+}
+</script>
+
 <header>
   <h1>Admin <span>Gestão de Produtos</span></h1>
   <button class="btn-refresh" onclick="carregarStatus()">⟳ Atualizar Status</button>

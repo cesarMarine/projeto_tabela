@@ -213,6 +213,9 @@
       <button class="btn-topo-sair" onclick="sairCliente()">Sair</button>
     </div>
 
+    <!-- FAIXA DE AVISO DA TABELA DE PREÇOS -->
+<div id="barraAvisoTabela" style="display:none; text-align:center; padding:8px 12px; font-weight:800; font-size:0.8rem; border-bottom:1px solid transparent;"></div>
+
     <div class="busca-wrap">
       <input type="search" id="busca" placeholder="🔍 Buscar produto por código, nome ou palavra-chave..." autocomplete="off">
     </div>
@@ -269,6 +272,52 @@ let porcentagemAcrescimo = 0;
 let mapaOfertas = {}; 
 
 const BUCKET_ICONIS = 'https://gpzqzwrqndawhhglycat.supabase.co/storage/v1/object/public/icones_area_trabalho/';
+
+function fmtDataBr(strData) {
+  if (!strData) return '';
+  const [ano, mes, dia] = strData.split('-');
+  return `${dia}/${mes}/${ano}`;
+}
+
+async function verificarValidadeTabela() {
+  try {
+    const r = await fetch('/api/regras');
+    const j = await r.json();
+    if (!j.ok || !j.regras || !j.regras.tabela_data_fim) return;
+
+    const barra = document.getElementById('barraAvisoTabela');
+    
+    // Converte a data de hoje e a data cadastrada no Admin para comparação limpa (sem hora)
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    const [anoFim, mesFim, diaFim] = j.regras.tabela_data_fim.split('-');
+    const dataFimTabela = new Date(anoFim, mesFim - 1, diaFim);
+
+    if (hoje > dataFimTabela) {
+      // TABELA VENCIDA (SE JÁ PASSOU DA DATA FINAL)
+      barra.style.background = '#fee2e2';
+      barra.style.color = '#991b1b';
+      barra.style.borderColor = '#fca5a5';
+      barra.innerHTML = `⚠️ <strong>TABELA VENCIDA!</strong> Esta tabela de preços expirou em <strong>${fmtDataBr(j.regras.tabela_data_fim)}</strong>. Os preços podem ter variação. Por favor, peça uma nova tabela atualizada ao seu vendedor.`;
+      barra.style.display = 'block';
+    } else {
+      // TABELA DENTRO DO PRAZO
+      barra.style.background = '#dbeafe';
+      barra.style.color = '#1e40af';
+      barra.style.borderColor = '#93c5fd';
+      barra.innerHTML = `📅 <strong>TABELA DE PREÇOS VÁLIDA ATÉ ${fmtDataBr(j.regras.tabela_data_fim)}</strong>`;
+      barra.style.display = 'block';
+    }
+  } catch (e) {
+    console.error('Erro ao verificar validade da tabela:', e);
+  }
+}
+
+// Executa automaticamente quando o sistema carrega
+window.addEventListener('DOMContentLoaded', () => {
+  verificarValidadeTabela();
+});
 
 function getIconeUrl(grupo) {
   const g = grupo.toUpperCase().trim();

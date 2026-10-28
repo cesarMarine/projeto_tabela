@@ -88,6 +88,32 @@
 </head>
 <body>
 
+    <!-- BANNER DE AVISO DE VALIDADE DAS OFERTAS -->
+<div id="bannerOfertasValidade" style="display:none; background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); color: white; text-align: center; padding: 10px 14px; font-weight: 800; font-size: 0.85rem; border-radius: 8px; margin: 12px; box-shadow: 0 4px 12px rgba(239,68,68,0.25);">
+  🔥 ENCARTE DE OFERTAS VÁLIDO ATÉ <span id="dataFimOfertasSpan">--/--/----</span>! APROVEITE ENQUANTO DURAREM OS ESTOQUES.
+</div>
+
+<script>
+function fmtDataBr(strData) {
+  if (!strData) return '';
+  const [ano, mes, dia] = strData.split('-');
+  return `${dia}/${mes}/${ano}`;
+}
+
+async function carregarValidadeOfertas() {
+  try {
+    const r = await fetch('/api/regras');
+    const j = await r.json();
+    if (j.ok && j.regras && j.regras.ofertas_data_fim) {
+      document.getElementById('dataFimOfertasSpan').textContent = fmtDataBr(j.regras.ofertas_data_fim);
+      document.getElementById('bannerOfertasValidade').style.display = 'block';
+    }
+  } catch (e) { console.error('Erro validade ofertas:', e); }
+}
+
+window.addEventListener('DOMContentLoaded', carregarValidadeOfertas);
+</script>
+
 <div id="modalLogin" style="display:none;">
   <div class="box-login">
     <h2 style="color:var(--azul-800); font-size:1.3rem; font-weight:900;">Acesse as Ofertas</h2>

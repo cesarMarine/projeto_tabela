@@ -932,4 +932,25 @@ app.get('/api/cliente/:cnpj/pedidos', async (req, res) => {
   }
 });
 
+// Objeto em memória ou persistido no teu banco de dados/JSON
+let configuracoesRegras = {
+  ofertas_data_inicio: "",
+  ofertas_data_fim: "",
+  tabela_data_inicio: "",
+  tabela_data_fim: ""
+};
+
+// GET: Retorna as regras cadastradas
+app.get('/api/regras', (req, res) => {
+  res.json({ ok: true, regras: configuracoesRegras });
+});
+
+// POST: Salva as regras vindas do painel Admin
+app.post('/api/regras', (req, res) => {
+  const { ofertas_data_inicio, ofertas_data_fim, tabela_data_inicio, tabela_data_fim } = req.body;
+  configuracoesRegras = { ofertas_data_inicio, ofertas_data_fim, tabela_data_inicio, tabela_data_fim };
+  
+  res.json({ ok: true, mensagem: "Regras salvas com sucesso!" });
+});
+
 app.listen(PORT, () => console.log(`🚀 Servidor rodando em http://localhost:${PORT}`));
