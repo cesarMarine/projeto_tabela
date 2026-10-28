@@ -795,6 +795,9 @@ app.post('/api/ofertas', async (req, res) => {
 // ==========================================
 // ROTA: VENDEDOR CADASTRAR NOVO CLIENTE (Com código S1, S2...)
 // ==========================================
+// ==========================================
+// ROTA: VENDEDOR CADASTRAR NOVO CLIENTE (Corrigida)
+// ==========================================
 app.post('/api/vendedor/cliente', async (req, res) => {
   try {
     const { cnpj, razao_social, uf, codigo_representante } = req.body;
@@ -805,7 +808,7 @@ app.post('/api/vendedor/cliente', async (req, res) => {
 
     const cnpjLimpo = cnpj.replace(/\D/g, '');
 
-    // 1. Verifica se o CNPJ já existe na base
+    // 1. Verifica se o CNPJ já existe na base de dados
     const { data: clienteExiste } = await supabase
       .from('clientes')
       .select('cnpj, razao_social')
@@ -837,23 +840,37 @@ app.post('/api/vendedor/cliente', async (req, res) => {
 
     const novoCodigo = `S${maiorNumero + 1}`;
 
-    // 3. Insere o novo cliente liberado por padrão para este representante
+    // 3. Monta o objeto tentando os nomes de colunas comuns do banco
+    const dadosInserir = {
+      codigo: novoCodigo,
+      cnpj: cnpjLimpo,
+      razao_social: razao_social.trim().toUpperCase(),
+      uf: (uf || 'PR').trim().toUpperCase(),
+      acesso_liberado: 1
+    };
+
+    // Tenta salvar no campo representante/codigo_representante
+    try {
+      dadosInserir.codigo_representante = codigo_representante;
+    } catch(e) {}
+
     const { error: errIns } = await supabase
       .from('clientes')
-      .insert({
-        codigo: novoCodigo,
-        cnpj: cnpjLimpo,
-        razao_social: razao_social.trim().toUpperCase(),
-        uf: (uf || 'PR').trim().toUpperCase(),
-        representante: codigo_representante,
-        acesso_liberado: 1
-      });
+      .insert(dadosInserir);
 
-    if (errIns) throw errIns;
+    // Se falhar por causa da coluna 'codigo_representante', tenta com 'representante'
+    if (errIns && errIns.message.includes('codigo_representante')) {
+      delete dadosInserir.codigo_representante;
+      dadosInserir.representante = codigo_representante;
+      const { error: errRetry } = await supabase.from('clientes').insert(dadosInserir);
+      if (errRetry) throw errRetry;
+    } else if (errIns) {
+      throw errIns;
+    }
 
     res.json({ 
       ok: true, 
-      mensagem: `Cliente cadastrado com sucesso com o Código: ${novoCodigo}`,
+      mensagem: `Cliente cadastrado com sucesso! Código gerado: ${novoCodigo}`,
       codigo: novoCodigo 
     });
 
@@ -862,5 +879,4 @@ app.post('/api/vendedor/cliente', async (req, res) => {
     res.status(500).json({ ok: false, erro: e.message });
   }
 });
-
 app.listen(PORT, () => console.log(`🚀 Servidor rodando em http://localhost:${PORT}`));
