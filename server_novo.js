@@ -713,4 +713,83 @@ app.post('/api/vincular', async (req, res) => {
   }
 });
 
+// ==========================================
+// OFERTAS (Com suporte a fotos extras)
+// ==========================================
+
+// Listar ofertas com dados do produto e fotos
+app.get('/api/ofertas', async (req, res) => {
+  try {
+    const { data: ofertas, error: errOf } = await supabase
+      .from('ofertas')
+      .select('*');
+
+    if (errOf) throw errOf;
+    if (!ofertas || ofertas.length === 0) {
+      return res.json({ ok: true, ofertas: [] });
+    }
+
+    // Busca detalhes dos produtos cadastrados como oferta
+    const codigos = ofertas.map(o => o.codigo);
+    
+    const { data: itensSis } = await supabase
+      .from('itens_sistema')
+      .select('codigo, descricao, preco_venda, estoque')
+      .in('codigo', codigos);
+
+    const { data: itensScr } = await supabase
+      .from('scraping_produtos')
+      .select('codigo, subgrupo, marca, imagem_url, atributos_json')
+      .in('codigo', codigos);
+
+    const mapaSis = new Map((itensSis || []).map(i => [String(i.codigo), i]));
+    const mapaScr = new Map((itensScr || []).map(i => [String(i.codigo), i]));
+
+    const resultado = ofertas.map(of => {
+      const sis = mapaSis.get(String(of.codigo)) || {};
+      const scr = mapaScr.get(String(of.codigo)) || {};
+
+      return {
+        id: of.id,
+        codigo: of.codigo,
+        desconto_porcentagem: Number(of.desconto_porcentagem),
+        imagem_oferta: of.imagem_oferta || scr.imagem_url || '', // Prioriza a imagem especial da oferta
+        subgrupo: scr.subgrupo || sis.descricao || 'Produto em Oferta',
+        marca: scr.marca || '',
+        preco_base: Number(sis.preco_venda || 0),
+        estoque: Number(sis.estoque || 0)
+      };
+    });
+
+    res.json({ ok: true, ofertas: resultado });
+  } catch (e) {
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
+
+// Cadastrar / Atualizar Oferta (Permite imagem_oferta personalizada)
+app.post('/api/ofertas', async (req, res) => {
+  try {
+    const { codigo, desconto_porcentagem, imagem_oferta } = req.body;
+    if (!codigo || !desconto_porcentagem) {
+      return res.status(400).json({ ok: false, erro: 'Código e porcentagem são obrigatórios.' });
+    }
+
+    const payload = { 
+      codigo, 
+      desconto_porcentagem: Number(desconto_porcentagem) 
+    };
+    if (imagem_oferta) payload.imagem_oferta = imagem_oferta;
+
+    const { error } = await supabase
+      .from('ofertas')
+      .upsert(payload, { onConflict: 'codigo' });
+
+    if (error) throw error;
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
+
 app.listen(PORT, () => console.log(`🚀 Servidor rodando em http://localhost:${PORT}`));
