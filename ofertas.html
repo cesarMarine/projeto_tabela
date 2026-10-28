@@ -1,129 +1,10 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🔥 Ofertas Imbatíveis da Semana</title>
-<style>
-  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  :root {
-    --vermelho-900:#7f1d1d; --vermelho-600:#dc2626; --vermelho-500:#ef4444;
-    --amarelo-400:#facc15; --amarelo-500:#eab308;
-    --azul-900:#001f3f; --azul-800:#003366;
-    --cinza-50:#f8fafc; --cinza-100:#f1f5f9; --cinza-200:#e2e8f0; --cinza-700:#334155;
-    --verde:#10b981; --verde-hover:#059669;
-  }
-  body { font-family:'Inter','Segoe UI',system-ui,sans-serif; background:#f4f6f9; color:#1e293b; min-height:100vh; padding-bottom:90px; }
-  button { font-family:inherit; cursor:pointer; }
-
-  /* BANNER HERO DE OFERTAS */
-  .hero-ofertas {
-    background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
-    color: white; padding: 30px 20px; text-align: center; position: relative;
-    box-shadow: 0 4px 20px rgba(185, 28, 28, 0.3); border-bottom: 4px solid var(--amarelo-400);
-  }
-  .hero-ofertas h1 { font-size: 2rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.5px; margin-bottom: 6px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
-  .hero-ofertas p { font-size: 0.95rem; opacity: 0.9; max-width: 600px; margin: 0 auto; font-weight: 600; }
-  .badge-semana { display: inline-block; background: var(--amarelo-400); color: var(--vermelho-900); font-weight: 900; padding: 4px 14px; border-radius: 20px; font-size: 0.75rem; text-transform: uppercase; margin-top: 10px; }
-
-  /* NAVEGAÇÃO / LOGIN */
-  .bar-cliente { background: white; padding: 10px 20px; border-bottom: 1px solid var(--cinza-200); display: flex; justify-content: space-between; align-items: center; max-width: 1300px; margin: 0 auto; border-radius: 0 0 12px 12px; }
-  .btn-voltar-cat { background: var(--azul-800); color: white; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 800; font-size: 0.8rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
-
-  /* GRADE DE ENCARTE */
-  .encarte-container { max-width: 1300px; margin: 24px auto; padding: 0 20px; }
-  .grade-ofertas { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
-
-  /* CARD BALCÃO DE PROMOÇÃO */
-  .card-oferta {
-    background: white; border-radius: 16px; border: 2px solid #fecaca;
-    overflow: hidden; box-shadow: 0 10px 25px rgba(239, 68, 68, 0.08);
-    display: flex; flex-direction: column; position: relative; transition: transform 0.2s, box-shadow 0.2s;
-  }
-  .card-oferta:hover { transform: translateY(-4px); box-shadow: 0 15px 35px rgba(239, 68, 68, 0.18); }
-
-  /* SELO DE DESCONTO EM DESTAQUE */
-  .selo-desconto {
-    position: absolute; top: 12px; left: 12px; z-index: 5;
-    background: linear-gradient(135deg, var(--vermelho-600), var(--vermelho-900));
-    color: white; font-weight: 900; font-size: 1rem; padding: 6px 12px; border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(220, 38, 38, 0.4); border: 2px solid white;
-  }
-
-  .img-box {
-    width: 100%; aspect-ratio: 1; background: #fff; padding: 16px;
-    display: flex; align-items: center; justify-content: center; position: relative; cursor: pointer;
-  }
-  .img-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
-
-  .corpo-oferta { padding: 16px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; background: #fafafa; border-top: 1px solid var(--cinza-100); }
-  .marca-tag { font-size: 0.65rem; font-weight: 800; color: var(--azul-800); text-transform: uppercase; background: var(--cinza-200); padding: 2px 6px; border-radius: 4px; align-self: flex-start; margin-bottom: 6px; }
-  .titulo-prod { font-size: 0.95rem; font-weight: 800; color: #0f172a; line-height: 1.3; margin-bottom: 12px; }
-
-  /* BLOCO DE PREÇOS (DE / POR) */
-  .bloco-preco-balcao {
-    background: #fef2f2; border: 1px dashed #fca5a5; padding: 10px;
-    border-radius: 10px; text-align: center; margin-bottom: 12px;
-  }
-  .txt-de { font-size: 0.8rem; color: #94a3b8; text-decoration: line-through; font-weight: 700; display: block; }
-  .txt-por { font-size: 1.4rem; color: var(--vermelho-600); font-weight: 900; display: block; line-height: 1.1; }
-
-  /* CONTROLE DE COMPRA */
-  .btn-add-oferta {
-    width: 100%; background: var(--verde); color: white; border: none;
-    padding: 12px; border-radius: 10px; font-weight: 900; font-size: 0.9rem;
-    display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;
-  }
-  .btn-add-oferta:hover { background: var(--verde-hover); }
-
-  /* MODAL LOGIN RÁPIDO */
-  #modalLogin { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 999; display: flex; align-items: center; justify-content: center; padding: 20px; }
-  .box-login { background: white; padding: 30px; border-radius: 16px; width: 100%; max-width: 380px; text-align: center; }
-  .box-login input { width: 100%; padding: 12px; border: 2px solid var(--cinza-200); border-radius: 8px; margin: 16px 0; text-align: center; font-weight: 800; font-size: 1.1rem; }
-
-  /* CARRINHO FLUTUANTE */
-  .fab-carrinho { position:fixed; bottom:24px; right:24px; background:var(--azul-800); color:white; width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; box-shadow:0 4px 16px rgba(0,51,102,0.4); cursor:pointer; z-index:150; }
-  .fab-qtd { position:absolute; top:-5px; right:-5px; background:var(--vermelho-600); color:white; font-size:12px; font-weight:900; min-width:22px; height:22px; border-radius:11px; display:flex; align-items:center; justify-content:center; border:2px solid white; }
-</style>
-</head>
-<body>
-
-<div id="modalLogin" style="display:none;">
-  <div class="box-login">
-    <h2 style="color:var(--azul-800); font-size:1.3rem; font-weight:900;">Acesse as Ofertas</h2>
-    <p style="font-size:0.85rem; color:#64748b; margin-top:4px;">Digite o seu CNPJ para ver os preços exclusivos.</p>
-    <input type="text" id="cnpjInput" placeholder="00.000.000/0000-00">
-    <button onclick="fazerLogin()" style="width:100%; padding:12px; background:var(--azul-800); color:white; border:none; border-radius:8px; font-weight:800;">Entrar</button>
-  </div>
-</div>
-
-<header class="hero-ofertas">
-  <h1>🔥 ENCARTE DE OFERTAS</h1>
-  <p>Preços e condições especiais válidas enquanto durarem os estoques!</p>
-  <span class="badge-semana">OFERTAS DA SEMANA</span>
-</header>
-
-<div class="bar-cliente">
-  <a href="index.html" class="btn-voltar-cat">⬅️ Voltar ao Catálogo Completo</a>
-  <div id="cliInfo" style="font-weight:800; font-size:0.85rem; color:var(--azul-800);">—</div>
-</div>
-
-<main class="encarte-container">
-  <div class="grade-ofertas" id="gridOfertas">
-    <div style="grid-column:1/-1; text-align:center; padding:60px; color:#94a3b8; font-weight:700;">Carregando encarte promocional...</div>
-  </div>
-</main>
-
-<div class="fab-carrinho" id="btnCarrinho" onclick="window.location.href='index.html'" style="display:none;">
-  🛒
-  <div class="fab-qtd" id="qtdCarrinho">0</div>
-</div>
-
 <script>
 let clienteLogado = JSON.parse(localStorage.getItem('cliente_b2b') || 'null');
 let listaOfertas = [];
 let carrinho = JSON.parse(localStorage.getItem('carrinho_b2b') || '{}');
 
+// Função auxiliar para evitar XSS e erros de variáveis não definidas
+const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 const fmtMoeda = v => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 async function init() {
@@ -163,7 +44,7 @@ async function carregarOfertas() {
       return;
     }
 
-    // Procura também os detalhes atualizados no catálogo caso algum campo venha vazio
+    // Procura detalhes adicionais no catálogo para garantir que nenhum dado falhe
     const resCat = await fetch('/api/catalogo');
     const dataCat = await resCat.json();
     const mapaCatalogo = new Map();
@@ -175,7 +56,6 @@ async function carregarOfertas() {
     listaOfertas = j.ofertas.map(of => {
       const cat = mapaCatalogo.get(String(of.codigo)) || {};
       
-      // Fallbacks de segurança para garantir que nenhum campo fique undefined
       const subgrupo = of.subgrupo || cat.subgrupo_scraping || cat.descricao_sistema || `Produto ${of.codigo}`;
       const precoBase = Number(of.preco_base || cat.preco_venda || 0);
       const imagem = of.imagem_oferta || cat.imagem_url || '';
@@ -206,7 +86,6 @@ function renderizarEncate() {
     const precoPromocional = precoComAcrescimo - (precoComAcrescimo * pctDesconto / 100);
     const q = carrinho[item.codigo] ? carrinho[item.codigo].qtd : 0;
 
-    // Garante que a imagem renderize corretamente ou mostre o placeholder de imagem
     const imgHtml = item.imagem_oferta && item.imagem_oferta.trim() !== '' 
       ? `<img src="${item.imagem_oferta}" alt="${escapeHtml(item.subgrupo)}" onerror="this.onerror=null; this.parentElement.innerHTML='🖼️';">`
       : '🖼️';
@@ -268,5 +147,3 @@ document.getElementById('cnpjInput')?.addEventListener('input', function(e) {
 
 init();
 </script>
-</body>
-</html>
