@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Painel do Vendedor</title>
+<!-- Biblioteca SheetJS para geração de arquivos Excel .xlsx no navegador -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter','Segoe UI',system-ui,sans-serif; }
   body { background:#f0f4f8; color:#1a2a3a; min-height:100vh; }
@@ -64,17 +66,28 @@
   .status-on { color:#10b981; }
   .status-off { color:#94a3b8; }
 
-  /* CARDS DE PEDIDOS */
-  .pedido-card { background:white; border:1px solid #e2e8f0; border-radius:12px; padding:16px; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,.02); }
-  .pedido-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid #f1f5f9; padding-bottom:12px; }
-  .pedido-id { font-size:1.1rem; font-weight:800; color:#0d3b66; }
+  /* RESUMO DE PEDIDOS (ACORDEÃO ENXUTO) */
+  .pedido-card { background:white; border:1px solid #e2e8f0; border-radius:12px; margin-bottom:12px; box-shadow:0 2px 8px rgba(0,0,0,.02); overflow:hidden; }
+  .pedido-summary { display:flex; justify-content:space-between; align-items:center; padding:16px 20px; cursor:pointer; transition:background .2s; }
+  .pedido-summary:hover { background:#f8fafc; }
+  .pedido-info-main { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+  .pedido-id { font-size:1.05rem; font-weight:800; color:#0d3b66; }
+  .pedido-cliente-nome { font-size:.95rem; font-weight:800; color:#1e293b; }
   .pedido-data { font-size:.8rem; color:#94a3b8; font-weight:600; }
-  .pedido-cliente { font-size:.9rem; font-weight:700; color:#334155; margin-bottom:8px; }
-  .badge-status { background:#fef3c7; color:#92400e; padding:4px 10px; border-radius:6px; font-size:.72rem; font-weight:800; }
-  .pedido-itens { width:100%; margin-top:10px; }
-  .pedido-itens th { font-size:.65rem; padding:4px; }
-  .pedido-itens td { font-size:.8rem; padding:6px 4px; }
-  .pedido-total { text-align:right; font-size:1.1rem; font-weight:800; color:#10b981; margin-top:12px; }
+  .pedido-valor-destaque { font-size:1.1rem; font-weight:900; color:#10b981; }
+  
+  .pedido-acoes { display:flex; align-items:center; gap:10px; }
+  .btn-export-excel { background:#16a34a; color:white; border:none; padding:8px 14px; border-radius:8px; font-weight:800; font-size:.8rem; cursor:pointer; display:flex; align-items:center; gap:6px; transition:.2s; }
+  .btn-export-excel:hover { background:#15803d; }
+  .btn-toggle-detalhe { background:#f1f5f9; color:#0d3b66; border:1px solid #cbd5e1; padding:8px 12px; border-radius:8px; font-weight:800; font-size:.8rem; cursor:pointer; }
+
+  /* PAINEL EXPANSÍVEL DO PEDIDO */
+  .pedido-corpo-expansivel { display:none; padding:0 20px 20px 20px; border-top:1px dashed #e2e8f0; background:#fafafa; }
+  .pedido-corpo-expansivel.aberto { display:block; }
+  
+  .pedido-itens { width:100%; margin-top:14px; background:white; border-radius:8px; border:1px solid #e2e8f0; border-collapse:collapse; overflow:hidden; }
+  .pedido-itens th { font-size:.7rem; padding:10px; background:#f1f5f9; color:#475569; text-transform:uppercase; border-bottom:1px solid #e2e8f0; }
+  .pedido-itens td { font-size:.85rem; padding:10px; border-bottom:1px solid #f1f5f9; }
 </style>
 </head>
 <body>
@@ -111,7 +124,6 @@
 
   <!-- ABA CLIENTES -->
   <div id="abaClientes">
-    
     <!-- CARD: CADASTRAR NOVO CLIENTE -->
     <div class="card">
       <h2>➕ Cadastrar Novo Cliente Manualmente</h2>
@@ -180,6 +192,8 @@
 <script>
 let vendedorLogado = null;
 let pedidosCache = [];
+
+const fmtMoeda = v => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 // ==========================================
 // LOGIN
@@ -279,7 +293,7 @@ async function gravarNovoCliente() {
       alert(`✅ ${j.mensagem}`);
       cnpjInput.value = '';
       razaoInput.value = '';
-      carregarClientes(); // Recarrega a tabela de clientes
+      carregarClientes();
     } else {
       alert(`⚠️ ${j.erro}`);
     }
@@ -361,7 +375,7 @@ async function toggleAcesso(cnpj, liberado) {
 }
 
 // ==========================================
-// PEDIDOS
+// PEDIDOS (Visão Resumida + Expansão + Exportação Excel)
 // ==========================================
 async function carregarPedidos() {
   const container = document.getElementById('listaPedidos');
@@ -381,43 +395,51 @@ async function carregarPedidos() {
     }
 
     container.innerHTML = j.pedidos.map(p => {
-      const nomeCliente = p.nome_fantasia || p.razao_social || 'Cliente não encontrado';
-      
-      const itensHtml = p.itens.map(it => `
+      const nomeCliente = p.nome_fantasia || p.razao_social || 'Cliente';
+      const dataFormatada = new Date(p.data_criacao).toLocaleString('pt-BR');
+
+      const itensHtml = (p.itens || []).map(it => `
         <tr>
           <td><strong>${it.codigo_produto}</strong></td>
           <td>${it.descricao}</td>
-          <td style="text-align:center;">${it.quantidade}</td>
-          <td style="text-align:right;">R$ ${Number(it.preco_final).toFixed(2).replace('.', ',')}</td>
+          <td style="text-align:center; font-weight:800;">${it.quantidade}</td>
+          <td style="text-align:right;">R$ ${fmtMoeda(it.preco_final / it.quantidade)}</td>
+          <td style="text-align:right; font-weight:800;">R$ ${fmtMoeda(it.preco_final)}</td>
         </tr>
       `).join('');
 
       return `
         <div class="pedido-card">
-          <div class="pedido-header">
-            <div>
+          <!-- CABEÇALHO RESUMIDO DO PEDIDO -->
+          <div class="pedido-summary" onclick="toggleDetalhesPedido(${p.id})">
+            <div class="pedido-info-main">
               <span class="pedido-id">Pedido #${p.id}</span>
-              <span class="badge-status" style="margin-left:10px;">${p.status}</span>
+              <span class="pedido-cliente-nome">👤 ${nomeCliente} (${p.uf || 'UF'})</span>
+              <span class="pedido-data">🕒 ${dataFormatada}</span>
             </div>
-            <span class="pedido-data">${new Date(p.data_criacao).toLocaleString('pt-BR')}</span>
+            <div class="pedido-acoes" onclick="event.stopPropagation()">
+              <span class="pedido-valor-destaque">R$ ${fmtMoeda(p.total)}</span>
+              <button class="btn-export-excel" onclick="exportarPedidoExcel(${p.id})">📊 Baixar Excel</button>
+              <button class="btn-toggle-detalhe" onclick="toggleDetalhesPedido(${p.id})">👁️ Ver Detalhes</button>
+            </div>
           </div>
-          <div class="pedido-cliente">
-            👤 ${nomeCliente} (${p.uf || 'UF'})
-          </div>
-          
-          <table class="pedido-itens">
-            <thead>
-              <tr>
-                <th>Código</th><th>Produto</th><th style="text-align:center;">Qtd</th><th style="text-align:right;">Preço Final</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${itensHtml}
-            </tbody>
-          </table>
-          
-          <div class="pedido-total">
-            Total: R$ ${Number(p.total).toFixed(2).replace('.', ',')}
+
+          <!-- DETALHES EXPANSÍVEIS DO PEDIDO -->
+          <div class="pedido-corpo-expansivel" id="detalhe-pedido-${p.id}">
+            <table class="pedido-itens">
+              <thead>
+                <tr>
+                  <th>Código (Col A)</th>
+                  <th>Descrição (Col F)</th>
+                  <th style="text-align:center;">Qtd (Col H)</th>
+                  <th style="text-align:right;">Preço Unit.</th>
+                  <th style="text-align:right;">Total Item</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${itensHtml}
+              </tbody>
+            </table>
           </div>
         </div>
       `;
@@ -425,6 +447,86 @@ async function carregarPedidos() {
   } catch (e) {
     container.innerHTML = `<p style="text-align:center; color:#ef4444; padding:20px;">Erro: ${e.message}</p>`;
   }
+}
+
+function toggleDetalhesPedido(id) {
+  const el = document.getElementById(`detalhe-pedido-${id}`);
+  if (el) el.classList.toggle('aberto');
+}
+
+// ==========================================
+// EXPORTAÇÃO EXCEL COM NOMENCLATURA E ESTRUTURA
+// ==========================================
+function exportarPedidoExcel(pedidoId) {
+  const pedido = pedidosCache.find(p => p.id === pedidoId);
+  if (!pedido) return alert('Pedido não encontrado para exportação.');
+
+  const nomeCliente = (pedido.nome_fantasia || pedido.razao_social || 'Cliente').trim();
+  const dataObj = new Date(pedido.data_criacao);
+  
+  // Formata data DD-MM-YYYY
+  const dia = String(dataObj.getDate()).padStart(2, '0');
+  const mes = String(dataObj.getMonth() + 1).padStart(2, '0');
+  const ano = dataObj.getFullYear();
+  const dataFormatadaStr = `${dia}-${mes}-${ano}`;
+
+  // Nome do arquivo: Pedido_[ID]_[CLIENTE]_[DATA].xlsx
+  const nomeClienteLimpo = nomeCliente.replace(/[^a-zA-Z0-9]/g, '_');
+  const nomeArquivo = `Pedido_${pedido.id}_${nomeClienteLimpo}_${dataFormatadaStr}.xlsx`;
+
+  // Monta as linhas de dados respeitando exatamente as colunas solicitadas:
+  // Coluna A: Código
+  // Coluna F: Descrição
+  // Coluna H: Quantidade
+  // Coluna I: Preço Unitário
+  // Coluna J: Valor Total
+  const dadosParaExcel = [
+    // Cabeçalho da tabela (Linha 1)
+    [
+      "CÓDIGO",       // Coluna A (Índice 0)
+      "",             // Coluna B (Índice 1)
+      "",             // Coluna C (Índice 2)
+      "",             // Coluna D (Índice 3)
+      "",             // Coluna E (Índice 4)
+      "DESCRIÇÃO",    // Coluna F (Índice 5)
+      "",             // Coluna G (Índice 6)
+      "QUANTIDADE",   // Coluna H (Índice 7)
+      "PREÇO UNIT.",  // Coluna I (Índice 8)
+      "VALOR TOTAL"   // Coluna J (Índice 9)
+    ]
+  ];
+
+  // Adiciona as linhas dos itens
+  (pedido.itens || []).forEach(it => {
+    const qtd = Number(it.quantidade) || 0;
+    const total = Number(it.preco_final) || 0;
+    const unit = qtd > 0 ? total / qtd : 0;
+
+    dadosParaExcel.push([
+      String(it.codigo_produto || ''),  // Coluna A
+      "",                               // Coluna B
+      "",                               // Coluna C
+      "",                               // Coluna D
+      "",                               // Coluna E
+      String(it.descricao || ''),       // Coluna F
+      "",                               // Coluna G
+      qtd,                              // Coluna H
+      unit,                             // Coluna I
+      total                             // Coluna J
+    ]);
+  });
+
+  // Cria a planilha a partir da matriz de dados
+  const ws = XLSX.utils.aoa_to_sheet(dadosParaExcel);
+
+  // Cria o livro de trabalho (Workbook)
+  const wb = XLSX.utils.book_new();
+
+  // Adiciona a aba com o nome solicitado: "FILTRO"
+  XLSX.utils.book_append_sheet(wb, ws, "FILTRO");
+
+  // Escreve e dispara o download do ficheiro .xlsx
+  XLSX.writeFile(wb, nomeArquivo);
 }
 
 // Máscara CNPJ no input
