@@ -44,14 +44,15 @@
   .busca-wrap input::placeholder { color:rgba(255,255,255,.65); }
   .busca-wrap input:focus { outline:none; background:rgba(255,255,255,.25); }
 
-  /* BOTOES DE GRUPO VISÍVEIS (FLEX-WRAP) SEM NECESSIDADE DE ROLAGEM */
-  .chips-wrap { background:white; border-bottom:1px solid var(--cinza-200); position:sticky; top:48px; z-index:90; padding:6px 16px; }
+  /* BOTOES DE GRUPO VISÍVEIS COM ÍCONES DO SUPABASE */
+  .chips-wrap { background:white; border-bottom:1px solid var(--cinza-200); position:sticky; top:48px; z-index:90; padding:8px 16px; }
   .chips { max-width:1600px; margin:0 auto; display:flex; gap:6px; flex-wrap:wrap; }
-  .chip { padding:5px 12px; border-radius:16px; background:var(--cinza-100); border:1px solid var(--cinza-200); color:var(--cinza-700); font-size:.75rem; font-weight:800; cursor:pointer; white-space:nowrap; transition:.15s; text-transform:uppercase; }
+  .chip { display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:20px; background:var(--cinza-100); border:1px solid var(--cinza-200); color:var(--cinza-700); font-size:.75rem; font-weight:800; cursor:pointer; white-space:nowrap; transition:.15s; text-transform:uppercase; }
   .chip:hover { background:var(--cinza-200); }
   .chip.ativo { background:var(--azul-800); color:white; border-color:var(--azul-800); }
   .chip.chip-oferta { background:#fee2e2; color:#ef4444; border-color:#fca5a5; }
   .chip.chip-oferta.ativo { background:#ef4444; color:white; border-color:#dc2626; }
+  .chip-img { width:18px; height:18px; object-fit:contain; border-radius:3px; }
 
   /* CONTEÚDO */
   .conteudo { padding:12px; max-width:1600px; margin:0 auto; }
@@ -255,6 +256,24 @@ let clienteLogado = null;
 let porcentagemAcrescimo = 0;
 let mapaOfertas = {}; 
 
+// URL BASE DO SUPABASE STORAGE DE ÍCONES
+const BUCKET_ICONIS = 'https://gpzqzwrqndawhhglycat.supabase.co/storage/v1/object/public/icones_area_trabalho/';
+
+// Mapeamento automático com fallback para os nomes de arquivos do Supabase
+function getIconeUrl(grupo) {
+  const g = grupo.toUpperCase().trim();
+  if (g.includes('ANZOL')) return BUCKET_ICONIS + 'ANZOL..JPG'; // Atende a duas pontuações do Supabase
+  if (g.includes('ISCA')) return BUCKET_ICONIS + 'ISCA.JPG';
+  if (g.includes('MOLINETE')) return BUCKET_ICONIS + 'MOLINETE.JPG';
+  if (g.includes('CARRETILHA')) return BUCKET_ICONIS + 'CARRETILHA.JPG';
+  if (g.includes('VARA')) return BUCKET_ICONIS + 'VARA.JPG';
+  if (g.includes('LINHA')) return BUCKET_ICONIS + 'LINHA.JPG';
+  if (g.includes('MOTOR')) return BUCKET_ICONIS + 'MOTOR.JPG';
+  if (g.includes('GIRADOR')) return BUCKET_ICONIS + 'GIRADORES.JPG';
+  if (g.includes('ACESSORIO') || g.includes('VESTUARIO')) return BUCKET_ICONIS + 'ACESSORIOS.JPG';
+  return '';
+}
+
 const fmtMoeda = v => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 const parseAtributos = json => { try { return JSON.parse(json || '{}'); } catch { return {}; } };
@@ -269,7 +288,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('telaLogin').style.display = 'none';
     document.getElementById('infoCliente').style.display = 'flex';
-    document.getElementById('nomeCliente').textContent = (clienteLogado.nome || '').split(' ')[0]; // Resumido
+    document.getElementById('nomeCliente').textContent = (clienteLogado.nome || '').split(' ')[0];
     document.getElementById('badgeUf').textContent = clienteLogado.uf;
 
     carregar();
@@ -562,9 +581,14 @@ function montarChips() {
 
   const grupos = Object.keys(contagem).sort((a, b) => contagem[b] - contagem[a]);
   
+  // Renderiza botões de grupos com o ícone extraído do Supabase
   document.getElementById('chips').innerHTML = `
-    <button class="chip chip-oferta ativo" onclick="trocarGrupo('__OFERTAS__', this)">🔥 Ofertas <small>${totalOfertas}</small></button>
-    ${grupos.map(g => `<button class="chip" onclick="trocarGrupo('${g}', this)">${g} <small>${contagem[g]}</small></button>`).join('')}
+    <button class="chip chip-oferta ativo" onclick="trocarGrupo('__OFERTAS__', this)">🔥 Ofertas <small>(${totalOfertas})</small></button>
+    ${grupos.map(g => {
+      const iconeUrl = getIconeUrl(g);
+      const imgTag = iconeUrl ? `<img src="${iconeUrl}" class="chip-img" alt="${g}">` : '';
+      return `<button class="chip" onclick="trocarGrupo('${g}', this)">${imgTag} <span>${g}</span> <small>(${contagem[g]})</small></button>`;
+    }).join('')}
   `;
 }
 
