@@ -457,6 +457,10 @@ function toggleDetalhesPedido(id) {
 // ==========================================
 // EXPORTAÇÃO EXCEL COM NOMENCLATURA E ESTRUTURA
 // ==========================================
+// ==========================================
+// EXPORTAÇÃO EXCEL COM NOMENCLATURA E ESTRUTURA
+// Coluna A: Código | B, C, D, E: 0 | F: Descrição | H: Qtd
+// ==========================================
 function exportarPedidoExcel(pedidoId) {
   const pedido = pedidosCache.find(p => p.id === pedidoId);
   if (!pedido) return alert('Pedido não encontrado para exportação.');
@@ -474,20 +478,21 @@ function exportarPedidoExcel(pedidoId) {
   const nomeClienteLimpo = nomeCliente.replace(/[^a-zA-Z0-9]/g, '_');
   const nomeArquivo = `Pedido_${pedido.id}_${nomeClienteLimpo}_${dataFormatadaStr}.xlsx`;
 
-  // Monta as linhas de dados respeitando exatamente as colunas solicitadas:
+  // Monta as linhas de dados respeitando a estrutura solicitada:
   // Coluna A: Código
+  // Colunas B, C, D, E: 0
   // Coluna F: Descrição
+  // Coluna G: 0 (ou em branco)
   // Coluna H: Quantidade
-  // Coluna I: Preço Unitário
-  // Coluna J: Valor Total
+  // Colunas I, J: Preço Unitário e Valor Total
   const dadosParaExcel = [
     // Cabeçalho da tabela (Linha 1)
     [
       "CÓDIGO",       // Coluna A (Índice 0)
-      "",             // Coluna B (Índice 1)
-      "",             // Coluna C (Índice 2)
-      "",             // Coluna D (Índice 3)
-      "",             // Coluna E (Índice 4)
+      "COLUNA_B",     // Coluna B (Índice 1)
+      "COLUNA_C",     // Coluna C (Índice 2)
+      "COLUNA_D",     // Coluna D (Índice 3)
+      "COLUNA_E",     // Coluna E (Índice 4)
       "DESCRIÇÃO",    // Coluna F (Índice 5)
       "",             // Coluna G (Índice 6)
       "QUANTIDADE",   // Coluna H (Índice 7)
@@ -496,23 +501,23 @@ function exportarPedidoExcel(pedidoId) {
     ]
   ];
 
-  // Adiciona as linhas dos itens
+  // Adiciona as linhas dos itens preenchendo B, C, D e E com 0
   (pedido.itens || []).forEach(it => {
     const qtd = Number(it.quantidade) || 0;
     const total = Number(it.preco_final) || 0;
     const unit = qtd > 0 ? total / qtd : 0;
 
     dadosParaExcel.push([
-      String(it.codigo_produto || ''),  // Coluna A
-      "",                               // Coluna B
-      "",                               // Coluna C
-      "",                               // Coluna D
-      "",                               // Coluna E
-      String(it.descricao || ''),       // Coluna F
+      String(it.codigo_produto || ''),  // Coluna A (Código)
+      0,                                // Coluna B (Preenchida com 0)
+      0,                                // Coluna C (Preenchida com 0)
+      0,                                // Coluna D (Preenchida com 0)
+      0,                                // Coluna E (Preenchida com 0)
+      String(it.descricao || ''),       // Coluna F (Descrição)
       "",                               // Coluna G
-      qtd,                              // Coluna H
-      unit,                             // Coluna I
-      total                             // Coluna J
+      qtd,                              // Coluna H (Quantidade)
+      unit,                             // Coluna I (Preço Unitário)
+      total                             // Coluna J (Valor Total)
     ]);
   });
 
