@@ -901,5 +901,24 @@ app.get('/api/admin/produtos-estoque', async (req, res) => {
   }
 });
 
+// ROTA: PEDIDOS DO CLIENTE LOGADO
+app.get('/api/cliente/:cnpj/pedidos', async (req, res) => {
+  try {
+    const cnpjLimpo = req.params.cnpj.replace(/\D/g, '');
+    
+    const { data: pedidos, error } = await supabase
+      .from('pedidos')
+      .select('*, itens:pedido_itens(*)')
+      .eq('cnpj_cliente', cnpjLimpo)
+      .order('data_criacao', { ascending: false });
+
+    if (error) throw error;
+
+    res.json({ ok: true, pedidos });
+  } catch (e) {
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
+
 
 app.listen(PORT, () => console.log(`🚀 Servidor rodando em http://localhost:${PORT}`));

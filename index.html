@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Catálogo — Tabela de Preços</title>
 <style>
+  
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   :root {
     --azul-900:#001f3f; --azul-800:#003366; --azul-700:#004080;
@@ -183,6 +184,14 @@
 </head>
 <body>
 
+  <!-- No topo do index.html (área infoCliente) -->
+<div class="info-cliente" id="infoCliente" style="display:none;">
+  <span id="nomeCliente">—</span>
+  <span class="uf" id="badgeUf">—</span>
+  <button onclick="abrirMeusPedidos()" style="background:#2563eb; color:white; border:none; padding:4px 10px; border-radius:12px; font-weight:800; font-size:0.75rem; cursor:pointer; margin-left:8px;">📋 Meus Pedidos</button>
+  <button onclick="sairCliente()" style="background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:12px; font-weight:800; font-size:0.75rem; cursor:pointer; margin-left:4px;">Sair</button>
+</div>
+
 <div id="telaLogin">
   <div class="login-box">
     <h1>Catálogo B2B</h1>
@@ -258,6 +267,54 @@ let mapaOfertas = {};
 const fmtMoeda = v => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 const parseAtributos = json => { try { return JSON.parse(json || '{}'); } catch { return {}; } };
+
+async function abrirMeusPedidos() {
+  if (!clienteLogado) return;
+  
+  document.getElementById('modalTitulo').textContent = '📋 Histórico de Pedidos / Orçamentos';
+  document.getElementById('modalBody').innerHTML = '<p style="text-align:center; color:#94a3b8;">Buscando seus pedidos...</p>';
+  document.getElementById('modalBg').classList.add('on');
+
+  try {
+    const r = await fetch(`/api/cliente/${clienteLogado.cnpj}/pedidos`);
+    const j = await r.json();
+
+    if (!j.ok || !j.pedidos.length) {
+      document.getElementById('modalBody').innerHTML = '<p style="text-align:center; color:#94a3b8;">Você ainda não enviou nenhum pedido.</p>';
+      return;
+    }
+
+    const html = j.pedidos.map(p => {
+      const dataStr = new Date(p.data_criacao).toLocaleString('pt-BR');
+      const itensTable = (p.itens || []).map(it => `
+        <tr>
+          <td style="padding:6px; font-size:0.8rem;"><strong>${it.codigo_produto}</strong> - ${it.descricao}</td>
+          <td style="padding:6px; font-size:0.8rem; text-align:center;">${it.quantidade}</td>
+          <td style="padding:6px; font-size:0.8rem; text-align:right;">R$ ${fmtMoeda(it.preco_final)}</td>
+        </tr>
+      `).join('');
+
+      return `
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid #cbd5e1; padding-bottom:6px;">
+            <strong style="color:#003366;">Pedido #${p.id}</strong>
+            <span style="font-size:0.75rem; color:#64748b;">${dataStr}</span>
+          </div>
+          <table style="width:100%; border-collapse:collapse; margin-bottom:8px;">
+            <tbody>${itensTable}</tbody>
+          </table>
+          <div style="text-align:right; font-weight:900; color:#10b981; font-size:0.95rem;">
+            Total: R$ ${fmtMoeda(p.total)}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    document.getElementById('modalBody').innerHTML = html;
+  } catch (e) {
+    document.getElementById('modalBody').innerHTML = '<p style="text-align:center; color:#ef4444;">Erro ao carregar pedidos.</p>';
+  }
+}
 
 function abrirZoomImagem(elemento) {
   const img = elemento.querySelector('img');
