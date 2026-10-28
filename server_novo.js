@@ -902,23 +902,34 @@ app.get('/api/admin/produtos-estoque', async (req, res) => {
 });
 
 // ROTA: PEDIDOS DO CLIENTE LOGADO
+// ==========================================
+// ROTA: PEDIDOS DO CLIENTE (Corrigida)
+// ==========================================
 app.get('/api/cliente/:cnpj/pedidos', async (req, res) => {
   try {
-    const cnpjLimpo = req.params.cnpj.replace(/\D/g, '');
-    
+    const cnpjRaw = req.params.cnpj.trim();
+    const cnpjLimpo = cnpjRaw.replace(/\D/g, '');
+
+    // Formata o CNPJ para tentar as duas variações no banco
+    let cnpjFormatado = cnpjLimpo;
+    if (cnpjLimpo.length === 14) {
+      cnpjFormatado = cnpjLimpo.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+    }
+
+    // Busca pedidos onde o cnpj_cliente seja igual ao CNPJ limpo ou formatado
     const { data: pedidos, error } = await supabase
       .from('pedidos')
       .select('*, itens:pedido_itens(*)')
-      .eq('cnpj_cliente', cnpjLimpo)
+      .or(`cnpj_cliente.eq.${cnpjLimpo},cnpj_cliente.eq.${cnpjFormatado}`)
       .order('data_criacao', { ascending: false });
 
     if (error) throw error;
 
-    res.json({ ok: true, pedidos });
+    res.json({ ok: true, pedidos: pedidos || [] });
   } catch (e) {
+    console.error('Erro ao buscar pedidos do cliente:', e);
     res.status(500).json({ ok: false, erro: e.message });
   }
 });
-
 
 app.listen(PORT, () => console.log(`🚀 Servidor rodando em http://localhost:${PORT}`));
