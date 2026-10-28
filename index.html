@@ -29,44 +29,42 @@
   .login-box button:hover { background:var(--azul-700); }
   .login-erro { color:var(--vermelho); font-size:.85rem; font-weight:700; margin-bottom:12px; display:none; }
 
-  /* TOPO RESPONSIVO */
+  /* TOPO RESPONSIVO E COMPACTO COM BUSCA AO LADO DO NOME DO CLIENTE */
   .topo { background:linear-gradient(135deg, #001f3f 0%, #003366 100%); color:white; position:sticky; top:0; z-index:100; box-shadow:0 4px 24px rgba(0,51,102,.25); }
-  .topo-inner { max-width:1500px; margin:0 auto; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
-  .topo-logo-area strong { font-size:1.1rem; font-weight:800; letter-spacing:-.3px; }
+  .topo-inner { max-width:1600px; margin:0 auto; padding:8px 16px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
+  .topo-logo-area strong { font-size:1rem; font-weight:800; letter-spacing:-.3px; white-space:nowrap; }
   
-  .info-cliente { display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.12); padding:6px 12px; border-radius:20px; font-size:.75rem; font-weight:700; flex-wrap:wrap; }
-  .info-cliente span.uf { background:var(--verde); color:white; padding:2px 6px; border-radius:4px; font-size:0.7rem; }
-  .btn-topo-acao { background:#2563eb; color:white; border:none; padding:5px 10px; border-radius:12px; font-weight:800; font-size:0.7rem; cursor:pointer; display:inline-flex; align-items:center; gap:4px; }
-  .btn-topo-sair { background:#ef4444; color:white; border:none; padding:5px 8px; border-radius:12px; font-weight:800; font-size:0.7rem; cursor:pointer; }
+  .info-cliente { display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.12); padding:4px 10px; border-radius:20px; font-size:.75rem; font-weight:700; white-space:nowrap; }
+  .info-cliente span.uf { background:var(--verde); color:white; padding:2px 6px; border-radius:4px; font-size:0.65rem; }
+  .btn-topo-acao { background:#2563eb; color:white; border:none; padding:4px 8px; border-radius:10px; font-weight:800; font-size:0.7rem; cursor:pointer; display:inline-flex; align-items:center; gap:3px; }
+  .btn-topo-sair { background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:10px; font-weight:800; font-size:0.7rem; cursor:pointer; }
 
-  .busca-wrap { flex:1; min-width:100%; max-width:100%; order:3; }
-  @media(min-width: 768px) {
-    .busca-wrap { min-width:250px; max-width:420px; order:2; }
-  }
-  .busca-wrap input { width:100%; padding:10px 14px; border:none; border-radius:10px; font-family:inherit; font-size:.85rem; background:rgba(255,255,255,.15); color:white; }
-  .busca-wrap input::placeholder { color:rgba(255,255,255,.6); }
+  .busca-wrap { flex:1; min-width:200px; max-width:500px; }
+  .busca-wrap input { width:100%; padding:8px 12px; border:none; border-radius:8px; font-family:inherit; font-size:.85rem; background:rgba(255,255,255,.15); color:white; }
+  .busca-wrap input::placeholder { color:rgba(255,255,255,.65); }
   .busca-wrap input:focus { outline:none; background:rgba(255,255,255,.25); }
 
-  /* CHIPS DE CATEGORIA */
-  .chips-wrap { background:white; border-bottom:1px solid var(--cinza-100); position:sticky; top:56px; z-index:90; overflow-x:auto; -webkit-overflow-scrolling: touch; }
-  .chips { max-width:1500px; margin:0 auto; padding:8px 12px; display:flex; gap:6px; flex-wrap:nowrap; }
-  .chip { padding:7px 12px; border-radius:16px; background:var(--cinza-100); border:1px solid transparent; color:var(--cinza-700); font-size:.75rem; font-weight:700; cursor:pointer; white-space:nowrap; transition:.2s; text-transform:uppercase; }
-  .chip.ativo { background:linear-gradient(135deg, var(--azul-800), var(--azul-700)); color:white; border-color:var(--azul-800); }
+  /* BOTOES DE GRUPO VISÍVEIS (FLEX-WRAP) SEM NECESSIDADE DE ROLAGEM */
+  .chips-wrap { background:white; border-bottom:1px solid var(--cinza-200); position:sticky; top:48px; z-index:90; padding:6px 16px; }
+  .chips { max-width:1600px; margin:0 auto; display:flex; gap:6px; flex-wrap:wrap; }
+  .chip { padding:5px 12px; border-radius:16px; background:var(--cinza-100); border:1px solid var(--cinza-200); color:var(--cinza-700); font-size:.75rem; font-weight:800; cursor:pointer; white-space:nowrap; transition:.15s; text-transform:uppercase; }
+  .chip:hover { background:var(--cinza-200); }
+  .chip.ativo { background:var(--azul-800); color:white; border-color:var(--azul-800); }
   .chip.chip-oferta { background:#fee2e2; color:#ef4444; border-color:#fca5a5; }
-  .chip.chip-oferta.ativo { background:linear-gradient(135deg, #ef4444, #dc2626); color:white; border-color:#dc2626; }
+  .chip.chip-oferta.ativo { background:#ef4444; color:white; border-color:#dc2626; }
 
   /* CONTEÚDO */
-  .conteudo { padding:12px; max-width:1500px; margin:0 auto; }
+  .conteudo { padding:12px; max-width:1600px; margin:0 auto; }
   .loading { text-align:center; padding:60px 20px; color:var(--cinza-400); }
   
   .familia-bloco { margin-bottom:20px; }
-  .familia-head { display:flex; align-items:baseline; gap:8px; padding-bottom:8px; margin-bottom:10px; border-bottom:2px solid var(--azul-100); flex-wrap:wrap; }
+  .familia-head { display:flex; align-items:baseline; gap:8px; padding-bottom:6px; margin-bottom:8px; border-bottom:2px solid var(--azul-100); flex-wrap:wrap; }
   .familia-head h2 { color:var(--azul-800); font-size:1.05rem; font-weight:800; }
   .familia-head .marca-badge { background:var(--azul-50); color:var(--azul-800); padding:3px 8px; border-radius:12px; font-size:.65rem; font-weight:800; text-transform:uppercase; }
 
   .sub-grupo-header { background: var(--azul-50); color: var(--azul-800); padding: 6px 10px; border-radius: 6px; border-left: 4px solid var(--azul-500); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 6px; display:inline-block; }
   
-  /* LAYOUT CARDS - ADAPTÁVEL PARA CELULAR E DESKTOP */
+  /* CARDS E GRADES */
   .familia-card, .isca-card, .anzol-card, .molinete-card { 
     display:grid; grid-template-columns: 1fr; gap:12px; background:white; 
     border:1px solid var(--cinza-200); border-radius:12px; padding:12px; 
@@ -100,14 +98,14 @@
   .preco-de { text-decoration: line-through; color: #94a3b8; font-size: 0.7rem; font-weight: 700; line-height: 1; }
   .preco-por { color: #ef4444; font-size: 0.9rem; font-weight: 900; line-height: 1; }
 
-  /* MINIATURAS E GRADES CELULAR */
-  .topo-miniaturas { display:flex; gap:6px; overflow-x:auto; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--cinza-100); -webkit-overflow-scrolling: touch; }
+  /* MINIATURAS E GRADES */
+  .topo-miniaturas { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--cinza-100); }
   .filho-mini { min-width: 65px; width: 65px; background:white; border:2px solid var(--cinza-200); border-radius:6px; padding:3px; cursor:pointer; text-align:center; }
   .filho-mini img { width:100%; aspect-ratio:1; object-fit:contain; }
   .mini-nome { font-size:.5rem; font-weight:800; color:var(--azul-800); text-transform:uppercase; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .filho-mini.ativa { border-color:var(--azul-800); background:var(--azul-50); }
 
-  .isca-modelos-tabs, .anzol-tabs { display:flex; gap:6px; overflow-x:auto; margin-bottom:12px; padding-bottom:6px; border-bottom:1px solid var(--cinza-200); -webkit-overflow-scrolling: touch; }
+  .isca-modelos-tabs, .anzol-tabs { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; padding-bottom:6px; border-bottom:1px solid var(--cinza-200); }
   .isca-modelo-btn, .anzol-tab { padding:5px 10px; border-radius:6px; border:1px solid var(--cinza-200); background:var(--cinza-50); color:var(--azul-800); font-size:.75rem; font-weight:800; cursor:pointer; white-space:nowrap; }
   .isca-modelo-btn.ativo, .anzol-tab.ativo { background:var(--azul-800); color:white; border-color:var(--azul-800); }
   .isca-titulo-cores { font-size:.7rem; font-weight:800; color:var(--cinza-500); text-transform:uppercase; margin-bottom:8px; }
@@ -196,13 +194,15 @@
     <div class="topo-logo-area"><strong>📋 Catálogo</strong></div>
     
     <div class="info-cliente" id="infoCliente" style="display:none;">
-      <span id="nomeCliente">—</span>
+      👤 <span id="nomeCliente">—</span>
       <span class="uf" id="badgeUf">—</span>
-      <button class="btn-topo-acao" onclick="abrirMeusPedidos()">📋 Meus Pedidos</button>
+      <button class="btn-topo-acao" onclick="abrirMeusPedidos()">📋 Pedidos</button>
       <button class="btn-topo-sair" onclick="sairCliente()">Sair</button>
     </div>
 
-    <div class="busca-wrap"><input type="search" id="busca" placeholder="Buscar produto..." autocomplete="off"></div>
+    <div class="busca-wrap">
+      <input type="search" id="busca" placeholder="🔍 Buscar produto por código, nome ou palavra-chave..." autocomplete="off">
+    </div>
   </div>
 </header>
 
@@ -269,7 +269,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('telaLogin').style.display = 'none';
     document.getElementById('infoCliente').style.display = 'flex';
-    document.getElementById('nomeCliente').textContent = clienteLogado.nome;
+    document.getElementById('nomeCliente').textContent = (clienteLogado.nome || '').split(' ')[0]; // Resumido
     document.getElementById('badgeUf').textContent = clienteLogado.uf;
 
     carregar();
@@ -507,7 +507,7 @@ async function fazerLogin() {
 
     document.getElementById('telaLogin').style.display = 'none';
     document.getElementById('infoCliente').style.display = 'flex';
-    document.getElementById('nomeCliente').textContent = clienteLogado.nome;
+    document.getElementById('nomeCliente').textContent = (clienteLogado.nome || '').split(' ')[0];
     document.getElementById('badgeUf').textContent = clienteLogado.uf;
 
     carregar();
@@ -1445,7 +1445,7 @@ function fecharCarrinho() { document.getElementById('painelCarrinho').classList.
 
 let deb;
 document.getElementById('busca').addEventListener('input', e => {
-  clearTimeout(deb); deb = setTimeout(() => { buscaAtual = e.target.value; renderizar(); }, 200);
+  clearTimeout(deb); deb = setTimeout(() => { buscaAtual = e.target.value; renderizar(); }, 150);
 });
 
 document.getElementById('inputCnpj').addEventListener('input', function(e) {
