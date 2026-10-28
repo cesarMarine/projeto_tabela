@@ -163,9 +163,36 @@ async function carregarOfertas() {
       return;
     }
 
-    listaOfertas = j.ofertas;
+    // Procura também os detalhes atualizados no catálogo caso algum campo venha vazio
+    const resCat = await fetch('/api/catalogo');
+    const dataCat = await resCat.json();
+    const mapaCatalogo = new Map();
+    
+    if (dataCat.ok && dataCat.itens) {
+      dataCat.itens.forEach(it => mapaCatalogo.set(String(it.codigo), it));
+    }
+
+    listaOfertas = j.ofertas.map(of => {
+      const cat = mapaCatalogo.get(String(of.codigo)) || {};
+      
+      // Fallbacks de segurança para garantir que nenhum campo fique undefined
+      const subgrupo = of.subgrupo || cat.subgrupo_scraping || cat.descricao_sistema || `Produto ${of.codigo}`;
+      const precoBase = Number(of.preco_base || cat.preco_venda || 0);
+      const imagem = of.imagem_oferta || cat.imagem_url || '';
+      const marca = of.marca || cat.marca || '';
+
+      return {
+        ...of,
+        subgrupo,
+        preco_base: precoBase,
+        imagem_oferta: imagem,
+        marca
+      };
+    });
+
     renderizarEncate();
   } catch (e) {
+    console.error("Erro ao carregar ofertas:", e);
     document.getElementById('gridOfertas').innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:60px; color:#ef4444;">Erro ao carregar ofertas.</div>`;
   }
 }
@@ -175,25 +202,31 @@ function renderizarEncate() {
 
   const html = listaOfertas.map(item => {
     const precoComAcrescimo = item.preco_base + (item.preco_base * acrescimo / 100);
-    const precoPromocional = precoComAcrescimo - (precoComAcrescimo * item.desconto_porcentagem / 100);
+    const pctDesconto = Number(item.desconto_porcentagem || 0);
+    const precoPromocional = precoComAcrescimo - (precoComAcrescimo * pctDesconto / 100);
     const q = carrinho[item.codigo] ? carrinho[item.codigo].qtd : 0;
+
+    // Garante que a imagem renderize corretamente ou mostre o placeholder de imagem
+    const imgHtml = item.imagem_oferta && item.imagem_oferta.trim() !== '' 
+      ? `<img src="${item.imagem_oferta}" alt="${escapeHtml(item.subgrupo)}" onerror="this.onerror=null; this.parentElement.innerHTML='🖼️';">`
+      : '🖼️';
 
     return `
       <div class="card-oferta">
-        <div class="selo-desconto">-${item.desconto_porcentagem}% OFF</div>
+        <div class="selo-desconto">-${pctDesconto}% OFF</div>
         <div class="img-box">
-          ${item.imagem_oferta ? `<img src="${item.imagem_oferta}">` : '🖼️'}
+          ${imgHtml}
         </div>
         <div class="corpo-oferta">
-          ${item.marca ? `<span class="marca-tag">${item.marca}</span>` : ''}
-          <div class="titulo-prod">${item.subgrupo}</div>
+          ${item.marca ? `<span class="marca-tag">${escapeHtml(item.marca)}</span>` : ''}
+          <div class="titulo-prod">${escapeHtml(item.subgrupo)}</div>
 
           <div class="bloco-preco-balcao">
             <span class="txt-de">De: R$ ${fmtMoeda(precoComAcrescimo)}</span>
             <span class="txt-por">Por: R$ ${fmtMoeda(precoPromocional)}</span>
           </div>
 
-          <button class="btn-add-oferta" onclick="adicionarOferta('${item.codigo}', '${item.subgrupo}', ${item.preco_base}, '${item.imagem_oferta}')">
+          <button class="btn-add-oferta" onclick="adicionarOferta('${item.codigo}', '${escapeHtml(item.subgrupo).replace(/'/g, "\\'")}', ${item.preco_base}, '${item.imagem_oferta}')">
             🛒 ${q > 0 ? `No Pedido (${q})` : 'Adicionar ao Pedido'}
           </button>
         </div>
