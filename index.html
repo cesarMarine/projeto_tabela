@@ -43,7 +43,7 @@
   .busca-wrap input::placeholder { color:rgba(255,255,255,.7); }
   .busca-wrap input:focus { outline:none; background:rgba(255,255,255,.28); }
 
-  /* BOTÕES DE GRUPO PREENCHIDOS (ÍCONE OCUPA O CARD TODO - SEM QUANTIDADES) */
+  /* BOTÕES DE GRUPO PREENCHIDOS */
   .chips-wrap { background:white; border-bottom:1px solid var(--cinza-200); position:sticky; top:49px; z-index:90; padding:8px 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .chips { max-width:1600px; margin:0 auto; display:flex; gap:10px; align-items:center; flex-wrap: nowrap; }
   
@@ -60,10 +60,9 @@
   .chip.chip-oferta { background: #fee2e2; border-color: #fca5a5; font-size: 1.4rem; color: #ef4444; }
   .chip.chip-oferta.ativo { background: #ef4444; border-color: #dc2626; color: white; }
   
-  /* A imagem ocupa 100% da área útil do botão */
   .chip-img { width: 100%; height: 100%; object-fit: contain; border-radius: 8px; }
 
-  /* STYLES DE LOGOMARCA NOS CABEÇALHOS DE FAMÍLIA/GRUPO */
+  /* STYLES DE LOGOMARCA NOS CABEÇALHOS */
   .marca-logo-img { height: 26px; max-width: 110px; object-fit: contain; vertical-align: middle; }
   
   /* CONTEÚDO */
@@ -269,19 +268,19 @@ let mapaOfertas = {};
 // URL BASE DO SUPABASE STORAGE DE ÍCONES E LOGOS
 const BUCKET_ICONIS = 'https://gpzqzwrqndawhhglycat.supabase.co/storage/v1/object/public/icones_area_trabalho/';
 
-// Mapeamento automático dos Ícones de Grupos
+// Mapeamento exato aos nomes dos ficheiros em minúsculas do Supabase
 function getIconeUrl(grupo) {
   const g = grupo.toUpperCase().trim();
-  if (g.includes('ANZOL')) return BUCKET_ICONIS + 'ANZOL.JPG';
-  if (g.includes('ISCA')) return BUCKET_ICONIS + 'ISCA.JPG';
-  if (g.includes('MOLINETE')) return BUCKET_ICONIS + 'MOLINETE.JPG';
-  if (g.includes('CARRETILHA')) return BUCKET_ICONIS + 'CARRETILHA.JPG';
-  if (g.includes('VARA')) return BUCKET_ICONIS + 'VARA.JPG';
-  if (g.includes('LINHA')) return BUCKET_ICONIS + 'LINHA.JPG';
-  if (g.includes('MOTOR')) return BUCKET_ICONIS + 'MOTOR.JPG';
-  if (g.includes('GIRADOR') || g.includes('EMPATE') || g.includes('SNAP')) return BUCKET_ICONIS + 'EMPATE.JPG';
-  if (g.includes('ACESSORIO') || g.includes('VESTUARIO')) return BUCKET_ICONIS + 'ACESSORIOS.JPG';
-  return BUCKET_ICONIS + 'ACESSORIOS.JPG';
+  if (g.includes('ANZOL')) return BUCKET_ICONIS + 'ANZOL.jpg';
+  if (g.includes('ISCA')) return BUCKET_ICONIS + 'ISCA.jpg';
+  if (g.includes('MOLINETE')) return BUCKET_ICONIS + 'MOLINETE.jpg';
+  if (g.includes('CARRETILHA')) return BUCKET_ICONIS + 'CARRETILHA.jpg';
+  if (g.includes('VARA')) return BUCKET_ICONIS + 'VARA.jpg';
+  if (g.includes('LINHA')) return BUCKET_ICONIS + 'LINHA.jpg';
+  if (g.includes('MOTOR')) return BUCKET_ICONIS + 'MOTOR.jpg';
+  if (g.includes('GIRADOR') || g.includes('EMPATE') || g.includes('SNAP')) return BUCKET_ICONIS + 'GIRADORES.jpg';
+  if (g.includes('ACESSORIO') || g.includes('VESTUARIO')) return BUCKET_ICONIS + 'ACESSORIOS.jpg';
+  return BUCKET_ICONIS + 'ACESSORIOS.jpg';
 }
 
 // Mapeamento de Logomarcas do Supabase
@@ -292,6 +291,7 @@ function getLogoMarcaUrl(marca) {
   if (m.includes('MARINE')) return BUCKET_ICONIS + 'MARINE.JPG';
   if (m.includes('YO-ZURI') || m.includes('YO ZURI')) return BUCKET_ICONIS + 'YO-ZURI.JPG';
   if (m.includes('ZEST')) return BUCKET_ICONIS + 'zest.JPG';
+  if (m.includes('MEGABASS')) return BUCKET_ICONIS + 'MEGABASS.JPG';
   return '';
 }
 
@@ -606,12 +606,11 @@ function montarChips() {
   todosItens.forEach(it => { contagem[it.grupo] = (contagem[it.grupo] || 0) + 1; });
   const grupos = Object.keys(contagem).sort((a, b) => contagem[b] - contagem[a]);
   
-  // Botões preenchidos pelo ícone todo — Sem texto e sem contadores de quantidade
   document.getElementById('chips').innerHTML = `
     <button class="chip chip-oferta ativo" onclick="trocarGrupo('__OFERTAS__', this)" title="Ofertas">🔥</button>
     ${grupos.map(g => {
       const iconeUrl = getIconeUrl(g);
-      return `<button class="chip" onclick="trocarGrupo('${g}', this)" title="${g}"><img src="${iconeUrl}" class="chip-img" alt="${g}"></button>`;
+      return `<button class="chip" onclick="trocarGrupo('${g}', this)" title="${g}"><img src="${iconeUrl}" class="chip-img" alt="${g}" onerror="this.onerror=null; this.src='${BUCKET_ICONIS}ACESSORIOS.jpg';"></button>`;
     }).join('')}
   `;
 }
