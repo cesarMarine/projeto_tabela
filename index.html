@@ -43,16 +43,18 @@
   .busca-wrap input::placeholder { color:rgba(255,255,255,.7); }
   .busca-wrap input:focus { outline:none; background:rgba(255,255,255,.28); }
 
-  /* BOTOES APENAS COM ÍCONES (SEM NOMES) */
-  .chips-wrap { background:white; border-bottom:1px solid var(--cinza-200); position:sticky; top:49px; z-index:90; padding:8px 12px; }
-  .chips { max-width:1600px; margin:0 auto; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
-  .chip { display:inline-flex; align-items:center; justify-content:center; gap:4px; padding:6px 10px; border-radius:12px; background:var(--cinza-100); border:1px solid var(--cinza-200); color:var(--cinza-700); font-size:.72rem; font-weight:800; cursor:pointer; transition:.15s; position:relative; }
+  /* BOTOES DE GRUPO COM ÍCONES MAIORES (32px) E MAIS VISÍVEIS */
+  .chips-wrap { background:white; border-bottom:1px solid var(--cinza-200); position:sticky; top:49px; z-index:90; padding:8px 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .chips { max-width:1600px; margin:0 auto; display:flex; gap:10px; align-items:center; flex-wrap: nowrap; }
+  .chip { display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:6px 12px; border-radius:12px; background:var(--cinza-100); border:1px solid var(--cinza-200); color:var(--cinza-700); font-size:.8rem; font-weight:800; cursor:pointer; transition:.15s; position:relative; flex-shrink: 0; }
   .chip:hover { background:var(--cinza-200); transform: translateY(-1px); }
-  .chip.ativo { background:var(--azul-800); color:white; border-color:var(--azul-800); box-shadow: 0 2px 8px rgba(0,31,63,0.3); }
-  .chip.chip-oferta { background:#fee2e2; color:#ef4444; border-color:#fca5a5; }
+  .chip.ativo { background:var(--azul-800); color:white; border-color:var(--azul-800); box-shadow: 0 3px 10px rgba(0,31,63,0.3); }
+  .chip.chip-oferta { background:#fee2e2; color:#ef4444; border-color:#fca5a5; font-size: 1rem; }
   .chip.chip-oferta.ativo { background:#ef4444; color:white; border-color:#dc2626; }
-  .chip-img { width:24px; height:24px; object-fit:contain; border-radius:4px; }
-  .chip small { font-size: 0.65rem; opacity: 0.85; font-weight: 700; }
+  
+  /* Ícone expandido para 32px x 32px para leitura clara */
+  .chip-img { width:32px; height:32px; object-fit:contain; border-radius:4px; display: block; }
+  .chip small { font-size: 0.7rem; opacity: 0.9; font-weight: 800; }
 
   /* CONTEÚDO */
   .conteudo { padding:12px; max-width:1600px; margin:0 auto; }
@@ -257,19 +259,19 @@ let mapaOfertas = {};
 // URL BASE DO SUPABASE STORAGE DE ÍCONES
 const BUCKET_ICONIS = 'https://gpzqzwrqndawhhglycat.supabase.co/storage/v1/object/public/icones_area_trabalho/';
 
-// Mapeamento automático para buscar o ícone do Supabase
+// Mapeamento corrigido baseado nos nomes exatos do seu Bucket
 function getIconeUrl(grupo) {
   const g = grupo.toUpperCase().trim();
-  if (g.includes('ANZOL')) return BUCKET_ICONIS + 'ANZOL..JPG';
+  if (g.includes('ANZOL')) return BUCKET_ICONIS + 'ANZOL.JPG';
   if (g.includes('ISCA')) return BUCKET_ICONIS + 'ISCA.JPG';
   if (g.includes('MOLINETE')) return BUCKET_ICONIS + 'MOLINETE.JPG';
   if (g.includes('CARRETILHA')) return BUCKET_ICONIS + 'CARRETILHA.JPG';
   if (g.includes('VARA')) return BUCKET_ICONIS + 'VARA.JPG';
   if (g.includes('LINHA')) return BUCKET_ICONIS + 'LINHA.JPG';
   if (g.includes('MOTOR')) return BUCKET_ICONIS + 'MOTOR.JPG';
-  if (g.includes('GIRADOR')) return BUCKET_ICONIS + 'GIRADORES.JPG';
+  if (g.includes('GIRADOR') || g.includes('EMPATE') || g.includes('SNAP')) return BUCKET_ICONIS + 'EMPATE.JPG';
   if (g.includes('ACESSORIO') || g.includes('VESTUARIO')) return BUCKET_ICONIS + 'ACESSORIOS.JPG';
-  return '';
+  return BUCKET_ICONIS + 'ACESSORIOS.JPG'; // Fallback padronizado
 }
 
 const fmtMoeda = v => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -579,13 +581,12 @@ function montarChips() {
 
   const grupos = Object.keys(contagem).sort((a, b) => contagem[b] - contagem[a]);
   
-  // Exibe apenas ÍCONES e Contadores (Sem Textos de Nomes de Grupos)
+  // Renderiza botões com ícones maiores (32px) e busca a imagem correta no Supabase
   document.getElementById('chips').innerHTML = `
     <button class="chip chip-oferta ativo" onclick="trocarGrupo('__OFERTAS__', this)" title="Ofertas">🔥 <small>(${totalOfertas})</small></button>
     ${grupos.map(g => {
       const iconeUrl = getIconeUrl(g);
-      const imgTag = iconeUrl ? `<img src="${iconeUrl}" class="chip-img" alt="${g}">` : '📦';
-      return `<button class="chip" onclick="trocarGrupo('${g}', this)" title="${g}">${imgTag} <small>(${contagem[g]})</small></button>`;
+      return `<button class="chip" onclick="trocarGrupo('${g}', this)" title="${g}"><img src="${iconeUrl}" class="chip-img" alt="${g}"> <small>(${contagem[g]})</small></button>`;
     }).join('')}
   `;
 }
