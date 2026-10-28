@@ -2,10 +2,9 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Catálogo — Tabela de Preços</title>
 <style>
-  
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   :root {
     --azul-900:#001f3f; --azul-800:#003366; --azul-700:#004080;
@@ -21,176 +20,166 @@
 
   /* LOGIN */
   #telaLogin { position:fixed; inset:0; z-index:9999; background:linear-gradient(135deg, #001f3f 0%, #003366 100%); display:flex; align-items:center; justify-content:center; padding:20px; }
-  .login-box { background:white; border-radius:16px; padding:40px; width:100%; max-width:400px; box-shadow:0 20px 60px rgba(0,0,0,0.4); text-align:center; }
-  .login-box h1 { color:var(--azul-800); font-size:1.5rem; font-weight:800; margin-bottom:8px; }
-  .login-box p { color:var(--cinza-500); font-size:.9rem; margin-bottom:24px; }
-  .login-box input { width:100%; padding:14px 16px; border:2px solid var(--cinza-200); border-radius:10px; font-size:1.1rem; text-align:center; font-weight:700; letter-spacing:1px; margin-bottom:16px; }
+  .login-box { background:white; border-radius:16px; padding:30px 20px; width:100%; max-width:400px; box-shadow:0 20px 60px rgba(0,0,0,0.4); text-align:center; }
+  .login-box h1 { color:var(--azul-800); font-size:1.4rem; font-weight:800; margin-bottom:8px; }
+  .login-box p { color:var(--cinza-500); font-size:.85rem; margin-bottom:20px; }
+  .login-box input { width:100%; padding:14px 16px; border:2px solid var(--cinza-200); border-radius:10px; font-size:1rem; text-align:center; font-weight:700; letter-spacing:1px; margin-bottom:16px; }
   .login-box input:focus { outline:none; border-color:var(--azul-500); }
   .login-box button { width:100%; padding:14px; background:var(--azul-800); color:white; border:none; border-radius:10px; font-size:1rem; font-weight:800; transition:.2s; }
   .login-box button:hover { background:var(--azul-700); }
   .login-erro { color:var(--vermelho); font-size:.85rem; font-weight:700; margin-bottom:12px; display:none; }
 
-  /* TOPO */
+  /* TOPO RESPONSIVO */
   .topo { background:linear-gradient(135deg, #001f3f 0%, #003366 100%); color:white; position:sticky; top:0; z-index:100; box-shadow:0 4px 24px rgba(0,51,102,.25); }
-  .topo-inner { max-width:1500px; margin:0 auto; padding:14px 20px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+  .topo-inner { max-width:1500px; margin:0 auto; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
   .topo-logo-area strong { font-size:1.1rem; font-weight:800; letter-spacing:-.3px; }
   
-  .info-cliente { display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.1); padding:6px 12px; border-radius:20px; font-size:.75rem; font-weight:700; }
-  .info-cliente span.uf { background:var(--verde); color:white; padding:2px 6px; border-radius:4px; }
+  .info-cliente { display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.12); padding:6px 12px; border-radius:20px; font-size:.75rem; font-weight:700; flex-wrap:wrap; }
+  .info-cliente span.uf { background:var(--verde); color:white; padding:2px 6px; border-radius:4px; font-size:0.7rem; }
+  .btn-topo-acao { background:#2563eb; color:white; border:none; padding:5px 10px; border-radius:12px; font-weight:800; font-size:0.7rem; cursor:pointer; display:inline-flex; align-items:center; gap:4px; }
+  .btn-topo-sair { background:#ef4444; color:white; border:none; padding:5px 8px; border-radius:12px; font-weight:800; font-size:0.7rem; cursor:pointer; }
 
-  .busca-wrap { flex:1; min-width:200px; max-width:420px; }
-  .busca-wrap input { width:100%; padding:11px 16px; border:none; border-radius:12px; font-family:inherit; font-size:.9rem; background:rgba(255,255,255,.12); color:white; }
-  .busca-wrap input::placeholder { color:rgba(255,255,255,.55); }
-  .busca-wrap input:focus { outline:none; background:rgba(255,255,255,.2); }
+  .busca-wrap { flex:1; min-width:100%; max-width:100%; order:3; }
+  @media(min-width: 768px) {
+    .busca-wrap { min-width:250px; max-width:420px; order:2; }
+  }
+  .busca-wrap input { width:100%; padding:10px 14px; border:none; border-radius:10px; font-family:inherit; font-size:.85rem; background:rgba(255,255,255,.15); color:white; }
+  .busca-wrap input::placeholder { color:rgba(255,255,255,.6); }
+  .busca-wrap input:focus { outline:none; background:rgba(255,255,255,.25); }
 
-  /* CHIPS DE CATEGORIA / OFERTA */
-  .chips-wrap { background:white; border-bottom:1px solid var(--cinza-100); position:sticky; top:62px; z-index:90; overflow-x:auto; }
-  .chips { max-width:1500px; margin:0 auto; padding:12px 20px; display:flex; gap:8px; flex-wrap:nowrap; }
-  .chip { padding:9px 16px; border-radius:20px; background:var(--cinza-100); border:1px solid transparent; color:var(--cinza-700); font-size:.82rem; font-weight:700; cursor:pointer; white-space:nowrap; transition:.2s; text-transform:uppercase; }
-  .chip:hover { background:var(--cinza-200); }
+  /* CHIPS DE CATEGORIA */
+  .chips-wrap { background:white; border-bottom:1px solid var(--cinza-100); position:sticky; top:56px; z-index:90; overflow-x:auto; -webkit-overflow-scrolling: touch; }
+  .chips { max-width:1500px; margin:0 auto; padding:8px 12px; display:flex; gap:6px; flex-wrap:nowrap; }
+  .chip { padding:7px 12px; border-radius:16px; background:var(--cinza-100); border:1px solid transparent; color:var(--cinza-700); font-size:.75rem; font-weight:700; cursor:pointer; white-space:nowrap; transition:.2s; text-transform:uppercase; }
   .chip.ativo { background:linear-gradient(135deg, var(--azul-800), var(--azul-700)); color:white; border-color:var(--azul-800); }
   .chip.chip-oferta { background:#fee2e2; color:#ef4444; border-color:#fca5a5; }
-  .chip.chip-oferta.ativo { background:linear-gradient(135deg, #ef4444, #dc2626); color:white; border-color:#dc2626; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
-  .chip small { opacity:.8; margin-left:4px; }
+  .chip.chip-oferta.ativo { background:linear-gradient(135deg, #ef4444, #dc2626); color:white; border-color:#dc2626; }
 
   /* CONTEÚDO */
-  .conteudo { padding:20px; max-width:1500px; margin:0 auto; }
-  .loading { text-align:center; padding:80px 20px; color:var(--cinza-400); }
+  .conteudo { padding:12px; max-width:1500px; margin:0 auto; }
+  .loading { text-align:center; padding:60px 20px; color:var(--cinza-400); }
   
-  .familia-bloco { margin-bottom:24px; }
-  .familia-head { display:flex; align-items:baseline; gap:12px; padding-bottom:10px; margin-bottom:12px; border-bottom:2px solid var(--azul-100); }
-  .familia-head h2 { color:var(--azul-800); font-size:1.2rem; font-weight:800; }
-  .familia-head .marca-badge { background:var(--azul-50); color:var(--azul-800); padding:4px 10px; border-radius:20px; font-size:.7rem; font-weight:800; text-transform:uppercase; }
+  .familia-bloco { margin-bottom:20px; }
+  .familia-head { display:flex; align-items:baseline; gap:8px; padding-bottom:8px; margin-bottom:10px; border-bottom:2px solid var(--azul-100); flex-wrap:wrap; }
+  .familia-head h2 { color:var(--azul-800); font-size:1.05rem; font-weight:800; }
+  .familia-head .marca-badge { background:var(--azul-50); color:var(--azul-800); padding:3px 8px; border-radius:12px; font-size:.65rem; font-weight:800; text-transform:uppercase; }
 
-  .sub-grupo-header { background: var(--azul-50); color: var(--azul-800); padding: 8px 14px; border-radius: 6px; border-left: 4px solid var(--azul-500); font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; margin-bottom: 8px; }
+  .sub-grupo-header { background: var(--azul-50); color: var(--azul-800); padding: 6px 10px; border-radius: 6px; border-left: 4px solid var(--azul-500); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 6px; display:inline-block; }
   
-  /* CARDS DE FAMÍLIA */
-  .familia-card, .isca-card, .anzol-card, .molinete-card { display:grid; grid-template-columns:200px 1fr; gap:20px; background:white; border:1px solid var(--cinza-200); border-radius:12px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,.03); position:relative; }
-  .familia-side { display:flex; flex-direction:column; gap:12px; position:relative; }
-  .familia-foto-principal { background:var(--cinza-50); border:1px solid var(--cinza-100); border-radius:10px; padding:12px; aspect-ratio:1; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:transform .2s ease; position:relative; }
-  .familia-foto-principal:hover { transform:scale(1.02); }
+  /* LAYOUT CARDS - ADAPTÁVEL PARA CELULAR E DESKTOP */
+  .familia-card, .isca-card, .anzol-card, .molinete-card { 
+    display:grid; grid-template-columns: 1fr; gap:12px; background:white; 
+    border:1px solid var(--cinza-200); border-radius:12px; padding:12px; 
+    box-shadow:0 2px 8px rgba(0,0,0,.03); position:relative; 
+  }
+  @media(min-width: 768px) {
+    .familia-card, .isca-card, .anzol-card, .molinete-card { grid-template-columns: 180px 1fr; gap:16px; padding:16px; }
+  }
+
+  .familia-side { display:flex; flex-direction:column; gap:8px; position:relative; }
+  .familia-foto-principal { background:var(--cinza-50); border:1px solid var(--cinza-100); border-radius:10px; padding:8px; aspect-ratio:1; display:flex; align-items:center; justify-content:center; cursor:pointer; max-width: 220px; margin: 0 auto; width:100%; }
   .familia-foto-principal img { max-width:100%; max-height:100%; object-fit:contain; }
   
-  .btn-detalhes { background:var(--cinza-50); border:1px solid var(--cinza-200); color:var(--azul-800); border-radius:6px; font-size:.65rem; font-weight:800; text-transform:uppercase; letter-spacing:.5px; cursor:pointer; display:inline-flex; align-items:center; gap:4px; padding:6px 10px; margin-bottom:12px; align-self:flex-start; transition: .2s; }
-  .btn-detalhes:hover { background:var(--azul-50); border-color:var(--azul-300); }
+  .btn-detalhes { background:var(--cinza-50); border:1px solid var(--cinza-200); color:var(--azul-800); border-radius:6px; font-size:.65rem; font-weight:800; text-transform:uppercase; cursor:pointer; display:inline-flex; align-items:center; gap:4px; padding:6px 10px; margin-bottom:8px; align-self:flex-start; }
 
-  /* BADGE DE OFERTA NO TOPO DO CARD DE FAMÍLIA */
+  /* BADGES DE OFERTA */
   .badge-oferta-banner {
-    position: absolute; top: -10px; left: -10px;
+    position: absolute; top: -8px; left: -8px;
     background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
-    color: white; font-weight: 900; font-size: 0.75rem; text-transform: uppercase;
-    padding: 6px 12px; border-radius: 8px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4);
-    z-index: 5; letter-spacing: 0.5px; border: 2px solid white; display: flex; align-items: center; gap: 4px;
+    color: white; font-weight: 900; font-size: 0.65rem; text-transform: uppercase;
+    padding: 4px 8px; border-radius: 6px; z-index: 5; border: 1px solid white;
   }
-
-  /* TARJA EM LINHA DE PRODUTO */
   .tarja-oferta-item {
-    display: inline-flex; align-items: center; gap: 4px;
+    display: inline-flex; align-items: center; gap: 2px;
     background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
-    color: white; font-size: 0.65rem; font-weight: 900;
-    padding: 2px 8px; border-radius: 4px; text-transform: uppercase;
-    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3); margin-left: 6px; white-space: nowrap;
+    color: white; font-size: 0.6rem; font-weight: 900;
+    padding: 2px 6px; border-radius: 4px; text-transform: uppercase; white-space: nowrap; margin-left: 4px;
   }
   
-  /* PREÇO DE / POR */
-  .preco-box-oferta { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
-  .preco-de { text-decoration: line-through; color: #94a3b8; font-size: 0.75rem; font-weight: 700; line-height: 1; margin-bottom: 2px; }
-  .preco-por { color: #ef4444; font-size: 1rem; font-weight: 900; line-height: 1; }
+  .preco-box-oferta { display: flex; flex-direction: column; align-items: flex-end; justify-content: center; }
+  .preco-de { text-decoration: line-through; color: #94a3b8; font-size: 0.7rem; font-weight: 700; line-height: 1; }
+  .preco-por { color: #ef4444; font-size: 0.9rem; font-weight: 900; line-height: 1; }
 
-  /* MINIATURAS E GRADES */
-  .topo-miniaturas { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid var(--cinza-100); }
-  .filho-mini { width: 80px; background:white; border:2px solid var(--cinza-200); border-radius:6px; padding:4px; cursor:pointer; transition:.2s; display:flex; flex-direction:column; align-items:center; justify-content:space-between; }
-  .filho-mini img { width:100%; aspect-ratio:1; object-fit:contain; margin-bottom:4px; }
-  .mini-info { width:100%; text-align:center; line-height:1.1; }
-  .mini-nome { font-size:.55rem; font-weight:800; color:var(--azul-800); text-transform:uppercase; display:block; }
-  .filho-mini:hover, .filho-mini.ativa { border-color:var(--azul-800); box-shadow:0 2px 6px rgba(0,51,102,.1); }
-  .filho-mini.ativa { background:var(--azul-50); }
+  /* MINIATURAS E GRADES CELULAR */
+  .topo-miniaturas { display:flex; gap:6px; overflow-x:auto; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--cinza-100); -webkit-overflow-scrolling: touch; }
+  .filho-mini { min-width: 65px; width: 65px; background:white; border:2px solid var(--cinza-200); border-radius:6px; padding:3px; cursor:pointer; text-align:center; }
+  .filho-mini img { width:100%; aspect-ratio:1; object-fit:contain; }
+  .mini-nome { font-size:.5rem; font-weight:800; color:var(--azul-800); text-transform:uppercase; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .filho-mini.ativa { border-color:var(--azul-800); background:var(--azul-50); }
 
-  .isca-modelos-tabs, .anzol-tabs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; border-bottom:1px solid var(--cinza-200); padding-bottom:12px; }
-  .isca-modelo-btn, .anzol-tab { padding:6px 14px; border-radius:6px; border:1px solid var(--cinza-200); background:var(--cinza-50); color:var(--azul-800); font-size:.8rem; font-weight:800; cursor:pointer; transition:.2s; text-transform:uppercase; }
-  .isca-modelo-btn:hover, .anzol-tab:hover { background:var(--azul-100); }
+  .isca-modelos-tabs, .anzol-tabs { display:flex; gap:6px; overflow-x:auto; margin-bottom:12px; padding-bottom:6px; border-bottom:1px solid var(--cinza-200); -webkit-overflow-scrolling: touch; }
+  .isca-modelo-btn, .anzol-tab { padding:5px 10px; border-radius:6px; border:1px solid var(--cinza-200); background:var(--cinza-50); color:var(--azul-800); font-size:.75rem; font-weight:800; cursor:pointer; white-space:nowrap; }
   .isca-modelo-btn.ativo, .anzol-tab.ativo { background:var(--azul-800); color:white; border-color:var(--azul-800); }
-  .isca-titulo-cores { font-size:.75rem; font-weight:800; color:var(--cinza-500); text-transform:uppercase; margin-bottom:10px; }
+  .isca-titulo-cores { font-size:.7rem; font-weight:800; color:var(--cinza-500); text-transform:uppercase; margin-bottom:8px; }
   
-  .isca-grade, .anzol-grade { display:grid; grid-template-columns:repeat(auto-fill, minmax(115px, 1fr)); gap:10px; }
-  .isca-cor-card, .anzol-numero-card { background:white; border:1px solid var(--cinza-200); border-radius:8px; padding:8px; cursor:pointer; transition:.2s; display:flex; flex-direction:column; align-items:center; position:relative; }
-  .isca-cor-card:hover, .anzol-numero-card:hover { border-color:var(--azul-500); }
-  .isca-cor-card.ativa, .anzol-numero-card.ativa { border-color:var(--azul-800); box-shadow:0 0 0 1px var(--azul-800); }
-  .isca-cor-card img { width:100%; aspect-ratio:1; object-fit:contain; margin-bottom:4px; }
-  .isca-cor-card .cor-nome, .anzol-numero { font-size:.85rem; font-weight:800; color:var(--azul-800); text-align:center; word-break:break-word; }
-  .anzol-numero { font-size:1rem; color:var(--azul-800); line-height:1.2; margin-bottom:4px; text-transform:uppercase; }
-  .isca-cor-card .cor-preco, .anzol-preco { font-size:.75rem; font-weight:800; color:var(--verde); margin-top:2px; }
+  .isca-grade, .anzol-grade { display:grid; grid-template-columns:repeat(auto-fill, minmax(95px, 1fr)); gap:8px; }
+  .isca-cor-card, .anzol-numero-card { background:white; border:1px solid var(--cinza-200); border-radius:8px; padding:6px; display:flex; flex-direction:column; align-items:center; position:relative; }
+  .isca-cor-card.ativa, .anzol-numero-card.ativa { border-color:var(--azul-800); }
+  .isca-cor-card img { width:100%; aspect-ratio:1; object-fit:contain; margin-bottom:2px; }
+  .cor-nome, .anzol-numero { font-size:.75rem; font-weight:800; color:var(--azul-800); text-align:center; word-break:break-word; }
+  .cor-preco, .anzol-preco { font-size:.75rem; font-weight:800; color:var(--verde); }
 
-  .isca-badge, .anzol-badge { position:absolute; top:-5px; right:-5px; min-width:20px; height:20px; background:var(--verde); color:white; border-radius:10px; font-size:11px; font-weight:900; display:none; align-items:center; justify-content:center; border:2px solid white; z-index:3; }
+  .isca-badge, .anzol-badge { position:absolute; top:-4px; right:-4px; min-width:18px; height:18px; background:var(--verde); color:white; border-radius:9px; font-size:10px; font-weight:900; display:none; align-items:center; justify-content:center; border:2px solid white; z-index:3; }
   .isca-cor-card.tem-qtd .isca-badge, .anzol-numero-card.tem-qtd .anzol-badge { display:flex; }
   .isca-cor-card.tem-qtd, .anzol-numero-card.tem-qtd { border-color:var(--verde); background:#f0fdf4; }
   
-  .isca-qtd-ctrl, .anzol-qtd-ctrl { display:flex; align-items:center; gap:2px; margin-top:6px; width:100%; justify-content:center; }
-  .isca-qtd-ctrl button, .anzol-qtd-ctrl button { width:24px; height:24px; border-radius:4px; border:1px solid var(--cinza-300); background:white; font-weight:800; color:var(--azul-800); }
-  .isca-qtd-ctrl input, .anzol-qtd-ctrl input { width:28px; height:24px; border:1px solid var(--cinza-300); border-radius:4px; text-align:center; font-weight:800; -moz-appearance:textfield; color:var(--azul-800); }
+  .isca-qtd-ctrl, .anzol-qtd-ctrl { display:flex; align-items:center; gap:2px; margin-top:4px; width:100%; justify-content:center; }
+  .isca-qtd-ctrl button, .anzol-qtd-ctrl button { width:22px; height:22px; border-radius:4px; border:1px solid var(--cinza-300); background:white; font-weight:800; color:var(--azul-800); }
+  .isca-qtd-ctrl input, .anzol-qtd-ctrl input { width:26px; height:22px; border:1px solid var(--cinza-300); border-radius:4px; text-align:center; font-weight:800; font-size:0.75rem; color:var(--azul-800); }
 
-  /* LISTAS DE ITENS */
+  /* LISTAS DE ITENS DA TABELA */
   .lista-filhos { display:flex; flex-direction:column; gap:6px; }
-  .linha-filho-container { display:flex; flex-direction:column; background:white; border:1px solid var(--cinza-200); border-radius:8px; overflow:hidden; transition:.15s; }
-  .linha-filho-container:hover { border-color:var(--azul-500); box-shadow:0 2px 6px rgba(0,0,0,.04); }
-  .linha-filho { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 10px; }
-  .l-info-main { display:flex; align-items:center; gap:6px; flex:1; min-width:0; }
-  .l-cod { font-family:monospace; font-weight:800; color:var(--cinza-500); font-size:.75rem; background:var(--cinza-100); padding:2px 5px; border-radius:4px; white-space:nowrap; }
-  .l-nome { font-size:.85rem; font-weight:800; color:var(--azul-800); line-height:1.2; word-break:break-word; display:flex; align-items:center; flex-wrap:wrap; }
-  .tag-lado { background: var(--azul-100); color: var(--azul-800); font-size: .68rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; white-space: nowrap; border: 1px solid var(--azul-200); }
-  .l-direita-wrap { display:flex; align-items:center; gap:6px; margin-left:auto; white-space:nowrap; }
-  .btn-toggle-var { background:var(--azul-50); border:1px solid var(--azul-200); border-radius:6px; padding:3px 6px; font-size:.85rem; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; }
-  .l-preco { font-size:.9rem; font-weight:900; color:var(--verde); white-space:nowrap; }
-  .painel-variacao-oculta { display:none; background:var(--cinza-50); border-top:1px dashed var(--cinza-200); padding:6px 10px; font-size:.75rem; color:var(--cinza-700); font-weight:600; }
+  .linha-filho-container { display:flex; flex-direction:column; background:white; border:1px solid var(--cinza-200); border-radius:8px; overflow:hidden; }
+  .linha-filho { display:flex; align-items:center; justify-content:space-between; gap:6px; padding:6px 8px; flex-wrap:wrap; }
+  .l-info-main { display:flex; align-items:center; gap:4px; flex:1; min-width:140px; }
+  .l-cod { font-family:monospace; font-weight:800; color:var(--cinza-500); font-size:.7rem; background:var(--cinza-100); padding:2px 4px; border-radius:4px; white-space:nowrap; }
+  .l-nome { font-size:.75rem; font-weight:800; color:var(--azul-800); line-height:1.2; word-break:break-word; }
+  .tag-lado { background: var(--azul-100); color: var(--azul-800); font-size: .6rem; font-weight: 800; padding: 2px 4px; border-radius: 4px; white-space: nowrap; }
+  .l-direita-wrap { display:flex; align-items:center; gap:6px; margin-left:auto; }
+  .btn-toggle-var { background:var(--azul-50); border:1px solid var(--azul-200); border-radius:4px; padding:2px 5px; font-size:.75rem; }
+  .l-preco { font-size:.8rem; font-weight:900; color:var(--verde); white-space:nowrap; }
+  .painel-variacao-oculta { display:none; background:var(--cinza-50); border-top:1px dashed var(--cinza-200); padding:6px 8px; font-size:.7rem; color:var(--cinza-700); }
   .painel-variacao-oculta.ativo { display:block; }
 
   .qtd-ctrl { display:inline-flex; align-items:center; border:1px solid var(--cinza-300); border-radius:6px; background:white; overflow:hidden; }
-  .qtd-ctrl button { width:26px; height:26px; border:none; background:var(--cinza-50); font-weight:800; color:var(--azul-800); font-size:.95rem; }
-  .qtd-ctrl input { width:28px; height:26px; text-align:center; border:none; font-weight:800; color:var(--azul-800); font-size:.85rem; }
+  .qtd-ctrl button { width:24px; height:24px; border:none; background:var(--cinza-50); font-weight:800; color:var(--azul-800); font-size:.85rem; }
+  .qtd-ctrl input { width:26px; height:24px; text-align:center; border:none; font-weight:800; color:var(--azul-800); font-size:.75rem; }
 
-  .grade-soltos { display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:16px; }
-  .card-solto { background:white; border:1px solid var(--cinza-200); border-radius:8px; padding:12px; text-align:center; }
-  .card-solto .img { width:100%; aspect-ratio:1; background:var(--cinza-50); display:flex; align-items:center; justify-content:center; border-radius:6px; margin-bottom:8px; overflow:hidden; }
+  .grade-soltos { display:grid; grid-template-columns:repeat(auto-fill, minmax(130px, 1fr)); gap:10px; }
+  .card-solto { background:white; border:1px solid var(--cinza-200); border-radius:8px; padding:8px; text-align:center; }
+  .card-solto .img { width:100%; aspect-ratio:1; background:var(--cinza-50); display:flex; align-items:center; justify-content:center; border-radius:6px; margin-bottom:6px; overflow:hidden; }
   .card-solto .img img { width:100%; height:100%; object-fit:contain; }
-  .card-solto .nome { font-size:.75rem; font-weight:700; color:var(--azul-800); margin-bottom:4px; line-height:1.2; }
-  .card-solto .preco { font-size:.85rem; font-weight:800; color:var(--verde); }
+  .card-solto .nome { font-size:.7rem; font-weight:700; color:var(--azul-800); margin-bottom:4px; line-height:1.2; }
+  .card-solto .preco { font-size:.8rem; font-weight:800; color:var(--verde); }
 
   /* CARRINHO FLUTUANTE */
-  .fab-carrinho { position:fixed; bottom:24px; right:24px; background:var(--azul-800); color:white; width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; box-shadow:0 4px 16px rgba(0,51,102,0.4); cursor:pointer; z-index:150; }
-  .fab-qtd { position:absolute; top:-5px; right:-5px; background:var(--vermelho); color:white; font-size:12px; font-weight:900; min-width:22px; height:22px; border-radius:11px; display:flex; align-items:center; justify-content:center; border:2px solid white; }
-  .painel-carrinho { position:fixed; bottom:100px; right:24px; width:340px; max-width:calc(100vw - 48px); background:white; border-radius:12px; box-shadow:0 10px 40px rgba(0,0,0,0.2); z-index:200; display:none; flex-direction:column; overflow:hidden; border:1px solid var(--cinza-200); }
+  .fab-carrinho { position:fixed; bottom:20px; right:20px; background:var(--azul-800); color:white; width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; box-shadow:0 4px 16px rgba(0,51,102,0.4); cursor:pointer; z-index:150; }
+  .fab-qtd { position:absolute; top:-4px; right:-4px; background:var(--vermelho); color:white; font-size:11px; font-weight:900; min-width:20px; height:20px; border-radius:10px; display:flex; align-items:center; justify-content:center; border:2px solid white; }
+  .painel-carrinho { position:fixed; bottom:85px; right:16px; left:16px; max-width:400px; margin:0 auto; background:white; border-radius:12px; box-shadow:0 10px 40px rgba(0,0,0,0.3); z-index:200; display:none; flex-direction:column; overflow:hidden; border:1px solid var(--cinza-200); }
   .painel-carrinho.on { display:flex; }
-  .painel-head { background:var(--azul-800); color:white; padding:12px 16px; font-weight:800; font-size:.9rem; display:flex; justify-content:space-between; align-items:center; }
-  .painel-lista { padding:12px; max-height:300px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; }
-  .item-carrinho { display:grid; grid-template-columns:30px 1fr auto; gap:8px; align-items:center; padding:8px; background:var(--cinza-50); border-radius:6px; font-size:.8rem; }
+  .painel-head { background:var(--azul-800); color:white; padding:12px 16px; font-weight:800; font-size:.85rem; display:flex; justify-content:space-between; align-items:center; }
+  .painel-lista { padding:10px; max-height:260px; overflow-y:auto; display:flex; flex-direction:column; gap:6px; }
+  .item-carrinho { display:grid; grid-template-columns:30px 1fr auto; gap:8px; align-items:center; padding:6px; background:var(--cinza-50); border-radius:6px; font-size:.75rem; }
   .item-carrinho img { width:30px; height:30px; object-fit:contain; }
-  .painel-foot { padding:16px; border-top:1px solid var(--cinza-200); background:white; }
-  .total-linha { display:flex; justify-content:space-between; font-weight:800; font-size:1.1rem; margin-bottom:12px; color:var(--azul-800); }
-  .btn-finalizar { width:100%; background:var(--verde); color:white; border:none; padding:12px; border-radius:8px; font-weight:800; font-size:1rem; cursor:pointer; }
+  .painel-foot { padding:12px 16px; border-top:1px solid var(--cinza-200); background:white; }
+  .total-linha { display:flex; justify-content:space-between; font-weight:800; font-size:1rem; margin-bottom:10px; color:var(--azul-800); }
+  .btn-finalizar { width:100%; background:var(--verde); color:white; border:none; padding:10px; border-radius:8px; font-weight:800; font-size:.95rem; cursor:pointer; }
 
   /* MODAIS */
-  .modal-bg { position:fixed; inset:0; z-index:500; background:rgba(0,15,30,.85); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; padding:20px; opacity:0; pointer-events:none; transition:.25s; }
+  .modal-bg { position:fixed; inset:0; z-index:500; background:rgba(0,15,30,.85); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; padding:16px; opacity:0; pointer-events:none; transition:.25s; }
   .modal-bg.on { opacity:1; pointer-events:auto; }
-  .modal { background:white; border-radius:12px; max-width:600px; width:100%; max-height:85vh; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 25px 80px rgba(0,0,0,.5); }
-  .modal-head { background:var(--azul-800); color:white; padding:16px; display:flex; justify-content:space-between; align-items:center; }
-  .modal-body { padding:20px; overflow-y:auto; }
+  .modal { background:white; border-radius:12px; max-width:550px; width:100%; max-height:85vh; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 25px 80px rgba(0,0,0,.5); }
+  .modal-head { background:var(--azul-800); color:white; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; }
+  .modal-body { padding:16px; overflow-y:auto; }
 
-  .zoom-modal-bg { position: fixed; inset: 0; z-index: 10000; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
+  .zoom-modal-bg { position: fixed; inset: 0; z-index: 10000; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; padding: 16px; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
   .zoom-modal-bg.on { opacity: 1; pointer-events: auto; }
-  .zoom-modal-content { position: relative; max-width: 90vw; max-height: 90vh; display: flex; align-items: center; justify-content: center; }
-  .zoom-modal-content img { max-width: 100%; max-height: 85vh; object-fit: contain; border-radius: 12px; background: white; padding: 10px; }
-  .zoom-x { position: absolute; top: -15px; right: -15px; background: var(--vermelho); color: white; border: 2px solid white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 16px; font-weight: bold; }
+  .zoom-modal-content { position: relative; max-width: 95vw; max-height: 90vh; display: flex; align-items: center; justify-content: center; }
+  .zoom-modal-content img { max-width: 100%; max-height: 80vh; object-fit: contain; border-radius: 8px; background: white; padding: 6px; }
+  .zoom-x { position: absolute; top: -12px; right: -12px; background: var(--vermelho); color: white; border: 2px solid white; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 14px; font-weight: bold; }
 </style>
 </head>
 <body>
-
-  <!-- No topo do index.html (área infoCliente) -->
-<div class="info-cliente" id="infoCliente" style="display:none;">
-  <span id="nomeCliente">—</span>
-  <span class="uf" id="badgeUf">—</span>
-  <button onclick="abrirMeusPedidos()" style="background:#2563eb; color:white; border:none; padding:4px 10px; border-radius:12px; font-weight:800; font-size:0.75rem; cursor:pointer; margin-left:8px;">📋 Meus Pedidos</button>
-  <button onclick="sairCliente()" style="background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:12px; font-weight:800; font-size:0.75rem; cursor:pointer; margin-left:4px;">Sair</button>
-</div>
 
 <div id="telaLogin">
   <div class="login-box">
@@ -209,6 +198,8 @@
     <div class="info-cliente" id="infoCliente" style="display:none;">
       <span id="nomeCliente">—</span>
       <span class="uf" id="badgeUf">—</span>
+      <button class="btn-topo-acao" onclick="abrirMeusPedidos()">📋 Meus Pedidos</button>
+      <button class="btn-topo-sair" onclick="sairCliente()">Sair</button>
     </div>
 
     <div class="busca-wrap"><input type="search" id="busca" placeholder="Buscar produto..." autocomplete="off"></div>
@@ -229,7 +220,7 @@
 <div class="painel-carrinho" id="painelCarrinho">
   <div class="painel-head">
     <span>Seu Pedido</span>
-    <button onclick="toggleCarrinho()">✕</button>
+    <button onclick="toggleCarrinho()" style="background:none; border:none; color:white; font-weight:bold;">✕</button>
   </div>
   <div class="painel-lista" id="listaCarrinho"></div>
   <div class="painel-foot">
@@ -244,8 +235,8 @@
 <div class="modal-bg" id="modalBg" onclick="fecharModal(event)">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-head">
-      <h3 id="modalTitulo">—</h3>
-      <button class="modal-x" onclick="fecharModal(null, true)">✕</button>
+      <h3 id="modalTitulo" style="font-size:0.95rem;">—</h3>
+      <button onclick="fecharModal(null, true)" style="background:none; border:none; color:white; font-size:1.1rem; font-weight:bold;">✕</button>
     </div>
     <div class="modal-body" id="modalBody"></div>
   </div>
@@ -268,19 +259,42 @@ const fmtMoeda = v => (Number(v) || 0).toLocaleString('pt-BR', { minimumFraction
 const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 const parseAtributos = json => { try { return JSON.parse(json || '{}'); } catch { return {}; } };
 
+window.addEventListener('DOMContentLoaded', () => {
+  const cliSalvo = localStorage.getItem('clienteLogadoB2B');
+  const acrescimoSalvo = localStorage.getItem('acrescimoB2B');
+
+  if (cliSalvo) {
+    clienteLogado = JSON.parse(cliSalvo);
+    porcentagemAcrescimo = parseFloat(acrescimoSalvo) || 0;
+
+    document.getElementById('telaLogin').style.display = 'none';
+    document.getElementById('infoCliente').style.display = 'flex';
+    document.getElementById('nomeCliente').textContent = clienteLogado.nome;
+    document.getElementById('badgeUf').textContent = clienteLogado.uf;
+
+    carregar();
+  }
+});
+
+function sairCliente() {
+  localStorage.removeItem('clienteLogadoB2B');
+  localStorage.removeItem('acrescimoB2B');
+  window.location.reload();
+}
+
 async function abrirMeusPedidos() {
   if (!clienteLogado) return;
   
   document.getElementById('modalTitulo').textContent = '📋 Histórico de Pedidos / Orçamentos';
-  document.getElementById('modalBody').innerHTML = '<p style="text-align:center; color:#94a3b8;">Buscando seus pedidos...</p>';
+  document.getElementById('modalBody').innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">Buscando seus pedidos...</p>';
   document.getElementById('modalBg').classList.add('on');
 
   try {
-    const r = await fetch(`/api/cliente/${clienteLogado.cnpj}/pedidos`);
+    const r = await fetch(`/api/cliente/${encodeURIComponent(clienteLogado.cnpj)}/pedidos`);
     const j = await r.json();
 
     if (!j.ok || !j.pedidos.length) {
-      document.getElementById('modalBody').innerHTML = '<p style="text-align:center; color:#94a3b8;">Você ainda não enviou nenhum pedido.</p>';
+      document.getElementById('modalBody').innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">Você ainda não enviou nenhum pedido.</p>';
       return;
     }
 
@@ -288,22 +302,22 @@ async function abrirMeusPedidos() {
       const dataStr = new Date(p.data_criacao).toLocaleString('pt-BR');
       const itensTable = (p.itens || []).map(it => `
         <tr>
-          <td style="padding:6px; font-size:0.8rem;"><strong>${it.codigo_produto}</strong> - ${it.descricao}</td>
-          <td style="padding:6px; font-size:0.8rem; text-align:center;">${it.quantidade}</td>
-          <td style="padding:6px; font-size:0.8rem; text-align:right;">R$ ${fmtMoeda(it.preco_final)}</td>
+          <td style="padding:6px 0; font-size:0.75rem;"><strong>${it.codigo_produto}</strong> - ${escapeHtml(it.descricao)}</td>
+          <td style="padding:6px; font-size:0.75rem; text-align:center;">${it.quantidade}</td>
+          <td style="padding:6px 0; font-size:0.75rem; text-align:right;">R$ ${fmtMoeda(it.preco_final)}</td>
         </tr>
       `).join('');
 
       return `
-        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:12px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid #cbd5e1; padding-bottom:6px;">
-            <strong style="color:#003366;">Pedido #${p.id}</strong>
-            <span style="font-size:0.75rem; color:#64748b;">${dataStr}</span>
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px; margin-bottom:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">
+            <strong style="color:#003366; font-size:0.85rem;">Pedido #${p.id}</strong>
+            <span style="font-size:0.7rem; color:#64748b;">${dataStr}</span>
           </div>
-          <table style="width:100%; border-collapse:collapse; margin-bottom:8px;">
+          <table style="width:100%; border-collapse:collapse; margin-bottom:6px;">
             <tbody>${itensTable}</tbody>
           </table>
-          <div style="text-align:right; font-weight:900; color:#10b981; font-size:0.95rem;">
+          <div style="text-align:right; font-weight:900; color:#10b981; font-size:0.9rem;">
             Total: R$ ${fmtMoeda(p.total)}
           </div>
         </div>
@@ -312,7 +326,7 @@ async function abrirMeusPedidos() {
 
     document.getElementById('modalBody').innerHTML = html;
   } catch (e) {
-    document.getElementById('modalBody').innerHTML = '<p style="text-align:center; color:#ef4444;">Erro ao carregar pedidos.</p>';
+    document.getElementById('modalBody').innerHTML = '<p style="text-align:center; color:#ef4444; padding:20px;">Erro ao carregar pedidos.</p>';
   }
 }
 
@@ -487,6 +501,9 @@ async function fazerLogin() {
 
     clienteLogado = j.cliente;
     porcentagemAcrescimo = j.regra_acrescimo.porcentagem;
+
+    localStorage.setItem('clienteLogadoB2B', JSON.stringify(j.cliente));
+    localStorage.setItem('acrescimoB2B', j.regra_acrescimo.porcentagem);
 
     document.getElementById('telaLogin').style.display = 'none';
     document.getElementById('infoCliente').style.display = 'flex';
@@ -762,9 +779,9 @@ function renderFamiliaMolinete(fam, itens) {
     itensDaSub.sort((a, b) => a.ordem_excel - b.ordem_excel);
 
     return `
-      <div class="sub-bloco" style="margin-top: 10px;">
+      <div class="sub-bloco" style="margin-top: 8px;">
         ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
-        <div class="lista-filhos" style="margin-top: 6px;">${itensDaSub.map(linhaMolinete).join('')}</div>
+        <div class="lista-filhos" style="margin-top: 4px;">${itensDaSub.map(linhaMolinete).join('')}</div>
       </div>`;
   }).join('');
 
@@ -774,7 +791,7 @@ function renderFamiliaMolinete(fam, itens) {
       <div class="molinete-card" id="card-fam-${fam.id}">
         <div class="familia-side"><div class="familia-foto-principal" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
         <div class="molinete-info">
-          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes do produto</button>
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Detalhes</button>
           ${blocosTabelas}
         </div>
       </div>
@@ -803,9 +820,9 @@ function renderFamiliaCarretilha(fam, itens) {
     itensDaSub.sort((a, b) => a.ordem_excel - b.ordem_excel);
 
     return `
-      <div class="sub-bloco" style="margin-top: 10px;">
+      <div class="sub-bloco" style="margin-top: 8px;">
         ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
-        <div class="lista-filhos" style="margin-top: 6px;">${itensDaSub.map(linhaCarretilha).join('')}</div>
+        <div class="lista-filhos" style="margin-top: 4px;">${itensDaSub.map(linhaCarretilha).join('')}</div>
       </div>`;
   }).join('');
 
@@ -815,7 +832,7 @@ function renderFamiliaCarretilha(fam, itens) {
       <div class="molinete-card" id="card-fam-${fam.id}">
         <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
         <div class="molinete-info">
-          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes do produto</button>
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Detalhes</button>
           <div class="topo-miniaturas">${miniaturasHtml}</div>
           ${blocosTabelas}
         </div>
@@ -845,9 +862,9 @@ function renderFamiliaMotor(fam, itens) {
     itensDaSub.sort((a, b) => a.ordem_excel - b.ordem_excel);
 
     return `
-      <div class="sub-bloco" style="margin-top: 10px;">
+      <div class="sub-bloco" style="margin-top: 8px;">
         ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
-        <div class="lista-filhos" style="margin-top: 6px;">${itensDaSub.map(linhaMotor).join('')}</div>
+        <div class="lista-filhos" style="margin-top: 4px;">${itensDaSub.map(linhaMotor).join('')}</div>
       </div>`;
   }).join('');
 
@@ -857,7 +874,7 @@ function renderFamiliaMotor(fam, itens) {
       <div class="molinete-card" id="card-fam-${fam.id}">
         <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
         <div class="molinete-info">
-          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes do produto</button>
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Detalhes</button>
           <div class="topo-miniaturas">${miniaturasHtml}</div>
           ${blocosTabelas}
         </div>
@@ -868,7 +885,8 @@ function renderFamiliaMotor(fam, itens) {
 function selecionarCarretilha(famId, codigo, url) {
   const card = document.getElementById(`card-fam-${famId}`);
   card.querySelectorAll('.filho-mini').forEach(m => m.classList.remove('ativa'));
-  document.getElementById(`mini-${codigo}`).classList.add('ativa');
+  const targetMini = document.getElementById(`mini-${codigo}`);
+  if (targetMini) targetMini.classList.add('ativa');
   document.getElementById(`foto-pai-${famId}`).innerHTML = `<img src="${url}">`;
 }
 
@@ -891,17 +909,17 @@ function renderFamiliaVara(fam, itens) {
       const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
       const info = analisarVara(it);
       const calc = it.calculoPreco;
-      const celulasSpecs = colunas.map(c => `<td style="text-align:center; font-size:0.7rem; color:var(--cinza-700);">${escapeHtml(info.especificacoes[c] || '-')}</td>`).join('');
+      const celulasSpecs = colunas.map(c => `<td style="text-align:center; font-size:0.65rem; color:var(--cinza-700); padding:6px;">${escapeHtml(info.especificacoes[c] || '-')}</td>`).join('');
 
       return `
         <tr class="linha-tabela-vara">
-          <td class="l-cod" style="font-family:monospace; font-weight:800; color:var(--azul-800);">${it.codigo}</td>
-          <td style="font-weight:800; color:var(--azul-800); font-size:0.75rem;">
+          <td class="l-cod" style="font-family:monospace; font-weight:800; color:var(--azul-800); padding:6px;">${it.codigo}</td>
+          <td style="font-weight:800; color:var(--azul-800); font-size:0.7rem; padding:6px;">
             ${escapeHtml(info.modeloJson)}
             ${calc.temOferta ? `<span class="tarja-oferta-item">🔥 -${calc.pctDesconto}%</span>` : ''}
           </td>
           ${celulasSpecs}
-          <td style="text-align:center; font-weight:800; color:var(--azul-800);">
+          <td style="text-align:center; font-weight:800; color:var(--azul-800); padding:6px;">
             ${calc.temOferta ? `
               <div class="preco-box-oferta">
                 <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
@@ -909,7 +927,7 @@ function renderFamiliaVara(fam, itens) {
               </div>
             ` : `R$ ${fmtMoeda(calc.precoFinal)}`}
           </td>
-          <td style="text-align:center;" onclick="event.stopPropagation()">
+          <td style="text-align:center; padding:6px;" onclick="event.stopPropagation()">
             <div class="qtd-ctrl" style="display:inline-flex;">
               <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
               <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
@@ -920,15 +938,15 @@ function renderFamiliaVara(fam, itens) {
     }).join('');
 
     return `
-      <div class="sub-bloco" style="margin-top: 16px;">
+      <div class="sub-bloco" style="margin-top: 12px;">
         ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
-        <div style="overflow-x: auto; width: 100%; margin-top: 8px; background: white; border-radius: 6px; border: 1px solid var(--cinza-200);">
+        <div style="overflow-x: auto; width: 100%; margin-top: 6px; background: white; border-radius: 6px; border: 1px solid var(--cinza-200); -webkit-overflow-scrolling: touch;">
           <table style="width: 100%; border-collapse: collapse; min-width: max-content;">
             <thead>
               <tr style="background: var(--cinza-50); border-bottom: 1px solid var(--cinza-200); font-size: 0.6rem; font-weight: 800; color: var(--cinza-500); text-transform: uppercase;">
-                <th style="padding: 8px; text-align: left;">Código</th><th style="padding: 8px; text-align: left;">Modelo</th>
-                ${colunas.map(c => `<th style="padding: 8px; text-align: center;">${escapeHtml(c)}</th>`).join('')}
-                <th style="padding: 8px; text-align: center;">Preço</th><th style="padding: 8px; text-align: center;">Qtd</th>
+                <th style="padding: 6px; text-align: left;">Código</th><th style="padding: 6px; text-align: left;">Modelo</th>
+                ${colunas.map(c => `<th style="padding: 6px; text-align: center;">${escapeHtml(c)}</th>`).join('')}
+                <th style="padding: 6px; text-align: center;">Preço</th><th style="padding: 6px; text-align: center;">Qtd</th>
               </tr>
             </thead>
             <tbody>${linhas}</tbody>
@@ -943,7 +961,7 @@ function renderFamiliaVara(fam, itens) {
       <div class="molinete-card" id="card-fam-${fam.id}">
         <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
         <div class="molinete-info" style="overflow: hidden;">
-          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes do produto</button>
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Detalhes</button>
           ${blocosTabelas}
         </div>
       </div>
@@ -967,30 +985,30 @@ function renderFamiliaLinha(fam, itens) {
       const calc = it.calculoPreco;
       
       return `
-        <div class="isca-cor-card" style="padding: 12px; justify-content: flex-start; position:relative;">
-          ${calc.temOferta ? `<div style="position:absolute; top:4px; left:4px; background:#ef4444; color:white; font-size:9px; font-weight:900; padding:2px 5px; border-radius:4px;">-${calc.pctDesconto}%</div>` : ''}
-          <div style="font-size: 1.1rem; font-weight: 900; color: var(--azul-800); line-height: 1; margin-bottom: 6px; text-align: center; text-transform: uppercase; margin-top:8px;">${escapeHtml(info.bitola)}</div>
-          ${info.resistencia ? `<div style="font-size: .7rem; font-weight: 700; color: var(--cinza-500); text-align: center; margin-bottom: 12px; line-height: 1.2;">${escapeHtml(info.resistencia)}</div>` : '<div style="height: 20px;"></div>'}
+        <div class="isca-cor-card" style="padding: 8px; justify-content: flex-start; position:relative;">
+          ${calc.temOferta ? `<div style="position:absolute; top:4px; left:4px; background:#ef4444; color:white; font-size:8px; font-weight:900; padding:2px 4px; border-radius:4px;">-${calc.pctDesconto}%</div>` : ''}
+          <div style="font-size: 1rem; font-weight: 900; color: var(--azul-800); line-height: 1; margin-bottom: 4px; text-align: center; text-transform: uppercase; margin-top:6px;">${escapeHtml(info.bitola)}</div>
+          ${info.resistencia ? `<div style="font-size: .65rem; font-weight: 700; color: var(--cinza-500); text-align: center; margin-bottom: 8px;">${escapeHtml(info.resistencia)}</div>` : '<div style="height: 16px;"></div>'}
           
           ${calc.temOferta ? `
-            <div class="preco-box-oferta" style="margin-bottom:8px;">
+            <div class="preco-box-oferta" style="margin-bottom:6px; align-items:center;">
               <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
               <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
             </div>
-          ` : `<div class="cor-preco" style="font-size: 1rem; margin-bottom: 8px;">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+          ` : `<div class="cor-preco" style="font-size: .85rem; margin-bottom: 6px;">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
 
           <div class="qtd-ctrl" style="display: flex; width: 100%; justify-content: space-between;" onclick="event.stopPropagation()">
             <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
-            <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)" style="flex: 1; max-width: 50px;">
+            <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)" style="flex: 1;">
             <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
           </div>
         </div>`;
     }).join('');
 
     return `
-      <div class="sub-bloco" style="margin-top: 16px;">
+      <div class="sub-bloco" style="margin-top: 12px;">
         ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
-        <div class="isca-grade" style="margin-top: 12px; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));">${cardsHtml}</div>
+        <div class="isca-grade" style="margin-top: 8px;">${cardsHtml}</div>
       </div>`;
   }).join('');
 
@@ -1000,7 +1018,7 @@ function renderFamiliaLinha(fam, itens) {
       <div class="molinete-card" id="card-fam-${fam.id}">
         <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
         <div class="molinete-info" style="overflow: hidden;">
-          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes do produto</button>
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Detalhes</button>
           ${blocosTabelas}
         </div>
       </div>
@@ -1027,23 +1045,23 @@ function renderFamiliaGrade(fam, itens) {
       
       return `
         <div class="card-solto ${isAtivo}" id="mini-${it.codigo}" 
-             style="position:relative; display:flex; flex-direction:column; justify-content:space-between; padding:12px; height: 100%; cursor:pointer; transition: 0.2s;"
+             style="position:relative; display:flex; flex-direction:column; justify-content:space-between; padding:8px; height: 100%; cursor:pointer;"
              onclick="selecionarAcessorio('${fam.id}', '${it.codigo}', '${it.imagem_url}', \`${escapeHtml(it.descricao_longa).replace(/`/g, '')}\`, \`${escapeHtml(it.subgrupo).replace(/`/g, '')}\`)">
           
-          ${calc.temOferta ? `<div style="position:absolute; top:6px; left:6px; background:#ef4444; color:white; font-size:9px; font-weight:900; padding:2px 5px; border-radius:4px; z-index:3;">-${calc.pctDesconto}%</div>` : ''}
-          ${q > 0 ? `<div style="position:absolute; top:6px; right:6px; background:var(--verde); color:white; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:900; border:2px solid white; z-index:3;">${q}</div>` : ''}
+          ${calc.temOferta ? `<div style="position:absolute; top:4px; left:4px; background:#ef4444; color:white; font-size:8px; font-weight:900; padding:2px 4px; border-radius:4px; z-index:3;">-${calc.pctDesconto}%</div>` : ''}
+          ${q > 0 ? `<div style="position:absolute; top:4px; right:4px; background:var(--verde); color:white; width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:900; border:2px solid white; z-index:3;">${q}</div>` : ''}
           
-          <div class="img" style="margin-bottom:12px; aspect-ratio:1; background:var(--cinza-50); border-radius:6px; overflow:hidden;">${temImagem ? `<img src="${it.imagem_url}" alt="${escapeHtml(it.subgrupo)}">` : '🖼️'}</div>
+          <div class="img" style="margin-bottom:8px; aspect-ratio:1; background:var(--cinza-50); border-radius:6px; overflow:hidden;">${temImagem ? `<img src="${it.imagem_url}" alt="${escapeHtml(it.subgrupo)}">` : '🖼️'}</div>
           <div style="flex:1; display:flex; flex-direction:column; justify-content:flex-start;">
-            <div class="nome" style="font-size:0.75rem; font-weight:800; color:var(--azul-800); margin-bottom:8px; line-height:1.2; text-align:left;">${escapeHtml(it.subgrupo)}</div>
+            <div class="nome" style="font-size:0.7rem; font-weight:800; color:var(--azul-800); margin-bottom:6px; line-height:1.2; text-align:left;">${escapeHtml(it.subgrupo)}</div>
           </div>
-          <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
+          <div style="display:flex; flex-direction:column; gap:6px; margin-top:6px;">
             ${calc.temOferta ? `
               <div class="preco-box-oferta" style="align-items:flex-start;">
                 <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
                 <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
               </div>
-            ` : `<div class="preco" style="font-size:.9rem; font-weight:900; color:var(--verde); text-align:left;">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+            ` : `<div class="preco" style="font-size:.8rem; font-weight:900; color:var(--verde); text-align:left;">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
             
             <div class="qtd-ctrl" style="display:flex; width:100%; justify-content:space-between;" onclick="event.stopPropagation()">
               <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
@@ -1055,9 +1073,9 @@ function renderFamiliaGrade(fam, itens) {
     }).join('');
 
     return `
-      <div class="sub-bloco" style="margin-top: 16px;">
+      <div class="sub-bloco" style="margin-top: 12px;">
         ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
-        <div class="grade-soltos" style="margin-top: 8px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px;">${cardsHtml}</div>
+        <div class="grade-soltos" style="margin-top: 6px;">${cardsHtml}</div>
       </div>`;
   }).join('');
 
@@ -1067,7 +1085,7 @@ function renderFamiliaGrade(fam, itens) {
       <div class="molinete-card" id="card-fam-${fam.id}">
         <div class="familia-side">
           <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div>
-          <button class="btn-detalhes" id="btn-detalhes-${fam.id}" data-titulo="${escapeHtml(primeiroItem.subgrupo || fam.nome)}" data-desc="${escapeHtml(descInicial)}" onclick="abrirModalPorBotao(this)" style="justify-content:center; width:100%;">🔍 Ver detalhes</button>
+          <button class="btn-detalhes" id="btn-detalhes-${fam.id}" data-titulo="${escapeHtml(primeiroItem.subgrupo || fam.nome)}" data-desc="${escapeHtml(descInicial)}" onclick="abrirModalPorBotao(this)" style="justify-content:center; width:100%;">🔍 Detalhes</button>
         </div>
         <div class="molinete-info" style="overflow: hidden;">${blocosTabelas}</div>
       </div>
@@ -1113,7 +1131,7 @@ function renderFamiliaIsca(fam, itens) {
         <span class="isca-badge">${q}</span>
         <img src="${it.imagem_url}">
         <div class="cor-nome">${escapeHtml(info.cor || 'Padrão')}</div>
-        ${info.especificacoes ? `<div style="font-size:.65rem; color:var(--cinza-500); font-weight:600; text-align:center; margin-bottom:4px;">${info.especificacoes}</div>` : ''}
+        ${info.especificacoes ? `<div style="font-size:.6rem; color:var(--cinza-500); font-weight:600; text-align:center; margin-bottom:2px;">${info.especificacoes}</div>` : ''}
         
         ${calc.temOferta ? `
           <div class="preco-box-oferta">
@@ -1139,7 +1157,7 @@ function renderFamiliaIsca(fam, itens) {
       <div class="isca-card" id="card-fam-${fam.id}">
         <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
         <div class="isca-info">
-          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver descrição</button>
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Descrição</button>
           <div class="isca-modelos-tabs">${tabsHtml}</div>
           <div class="isca-titulo-cores">Cores e Tamanhos</div>
           <div class="isca-grade" id="grade-cores-${fam.id}">${coresHtml}</div>
@@ -1167,7 +1185,7 @@ function trocarModeloIsca(famId, modeloNome) {
         <span class="isca-badge">${q}</span>
         <img src="${it.imagem_url}">
         <div class="cor-nome">${escapeHtml(info.cor || 'Padrão')}</div>
-        ${info.especificacoes ? `<div style="font-size:.65rem; color:var(--cinza-500); font-weight:600; text-align:center; margin-bottom:4px;">${info.especificacoes}</div>` : ''}
+        ${info.especificacoes ? `<div style="font-size:.6rem; color:var(--cinza-500); font-weight:600; text-align:center; margin-bottom:2px;">${info.especificacoes}</div>` : ''}
         
         ${calc.temOferta ? `
           <div class="preco-box-oferta">
@@ -1188,7 +1206,8 @@ function trocarModeloIsca(famId, modeloNome) {
 function selecionarIsca(famId, codigo, url) {
   const card = document.getElementById(`card-fam-${famId}`);
   card.querySelectorAll('.isca-cor-card').forEach(m => m.classList.remove('ativa'));
-  document.getElementById(`mini-${codigo}`).classList.add('ativa');
+  const targetMini = document.getElementById(`mini-${codigo}`);
+  if (targetMini) targetMini.classList.add('ativa');
   document.getElementById(`foto-pai-${famId}`).innerHTML = `<img src="${url}">`;
 }
 
@@ -1217,7 +1236,7 @@ function renderFamiliaAnzol(fam, itens) {
       <div class="anzol-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}">
         <span class="anzol-badge">${q}</span>
         <div class="anzol-numero">${escapeHtml(info.numero)}</div>
-        ${info.qtd ? `<div style="font-size:.65rem; color:var(--cinza-500); font-weight:700; margin-bottom:4px; text-align:center;">${escapeHtml(info.qtd)}</div>` : ''}
+        ${info.qtd ? `<div style="font-size:.6rem; color:var(--cinza-500); font-weight:700; margin-bottom:2px; text-align:center;">${escapeHtml(info.qtd)}</div>` : ''}
         
         ${calc.temOferta ? `
           <div class="preco-box-oferta">
@@ -1246,14 +1265,14 @@ function renderFamiliaAnzol(fam, itens) {
         <span class="marca-badge">${escapeHtml(itens[0].marca)}</span>
       </div>
       <div class="anzol-card" id="card-fam-${fam.id}">
-        ${temOfertaNaFamilia ? `<div class="badge-oferta-banner">🔥 OFERTA -${maiorDesconto}% OFF</div>` : ''}
+        ${temOfertaNaFamilia ? `<div class="badge-oferta-banner">🔥 OFERTA -${maiorDesconto}%</div>` : ''}
         <div class="familia-side">
           <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">
             ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
           </div>
         </div>
         <div class="anzol-info">
-          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver descrição</button>
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Descrição</button>
           ${subdivisoes.length > 1 ? `<div class="anzol-tabs">${tabsHtml}</div>` : ''}
           <div class="isca-titulo-cores">OPÇÕES / ESPECIFICAÇÕES</div>
           <div class="anzol-grade" id="grade-numeros-${fam.id}">${numerosHtml}</div>
@@ -1281,7 +1300,7 @@ function trocarTipoAnzol(famId, subIndex) {
       <div class="anzol-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}">
         <span class="anzol-badge">${q}</span>
         <div class="anzol-numero">${escapeHtml(info.numero)}</div>
-        ${info.qtd ? `<div style="font-size:.65rem; color:var(--cinza-500); font-weight:700; margin-bottom:4px; text-align:center;">${escapeHtml(info.qtd)}</div>` : ''}
+        ${info.qtd ? `<div style="font-size:.6rem; color:var(--cinza-500); font-weight:700; margin-bottom:2px; text-align:center;">${escapeHtml(info.qtd)}</div>` : ''}
         
         ${calc.temOferta ? `
           <div class="preco-box-oferta">
@@ -1313,18 +1332,18 @@ function renderFamiliaComum(fam, itens) {
 
     return `
       <div class="linha-filho">
-        <div class="l-cod">${it.codigo}</div>
-        <div class="l-nome">
-          ${escapeHtml(it.subgrupo)}
-          ${calc.temOferta ? `<span class="tarja-oferta-item">🔥 -${calc.pctDesconto}%</span>` : ''}
+        <div class="l-info-main">
+          <span class="l-cod">${it.codigo}</span>
+          <span class="l-nome">${escapeHtml(it.subgrupo)} ${calc.temOferta ? `<span class="tarja-oferta-item">🔥 -${calc.pctDesconto}%</span>` : ''}</span>
         </div>
-        <div class="l-var-col"></div>
-        ${calc.temOferta ? `
-          <div class="preco-box-oferta">
-            <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
-            <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
-          </div>
-        ` : `<div class="l-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+        <div class="l-direita-wrap">
+          ${calc.temOferta ? `
+            <div class="preco-box-oferta">
+              <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
+              <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
+            </div>
+          ` : `<div class="l-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+        </div>
         <div class="l-qtd" onclick="event.stopPropagation()">
           <div class="qtd-ctrl"><button onclick="mudarQtd('${it.codigo}', -1)">−</button><input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)"><button onclick="mudarQtd('${it.codigo}', 1)">+</button></div>
         </div>
@@ -1337,7 +1356,7 @@ function renderFamiliaComum(fam, itens) {
       <div class="familia-card" id="card-fam-${fam.id}">
         <div class="familia-side"><div class="familia-foto-principal" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
         <div class="familia-info">
-          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes</button>
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Detalhes</button>
           <div class="lista-filhos">${linhasHtml}</div>
         </div>
       </div>
@@ -1348,11 +1367,11 @@ function cardSoltos(it) {
   const calc = it.calculoPreco;
   return `
     <div class="card-solto" style="position:relative;">
-      ${calc.temOferta ? `<div style="position:absolute; top:4px; left:4px; background:#ef4444; color:white; font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px;">-${calc.pctDesconto}%</div>` : ''}
+      ${calc.temOferta ? `<div style="position:absolute; top:4px; left:4px; background:#ef4444; color:white; font-size:8px; font-weight:800; padding:2px 4px; border-radius:4px;">-${calc.pctDesconto}%</div>` : ''}
       <div class="img" onclick="abrirZoomImagem(this)">${it.imagem_url ? `<img src="${it.imagem_url}">` : '🖼️'}</div>
       <div class="nome">${escapeHtml(it.subgrupo)}</div>
       ${calc.temOferta ? `
-        <div class="preco-box-oferta">
+        <div class="preco-box-oferta" style="align-items:center;">
           <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
           <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
         </div>
@@ -1363,7 +1382,7 @@ function cardSoltos(it) {
 function abrirModalDescricao(titulo, texto) {
   if (!texto) texto = 'Este produto não possui descrição detalhada.';
   document.getElementById('modalTitulo').textContent = titulo || 'Detalhes do Produto';
-  document.getElementById('modalBody').innerHTML = `<p>${escapeHtml(texto)}</p>`;
+  document.getElementById('modalBody').innerHTML = `<p style="font-size:0.85rem; line-height:1.4;">${escapeHtml(texto)}</p>`;
   document.getElementById('modalBg').classList.add('on');
 }
 function abrirModalPorBotao(btn) { abrirModalDescricao(btn.getAttribute('data-titulo'), btn.getAttribute('data-desc')); }
@@ -1402,12 +1421,12 @@ function atualizarCarrinho() {
     
     return `
       <div class="item-carrinho">
-        ${i.img ? `<img src="${i.img}">` : '<div style="width:30px;text-align:center;font-size:20px;">🖼️</div>'}
+        ${i.img ? `<img src="${i.img}">` : '<div style="width:30px;text-align:center;font-size:16px;">🖼️</div>'}
         <div class="dados">
-          <span class="titulo">${escapeHtml(i.desc)}</span>
-          <span class="preco">${i.qtd}x R$ ${fmtMoeda(sub)}</span>
+          <span class="titulo" style="font-weight:bold; color:var(--azul-800);">${escapeHtml(i.desc)}</span>
+          <span class="preco" style="display:block; color:var(--verde); font-weight:bold;">${i.qtd}x R$ ${fmtMoeda(sub)}</span>
         </div>
-        <div class="acoes"><button onclick="setQtd('${cod}', 0)">✕</button></div>
+        <div class="acoes"><button onclick="setQtd('${cod}', 0)" style="background:none; border:none; color:var(--vermelho); font-weight:bold; cursor:pointer;">✕</button></div>
       </div>`;
   }).join('');
 
