@@ -879,4 +879,27 @@ app.post('/api/vendedor/cliente', async (req, res) => {
     res.status(500).json({ ok: false, erro: e.message });
   }
 });
+
+// ==========================================
+// ROTA: PRODUTOS COM ESTOQUE (Admin)
+// ==========================================
+app.get('/api/admin/produtos-estoque', async (req, res) => {
+  try {
+    // Busca na tabela itens_sistema onde estoque seja maior que zero
+    const { data: itens, error } = await supabase
+      .from('itens_sistema')
+      .select('id, codigo, cod_barras, descricao, estoque, preco_venda, ativo, atualizado_em')
+      .gt('estoque', 0)
+      .order('descricao', { ascending: true });
+
+    if (error) throw error;
+
+    res.json({ ok: true, total: itens.length, itens });
+  } catch (e) {
+    console.error('Erro ao buscar produtos com estoque:', e);
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
+
+
 app.listen(PORT, () => console.log(`🚀 Servidor rodando em http://localhost:${PORT}`));

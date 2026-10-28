@@ -93,6 +93,7 @@
 <div class="wrap">
   <aside class="sidebar">
     <button class="active" data-page="importar">📥 Importar</button>
+    <button data-page="estoque">📦 Produtos em Estoque</button>
     <button data-page="ofertas">🔥 Ofertas</button>
     <button data-page="familias">👨‍👩‍👧‍👦 Famílias</button>
     <button data-page="clientes">👥 Clientes</button>
@@ -103,6 +104,7 @@
   <main class="main">
     <div class="alerta" id="alerta"></div>
 
+    <!-- PÁGINA: IMPORTAR -->
     <section class="page active" id="page-importar">
       <div class="status-cards">
         <div class="card"><div class="label">Itens Sistema</div><div class="value" id="cnt-sistema">—</div></div>
@@ -138,7 +140,57 @@
       </div>
     </section>
 
-    <!-- ABA DE GESTÃO DE OFERTAS -->
+    <!-- PÁGINA: PRODUTOS EM ESTOQUE -->
+    <section class="page" id="page-estoque">
+      <div class="painel">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:16px;">
+          <div>
+            <h2>📦 Produtos com Saldo em Estoque</h2>
+            <p style="font-size:14px; color:#94a3b8;">Itens cadastrados na tabela <code>itens_sistema</code> que possuem estoque maior que zero.</p>
+          </div>
+          <div style="display:flex; gap:12px; align-items:center;">
+            <input type="text" id="buscaEstoque" placeholder="🔍 Buscar código, barras ou descrição..." oninput="filtrarTabelaEstoque()" style="width:300px;">
+            <button class="btn-primario" onclick="carregarEstoque()">🔄 Atualizar</button>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:24px;">
+          <div style="background:#0f172a; padding:16px; border-radius:10px; border:1px solid #334155;">
+            <span style="font-size:12px; font-weight:800; color:#38bdf8; text-transform:uppercase;">Itens Cadastrados</span>
+            <div id="resumoTotalItens" style="font-size:24px; font-weight:900; color:#f8fafc; margin-top:4px;">0</div>
+          </div>
+          <div style="background:#0f172a; padding:16px; border-radius:10px; border:1px solid #334155;">
+            <span style="font-size:12px; font-weight:800; color:#10b981; text-transform:uppercase;">Total de Peças</span>
+            <div id="resumoTotalPecas" style="font-size:24px; font-weight:900; color:#f8fafc; margin-top:4px;">0</div>
+          </div>
+          <div style="background:#0f172a; padding:16px; border-radius:10px; border:1px solid #334155;">
+            <span style="font-size:12px; font-weight:800; color:#a78bfa; text-transform:uppercase;">Valor Total em Estoque</span>
+            <div id="resumoValorEstoque" style="font-size:24px; font-weight:900; color:#a78bfa; margin-top:4px;">R$ 0,00</div>
+          </div>
+        </div>
+
+        <div style="overflow-x:auto;">
+          <table id="tabelaEstoqueAdmin">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Cód. Barras</th>
+                <th>Descrição</th>
+                <th style="text-align:center;">Estoque</th>
+                <th style="text-align:right;">Preço Venda</th>
+                <th style="text-align:right;">Subtotal</th>
+                <th style="text-align:center;">Atualizado Em</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="7" style="text-align:center; padding:30px; color:#94a3b8;">Carregando estoque...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- PÁGINA: GESTÃO DE OFERTAS -->
     <section class="page" id="page-ofertas">
       <div class="painel" style="background:#0f172a; border:1px dashed #ef4444;">
         <h2 style="color:#f87171;">🔥 Cadastrar Produto em Oferta</h2>
@@ -181,6 +233,7 @@
       </div>
     </section>
 
+    <!-- PÁGINA: FAMÍLIAS -->
     <section class="page" id="page-familias">
       <div class="painel">
         <h2>Criar Família de Produtos</h2>
@@ -208,6 +261,7 @@
       </div>
     </section>
 
+    <!-- PÁGINA: CLIENTES -->
     <section class="page" id="page-clientes">
       <div class="painel">
         <h2>👥 Clientes Cadastrados</h2>
@@ -242,6 +296,7 @@
       </div>
     </section>
 
+    <!-- PÁGINA: ACRÉSCIMOS -->
     <section class="page" id="page-acrescimos">
       <div class="painel">
         <h2>Grupos de Acréscimo</h2>
@@ -263,6 +318,7 @@
       </div>
     </section>
 
+    <!-- PÁGINA: VENDEDORES -->
     <section class="page" id="page-vendedores">
       <div class="painel" style="background:#0f172a; border:1px dashed #475569;">
         <h2 style="margin-bottom:16px;">➕ Novo Vendedor</h2>
@@ -296,6 +352,7 @@
   </main>
 </div>
 
+<!-- MODAL SUBDIVISÃO -->
 <div class="modal-bg" id="modalSubBg">
   <div class="modal">
     <h3>Criar Subdivisão</h3>
@@ -315,6 +372,7 @@ let familiasCache = [];
 let pagClientes = 1, totPagClientes = 1, timeoutCli = null;
 let gruposAcrescimoCache = [], ufsAcrescimoCache = [];
 let ofertasCache = [];
+let listaEstoqueCache = [];
 
 document.querySelectorAll('.sidebar button').forEach(b => {
   b.onclick = () => {
@@ -326,6 +384,7 @@ document.querySelectorAll('.sidebar button').forEach(b => {
     document.getElementById('page-' + pageId)?.classList.add('active');
 
     if (pageId === 'importar') carregarStatus();
+    if (pageId === 'estoque') carregarEstoque();
     if (pageId === 'ofertas') carregarOfertas();
     if (pageId === 'familias') carregarDados();
     if (pageId === 'clientes') carregarClientes(1);
@@ -374,6 +433,84 @@ async function upload(tipo) {
   } catch(e) { 
     msg.textContent = e.message; 
   } finally { btn.disabled = false; }
+}
+
+// LÓGICA DE GESTÃO DE ESTOQUE
+async function carregarEstoque() {
+  const tbody = document.querySelector('#tabelaEstoqueAdmin tbody');
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:#94a3b8;">Carregando saldo de estoque...</td></tr>';
+
+  try {
+    const r = await fetch('/api/admin/produtos-estoque');
+    const j = await r.json();
+
+    if (!j.ok) throw new Error(j.erro);
+
+    listaEstoqueCache = j.itens;
+    renderizarTabelaEstoque(listaEstoqueCache);
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#ef4444; padding:30px;">Erro ao carregar estoque: ${e.message}</td></tr>`;
+  }
+}
+
+function renderizarTabelaEstoque(itens) {
+  const tbody = document.querySelector('#tabelaEstoqueAdmin tbody');
+
+  if (!itens || itens.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:#94a3b8;">Nenhum produto encontrado com estoque.</td></tr>';
+    document.getElementById('resumoTotalItens').textContent = '0';
+    document.getElementById('resumoTotalPecas').textContent = '0';
+    document.getElementById('resumoValorEstoque').textContent = 'R$ 0,00';
+    return;
+  }
+
+  let totalPecas = 0;
+  let valorTotalEstoque = 0;
+
+  const html = itens.map(item => {
+    const est = Number(item.estoque) || 0;
+    const preco = Number(item.preco_venda) || 0;
+    const subtotal = est * preco;
+
+    totalPecas += est;
+    valorTotalEstoque += subtotal;
+
+    const dataAtualizado = item.atualizado_em ? new Date(item.atualizado_em).toLocaleString('pt-BR') : '—';
+
+    return `
+      <tr>
+        <td><strong style="color:#38bdf8; font-family:monospace;">${item.codigo}</strong></td>
+        <td style="color:#94a3b8; font-size:13px;">${item.cod_barras || '—'}</td>
+        <td style="font-weight:600;">${item.descricao}</td>
+        <td style="text-align:center;"><span style="background:#064e3b; color:#6ee7b7; font-weight:800; padding:3px 10px; border-radius:12px; font-size:12px;">${est}</span></td>
+        <td style="text-align:right;">R$ ${preco.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+        <td style="text-align:right;"><strong style="color:#10b981;">R$ ${subtotal.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</strong></td>
+        <td style="text-align:center; font-size:12px; color:#94a3b8;">${dataAtualizado}</td>
+      </tr>
+    `;
+  }).join('');
+
+  tbody.innerHTML = html;
+
+  document.getElementById('resumoTotalItens').textContent = itens.length;
+  document.getElementById('resumoTotalPecas').textContent = totalPecas.toLocaleString('pt-BR');
+  document.getElementById('resumoValorEstoque').textContent = `R$ ${valorTotalEstoque.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+}
+
+function filtrarTabelaEstoque() {
+  const q = document.getElementById('buscaEstoque').value.toLowerCase().trim();
+  if (!q) {
+    renderizarTabelaEstoque(listaEstoqueCache);
+    return;
+  }
+
+  const filtrados = listaEstoqueCache.filter(item => 
+    String(item.codigo).toLowerCase().includes(q) ||
+    String(item.cod_barras || '').toLowerCase().includes(q) ||
+    String(item.descricao || '').toLowerCase().includes(q)
+  );
+
+  renderizarTabelaEstoque(filtrados);
 }
 
 async function carregarDados() {
