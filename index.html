@@ -465,8 +465,8 @@ function analisarCarretilha(it) {
   if (!modelo) { const partes = (it.subgrupo || '').trim().split(/\s+/); modelo = partes.slice(-2).join(' ') || it.subgrupo; }
   if (!ladoManivela) {
     const subUpper = (it.subgrupo || '').toUpperCase();
-    if (subUpper.includes('ESQ') || subUpper.includes('LEFT')) ladoManivela = 'Esquerda';
-    else if (subUpper.includes('DIR') || subUpper.includes('RIGHT')) ladoManivela = 'Direita';
+    if (subUpper.includes('ESQ') || subUpper.includes('LEFT')) ladoManivela = 'ESQUERDA';
+    else if (subUpper.includes('DIR') || subUpper.includes('RIGHT')) ladoManivela = 'DIREITA';
   }
   const partesVar = [];
   if (relacao) partesVar.push(relacao);
@@ -668,11 +668,11 @@ function renderizar() {
         nomeFam.includes('ANZOL') || nomeFam.includes('EMPATE') || nomeFam.includes('GIRADOR') || 
         nomeFam.includes('SNAP') || nomeFam.includes('CABO') || nomeFam.includes('LUVA')
       ) tipo = 'anzol';
-      else if (nomeFam.includes('MOLINETE') || nomeFam.includes('CARRETILHA')) tipo = 'equipamento_grade'; // ISCA-LIKE LAYOUT PARA EQUIPAMENTOS
+      else if (nomeFam.includes('MOLINETE') || nomeFam.includes('CARRETILHA')) tipo = 'equipamento_direto'; // TUDO VISÍVEL EM SUB-BLOCO
       else if (nomeFam.includes('MOTOR') || grupoItem.includes('MOTOR')) tipo = 'motor';
       
       if (tipo === 'isca') html += renderFamiliaIsca(fam, filhos);
-      else if (tipo === 'equipamento_grade') html += renderFamiliaEquipamentoGrade(fam, filhos);
+      else if (tipo === 'equipamento_direto') html += renderFamiliaEquipamentoDireto(fam, filhos);
       else if (tipo === 'anzol') html += renderFamiliaAnzol(fam, filhos);
       else if (tipo === 'motor') html += renderFamiliaMotor(fam, filhos);
       else if (tipo === 'vara') html += renderFamiliaVara(fam, filhos);
@@ -691,14 +691,15 @@ function renderizar() {
   cont.innerHTML = html;
 }
 
-/* NOVO RENDERIZADOR COMPACTO PARA CARRETILHAS E MOLINETES NO MESMO PADRÃO DAS ISCAS */
-function renderFamiliaEquipamentoGrade(fam, itens) {
+/* CARRETILHAS E MOLINETES: EXIBIÇÃO DIRETA SEM ABAS */
+function renderFamiliaEquipamentoDireto(fam, itens) {
   const primeiroItem = itens[0];
   const imgInicial = primeiroItem?.imagem_url || '';
+  const isCarretilha = fam.nome.toUpperCase().includes('CARRETILHA');
 
+  // Mapeia modelos
   const modelosMap = new Map();
   itens.filter(it => it.estoque > 0).forEach(it => {
-    const isCarretilha = fam.nome.toUpperCase().includes('CARRETILHA');
     const info = isCarretilha ? analisarCarretilha(it) : analisarMolinete(it);
     const modeloNome = info.modelo || it.subgrupo;
     if (!modelosMap.has(modeloNome)) modelosMap.set(modeloNome, { nome: modeloNome, itens: [] });
@@ -706,45 +707,44 @@ function renderFamiliaEquipamentoGrade(fam, itens) {
   });
 
   const modelos = Array.from(modelosMap.values());
-  modelos.forEach(m => m.itens.sort((a, b) => a.ordem_excel - b.ordem_excel));
 
-  const tabsHtml = modelos.map((mod, idx) => `
-    <button class="isca-modelo-btn ${idx===0?'ativo':''}" onclick="trocarModeloEquipamento('${fam.id}', '${escapeHtml(mod.nome)}')">
-      ${escapeHtml(mod.nome)}
-    </button>
-  `).join('');
+  const blocosModelosHtml = modelos.map(mod => {
+    mod.itens.sort((a, b) => a.ordem_excel - b.ordem_excel);
 
-  const gradeCardsHtml = modelos[0] ? modelos[0].itens.map(it => {
-    const isCarretilha = fam.nome.toUpperCase().includes('CARRETILHA');
-    const info = isCarretilha ? analisarCarretilha(it) : analisarMolinete(it);
-    const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
-    const calc = it.calculoPreco;
-    const tagDetalhe = isCarretilha ? info.ladoTag : (info.variacao || 'Padrão');
+    const cardsHtml = mod.itens.map(it => {
+      const info = isCarretilha ? analisarCarretilha(it) : analisarMolinete(it);
+      const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+      const calc = it.calculoPreco;
+      const tagDetalhe = isCarretilha ? info.ladoTag : (info.variacao || 'Padrão');
+
+      return `
+        <div class="isca-cor-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" onclick="selecionarEquipamento('${fam.id}', '${it.codigo}', '${it.imagem_url}')">
+          <span class="isca-badge">${q}</span>
+          ${it.imagem_url ? `<img src="${it.imagem_url}" style="height: 65px; object-fit: contain;">` : ''}
+          <div class="cor-nome" style="font-size: 0.7rem; font-weight: 800; color: var(--azul-800);">${it.codigo}</div>
+          <div style="font-size: .65rem; color: var(--azul-800); font-weight: 800; text-align: center; margin: 2px 0;">${escapeHtml(tagDetalhe)}</div>
+          
+          ${calc.temOferta ? `
+            <div class="preco-box-oferta">
+              <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
+              <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
+            </div>
+          ` : `<div class="cor-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+
+          <div class="isca-qtd-ctrl" onclick="event.stopPropagation()">
+            <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+            <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+            <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+          </div>
+        </div>`;
+    }).join('');
 
     return `
-      <div class="isca-cor-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" onclick="selecionarEquipamento('${fam.id}', '${it.codigo}', '${it.imagem_url}')">
-        <span class="isca-badge">${q}</span>
-        ${it.imagem_url ? `<img src="${it.imagem_url}">` : ''}
-        <div class="cor-nome" style="font-size: 0.7rem; font-weight: 800;">${it.codigo}</div>
-        <div style="font-size: .65rem; color: var(--azul-800); font-weight: 800; text-align: center; margin: 2px 0;">${escapeHtml(tagDetalhe)}</div>
-        
-        ${calc.temOferta ? `
-          <div class="preco-box-oferta">
-            <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
-            <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
-          </div>
-        ` : `<div class="cor-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
-
-        <div class="isca-qtd-ctrl" onclick="event.stopPropagation()">
-          <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
-          <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
-          <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
-        </div>
+      <div class="sub-bloco" style="margin-bottom: 12px;">
+        <div class="sub-grupo-header">${escapeHtml(mod.nome)}</div>
+        <div class="isca-grade">${cardsHtml}</div>
       </div>`;
-  }).join('') : '';
-
-  window.equipamentosData = window.equipamentosData || {}; 
-  window.equipamentosData[fam.id] = { modelos, isCarretilha: fam.nome.toUpperCase().includes('CARRETILHA') };
+  }).join('');
 
   return `
     <div class="familia-bloco">
@@ -760,55 +760,15 @@ function renderFamiliaEquipamentoGrade(fam, itens) {
         </div>
         <div class="isca-info">
           <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Descrição / Ficha</button>
-          ${modelos.length > 1 ? `<div class="isca-modelos-tabs">${tabsHtml}</div>` : ''}
-          <div class="isca-titulo-cores">OPÇÕES E VARIAÇÕES</div>
-          <div class="isca-grade" id="grade-equipamentos-${fam.id}">${gradeCardsHtml}</div>
+          <div style="margin-top: 6px;">${blocosModelosHtml}</div>
         </div>
       </div>
     </div>`;
 }
 
-function trocarModeloEquipamento(famId, modeloNome) {
-  const data = window.equipamentosData[famId]; 
-  const modelo = data.modelos.find(m => m.nome === modeloNome);
-  const card = document.getElementById(`card-fam-${famId}`);
-  
-  card.querySelectorAll('.isca-modelo-btn').forEach(b => {
-    if(b.textContent.trim() === modeloNome) b.classList.add('ativo'); else b.classList.remove('ativo');
-  });
-
-  const grade = document.getElementById(`grade-equipamentos-${famId}`);
-  grade.innerHTML = modelo.itens.map(it => {
-    const info = data.isCarretilha ? analisarCarretilha(it) : analisarMolinete(it);
-    const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
-    const calc = it.calculoPreco;
-    const tagDetalhe = data.isCarretilha ? info.ladoTag : (info.variacao || 'Padrão');
-
-    return `
-      <div class="isca-cor-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" onclick="selecionarEquipamento('${famId}', '${it.codigo}', '${it.imagem_url}')">
-        <span class="isca-badge">${q}</span>
-        ${it.imagem_url ? `<img src="${it.imagem_url}">` : ''}
-        <div class="cor-nome" style="font-size: 0.7rem; font-weight: 800;">${it.codigo}</div>
-        <div style="font-size: .65rem; color: var(--azul-800); font-weight: 800; text-align: center; margin: 2px 0;">${escapeHtml(tagDetalhe)}</div>
-        
-        ${calc.temOferta ? `
-          <div class="preco-box-oferta">
-            <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
-            <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
-          </div>
-        ` : `<div class="cor-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
-
-        <div class="isca-qtd-ctrl" onclick="event.stopPropagation()">
-          <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
-          <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
-          <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
-        </div>
-      </div>`;
-  }).join('');
-}
-
 function selecionarEquipamento(famId, codigo, url) {
   const card = document.getElementById(`card-fam-${famId}`);
+  if (!card) return;
   card.querySelectorAll('.isca-cor-card').forEach(m => m.classList.remove('ativa'));
   const targetMini = document.getElementById(`mini-${codigo}`);
   if (targetMini) targetMini.classList.add('ativa');
