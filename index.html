@@ -125,7 +125,7 @@
   .isca-modelo-btn.ativo, .anzol-tab.ativo { background:var(--azul-800); color:white; border-color:var(--azul-800); }
   .isca-titulo-cores { font-size:.7rem; font-weight:800; color:var(--cinza-500); text-transform:uppercase; margin-bottom:8px; }
   
-  .isca-grade, .anzol-grade { display:grid; grid-template-columns:repeat(auto-fill, minmax(95px, 1fr)); gap:8px; }
+  .isca-grade, .anzol-grade { display:grid; grid-template-columns:repeat(auto-fill, minmax(110px, 1fr)); gap:8px; }
   .isca-cor-card, .anzol-numero-card { background:white; border:1px solid var(--cinza-200); border-radius:8px; padding:6px; display:flex; flex-direction:column; align-items:center; position:relative; }
   .isca-cor-card.ativa, .anzol-numero-card.ativa { border-color:var(--azul-800); }
   .isca-cor-card img { width:100%; aspect-ratio:1; object-fit:contain; margin-bottom:2px; }
@@ -449,13 +449,11 @@ function analisarMolinete(it) {
   const relacao = attrs['Relação de recolhimento'] || '';
   const capacidade = attrs['Capacidade de linha (mm-m)'] || '';
   const ladoManivela = attrs['Lado Manivela'] || attrs['LADO MANIVELA'] || '';
-  const velMax = attrs['Velocidade Máxima'] || '';
   if (!modelo) { const partes = (it.subgrupo || '').trim().split(/\s+/); modelo = partes.slice(-2).join(' ') || it.subgrupo; }
   const partesVar = [];
   if (relacao) partesVar.push(relacao);
   if (capacidade) partesVar.push(capacidade);
   if (ladoManivela) partesVar.push(ladoManivela);
-  if (velMax) partesVar.push(velMax);
   return { modelo, variacao: partesVar.join(' • ') };
 }
 
@@ -464,8 +462,6 @@ function analisarCarretilha(it) {
   let modelo = attrs['Modelo'] || attrs['MODELO'] || '';
   let ladoManivela = attrs['Lado Manivela'] || attrs['LADO MANIVELA'] || '';
   const relacao = attrs['Relação de recolhimento'] || '';
-  const capacidade = attrs['Capacidade de linha (mm-m)'] || '';
-  const velMax = attrs['Velocidade Máxima'] || '';
   if (!modelo) { const partes = (it.subgrupo || '').trim().split(/\s+/); modelo = partes.slice(-2).join(' ') || it.subgrupo; }
   if (!ladoManivela) {
     const subUpper = (it.subgrupo || '').toUpperCase();
@@ -474,8 +470,6 @@ function analisarCarretilha(it) {
   }
   const partesVar = [];
   if (relacao) partesVar.push(relacao);
-  if (capacidade) partesVar.push(capacidade);
-  if (velMax) partesVar.push(velMax);
   return { modelo, ladoTag: ladoManivela, variacaoExtra: partesVar.join(' • ') };
 }
 
@@ -484,8 +478,6 @@ function analisarMotor(it) {
   let modelo = attrs['Modelo'] || attrs['MODELO'] || '';
   let potencia = attrs['Potência'] || attrs['POTÊNCIA'] || attrs['HP'] || attrs['Libras'] || attrs['LIBRAS'] || '';
   const tensao = attrs['Tensão'] || attrs['VOLTAGEM'] || attrs['Voltagem'] || '';
-  const tempo = attrs['Tempos'] || attrs['TEMPO'] || '';
-  const partida = attrs['Partida'] || attrs['PARTIDA'] || '';
   if (!modelo) { const partes = (it.subgrupo || '').trim().split(/\s+/); modelo = partes.slice(-2).join(' ') || it.subgrupo; }
   if (!potencia) {
     const subUpper = (it.subgrupo || '').toUpperCase();
@@ -494,8 +486,6 @@ function analisarMotor(it) {
   }
   const partesVar = [];
   if (tensao) partesVar.push(tensao);
-  if (tempo) partesVar.push(tempo);
-  if (partida) partesVar.push(partida);
   return { modelo, tagPotencia: potencia, variacaoExtra: partesVar.join(' • ') };
 }
 
@@ -637,7 +627,6 @@ function filtrar() {
 function renderizar() {
   const cont = document.getElementById('conteudo');
 
-  // SE FOR A TELA DE OFERTAS 🔥: Carrega diretamente a pagina ofertas.html em um iframe limpo e bonito
   if (grupoAtual === '__OFERTAS__') {
     cont.innerHTML = `<iframe src="ofertas.html" class="iframe-ofertas"></iframe>`;
     return;
@@ -679,14 +668,12 @@ function renderizar() {
         nomeFam.includes('ANZOL') || nomeFam.includes('EMPATE') || nomeFam.includes('GIRADOR') || 
         nomeFam.includes('SNAP') || nomeFam.includes('CABO') || nomeFam.includes('LUVA')
       ) tipo = 'anzol';
-      else if (nomeFam.includes('MOLINETE')) tipo = 'molinete';
-      else if (nomeFam.includes('CARRETILHA')) tipo = 'carretilha';
+      else if (nomeFam.includes('MOLINETE') || nomeFam.includes('CARRETILHA')) tipo = 'equipamento_grade'; // ISCA-LIKE LAYOUT PARA EQUIPAMENTOS
       else if (nomeFam.includes('MOTOR') || grupoItem.includes('MOTOR')) tipo = 'motor';
       
       if (tipo === 'isca') html += renderFamiliaIsca(fam, filhos);
+      else if (tipo === 'equipamento_grade') html += renderFamiliaEquipamentoGrade(fam, filhos);
       else if (tipo === 'anzol') html += renderFamiliaAnzol(fam, filhos);
-      else if (tipo === 'molinete') html += renderFamiliaMolinete(fam, filhos);
-      else if (tipo === 'carretilha') html += renderFamiliaCarretilha(fam, filhos);
       else if (tipo === 'motor') html += renderFamiliaMotor(fam, filhos);
       else if (tipo === 'vara') html += renderFamiliaVara(fam, filhos);
       else if (tipo === 'linha') html += renderFamiliaLinha(fam, filhos);
@@ -704,136 +691,60 @@ function renderizar() {
   cont.innerHTML = html;
 }
 
-function linhaMolinete(it) {
-  const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
-  const info = analisarMolinete(it);
-  const calc = it.calculoPreco;
-  const temVariacao = Boolean(info.variacao && info.variacao.trim() !== '');
-
-  return `
-    <div class="linha-filho-container">
-      <div class="linha-filho">
-        <div class="l-info-main">
-          <span class="l-cod">${it.codigo}</span>
-          <span class="l-nome">
-            ${escapeHtml(info.modelo)}
-            ${calc.temOferta ? `<span class="tarja-oferta-item">🔥 OFERTA -${calc.pctDesconto}%</span>` : ''}
-          </span>
-        </div>
-        <div class="l-direita-wrap">
-          ${temVariacao ? `<button type="button" class="btn-toggle-var" onclick="toggleVariacao('${it.codigo}', event)">👁️</button>` : ''}
-          ${calc.temOferta ? `
-            <div class="preco-box-oferta">
-              <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
-              <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
-            </div>
-          ` : `<div class="l-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
-        </div>
-        <div class="l-qtd" onclick="event.stopPropagation()">
-          <div class="qtd-ctrl">
-            <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
-            <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
-            <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
-          </div>
-        </div>
-      </div>
-      ${temVariacao ? `<div class="painel-variacao-oculta" id="var-panel-${it.codigo}"><strong>Especificações:</strong> ${escapeHtml(info.variacao)}</div>` : ''}
-    </div>`;
-}
-
-function linhaCarretilha(it) {
-  const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
-  const info = analisarCarretilha(it);
-  const calc = it.calculoPreco;
-  const temVariacaoExtra = Boolean(info.variacaoExtra && info.variacaoExtra.trim() !== '');
-
-  return `
-    <div class="linha-filho-container">
-      <div class="linha-filho">
-        <div class="l-info-main">
-          <span class="l-cod">${it.codigo}</span>
-          ${info.ladoTag ? `<span class="tag-lado">${escapeHtml(info.ladoTag)}</span>` : ''}
-          ${calc.temOferta ? `<span class="tarja-oferta-item">🔥 -${calc.pctDesconto}%</span>` : ''}
-        </div>
-        <div class="l-direita-wrap">
-          ${temVariacaoExtra ? `<button type="button" class="btn-toggle-var" onclick="toggleVariacao('${it.codigo}', event)">👁️</button>` : ''}
-          ${calc.temOferta ? `
-            <div class="preco-box-oferta">
-              <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
-              <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
-            </div>
-          ` : `<div class="l-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
-        </div>
-        <div class="l-qtd" onclick="event.stopPropagation()">
-          <div class="qtd-ctrl">
-            <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
-            <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
-            <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
-          </div>
-        </div>
-      </div>
-      ${temVariacaoExtra ? `<div class="painel-variacao-oculta" id="var-panel-${it.codigo}"><strong>Ficha Técnica:</strong> ${escapeHtml(info.variacaoExtra)}</div>` : ''}
-    </div>`;
-}
-
-function linhaMotor(it) {
-  const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
-  const info = analisarMotor(it);
-  const calc = it.calculoPreco;
-  const temVariacaoExtra = Boolean(info.variacaoExtra && info.variacaoExtra.trim() !== '');
-
-  return `
-    <div class="linha-filho-container">
-      <div class="linha-filho">
-        <div class="l-info-main">
-          <span class="l-cod">${it.codigo}</span>
-          ${info.tagPotencia ? `<span class="tag-lado">${escapeHtml(info.tagPotencia)}</span>` : ''}
-          ${calc.temOferta ? `<span class="tarja-oferta-item">🔥 -${calc.pctDesconto}%</span>` : ''}
-        </div>
-        <div class="l-direita-wrap">
-          ${temVariacaoExtra ? `<button type="button" class="btn-toggle-var" onclick="toggleVariacao('${it.codigo}', event)">👁️</button>` : ''}
-          ${calc.temOferta ? `
-            <div class="preco-box-oferta">
-              <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
-              <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
-            </div>
-          ` : `<div class="l-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
-        </div>
-        <div class="l-qtd" onclick="event.stopPropagation()">
-          <div class="qtd-ctrl">
-            <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
-            <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
-            <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
-          </div>
-        </div>
-      </div>
-      ${temVariacaoExtra ? `<div class="painel-variacao-oculta" id="var-panel-${it.codigo}"><strong>Especificações:</strong> ${escapeHtml(info.variacaoExtra)}</div>` : ''}
-    </div>`;
-}
-
-function toggleVariacao(codigo, event) {
-  event.stopPropagation();
-  const painel = document.getElementById(`var-panel-${codigo}`);
-  if (painel) painel.classList.toggle('ativo');
-}
-
-function renderFamiliaMolinete(fam, itens) {
+/* NOVO RENDERIZADOR COMPACTO PARA CARRETILHAS E MOLINETES NO MESMO PADRÃO DAS ISCAS */
+function renderFamiliaEquipamentoGrade(fam, itens) {
   const primeiroItem = itens[0];
   const imgInicial = primeiroItem?.imagem_url || '';
-  let subdivisoes = fam.subdivisoes || [];
-  if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Produtos', itens: fam.itens }];
 
-  const blocosTabelas = subdivisoes.map(sub => {
-    const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
-    if (itensDaSub.length === 0) return '';
-    itensDaSub.sort((a, b) => a.ordem_excel - b.ordem_excel);
+  const modelosMap = new Map();
+  itens.filter(it => it.estoque > 0).forEach(it => {
+    const isCarretilha = fam.nome.toUpperCase().includes('CARRETILHA');
+    const info = isCarretilha ? analisarCarretilha(it) : analisarMolinete(it);
+    const modeloNome = info.modelo || it.subgrupo;
+    if (!modelosMap.has(modeloNome)) modelosMap.set(modeloNome, { nome: modeloNome, itens: [] });
+    modelosMap.get(modeloNome).itens.push(it);
+  });
+
+  const modelos = Array.from(modelosMap.values());
+  modelos.forEach(m => m.itens.sort((a, b) => a.ordem_excel - b.ordem_excel));
+
+  const tabsHtml = modelos.map((mod, idx) => `
+    <button class="isca-modelo-btn ${idx===0?'ativo':''}" onclick="trocarModeloEquipamento('${fam.id}', '${escapeHtml(mod.nome)}')">
+      ${escapeHtml(mod.nome)}
+    </button>
+  `).join('');
+
+  const gradeCardsHtml = modelos[0] ? modelos[0].itens.map(it => {
+    const isCarretilha = fam.nome.toUpperCase().includes('CARRETILHA');
+    const info = isCarretilha ? analisarCarretilha(it) : analisarMolinete(it);
+    const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+    const calc = it.calculoPreco;
+    const tagDetalhe = isCarretilha ? info.ladoTag : (info.variacao || 'Padrão');
 
     return `
-      <div class="sub-bloco" style="margin-top: 8px;">
-        ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
-        <div class="lista-filhos" style="margin-top: 4px;">${itensDaSub.map(linhaMolinete).join('')}</div>
+      <div class="isca-cor-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" onclick="selecionarEquipamento('${fam.id}', '${it.codigo}', '${it.imagem_url}')">
+        <span class="isca-badge">${q}</span>
+        ${it.imagem_url ? `<img src="${it.imagem_url}">` : ''}
+        <div class="cor-nome" style="font-size: 0.7rem; font-weight: 800;">${it.codigo}</div>
+        <div style="font-size: .65rem; color: var(--azul-800); font-weight: 800; text-align: center; margin: 2px 0;">${escapeHtml(tagDetalhe)}</div>
+        
+        ${calc.temOferta ? `
+          <div class="preco-box-oferta">
+            <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
+            <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
+          </div>
+        ` : `<div class="cor-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+
+        <div class="isca-qtd-ctrl" onclick="event.stopPropagation()">
+          <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+          <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+          <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+        </div>
       </div>`;
-  }).join('');
+  }).join('') : '';
+
+  window.equipamentosData = window.equipamentosData || {}; 
+  window.equipamentosData[fam.id] = { modelos, isCarretilha: fam.nome.toUpperCase().includes('CARRETILHA') };
 
   return `
     <div class="familia-bloco">
@@ -841,59 +752,69 @@ function renderFamiliaMolinete(fam, itens) {
         <h2>${escapeHtml(fam.nome)}</h2> 
         ${renderMarcaBadge(itens[0].marca)}
       </div>
-      <div class="molinete-card" id="card-fam-${fam.id}">
-        <div class="familia-side"><div class="familia-foto-principal" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
-        <div class="molinete-info">
-          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Detalhes</button>
-          ${blocosTabelas}
+      <div class="isca-card" id="card-fam-${fam.id}">
+        <div class="familia-side">
+          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">
+            ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
+          </div>
+        </div>
+        <div class="isca-info">
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Descrição / Ficha</button>
+          ${modelos.length > 1 ? `<div class="isca-modelos-tabs">${tabsHtml}</div>` : ''}
+          <div class="isca-titulo-cores">OPÇÕES E VARIAÇÕES</div>
+          <div class="isca-grade" id="grade-equipamentos-${fam.id}">${gradeCardsHtml}</div>
         </div>
       </div>
     </div>`;
 }
 
-function renderFamiliaCarretilha(fam, itens) {
-  const primeiroItem = itens[0];
-  const imgInicial = primeiroItem?.imagem_url || '';
-  let subdivisoes = fam.subdivisoes || [];
-  if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Todos', itens: fam.itens }];
+function trocarModeloEquipamento(famId, modeloNome) {
+  const data = window.equipamentosData[famId]; 
+  const modelo = data.modelos.find(m => m.nome === modeloNome);
+  const card = document.getElementById(`card-fam-${famId}`);
+  
+  card.querySelectorAll('.isca-modelo-btn').forEach(b => {
+    if(b.textContent.trim() === modeloNome) b.classList.add('ativo'); else b.classList.remove('ativo');
+  });
 
-  const miniaturasHtml = itens.filter(it => it.estoque > 0).map(it => {
-    const info = analisarCarretilha(it);
-    const labelMini = [info.modelo, info.ladoTag].filter(Boolean).join(' ');
-    return `
-      <div class="filho-mini" id="mini-${it.codigo}" onclick="selecionarCarretilha('${fam.id}', '${it.codigo}', '${it.imagem_url}')">
-        <img src="${it.imagem_url}" alt="${escapeHtml(labelMini)}">
-        <div class="mini-info"><span class="mini-nome">${escapeHtml(labelMini)}</span></div>
-      </div>`;
-  }).join('');
-
-  const blocosTabelas = subdivisoes.map(sub => {
-    const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
-    if (itensDaSub.length === 0) return '';
-    itensDaSub.sort((a, b) => a.ordem_excel - b.ordem_excel);
+  const grade = document.getElementById(`grade-equipamentos-${famId}`);
+  grade.innerHTML = modelo.itens.map(it => {
+    const info = data.isCarretilha ? analisarCarretilha(it) : analisarMolinete(it);
+    const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+    const calc = it.calculoPreco;
+    const tagDetalhe = data.isCarretilha ? info.ladoTag : (info.variacao || 'Padrão');
 
     return `
-      <div class="sub-bloco" style="margin-top: 8px;">
-        ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
-        <div class="lista-filhos" style="margin-top: 4px;">${itensDaSub.map(linhaCarretilha).join('')}</div>
-      </div>`;
-  }).join('');
+      <div class="isca-cor-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" onclick="selecionarEquipamento('${famId}', '${it.codigo}', '${it.imagem_url}')">
+        <span class="isca-badge">${q}</span>
+        ${it.imagem_url ? `<img src="${it.imagem_url}">` : ''}
+        <div class="cor-nome" style="font-size: 0.7rem; font-weight: 800;">${it.codigo}</div>
+        <div style="font-size: .65rem; color: var(--azul-800); font-weight: 800; text-align: center; margin: 2px 0;">${escapeHtml(tagDetalhe)}</div>
+        
+        ${calc.temOferta ? `
+          <div class="preco-box-oferta">
+            <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
+            <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
+          </div>
+        ` : `<div class="cor-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
 
-  return `
-    <div class="familia-bloco">
-      <div class="familia-head">
-        <h2>${escapeHtml(fam.nome)}</h2> 
-        ${renderMarcaBadge(itens[0].marca)}
-      </div>
-      <div class="molinete-card" id="card-fam-${fam.id}">
-        <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
-        <div class="molinete-info">
-          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Detalhes</button>
-          <div class="topo-miniaturas">${miniaturasHtml}</div>
-          ${blocosTabelas}
+        <div class="isca-qtd-ctrl" onclick="event.stopPropagation()">
+          <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+          <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+          <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
         </div>
-      </div>
-    </div>`;
+      </div>`;
+  }).join('');
+}
+
+function selecionarEquipamento(famId, codigo, url) {
+  const card = document.getElementById(`card-fam-${famId}`);
+  card.querySelectorAll('.isca-cor-card').forEach(m => m.classList.remove('ativa'));
+  const targetMini = document.getElementById(`mini-${codigo}`);
+  if (targetMini) targetMini.classList.add('ativa');
+  if (url && url.trim() !== '') {
+    document.getElementById(`foto-pai-${famId}`).innerHTML = `<img src="${url}">`;
+  }
 }
 
 function renderFamiliaMotor(fam, itens) {
@@ -941,12 +862,45 @@ function renderFamiliaMotor(fam, itens) {
     </div>`;
 }
 
-function selecionarCarretilha(famId, codigo, url) {
-  const card = document.getElementById(`card-fam-${famId}`);
-  card.querySelectorAll('.filho-mini').forEach(m => m.classList.remove('ativa'));
-  const targetMini = document.getElementById(`mini-${codigo}`);
-  if (targetMini) targetMini.classList.add('ativa');
-  document.getElementById(`foto-pai-${famId}`).innerHTML = `<img src="${url}">`;
+function linhaMotor(it) {
+  const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+  const info = analisarMotor(it);
+  const calc = it.calculoPreco;
+  const temVariacaoExtra = Boolean(info.variacaoExtra && info.variacaoExtra.trim() !== '');
+
+  return `
+    <div class="linha-filho-container">
+      <div class="linha-filho">
+        <div class="l-info-main">
+          <span class="l-cod">${it.codigo}</span>
+          ${info.tagPotencia ? `<span class="tag-lado">${escapeHtml(info.tagPotencia)}</span>` : ''}
+          ${calc.temOferta ? `<span class="tarja-oferta-item">🔥 -${calc.pctDesconto}%</span>` : ''}
+        </div>
+        <div class="l-direita-wrap">
+          ${temVariacaoExtra ? `<button type="button" class="btn-toggle-var" onclick="toggleVariacao('${it.codigo}', event)">👁️</button>` : ''}
+          ${calc.temOferta ? `
+            <div class="preco-box-oferta">
+              <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
+              <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
+            </div>
+          ` : `<div class="l-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+        </div>
+        <div class="l-qtd" onclick="event.stopPropagation()">
+          <div class="qtd-ctrl">
+            <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+            <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+            <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+          </div>
+        </div>
+      </div>
+      ${temVariacaoExtra ? `<div class="painel-variacao-oculta" id="var-panel-${it.codigo}"><strong>Especificações:</strong> ${escapeHtml(info.variacaoExtra)}</div>` : ''}
+    </div>`;
+}
+
+function toggleVariacao(codigo, event) {
+  event.stopPropagation();
+  const painel = document.getElementById(`var-panel-${codigo}`);
+  if (painel) painel.classList.toggle('ativo');
 }
 
 function renderFamiliaVara(fam, itens) {
