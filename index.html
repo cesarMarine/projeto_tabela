@@ -299,32 +299,29 @@ function ativarWhatsAppVendedor() {
   }
 }
 
-function trocarGrupo(grupo, btn) {
-  grupoAtual = grupo;
-  marcaAtual = ''; // Reseta o filtro de marca ao mudar de grupo
-  
-  document.querySelectorAll('.chip').forEach(c => c.classList.remove('ativo'));
-  btn.classList.add('ativo'); 
-  
-  montarBarraMarcas(); // Atualiza os botões de marcas do grupo selecionado
-  renderizar();
-}
+
 
 function montarBarraMarcas() {
   const wrap = document.getElementById('barramarcasWrap');
   const container = document.getElementById('barramarcas');
 
+  if (!container || !wrap) return;
+
+  // Se estiver em "Ofertas" ou "Todos", esconde a barra
   if (grupoAtual === '__OFERTAS__' || grupoAtual === '__TODOS__') {
     wrap.style.display = 'none';
     return;
   }
 
+  // Pega os produtos do grupo ativo que têm estoque
   const produtosDoGrupo = todosItens.filter(it => it.grupo === grupoAtual && it.estoque > 0);
   
+  // Extrai as marcas únicas do grupo
   const marcasSet = new Set();
   produtosDoGrupo.forEach(it => { if (it.marca) marcasSet.add(it.marca.trim()); });
   const marcas = Array.from(marcasSet).sort();
 
+  // Se houver menos de 2 marcas, não exibe a barra
   if (marcas.length <= 1) {
     wrap.style.display = 'none';
     return;
@@ -351,7 +348,7 @@ function montarBarraMarcas() {
     `;
   });
 
-  container.innerHTML = html; // CORRIGIDO AQUI (era containe)
+  container.innerHTML = html;
   wrap.style.display = 'block';
 }
 
@@ -800,7 +797,9 @@ async function carregar() {
     if (!j.ok) throw new Error('Erro API');
     
     todosItens = j.itens.map(normalizarItem).filter(it => it.grupo.length > 0 && it.estoque > 0);
-    montarChips(); renderizar();
+    montarChips(); 
+    montarBarraMarcas(); // Chamada adicionada aqui
+    renderizar();
   } catch (e) { document.getElementById('conteudo').innerHTML = '<div class="loading">Erro ao carregar.</div>'; }
 }
 
@@ -820,8 +819,12 @@ function montarChips() {
 
 function trocarGrupo(grupo, btn) {
   grupoAtual = grupo;
+  marcaAtual = ''; // Reseta o filtro de marca ao mudar de grupo
+  
   document.querySelectorAll('.chip').forEach(c => c.classList.remove('ativo'));
   btn.classList.add('ativo'); 
+  
+  montarBarraMarcas(); // Atualiza a barra de marcas
   renderizar();
 }
 
