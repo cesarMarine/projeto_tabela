@@ -2,8 +2,8 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Catálogo — Tabela de Preços</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Tabela de Preços B2B</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   :root {
@@ -20,169 +20,183 @@
 
   /* LOGIN */
   #telaLogin { position:fixed; inset:0; z-index:9999; background:linear-gradient(135deg, #001f3f 0%, #003366 100%); display:flex; align-items:center; justify-content:center; padding:20px; }
-  .login-box { background:white; border-radius:16px; padding:40px; width:100%; max-width:400px; box-shadow:0 20px 60px rgba(0,0,0,0.4); text-align:center; }
-  .login-box h1 { color:var(--azul-800); font-size:1.5rem; font-weight:800; margin-bottom:8px; }
-  .login-box p { color:var(--cinza-500); font-size:.9rem; margin-bottom:24px; }
-  .login-box input { width:100%; padding:14px 16px; border:2px solid var(--cinza-200); border-radius:10px; font-size:1.1rem; text-align:center; font-weight:700; letter-spacing:1px; margin-bottom:16px; }
+  .login-box { background:white; border-radius:16px; padding:30px 20px; width:100%; max-width:400px; box-shadow:0 20px 60px rgba(0,0,0,0.4); text-align:center; }
+  .login-box h1 { color:var(--azul-800); font-size:1.4rem; font-weight:800; margin-bottom:8px; }
+  .login-box p { color:var(--cinza-500); font-size:.85rem; margin-bottom:20px; }
+  .login-box input { width:100%; padding:14px 16px; border:2px solid var(--cinza-200); border-radius:10px; font-size:1rem; text-align:center; font-weight:700; letter-spacing:1px; margin-bottom:16px; }
   .login-box input:focus { outline:none; border-color:var(--azul-500); }
   .login-box button { width:100%; padding:14px; background:var(--azul-800); color:white; border:none; border-radius:10px; font-size:1rem; font-weight:800; transition:.2s; }
   .login-box button:hover { background:var(--azul-700); }
   .login-erro { color:var(--vermelho); font-size:.85rem; font-weight:700; margin-bottom:12px; display:none; }
 
-  /* TOPO */
+  /* TOPO LIMPO */
   .topo { background:linear-gradient(135deg, #001f3f 0%, #003366 100%); color:white; position:sticky; top:0; z-index:100; box-shadow:0 4px 24px rgba(0,51,102,.25); }
-  .topo-inner { max-width:1500px; margin:0 auto; padding:14px 20px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
-  .topo-logo-area strong { font-size:1.1rem; font-weight:800; letter-spacing:-.3px; }
+  .topo-inner { max-width:1600px; margin:0 auto; padding:8px 12px; display:flex; justify-content:space-between; align-items:center; gap:10px; }
   
-  .info-cliente { display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.1); padding:6px 12px; border-radius:20px; font-size:.75rem; font-weight:700; }
-  .info-cliente span.uf { background:var(--verde); color:white; padding:2px 6px; border-radius:4px; }
+  .info-cliente { display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.12); padding:4px 10px; border-radius:20px; font-size:.75rem; font-weight:700; white-space:nowrap; }
+  .info-cliente span.uf { background:var(--verde); color:white; padding:2px 6px; border-radius:4px; font-size:0.65rem; }
+  .btn-topo-acao { background:#2563eb; color:white; border:none; padding:4px 8px; border-radius:10px; font-weight:800; font-size:0.7rem; cursor:pointer; display:inline-flex; align-items:center; gap:3px; }
+  .btn-topo-sair { background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:10px; font-weight:800; font-size:0.7rem; cursor:pointer; }
 
-  .busca-wrap { flex:1; min-width:200px; max-width:420px; }
-  .busca-wrap input { width:100%; padding:11px 16px; border:none; border-radius:12px; font-family:inherit; font-size:.9rem; background:rgba(255,255,255,.12); color:white; }
-  .busca-wrap input::placeholder { color:rgba(255,255,255,.55); }
-  .busca-wrap input:focus { outline:none; background:rgba(255,255,255,.2); }
+  .busca-wrap { flex:1; }
+  .busca-wrap input { width:100%; padding:9px 14px; border:none; border-radius:10px; font-family:inherit; font-size:.85rem; background:rgba(255,255,255,.18); color:white; }
+  .busca-wrap input::placeholder { color:rgba(255,255,255,.7); }
+  .busca-wrap input:focus { outline:none; background:rgba(255,255,255,.28); }
 
-  /* CHIPS DE CATEGORIA / OFERTA */
-  .chips-wrap { background:white; border-bottom:1px solid var(--cinza-100); position:sticky; top:62px; z-index:90; overflow-x:auto; }
-  .chips { max-width:1500px; margin:0 auto; padding:12px 20px; display:flex; gap:8px; flex-wrap:nowrap; }
-  .chip { padding:9px 16px; border-radius:20px; background:var(--cinza-100); border:1px solid transparent; color:var(--cinza-700); font-size:.82rem; font-weight:700; cursor:pointer; white-space:nowrap; transition:.2s; text-transform:uppercase; }
-  .chip:hover { background:var(--cinza-200); }
-  .chip.ativo { background:linear-gradient(135deg, var(--azul-800), var(--azul-700)); color:white; border-color:var(--azul-800); }
-  .chip.chip-oferta { background:#fee2e2; color:#ef4444; border-color:#fca5a5; }
-  .chip.chip-oferta.ativo { background:linear-gradient(135deg, #ef4444, #dc2626); color:white; border-color:#dc2626; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
-  .chip small { opacity:.8; margin-left:4px; }
+  /* BOTÕES DE GRUPO PREENCHIDOS */
+  .chips-wrap { background:white; border-bottom:1px solid var(--cinza-200); position:sticky; top:49px; z-index:90; padding:8px 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .chips { max-width:1600px; margin:0 auto; display:flex; gap:10px; align-items:center; flex-wrap: nowrap; }
+  
+  .chip { 
+    width: 48px; height: 48px; 
+    border-radius: 12px; background: var(--cinza-100); 
+    border: 2px solid var(--cinza-200); cursor: pointer; 
+    transition: .15s; display: flex; align-items: center; justify-content: center; 
+    padding: 3px; flex-shrink: 0; overflow: hidden;
+  }
+  .chip:hover { transform: translateY(-2px); border-color: var(--azul-500); }
+  .chip.ativo { background: var(--azul-800); border-color: var(--azul-800); box-shadow: 0 4px 12px rgba(0,31,63,0.3); }
+  
+  .chip.chip-oferta { background: #fee2e2; border-color: #fca5a5; font-size: 1.4rem; color: #ef4444; }
+  .chip.chip-oferta.ativo { background: #ef4444; border-color: #dc2626; color: white; }
+  
+  .chip-img { width: 100%; height: 100%; object-fit: contain; border-radius: 8px; }
 
+  /* LOGOMARCAS */
+  .marca-logo-img { height: 26px; max-width: 110px; object-fit: contain; vertical-align: middle; }
+  
   /* CONTEÚDO */
-  .conteudo { padding:20px; max-width:1500px; margin:0 auto; }
-  .loading { text-align:center; padding:80px 20px; color:var(--cinza-400); }
+  .conteudo { padding:0; max-width:1600px; margin:0 auto; }
+  .loading { text-align:center; padding:60px 20px; color:var(--cinza-400); }
   
-  .familia-bloco { margin-bottom:24px; }
-  .familia-head { display:flex; align-items:center; gap:12px; padding-bottom:10px; margin-bottom:12px; border-bottom:2px solid var(--azul-100); }
-  .familia-head h2 { color:var(--azul-800); font-size:1.2rem; font-weight:800; }
-  .familia-head .marca-badge { background:var(--azul-50); color:var(--azul-800); padding:4px 10px; border-radius:20px; font-size:.7rem; font-weight:800; text-transform:uppercase; }
+  .familia-bloco { margin: 12px; }
+  .familia-head { display:flex; align-items:center; justify-content:space-between; gap:8px; padding-bottom:6px; margin-bottom:8px; border-bottom:2px solid var(--azul-100); flex-wrap:wrap; }
+  .familia-head h2 { color:var(--azul-800); font-size:1.05rem; font-weight:800; }
+  .familia-head .marca-badge { background:var(--azul-50); color:var(--azul-800); padding:3px 8px; border-radius:12px; font-size:.65rem; font-weight:800; text-transform:uppercase; }
 
-  .sub-grupo-header { background: var(--azul-50); color: var(--azul-800); padding: 8px 14px; border-radius: 6px; border-left: 4px solid var(--azul-500); font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; margin-bottom: 8px; }
+  .sub-grupo-header { background: var(--azul-50); color: var(--azul-800); padding: 6px 10px; border-radius: 6px; border-left: 4px solid var(--azul-500); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 6px; display:inline-block; }
   
-  /* CARDS DE FAMÍLIA */
-  .familia-card, .isca-card, .anzol-card, .molinete-card { display:grid; grid-template-columns:200px 1fr; gap:20px; background:white; border:1px solid var(--cinza-200); border-radius:12px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,.03); position:relative; }
-  .familia-side { display:flex; flex-direction:column; gap:12px; position:relative; }
-  .familia-foto-principal { background:var(--cinza-50); border:1px solid var(--cinza-100); border-radius:10px; padding:12px; aspect-ratio:1; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:transform .2s ease; position:relative; }
-  .familia-foto-principal:hover { transform:scale(1.02); }
+  /* CARDS E GRADES */
+  .familia-card, .isca-card, .anzol-card, .molinete-card { 
+    display:grid; grid-template-columns: 1fr; gap:12px; background:white; 
+    border:1px solid var(--cinza-200); border-radius:12px; padding:12px; 
+    box-shadow:0 2px 8px rgba(0,0,0,.03); position:relative; 
+  }
+  @media(min-width: 768px) {
+    .familia-card, .isca-card, .anzol-card, .molinete-card { grid-template-columns: 180px 1fr; gap:16px; padding:16px; }
+  }
+
+  .familia-side { display:flex; flex-direction:column; gap:8px; position:relative; }
+  .familia-foto-principal { background:var(--cinza-50); border:1px solid var(--cinza-100); border-radius:10px; padding:8px; aspect-ratio:1; display:flex; align-items:center; justify-content:center; cursor:pointer; max-width: 220px; margin: 0 auto; width:100%; }
   .familia-foto-principal img { max-width:100%; max-height:100%; object-fit:contain; }
   
-  .btn-detalhes { background:var(--cinza-50); border:1px solid var(--cinza-200); color:var(--azul-800); border-radius:6px; font-size:.65rem; font-weight:800; text-transform:uppercase; letter-spacing:.5px; cursor:pointer; display:inline-flex; align-items:center; gap:4px; padding:6px 10px; margin-bottom:12px; align-self:flex-start; transition: .2s; }
-  .btn-detalhes:hover { background:var(--azul-50); border-color:var(--azul-300); }
+  .btn-detalhes { background:var(--cinza-50); border:1px solid var(--cinza-200); color:var(--azul-800); border-radius:6px; font-size:.65rem; font-weight:800; text-transform:uppercase; cursor:pointer; display:inline-flex; align-items:center; gap:4px; padding:6px 10px; margin-bottom:8px; align-self:flex-start; }
 
-  /* BADGE DE OFERTA / BLACK NOVEMBER NO TOPO DO CARD DE FAMÍLIA */
+  /* BADGES DE OFERTA */
   .badge-oferta-banner {
-    position: absolute; top: -10px; left: -10px;
-    background: linear-gradient(135deg, #001f3f 0%, #020617 100%);
-    color: #38bdf8; font-weight: 900; font-size: 0.75rem; text-transform: uppercase;
-    padding: 6px 12px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    z-index: 5; letter-spacing: 0.5px; border: 1px solid #38bdf8; display: flex; align-items: center; gap: 4px;
-  }
-
-  /* TARJA EM LINHA DE PRODUTO */
-  .tarja-oferta-item {
-    display: inline-flex; align-items: center; gap: 4px;
+    position: absolute; top: -8px; left: -8px;
     background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
-    color: white; font-size: 0.65rem; font-weight: 900;
-    padding: 2px 8px; border-radius: 4px; text-transform: uppercase;
-    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3); margin-left: 6px; white-space: nowrap;
+    color: white; font-weight: 900; font-size: 0.65rem; text-transform: uppercase;
+    padding: 4px 8px; border-radius: 6px; z-index: 5; border: 1px solid white;
+  }
+  .tarja-oferta-item {
+    display: inline-flex; align-items: center; gap: 2px;
+    background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+    color: white; font-size: 0.6rem; font-weight: 900;
+    padding: 2px 6px; border-radius: 4px; text-transform: uppercase; white-space: nowrap; margin-left: 4px;
   }
   
-  /* PREÇO DE / POR */
-  .preco-box-oferta { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
-  .preco-de { text-decoration: line-through; color: #94a3b8; font-size: 0.75rem; font-weight: 700; line-height: 1; margin-bottom: 2px; }
-  .preco-por { color: #ef4444; font-size: 1rem; font-weight: 900; line-height: 1; }
+  .preco-box-oferta { display: flex; flex-direction: column; align-items: flex-end; justify-content: center; }
+  .preco-de { text-decoration: line-through; color: #94a3b8; font-size: 0.7rem; font-weight: 700; line-height: 1; }
+  .preco-por { color: #ef4444; font-size: 0.9rem; font-weight: 900; line-height: 1; }
+
+  /* CONTAINER EMBUTIDO DO ENCARTE DE OFERTAS */
+  .iframe-ofertas { width: 100%; height: calc(100vh - 110px); border: none; display: block; }
 
   /* MINIATURAS E GRADES */
-  .topo-miniaturas { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid var(--cinza-100); }
-  .filho-mini { width: 80px; background:white; border:2px solid var(--cinza-200); border-radius:6px; padding:4px; cursor:pointer; transition:.2s; display:flex; flex-direction:column; align-items:center; justify-content:space-between; }
-  .filho-mini img { width:100%; aspect-ratio:1; object-fit:contain; margin-bottom:4px; }
-  .mini-info { width:100%; text-align:center; line-height:1.1; }
-  .mini-nome { font-size:.55rem; font-weight:800; color:var(--azul-800); text-transform:uppercase; display:block; }
-  .filho-mini:hover, .filho-mini.ativa { border-color:var(--azul-800); box-shadow:0 2px 6px rgba(0,51,102,.1); }
-  .filho-mini.ativa { background:var(--azul-50); }
+  .topo-miniaturas { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--cinza-100); }
+  .filho-mini { min-width: 65px; width: 65px; background:white; border:2px solid var(--cinza-200); border-radius:6px; padding:3px; cursor:pointer; text-align:center; }
+  .filho-mini img { width:100%; aspect-ratio:1; object-fit:contain; }
+  .mini-nome { font-size:.5rem; font-weight:800; color:var(--azul-800); text-transform:uppercase; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .filho-mini.ativa { border-color:var(--azul-800); background:var(--azul-50); }
 
-  .isca-modelos-tabs, .anzol-tabs, .molinete-tabs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; border-bottom:1px solid var(--cinza-200); padding-bottom:12px; }
-  .isca-modelo-btn, .anzol-tab, .molinete-tab { padding:6px 14px; border-radius:6px; border:1px solid var(--cinza-200); background:var(--cinza-50); color:var(--azul-800); font-size:.8rem; font-weight:800; cursor:pointer; transition:.2s; text-transform:uppercase; }
-  .isca-modelo-btn:hover, .anzol-tab:hover, .molinete-tab:hover { background:var(--azul-100); }
+  .isca-modelos-tabs, .anzol-tabs, .molinete-tabs { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; padding-bottom:6px; border-bottom:1px solid var(--cinza-200); }
+  .isca-modelo-btn, .anzol-tab, .molinete-tab { padding:5px 10px; border-radius:6px; border:1px solid var(--cinza-200); background:var(--cinza-50); color:var(--azul-800); font-size:.75rem; font-weight:800; cursor:pointer; white-space:nowrap; }
   .isca-modelo-btn.ativo, .anzol-tab.ativo, .molinete-tab.ativo { background:var(--azul-800); color:white; border-color:var(--azul-800); }
-  .isca-titulo-cores { font-size:.75rem; font-weight:800; color:var(--cinza-500); text-transform:uppercase; margin-bottom:10px; }
+  .isca-titulo-cores { font-size:.7rem; font-weight:800; color:var(--cinza-500); text-transform:uppercase; margin-bottom:8px; }
   
-  .isca-grade, .anzol-grade, .molinete-grade { display:grid; grid-template-columns:repeat(auto-fill, minmax(130px, 1fr)); gap:10px; }
-  .isca-cor-card, .anzol-numero-card, .molinete-numero-card { background:white; border:1px solid var(--cinza-200); border-radius:8px; padding:8px; cursor:pointer; transition:.2s; display:flex; flex-direction:column; align-items:center; position:relative; }
-  .isca-cor-card:hover, .anzol-numero-card:hover, .molinete-numero-card:hover { border-color:var(--azul-500); }
-  .isca-cor-card.ativa, .anzol-numero-card.ativa, .molinete-numero-card.ativa { border-color:var(--azul-800); box-shadow:0 0 0 1px var(--azul-800); }
-  .isca-cor-card img { width:100%; aspect-ratio:1; object-fit:contain; margin-bottom:4px; }
-  .isca-cor-card .cor-nome, .anzol-numero, .molinete-numero { font-size:.85rem; font-weight:800; color:var(--azul-800); text-align:center; word-break:break-word; }
-  .anzol-numero, .molinete-numero { font-size:.9rem; color:var(--azul-800); line-height:1.2; margin-bottom:2px; text-transform:uppercase; font-weight:800; }
-  .isca-cor-card .cor-preco, .anzol-preco, .molinete-preco { font-size:.85rem; font-weight:900; color:var(--verde); margin-top:2px; }
+  .isca-grade, .anzol-grade, .molinete-grade { display:grid; grid-template-columns:repeat(auto-fill, minmax(110px, 1fr)); gap:8px; }
+  .isca-cor-card, .anzol-numero-card, .molinete-numero-card { background:white; border:1px solid var(--cinza-200); border-radius:8px; padding:6px; display:flex; flex-direction:column; align-items:center; position:relative; }
+  .isca-cor-card.ativa, .anzol-numero-card.ativa, .molinete-numero-card.ativa { border-color:var(--azul-800); }
+  .isca-cor-card img { width:100%; aspect-ratio:1; object-fit:contain; margin-bottom:2px; }
+  .cor-nome, .anzol-numero, .molinete-numero { font-size:.75rem; font-weight:800; color:var(--azul-800); text-align:center; word-break:break-word; }
+  .cor-preco, .anzol-preco, .molinete-preco { font-size:.75rem; font-weight:800; color:var(--verde); }
 
-  .isca-badge, .anzol-badge, .molinete-badge { position:absolute; top:-5px; right:-5px; min-width:20px; height:20px; background:var(--verde); color:white; border-radius:10px; font-size:11px; font-weight:900; display:none; align-items:center; justify-content:center; border:2px solid white; z-index:3; }
+  .isca-badge, .anzol-badge, .molinete-badge { position:absolute; top:-4px; right:-4px; min-width:18px; height:18px; background:var(--verde); color:white; border-radius:9px; font-size:10px; font-weight:900; display:none; align-items:center; justify-content:center; border:2px solid white; z-index:3; }
   .isca-cor-card.tem-qtd .isca-badge, .anzol-numero-card.tem-qtd .anzol-badge, .molinete-numero-card.tem-qtd .molinete-badge { display:flex; }
   .isca-cor-card.tem-qtd, .anzol-numero-card.tem-qtd, .molinete-numero-card.tem-qtd { border-color:var(--verde); background:#f0fdf4; }
   
-  .isca-qtd-ctrl, .anzol-qtd-ctrl, .molinete-qtd-ctrl { display:flex; align-items:center; gap:2px; margin-top:6px; width:100%; justify-content:center; }
-  .isca-qtd-ctrl button, .anzol-qtd-ctrl button, .molinete-qtd-ctrl button { width:24px; height:24px; border-radius:4px; border:1px solid var(--cinza-300); background:white; font-weight:800; color:var(--azul-800); }
-  .isca-qtd-ctrl input, .anzol-qtd-ctrl input, .molinete-qtd-ctrl input { width:28px; height:24px; border:1px solid var(--cinza-300); border-radius:4px; text-align:center; font-weight:800; -moz-appearance:textfield; color:var(--azul-800); }
+  .isca-qtd-ctrl, .anzol-qtd-ctrl, .molinete-qtd-ctrl { display:flex; align-items:center; gap:2px; margin-top:4px; width:100%; justify-content:center; }
+  .isca-qtd-ctrl button, .anzol-qtd-ctrl button, .molinete-qtd-ctrl button { width:22px; height:22px; border-radius:4px; border:1px solid var(--cinza-300); background:white; font-weight:800; color:var(--azul-800); }
+  .isca-qtd-ctrl input, .anzol-qtd-ctrl input, .molinete-qtd-ctrl input { width:26px; height:22px; border:1px solid var(--cinza-300); border-radius:4px; text-align:center; font-weight:800; font-size:0.75rem; color:var(--azul-800); }
 
-  /* LISTAS DE ITENS */
-  .lista-filhos { display:flex; flex-direction:column; gap:6px; }
-  .linha-filho-container { display:flex; flex-direction:column; background:white; border:1px solid var(--cinza-200); border-radius:8px; overflow:hidden; transition:.15s; }
-  .linha-filho-container:hover { border-color:var(--azul-500); box-shadow:0 2px 6px rgba(0,0,0,.04); }
-  .linha-filho { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 10px; }
-  .l-info-main { display:flex; align-items:center; gap:6px; flex:1; min-width:0; }
-  .l-cod { font-family:monospace; font-weight:800; color:var(--cinza-500); font-size:.75rem; background:var(--cinza-100); padding:2px 5px; border-radius:4px; white-space:nowrap; }
-  .l-nome { font-size:.85rem; font-weight:800; color:var(--azul-800); line-height:1.2; word-break:break-word; display:flex; align-items:center; flex-wrap:wrap; }
-  .tag-lado { background: var(--azul-100); color: var(--azul-800); font-size: .68rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; white-space: nowrap; border: 1px solid var(--azul-200); }
-  .l-direita-wrap { display:flex; align-items:center; gap:6px; margin-left:auto; white-space:nowrap; }
-  .btn-toggle-var { background:var(--azul-50); border:1px solid var(--azul-200); border-radius:6px; padding:3px 6px; font-size:.85rem; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; }
-  .l-preco { font-size:.9rem; font-weight:900; color:var(--verde); white-space:nowrap; }
-  .painel-variacao-oculta { display:none; background:var(--cinza-50); border-top:1px dashed var(--cinza-200); padding:6px 10px; font-size:.75rem; color:var(--cinza-700); font-weight:600; }
+  /* LISTAS DE ITENS DA TABELA */
+  .linha-filho-container { display:flex; flex-direction:column; background:white; border:1px solid var(--cinza-200); border-radius:8px; overflow:hidden; }
+  .linha-filho { display:flex; align-items:center; justify-content:space-between; gap:6px; padding:6px 8px; flex-wrap:wrap; }
+  .l-info-main { display:flex; align-items:center; gap:4px; flex:1; min-width:140px; }
+  .l-cod { font-family:monospace; font-weight:800; color:var(--cinza-500); font-size:.7rem; background:var(--cinza-100); padding:2px 4px; border-radius:4px; white-space:nowrap; }
+  .l-nome { font-size:.75rem; font-weight:800; color:var(--azul-800); line-height:1.2; word-break:break-word; }
+  .tag-lado { background: var(--azul-100); color: var(--azul-800); font-size: .6rem; font-weight: 800; padding: 2px 4px; border-radius: 4px; white-space: nowrap; }
+  .l-direita-wrap { display:flex; align-items:center; gap:6px; margin-left:auto; }
+  .btn-toggle-var { background:var(--azul-50); border:1px solid var(--azul-200); border-radius:4px; padding:2px 5px; font-size:.75rem; }
+  .l-preco { font-size:.8rem; font-weight:900; color:var(--verde); white-space:nowrap; }
+  .painel-variacao-oculta { display:none; background:var(--cinza-50); border-top:1px dashed var(--cinza-200); padding:6px 8px; font-size:.7rem; color:var(--cinza-700); }
   .painel-variacao-oculta.ativo { display:block; }
 
   .qtd-ctrl { display:inline-flex; align-items:center; border:1px solid var(--cinza-300); border-radius:6px; background:white; overflow:hidden; }
-  .qtd-ctrl button { width:26px; height:26px; border:none; background:var(--cinza-50); font-weight:800; color:var(--azul-800); font-size:.95rem; }
-  .qtd-ctrl input { width:28px; height:26px; text-align:center; border:none; font-weight:800; color:var(--azul-800); font-size:.85rem; }
+  .qtd-ctrl button { width:24px; height:24px; border:none; background:var(--cinza-50); font-weight:800; color:var(--azul-800); font-size:.85rem; }
+  .qtd-ctrl input { width:26px; height:24px; text-align:center; border:none; font-weight:800; color:var(--azul-800); font-size:.75rem; }
 
-  .grade-soltos { display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:16px; }
-  .card-solto { background:white; border:1px solid var(--cinza-200); border-radius:8px; padding:12px; text-align:center; }
-  .card-solto .img { width:100%; aspect-ratio:1; background:var(--cinza-50); display:flex; align-items:center; justify-content:center; border-radius:6px; margin-bottom:8px; overflow:hidden; }
+  .grade-soltos { display:grid; grid-template-columns:repeat(auto-fill, minmax(130px, 1fr)); gap:10px; }
+  .card-solto { background:white; border:1px solid var(--cinza-200); border-radius:8px; padding:8px; text-align:center; }
+  .card-solto .img { width:100%; aspect-ratio:1; background:var(--cinza-50); display:flex; align-items:center; justify-content:center; border-radius:6px; margin-bottom:6px; overflow:hidden; }
   .card-solto .img img { width:100%; height:100%; object-fit:contain; }
-  .card-solto .nome { font-size:.75rem; font-weight:700; color:var(--azul-800); margin-bottom:4px; line-height:1.2; }
-  .card-solto .preco { font-size:.85rem; font-weight:800; color:var(--verde); }
+  .card-solto .nome { font-size:.7rem; font-weight:700; color:var(--azul-800); margin-bottom:4px; line-height:1.2; }
+  .card-solto .preco { font-size:.8rem; font-weight:800; color:var(--verde); }
 
   /* CARRINHO FLUTUANTE */
-  .fab-carrinho { position:fixed; bottom:24px; right:24px; background:var(--azul-800); color:white; width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; box-shadow:0 4px 16px rgba(0,51,102,0.4); cursor:pointer; z-index:150; }
-  .fab-qtd { position:absolute; top:-5px; right:-5px; background:var(--vermelho); color:white; font-size:12px; font-weight:900; min-width:22px; height:22px; border-radius:11px; display:flex; align-items:center; justify-content:center; border:2px solid white; }
-  .painel-carrinho { position:fixed; bottom:100px; right:24px; width:340px; max-width:calc(100vw - 48px); background:white; border-radius:12px; box-shadow:0 10px 40px rgba(0,0,0,0.2); z-index:200; display:none; flex-direction:column; overflow:hidden; border:1px solid var(--cinza-200); }
+  .fab-carrinho { position:fixed; bottom:20px; right:20px; background:var(--azul-800); color:white; width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; box-shadow:0 4px 16px rgba(0,51,102,0.4); cursor:pointer; z-index:150; }
+  .fab-qtd { position:absolute; top:-4px; right:-4px; background:var(--vermelho); color:white; font-size:11px; font-weight:900; min-width:20px; height:20px; border-radius:10px; display:flex; align-items:center; justify-content:center; border:2px solid white; }
+  .painel-carrinho { position:fixed; bottom:85px; right:16px; left:16px; max-width:400px; margin:0 auto; background:white; border-radius:12px; box-shadow:0 10px 40px rgba(0,0,0,0.3); z-index:200; display:none; flex-direction:column; overflow:hidden; border:1px solid var(--cinza-200); }
   .painel-carrinho.on { display:flex; }
-  .painel-head { background:var(--azul-800); color:white; padding:12px 16px; font-weight:800; font-size:.9rem; display:flex; justify-content:space-between; align-items:center; }
-  .painel-lista { padding:12px; max-height:300px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; }
-  .item-carrinho { display:grid; grid-template-columns:30px 1fr auto; gap:8px; align-items:center; padding:8px; background:var(--cinza-50); border-radius:6px; font-size:.8rem; }
+  .painel-head { background:var(--azul-800); color:white; padding:12px 16px; font-weight:800; font-size:.85rem; display:flex; justify-content:space-between; align-items:center; }
+  .painel-lista { padding:10px; max-height:260px; overflow-y:auto; display:flex; flex-direction:column; gap:6px; }
+  .item-carrinho { display:grid; grid-template-columns:30px 1fr auto; gap:8px; align-items:center; padding:6px; background:var(--cinza-50); border-radius:6px; font-size:.75rem; }
   .item-carrinho img { width:30px; height:30px; object-fit:contain; }
-  .painel-foot { padding:16px; border-top:1px solid var(--cinza-200); background:white; }
-  .total-linha { display:flex; justify-content:space-between; font-weight:800; font-size:1.1rem; margin-bottom:12px; color:var(--azul-800); }
-  .btn-finalizar { width:100%; background:var(--verde); color:white; border:none; padding:12px; border-radius:8px; font-weight:800; font-size:1rem; cursor:pointer; }
+  .painel-foot { padding:12px 16px; border-top:1px solid var(--cinza-200); background:white; }
+  .total-linha { display:flex; justify-content:space-between; font-weight:800; font-size:1rem; margin-bottom:10px; color:var(--azul-800); }
+  .btn-finalizar { width:100%; background:var(--verde); color:white; border:none; padding:10px; border-radius:8px; font-weight:800; font-size:.95rem; cursor:pointer; }
 
   /* MODAIS */
-  .modal-bg { position:fixed; inset:0; z-index:500; background:rgba(0,15,30,.85); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; padding:20px; opacity:0; pointer-events:none; transition:.25s; }
+  .modal-bg { position:fixed; inset:0; z-index:500; background:rgba(0,15,30,.85); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; padding:16px; opacity:0; pointer-events:none; transition:.25s; }
   .modal-bg.on { opacity:1; pointer-events:auto; }
-  .modal { background:white; border-radius:12px; max-width:600px; width:100%; max-height:85vh; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 25px 80px rgba(0,0,0,.5); }
-  .modal-head { background:var(--azul-800); color:white; padding:16px; display:flex; justify-content:space-between; align-items:center; }
-  .modal-body { padding:20px; overflow-y:auto; }
+  .modal { background:white; border-radius:12px; max-width:550px; width:100%; max-height:85vh; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 25px 80px rgba(0,0,0,.5); }
+  .modal-head { background:var(--azul-800); color:white; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; }
+  .modal-body { padding:16px; overflow-y:auto; }
 
-  .zoom-modal-bg { position: fixed; inset: 0; z-index: 10000; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
+  .zoom-modal-bg { position: fixed; inset: 0; z-index: 10000; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; padding: 16px; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
   .zoom-modal-bg.on { opacity: 1; pointer-events: auto; }
-  .zoom-modal-content { position: relative; max-width: 90vw; max-height: 90vh; display: flex; align-items: center; justify-content: center; }
-  .zoom-modal-content img { max-width: 100%; max-height: 85vh; object-fit: contain; border-radius: 12px; background: white; padding: 10px; }
-  .zoom-x { position: absolute; top: -15px; right: -15px; background: var(--vermelho); color: white; border: 2px solid white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 16px; font-weight: bold; }
+  .zoom-modal-content { position: relative; max-width: 95vw; max-height: 90vh; display: flex; align-items: center; justify-content: center; }
+  .zoom-modal-content img { max-width: 100%; max-height: 80vh; object-fit: contain; border-radius: 8px; background: white; padding: 6px; }
+  .zoom-x { position: absolute; top: -12px; right: -12px; background: var(--vermelho); color: white; border: 2px solid white; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 14px; font-weight: bold; }
 </style>
 </head>
 <body>
 
+<!-- BOTÃO FLUTUANTE DISCRETO DO WHATSAPP -->
+<a id="btnWhatsVendedor" href="#" target="_blank" style="display:none; position:fixed; bottom:20px; left:20px; background:#25D366; color:white; padding:10px 16px; border-radius:30px; font-weight:800; font-size:0.8rem; text-decoration:none; box-shadow:0 4px 16px rgba(37,211,102,0.4); z-index:150; align-items:center; gap:8px;">
+  <span style="font-size:1.1rem;">💬</span> Falar com <span id="nomeVendedorWhats">Vendedor</span>
+</a>
 <div id="telaLogin">
   <div class="login-box">
     <h1>Catálogo B2B</h1>
@@ -195,16 +209,21 @@
 
 <header class="topo">
   <div class="topo-inner">
-    <div class="topo-logo-area"><strong>📋 Catálogo</strong></div>
-    
     <div class="info-cliente" id="infoCliente" style="display:none;">
-      <span id="nomeCliente">—</span>
+      👤 <span id="nomeCliente">—</span>
       <span class="uf" id="badgeUf">—</span>
+      <button class="btn-topo-acao" onclick="abrirMeusPedidos()">📋 Pedidos</button>
+      <button class="btn-topo-sair" onclick="sairCliente()">Sair</button>
     </div>
 
-    <div class="busca-wrap"><input type="search" id="busca" placeholder="Buscar produto..." autocomplete="off"></div>
+    <div class="busca-wrap">
+      <input type="search" id="busca" placeholder="🔍 Buscar produto por código, nome ou palavra-chave..." autocomplete="off">
+    </div>
   </div>
 </header>
+
+<!-- AVISO DE VALIDADE DA TABELA -->
+<div id="barraAvisoTabela" style="display:none; text-align:center; padding:8px 12px; font-weight:800; font-size:0.8rem; border-bottom:1px solid transparent;"></div>
 
 <div class="chips-wrap"><div class="chips" id="chips"></div></div>
 
@@ -220,7 +239,7 @@
 <div class="painel-carrinho" id="painelCarrinho">
   <div class="painel-head">
     <span>Seu Pedido</span>
-    <button onclick="toggleCarrinho()">✕</button>
+    <button onclick="toggleCarrinho()" style="background:none; border:none; color:white; font-weight:bold;">✕</button>
   </div>
   <div class="painel-lista" id="listaCarrinho"></div>
   <div class="painel-foot">
@@ -235,8 +254,8 @@
 <div class="modal-bg" id="modalBg" onclick="fecharModal(event)">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-head">
-      <h3 id="modalTitulo">—</h3>
-      <button class="modal-x" onclick="fecharModal(null, true)">✕</button>
+      <h3 id="modalTitulo" style="font-size:0.95rem;">—</h3>
+      <button onclick="fecharModal(null, true)" style="background:none; border:none; color:white; font-size:1.1rem; font-weight:bold;">✕</button>
     </div>
     <div class="modal-body" id="modalBody"></div>
   </div>
@@ -255,14 +274,242 @@ let clienteLogado = null;
 let porcentagemAcrescimo = 0;
 let mapaOfertas = {}; 
 
+const BUCKET_ICONIS = 'https://gpzqzwrqndawhhglycat.supabase.co/storage/v1/object/public/icones_area_trabalho/';
+
+function ativarWhatsAppVendedor() {
+  if (clienteLogado && clienteLogado.vendedor && clienteLogado.vendedor.whatsapp) {
+    const numWhats = clienteLogado.vendedor.whatsapp.replace(/\D/g, '');
+    const nomeVendedor = clienteLogado.vendedor.nome.split(' ')[0];
+    
+    const mensagem = encodeURIComponent(`Olá ${nomeVendedor}, sou a empresa ${clienteLogado.nome} (CNPJ: ${clienteLogado.cnpj}) e gostaria de tirar uma dúvida sobre a tabela de preços.`);
+
+    const link = `https://wa.me/55${numWhats}?text=${mensagem}`;
+    
+    const btn = document.getElementById('btnWhatsVendedor');
+    document.getElementById('nomeVendedorWhats').textContent = nomeVendedor;
+    btn.href = link;
+    btn.style.display = 'inline-flex';
+  }
+}
+
+function renderizarCardFamiliaOuGrupo(grupoNome, produtosGrupo, ofertasMap) {
+  const produtosComDesconto = produtosGrupo.filter(p => ofertasMap[p.codigo]);
+  const todosPossuemDesconto = produtosComDesconto.length === produtosGrupo.length && produtosGrupo.length > 0;
+
+  let porcentagemGrupo = null;
+  if (todosPossuemDesconto) {
+    const descPrimeiro = ofertasMap[produtosGrupo[0].codigo].desconto_porcentagem;
+    const todosIguais = produtosGrupo.every(p => ofertasMap[p.codigo].desconto_porcentagem === descPrimeiro);
+    if (todosIguais) porcentagemGrupo = descPrimeiro;
+  }
+
+  let htmlBadgeGrupo = '';
+  if (porcentagemGrupo) {
+    htmlBadgeGrupo = `
+      <div style="background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; padding: 6px 12px; border-radius: 6px; font-weight: 800; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);">
+        🔥 OFERTA DO GRUPO: ${porcentagemGrupo}% OFF
+      </div>`;
+  }
+
+  const htmlProdutos = produtosGrupo.map(p => {
+    const oferta = ofertasMap[p.codigo];
+    const precoOriginal = p.preco_tabela;
+    
+    let precoFinal = precoOriginal;
+    let htmlPreco = `<span style="font-size:1rem; font-weight:bold; color:#10b981;">R$ ${precoOriginal.toFixed(2)}</span>`;
+
+    if (oferta && oferta.desconto_porcentagem > 0) {
+      precoFinal = precoOriginal * (1 - (oferta.desconto_porcentagem / 100));
+      htmlPreco = `
+        <div style="display:flex; flex-direction:column;">
+          <span style="font-size:0.75rem; color:#94a3b8; text-decoration:line-through;">De R$ ${precoOriginal.toFixed(2)}</span>
+          <span style="font-size:1rem; font-weight:bold; color:#ef4444;">Por R$ ${precoFinal.toFixed(2)} <small style="font-size:0.7rem; background:#fee2e2; color:#dc2626; padding:1px 4px; border-radius:3px;">-${oferta.desconto_porcentagem}%</small></span>
+        </div>`;
+    }
+
+    return `
+      <div class="item-produto-linha" style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #334155;">
+        <div>
+          <div style="font-weight:600; font-size:0.85rem;">${p.descricao || p.nome}</div>
+          <small style="color:#64748b;">Cód: ${p.codigo}</small>
+        </div>
+        <div>${htmlPreco}</div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="card-grupo" style="background:#1e293b; border-radius:12px; padding:16px; margin-bottom:16px; border:1px solid #334155;">
+      ${htmlBadgeGrupo}
+      <h3 style="margin-top:0; color:#f8fafc;">${grupoNome}</h3>
+      <div class="lista-produtos">${htmlProdutos}</div>
+    </div>`;
+}
+
+function configurarWhatsAppVendedor() {
+  if (clienteLogado && clienteLogado.vendedor && clienteLogado.vendedor.whatsapp) {
+    const numWhats = clienteLogado.vendedor.whatsapp.replace(/\D/g, '');
+    if (!numWhats) return;
+
+    const nomeVendedor = clienteLogado.vendedor.nome.split(' ')[0];
+    const mensagem = encodeURIComponent(`Olá ${nomeVendedor}, sou da empresa ${clienteLogado.nome} (CNPJ: ${clienteLogado.cnpj}) e gostaria de tirar uma dúvida sobre os produtos.`);
+
+    const link = `https://wa.me/55${numWhats}?text=${mensagem}`;
+    
+    const btn = document.getElementById('btnWhatsVendedor');
+    document.getElementById('nomeVendedorWhats').textContent = nomeVendedor;
+    btn.href = link;
+    btn.style.display = 'inline-flex';
+  }
+}
+
+function fmtDataBr(strData) {
+  if (!strData) return '';
+  const [ano, mes, dia] = strData.split('-');
+  return `${dia}/${mes}/${ano}`;
+}
+
+async function verificarValidadeTabela() {
+  try {
+    const r = await fetch('/api/regras');
+    const j = await r.json();
+    if (!j.ok || !j.regras || !j.regras.tabela_data_fim) return;
+
+    const barra = document.getElementById('barraAvisoTabela');
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    const [anoFim, mesFim, diaFim] = j.regras.tabela_data_fim.split('-');
+    const dataFimTabela = new Date(anoFim, mesFim - 1, diaFim);
+
+    if (hoje > dataFimTabela) {
+      barra.style.background = '#fee2e2';
+      barra.style.color = '#991b1b';
+      barra.style.borderColor = '#fca5a5';
+      barra.innerHTML = `⚠️ <strong>TABELA VENCIDA!</strong> Esta tabela expirou em <strong>${fmtDataBr(j.regras.tabela_data_fim)}</strong>. Os preços podem ter variação. Peça tabela nova ao seu vendedor.`;
+      barra.style.display = 'block';
+    } else {
+      barra.style.background = '#dbeafe';
+      barra.style.color = '#1e40af';
+      barra.style.borderColor = '#93c5fd';
+      barra.innerHTML = `📅 <strong>TABELA DE PREÇOS VÁLIDA ATÉ ${fmtDataBr(j.regras.tabela_data_fim)}</strong>`;
+      barra.style.display = 'block';
+    }
+  } catch (e) {
+    console.error('Erro ao verificar validade da tabela:', e);
+  }
+}
+
+function getIconeUrl(grupo) {
+  const g = grupo.toUpperCase().trim();
+  if (g.includes('ANZOL')) return BUCKET_ICONIS + 'ANZOL.jpg';
+  if (g.includes('ISCA')) return BUCKET_ICONIS + 'ISCA.jpg';
+  if (g.includes('MOLINETE')) return BUCKET_ICONIS + 'MOLINETE.jpg';
+  if (g.includes('CARRETILHA')) return BUCKET_ICONIS + 'CARRETILHA.jpg';
+  if (g.includes('VARA')) return BUCKET_ICONIS + 'VARA.jpg';
+  if (g.includes('LINHA')) return BUCKET_ICONIS + 'LINHA.jpg';
+  if (g.includes('MOTOR')) return BUCKET_ICONIS + 'MOTOR.jpg';
+  if (g.includes('GIRADOR') || g.includes('EMPATE') || g.includes('SNAP')) return BUCKET_ICONIS + 'GIRADORES.jpg';
+  if (g.includes('ACESSORIO') || g.includes('VESTUARIO')) return BUCKET_ICONIS + 'ACESSORIOS.jpg';
+  return BUCKET_ICONIS + 'ACESSORIOS.jpg';
+}
+
+function getLogoMarcaUrl(marca) {
+  if (!marca) return '';
+  const m = marca.toUpperCase().trim();
+  if (m.includes('DAIWA')) return BUCKET_ICONIS + 'daiwa.JPG';
+  if (m.includes('MARINE')) return BUCKET_ICONIS + 'MARINE.JPG';
+  if (m.includes('YO-ZURI') || m.includes('YO ZURI')) return BUCKET_ICONIS + 'YO-ZURI.JPG';
+  if (m.includes('ZEST')) return BUCKET_ICONIS + 'zest.JPG';
+  if (m.includes('MEGABASS')) return BUCKET_ICONIS + 'MEGABASS.JPG';
+  return '';
+}
+
+function renderMarcaBadge(marca) {
+  if (!marca) return '';
+  const logoUrl = getLogoMarcaUrl(marca);
+  if (logoUrl) {
+    return `<img src="${logoUrl}" class="marca-logo-img" alt="${escapeHtml(marca)}" title="${escapeHtml(marca)}">`;
+  }
+  return `<span class="marca-badge">${escapeHtml(marca)}</span>`;
+}
+
 const fmtMoeda = v => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 const parseAtributos = json => { try { return JSON.parse(json || '{}'); } catch { return {}; } };
 
-try {
-  carrinho = JSON.parse(localStorage.getItem('carrinho_b2b') || '{}');
-} catch(e) {
-  carrinho = {};
+window.addEventListener('DOMContentLoaded', () => {
+  verificarValidadeTabela();
+
+  const cliSalvo = localStorage.getItem('clienteLogadoB2B');
+  const acrescimoSalvo = localStorage.getItem('acrescimoB2B');
+
+  if (cliSalvo) {
+    clienteLogado = JSON.parse(cliSalvo);
+    porcentagemAcrescimo = parseFloat(acrescimoSalvo) || 0;
+
+    document.getElementById('telaLogin').style.display = 'none';
+    document.getElementById('infoCliente').style.display = 'flex';
+    document.getElementById('nomeCliente').textContent = (clienteLogado.nome || '').split(' ')[0];
+    document.getElementById('badgeUf').textContent = clienteLogado.uf;
+
+    configurarWhatsAppVendedor();
+
+    carregar();
+  }
+});
+
+function sairCliente() {
+  localStorage.removeItem('clienteLogadoB2B');
+  localStorage.removeItem('acrescimoB2B');
+  window.location.reload();
+}
+
+async function abrirMeusPedidos() {
+  if (!clienteLogado) return;
+  
+  document.getElementById('modalTitulo').textContent = '📋 Histórico de Pedidos / Orçamentos';
+  document.getElementById('modalBody').innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">Buscando seus pedidos...</p>';
+  document.getElementById('modalBg').classList.add('on');
+
+  try {
+    const r = await fetch(`/api/cliente/${encodeURIComponent(clienteLogado.cnpj)}/pedidos`);
+    const j = await r.json();
+
+    if (!j.ok || !j.pedidos.length) {
+      document.getElementById('modalBody').innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">Você ainda não enviou nenhum pedido.</p>';
+      return;
+    }
+
+    const html = j.pedidos.map(p => {
+      const dataStr = new Date(p.data_criacao).toLocaleString('pt-BR');
+      const itensTable = (p.itens || []).map(it => `
+        <tr>
+          <td style="padding:6px 0; font-size:0.75rem;"><strong>${it.codigo_produto}</strong> - ${escapeHtml(it.descricao)}</td>
+          <td style="padding:6px; font-size:0.75rem; text-align:center;">${it.quantidade}</td>
+          <td style="padding:6px 0; font-size:0.75rem; text-align:right;">R$ ${fmtMoeda(it.preco_final)}</td>
+        </tr>
+      `).join('');
+
+      return `
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px; margin-bottom:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">
+            <strong style="color:#003366; font-size:0.85rem;">Pedido #${p.id}</strong>
+            <span style="font-size:0.7rem; color:#64748b;">${dataStr}</span>
+          </div>
+          <table style="width:100%; border-collapse:collapse; margin-bottom:6px;">
+            <tbody>${itensTable}</tbody>
+          </table>
+          <div style="text-align:right; font-weight:900; color:#10b981; font-size:0.9rem;">
+            Total: R$ ${fmtMoeda(p.total)}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    document.getElementById('modalBody').innerHTML = html;
+  } catch (e) {
+    document.getElementById('modalBody').innerHTML = '<p style="text-align:center; color:#ef4444; padding:20px;">Erro ao carregar pedidos.</p>';
+  }
 }
 
 function abrirZoomImagem(elemento) {
@@ -341,18 +588,14 @@ function analisarCarretilha(it) {
   let modelo = attrs['Modelo'] || attrs['MODELO'] || '';
   let ladoManivela = attrs['Lado Manivela'] || attrs['LADO MANIVELA'] || '';
   const relacao = attrs['Relação de recolhimento'] || '';
-  const capacidade = attrs['Capacidade de linha (mm-m)'] || '';
-  const velMax = attrs['Velocidade Máxima'] || '';
   if (!modelo) { const partes = (it.subgrupo || '').trim().split(/\s+/); modelo = partes.slice(-2).join(' ') || it.subgrupo; }
   if (!ladoManivela) {
     const subUpper = (it.subgrupo || '').toUpperCase();
-    if (subUpper.includes('ESQ') || subUpper.includes('LEFT')) ladoManivela = 'Esquerda';
-    else if (subUpper.includes('DIR') || subUpper.includes('RIGHT')) ladoManivela = 'Direita';
+    if (subUpper.includes('ESQ') || subUpper.includes('LEFT')) ladoManivela = 'ESQUERDA';
+    else if (subUpper.includes('DIR') || subUpper.includes('RIGHT')) ladoManivela = 'DIREITA';
   }
   const partesVar = [];
   if (relacao) partesVar.push(relacao);
-  if (capacidade) partesVar.push(capacidade);
-  if (velMax) partesVar.push(velMax);
   return { modelo, ladoTag: ladoManivela, variacaoExtra: partesVar.join(' • ') };
 }
 
@@ -361,8 +604,6 @@ function analisarMotor(it) {
   let modelo = attrs['Modelo'] || attrs['MODELO'] || '';
   let potencia = attrs['Potência'] || attrs['POTÊNCIA'] || attrs['HP'] || attrs['Libras'] || attrs['LIBRAS'] || '';
   const tensao = attrs['Tensão'] || attrs['VOLTAGEM'] || attrs['Voltagem'] || '';
-  const tempo = attrs['Tempos'] || attrs['TEMPO'] || '';
-  const partida = attrs['Partida'] || attrs['PARTIDA'] || '';
   if (!modelo) { const partes = (it.subgrupo || '').trim().split(/\s+/); modelo = partes.slice(-2).join(' ') || it.subgrupo; }
   if (!potencia) {
     const subUpper = (it.subgrupo || '').toUpperCase();
@@ -371,8 +612,6 @@ function analisarMotor(it) {
   }
   const partesVar = [];
   if (tensao) partesVar.push(tensao);
-  if (tempo) partesVar.push(tempo);
-  if (partida) partesVar.push(partida);
   return { modelo, tagPotencia: potencia, variacaoExtra: partesVar.join(' • ') };
 }
 
@@ -428,9 +667,13 @@ async function fazerLogin() {
     clienteLogado = j.cliente;
     porcentagemAcrescimo = j.regra_acrescimo.porcentagem;
 
+    localStorage.setItem('clienteLogadoB2B', JSON.stringify(j.cliente));
+    localStorage.setItem('acrescimoB2B', j.regra_acrescimo.porcentagem);
+    configurarWhatsAppVendedor();
+
     document.getElementById('telaLogin').style.display = 'none';
     document.getElementById('infoCliente').style.display = 'flex';
-    document.getElementById('nomeCliente').textContent = clienteLogado.nome;
+    document.getElementById('nomeCliente').textContent = (clienteLogado.nome || '').split(' ')[0];
     document.getElementById('badgeUf').textContent = clienteLogado.uf;
 
     carregar();
@@ -441,8 +684,7 @@ async function finalizarPedido() {
   const itens = Object.keys(carrinho).map(cod => {
     const item = carrinho[cod];
     const calc = calcularValoresProduto(item.precoBase, cod);
-    const precoUnitario = item.preco ? item.preco : calc.precoFinal;
-    return { codigo: cod, desc: item.desc, qtd: item.qtd, precoBase: item.precoBase, precoFinal: precoUnitario };
+    return { codigo: cod, desc: item.desc, qtd: item.qtd, precoBase: item.precoBase, precoFinal: calc.precoFinal };
   });
 
   if (itens.length === 0) { alert('Seu carrinho está vazio.'); return; }
@@ -455,7 +697,7 @@ async function finalizarPedido() {
       body: JSON.stringify({ cnpj_cliente: clienteLogado.cnpj, codigo_representante: clienteLogado.representante, total, itens })
     });
     const j = await r.json();
-    if (j.ok) { alert('✅ Pedido enviado com sucesso!'); carrinho = {}; localStorage.removeItem('carrinho_b2b'); atualizarCarrinho(); fecharCarrinho(); } 
+    if (j.ok) { alert('✅ Pedido enviado com sucesso!'); carrinho = {}; atualizarCarrinho(); fecharCarrinho(); } 
     else { alert('❌ Erro: ' + j.erro); }
   } catch (e) { alert('❌ Erro ao enviar o pedido.'); }
 }
@@ -471,38 +713,34 @@ async function carregar() {
     if (!j.ok) throw new Error('Erro API');
     
     todosItens = j.itens.map(normalizarItem).filter(it => it.grupo.length > 0 && it.estoque > 0);
-    montarChips(); renderizar(); atualizarCarrinho();
+    montarChips(); renderizar();
   } catch (e) { document.getElementById('conteudo').innerHTML = '<div class="loading">Erro ao carregar.</div>'; }
 }
 
 function montarChips() {
   const contagem = {};
-  let totalOfertas = 0;
-
-  todosItens.forEach(it => {
-    contagem[it.grupo] = (contagem[it.grupo] || 0) + 1;
-    if (mapaOfertas[it.codigo]) totalOfertas++;
-  });
-
+  todosItens.forEach(it => { contagem[it.grupo] = (contagem[it.grupo] || 0) + 1; });
   const grupos = Object.keys(contagem).sort((a, b) => contagem[b] - contagem[a]);
   
   document.getElementById('chips').innerHTML = `
-    <button class="chip chip-oferta ativo" onclick="trocarGrupo('__OFERTAS__', this)">🔥 Ofertas <small>${totalOfertas}</small></button>
-    ${grupos.map(g => `<button class="chip" onclick="trocarGrupo('${g}', this)">${g} <small>${contagem[g]}</small></button>`).join('')}
+    <button class="chip chip-oferta ativo" onclick="trocarGrupo('__OFERTAS__', this)" title="Ofertas">🔥</button>
+    ${grupos.map(g => {
+      const iconeUrl = getIconeUrl(g);
+      return `<button class="chip" onclick="trocarGrupo('${g}', this)" title="${g}"><img src="${iconeUrl}" class="chip-img" alt="${g}" onerror="this.onerror=null; this.src='${BUCKET_ICONIS}ACESSORIOS.jpg';"></button>`;
+    }).join('')}
   `;
 }
 
 function trocarGrupo(grupo, btn) {
   grupoAtual = grupo;
   document.querySelectorAll('.chip').forEach(c => c.classList.remove('ativo'));
-  btn.classList.add('ativo'); renderizar();
+  btn.classList.add('ativo'); 
+  renderizar();
 }
 
 function filtrar() {
   let lista = todosItens;
-  if (grupoAtual === '__OFERTAS__') {
-    lista = lista.filter(it => mapaOfertas[it.codigo]);
-  } else if (grupoAtual !== '__TODOS__') {
+  if (grupoAtual !== '__TODOS__' && grupoAtual !== '__OFERTAS__') {
     lista = lista.filter(it => it.grupo === grupoAtual);
   }
 
@@ -514,12 +752,16 @@ function filtrar() {
 }
 
 function renderizar() {
-  const lista = filtrar();
   const cont = document.getElementById('conteudo');
+
+  if (grupoAtual === '__OFERTAS__') {
+    cont.innerHTML = `<iframe src="ofertas.html" class="iframe-ofertas"></iframe>`;
+    return;
+  }
+
+  const lista = filtrar();
   if (!lista.length) { 
-    cont.innerHTML = grupoAtual === '__OFERTAS__' 
-      ? '<div class="loading">Nenhuma oferta disponível no momento.</div>' 
-      : '<div class="loading">Nenhum produto encontrado.</div>'; 
+    cont.innerHTML = '<div class="loading">Nenhum produto encontrado.</div>'; 
     return; 
   }
   
@@ -554,13 +796,13 @@ function renderizar() {
         nomeFam.includes('SNAP') || nomeFam.includes('CABO') || nomeFam.includes('LUVA')
       ) tipo = 'anzol';
       else if (nomeFam.includes('MOLINETE')) tipo = 'molinete';
-      else if (nomeFam.includes('CARRETILHA')) tipo = 'carretilha';
+      else if (nomeFam.includes('CARRETILHA')) tipo = 'equipamento_direto';
       else if (nomeFam.includes('MOTOR') || grupoItem.includes('MOTOR')) tipo = 'motor';
       
       if (tipo === 'isca') html += renderFamiliaIsca(fam, filhos);
-      else if (tipo === 'anzol') html += renderFamiliaAnzol(fam, filhos);
       else if (tipo === 'molinete') html += renderFamiliaMolinete(fam, filhos);
-      else if (tipo === 'carretilha') html += renderFamiliaCarretilha(fam, filhos);
+      else if (tipo === 'equipamento_direto') html += renderFamiliaEquipamentoDireto(fam, filhos);
+      else if (tipo === 'anzol') html += renderFamiliaAnzol(fam, filhos);
       else if (tipo === 'motor') html += renderFamiliaMotor(fam, filhos);
       else if (tipo === 'vara') html += renderFamiliaVara(fam, filhos);
       else if (tipo === 'linha') html += renderFamiliaLinha(fam, filhos);
@@ -578,38 +820,253 @@ function renderizar() {
   cont.innerHTML = html;
 }
 
-function linhaCarretilha(it) {
-  const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
-  const info = analisarCarretilha(it);
-  const calc = it.calculoPreco;
-  const temVariacaoExtra = Boolean(info.variacaoExtra && info.variacaoExtra.trim() !== '');
+/* RENDERIZAÇÃO DOS MOLINETES NO MESMO PADRÃO DE ABAS E CARDS COMPACTOS DOS ANZÓIS */
+function renderFamiliaMolinete(fam, itens) {
+  const primeiroItem = itens[0];
+  const imgInicial = primeiroItem?.imagem_url || '';
+  let subdivisoes = fam.subdivisoes || [];
+  if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Todos', itens: fam.itens }];
+
+  const itensComEstoque = itens.filter(it => it.estoque > 0);
+  if (itensComEstoque.length === 0) return '';
+
+  const temOfertaNaFamilia = itensComEstoque.some(it => it.calculoPreco.temOferta);
+  const maiorDesconto = Math.max(...itensComEstoque.map(it => it.calculoPreco.pctDesconto || 0));
+
+  const tabsHtml = subdivisoes.map((sub, idx) => `<button class="molinete-tab ${idx===0?'ativo':''}" onclick="trocarTipoMolinete('${fam.id}', ${idx})">${escapeHtml(sub.nome)}</button>`).join('');
+  const itensIniciais = itensComEstoque.filter(it => subdivisoes[0].itens.includes(it.codigo));
+  itensIniciais.sort((a, b) => a.ordem_excel - b.ordem_excel);
+
+  const cardsHtml = itensIniciais.map(it => {
+    const info = analisarMolinete(it);
+    const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+    const calc = it.calculoPreco;
+
+    return `
+      <div class="molinete-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}">
+        <span class="molinete-badge">${q}</span>
+        <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700;">CÓD: ${escapeHtml(it.codigo)}</div>
+        <div class="molinete-numero">${escapeHtml(info.modelo || it.subgrupo)}</div>
+        
+        ${calc.temOferta ? `
+          <div class="preco-box-oferta">
+            <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
+            <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
+          </div>
+        ` : `
+          <div class="molinete-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>
+        `}
+
+        <div class="molinete-qtd-ctrl" onclick="event.stopPropagation()">
+          <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+          <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+          <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  window.molineteData = window.molineteData || {}; 
+  window.molineteData[fam.id] = { subdivisoes, itens: itensComEstoque };
 
   return `
-    <div class="linha-filho-container">
-      <div class="linha-filho">
-        <div class="l-info-main">
-          <span class="l-cod">${it.codigo}</span>
-          ${info.ladoTag ? `<span class="tag-lado">${escapeHtml(info.ladoTag)}</span>` : ''}
-          ${calc.temOferta ? `<span class="tarja-oferta-item">🔥 -${calc.pctDesconto}%</span>` : ''}
+    <div class="familia-bloco">
+      <div class="familia-head">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <h2>${escapeHtml(fam.nome)}</h2>
+          ${temOfertaNaFamilia ? `
+            <span style="background: linear-gradient(135deg, #001b3a, #020617); border: 1px solid #38bdf8; color: #38bdf8; font-size: 0.65rem; font-weight: 900; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">
+              ⚡ GRUPO BLACK NOVEMBER -${maiorDesconto}%
+            </span>
+          ` : ''}
         </div>
-        <div class="l-direita-wrap">
-          ${temVariacaoExtra ? `<button type="button" class="btn-toggle-var" onclick="toggleVariacao('${it.codigo}', event)">👁️</button>` : ''}
+        ${renderMarcaBadge(itens[0].marca)}
+      </div>
+      <div class="molinete-card" id="card-fam-${fam.id}">
+        <div class="familia-side">
+          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">
+            ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
+          </div>
+        </div>
+        <div class="molinete-info">
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Descrição</button>
+          ${subdivisoes.length > 1 ? `<div class="molinete-tabs">${tabsHtml}</div>` : ''}
+          <div class="isca-titulo-cores">OPÇÕES / MODELOS</div>
+          <div class="molinete-grade" id="grade-molinetes-${fam.id}">${cardsHtml}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function trocarTipoMolinete(famId, subIndex) {
+  const data = window.molineteData[famId]; 
+  const sub = data.subdivisoes[subIndex];
+  const card = document.getElementById(`card-fam-${famId}`);
+  card.querySelectorAll('.molinete-tab').forEach(b => b.classList.remove('ativo'));
+  card.querySelectorAll('.molinete-tab')[subIndex].classList.add('ativo');
+  
+  const itensFiltrados = data.itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
+  itensFiltrados.sort((a, b) => a.ordem_excel - b.ordem_excel);
+
+  document.getElementById(`grade-molinetes-${famId}`).innerHTML = itensFiltrados.map(it => {
+    const info = analisarMolinete(it); 
+    const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+    const calc = it.calculoPreco;
+
+    return `
+      <div class="molinete-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}">
+        <span class="molinete-badge">${q}</span>
+        <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700;">CÓD: ${escapeHtml(it.codigo)}</div>
+        <div class="molinete-numero">${escapeHtml(info.modelo || it.subgrupo)}</div>
+        
+        ${calc.temOferta ? `
+          <div class="preco-box-oferta">
+            <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
+            <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
+          </div>
+        ` : `<div class="molinete-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+
+        <div class="molinete-qtd-ctrl" onclick="event.stopPropagation()">
+          <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+          <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+          <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderFamiliaEquipamentoDireto(fam, itens) {
+  const primeiroItem = itens[0];
+  const imgInicial = primeiroItem?.imagem_url || '';
+  const isCarretilha = fam.nome.toUpperCase().includes('CARRETILHA');
+
+  const modelosMap = new Map();
+  itens.filter(it => it.estoque > 0).forEach(it => {
+    const info = isCarretilha ? analisarCarretilha(it) : analisarMolinete(it);
+    const modeloNome = info.modelo || it.subgrupo;
+    if (!modelosMap.has(modeloNome)) modelosMap.set(modeloNome, { nome: modeloNome, itens: [] });
+    modelosMap.get(modeloNome).itens.push(it);
+  });
+
+  const modelos = Array.from(modelosMap.values());
+
+  const blocosModelosHtml = modelos.map(mod => {
+    mod.itens.sort((a, b) => a.ordem_excel - b.ordem_excel);
+
+    const cardsHtml = mod.itens.map(it => {
+      const info = isCarretilha ? analisarCarretilha(it) : analisarMolinete(it);
+      const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+      const calc = it.calculoPreco;
+      const tagDetalhe = isCarretilha ? info.ladoTag : (info.variacao || 'Padrão');
+
+      return `
+        <div class="isca-cor-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" onclick="selecionarEquipamento('${fam.id}', '${it.codigo}', '${it.imagem_url}')" style="position:relative;">
+          <span class="isca-badge">${q}</span>
+          ${it.imagem_url ? `<img src="${it.imagem_url}" style="height: 65px; object-fit: contain;">` : ''}
+          <div class="cor-nome" style="font-size: 0.7rem; font-weight: 800; color: var(--azul-800);">${it.codigo}</div>
+          <div style="font-size: .65rem; color: var(--azul-800); font-weight: 800; text-align: center; margin: 2px 0 4px 0;">${escapeHtml(tagDetalhe)}</div>
+          
           ${calc.temOferta ? `
-            <div class="preco-box-oferta">
-              <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
-              <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
+            <div style="text-align:center; width:100%; margin-bottom:4px;">
+              <span style="background: linear-gradient(135deg, #001b3a, #0f172a); color: #38bdf8; border: 1px solid #38bdf8; font-size: 0.55rem; font-weight: 900; padding: 2px 4px; border-radius: 4px; display: inline-block; margin-bottom: 2px; text-transform: uppercase;">
+                ⚡ BLACK NOVEMBER -${calc.pctDesconto}%
+              </span>
+              <div class="preco-de" style="font-size:0.68rem; color:#94a3b8; text-decoration:line-through; font-weight:700;">
+                R$ ${fmtMoeda(calc.precoOriginal)}
+              </div>
+              <div class="preco-por" style="color:#ef4444; font-size:0.9rem; font-weight:900;">
+                R$ ${fmtMoeda(calc.precoFinal)}
+              </div>
             </div>
-          ` : `<div class="l-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
-        </div>
-        <div class="l-qtd" onclick="event.stopPropagation()">
-          <div class="qtd-ctrl">
+          ` : `<div class="cor-preco" style="font-size:0.85rem; font-weight:900; color:var(--verde); margin-bottom:4px;">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+
+          <div class="isca-qtd-ctrl" onclick="event.stopPropagation()">
             <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
             <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
             <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
           </div>
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="sub-bloco" style="margin-bottom: 12px;">
+        <div class="sub-grupo-header">${escapeHtml(mod.nome)}</div>
+        <div class="isca-grade">${cardsHtml}</div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="familia-bloco">
+      <div class="familia-head">
+        <h2>${escapeHtml(fam.nome)}</h2> 
+        ${renderMarcaBadge(itens[0].marca)}
+      </div>
+      <div class="isca-card" id="card-fam-${fam.id}">
+        <div class="familia-side">
+          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">
+            ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
+          </div>
+        </div>
+        <div class="isca-info">
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Descrição / Ficha</button>
+          <div style="margin-top: 6px;">${blocosModelosHtml}</div>
         </div>
       </div>
-      ${temVariacaoExtra ? `<div class="painel-variacao-oculta" id="var-panel-${it.codigo}"><strong>Ficha Técnica:</strong> ${escapeHtml(info.variacaoExtra)}</div>` : ''}
+    </div>`;
+}
+
+function selecionarEquipamento(famId, codigo, url) {
+  const card = document.getElementById(`card-fam-${famId}`);
+  if (!card) return;
+  card.querySelectorAll('.isca-cor-card').forEach(m => m.classList.remove('ativa'));
+  const targetMini = document.getElementById(`mini-${codigo}`);
+  if (targetMini) targetMini.classList.add('ativa');
+  if (url && url.trim() !== '') {
+    document.getElementById(`foto-pai-${famId}`).innerHTML = `<img src="${url}">`;
+  }
+}
+
+function renderFamiliaMotor(fam, itens) {
+  const primeiroItem = itens[0];
+  const imgInicial = primeiroItem?.imagem_url || '';
+  let subdivisoes = fam.subdivisoes || [];
+  if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Todos', itens: fam.itens }];
+
+  const miniaturasHtml = itens.filter(it => it.estoque > 0).map(it => {
+    const info = analisarMotor(it);
+    const labelMini = [info.modelo, info.tagPotencia].filter(Boolean).join(' ');
+    return `
+      <div class="filho-mini" id="mini-${it.codigo}" onclick="selecionarCarretilha('${fam.id}', '${it.codigo}', '${it.imagem_url}')">
+        <img src="${it.imagem_url}" alt="${escapeHtml(labelMini)}">
+        <div class="mini-info"><span class="mini-nome">${escapeHtml(labelMini)}</span></div>
+      </div>`;
+  }).join('');
+
+  const blocosTabelas = subdivisoes.map(sub => {
+    const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
+    if (itensDaSub.length === 0) return '';
+    itensDaSub.sort((a, b) => a.ordem_excel - b.ordem_excel);
+
+    return `
+      <div class="sub-bloco" style="margin-top: 8px;">
+        ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
+        <div class="lista-filhos" style="margin-top: 4px;">${itensDaSub.map(linhaMotor).join('')}</div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="familia-bloco">
+      <div class="familia-head">
+        <h2>${escapeHtml(fam.nome)}</h2> 
+        ${renderMarcaBadge(itens[0].marca)}
+      </div>
+      <div class="molinete-card" id="card-fam-${fam.id}">
+        <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
+        <div class="molinete-info">
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Detalhes</button>
+          <div class="topo-miniaturas">${miniaturasHtml}</div>
+          ${blocosTabelas}
+        </div>
+      </div>
     </div>`;
 }
 
@@ -654,205 +1111,6 @@ function toggleVariacao(codigo, event) {
   if (painel) painel.classList.toggle('ativo');
 }
 
-/* RENDERIZAÇÃO DOS MOLINETES SEGUINDO A MESMA LÓGICA DE ABAS/TABS DOS ANZÓIS */
-function renderFamiliaMolinete(fam, itens) {
-  const primeiroItem = itens[0];
-  const imgInicial = primeiroItem?.imagem_url || '';
-  let subdivisoes = fam.subdivisoes || [];
-  if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Todos', itens: fam.itens }];
-
-  const itensComEstoque = itens.filter(it => it.estoque > 0);
-  if (itensComEstoque.length === 0) return '';
-
-  const temOfertaNaFamilia = itensComEstoque.some(it => it.calculoPreco.temOferta);
-  const maiorDesconto = Math.max(...itensComEstoque.map(it => it.calculoPreco.pctDesconto || 0));
-
-  const tabsHtml = subdivisoes.map((sub, idx) => `<button class="molinete-tab ${idx===0?'ativo':''}" onclick="trocarTipoMolinete('${fam.id}', ${idx})">${escapeHtml(sub.nome)}</button>`).join('');
-  const itensIniciais = itensComEstoque.filter(it => subdivisoes[0].itens.includes(it.codigo));
-  itensIniciais.sort((a, b) => a.ordem_excel - b.ordem_excel);
-
-  const cardsHtml = itensIniciais.map(it => {
-    const info = analisarMolinete(it);
-    const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
-    const calc = it.calculoPreco;
-
-    return `
-      <div class="molinete-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}">
-        <span class="molinete-badge">${q}</span>
-        <div style="font-size:0.62rem; color:var(--cinza-400); font-weight:700;">CÓD: ${escapeHtml(it.codigo)}</div>
-        <div class="molinete-numero">${escapeHtml(info.modelo || it.subgrupo)}</div>
-        
-        ${calc.temOferta ? `
-          <div class="preco-box-oferta">
-            <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
-            <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
-          </div>
-        ` : `
-          <div class="molinete-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>
-        `}
-
-        <div class="molinete-qtd-ctrl" onclick="event.stopPropagation()">
-          <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
-          <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
-          <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
-        </div>
-      </div>`;
-  }).join('');
-
-  window.molineteData = window.molineteData || {}; 
-  window.molineteData[fam.id] = { subdivisoes, itens: itensComEstoque };
-
-  return `
-    <div class="familia-bloco">
-      <div class="familia-head">
-        <h2>${escapeHtml(fam.nome)}</h2> 
-        <span class="marca-badge">${escapeHtml(itens[0].marca)}</span>
-      </div>
-      <div class="molinete-card" id="card-fam-${fam.id}">
-        ${temOfertaNaFamilia ? `<div class="badge-oferta-banner">⚡ GRUPO BLACK NOVEMBER -${maiorDesconto}%</div>` : ''}
-        <div class="familia-side">
-          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">
-            ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
-          </div>
-        </div>
-        <div class="molinete-info">
-          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver descrição</button>
-          ${subdivisoes.length > 1 ? `<div class="molinete-tabs">${tabsHtml}</div>` : ''}
-          <div class="isca-titulo-cores">OPÇÕES / MODELOS</div>
-          <div class="molinete-grade" id="grade-molinetes-${fam.id}">${cardsHtml}</div>
-        </div>
-      </div>
-    </div>`;
-}
-
-function trocarTipoMolinete(famId, subIndex) {
-  const data = window.molineteData[famId]; 
-  const sub = data.subdivisoes[subIndex];
-  const card = document.getElementById(`card-fam-${famId}`);
-  card.querySelectorAll('.molinete-tab').forEach(b => b.classList.remove('ativo'));
-  card.querySelectorAll('.molinete-tab')[subIndex].classList.add('ativo');
-  
-  const itensFiltrados = data.itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
-  itensFiltrados.sort((a, b) => a.ordem_excel - b.ordem_excel);
-
-  document.getElementById(`grade-molinetes-${famId}`).innerHTML = itensFiltrados.map(it => {
-    const info = analisarMolinete(it); 
-    const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
-    const calc = it.calculoPreco;
-
-    return `
-      <div class="molinete-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}">
-        <span class="molinete-badge">${q}</span>
-        <div style="font-size:0.62rem; color:var(--cinza-400); font-weight:700;">CÓD: ${escapeHtml(it.codigo)}</div>
-        <div class="molinete-numero">${escapeHtml(info.modelo || it.subgrupo)}</div>
-        
-        ${calc.temOferta ? `
-          <div class="preco-box-oferta">
-            <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
-            <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
-          </div>
-        ` : `<div class="molinete-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
-
-        <div class="molinete-qtd-ctrl" onclick="event.stopPropagation()">
-          <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
-          <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
-          <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
-        </div>
-      </div>`;
-  }).join('');
-}
-
-function renderFamiliaCarretilha(fam, itens) {
-  const primeiroItem = itens[0];
-  const imgInicial = primeiroItem?.imagem_url || '';
-  let subdivisoes = fam.subdivisoes || [];
-  if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Todos', itens: fam.itens }];
-
-  const miniaturasHtml = itens.filter(it => it.estoque > 0).map(it => {
-    const info = analisarCarretilha(it);
-    const labelMini = [info.modelo, info.ladoTag].filter(Boolean).join(' ');
-    return `
-      <div class="filho-mini" id="mini-${it.codigo}" onclick="selecionarCarretilha('${fam.id}', '${it.codigo}', '${it.imagem_url}')">
-        <img src="${it.imagem_url}" alt="${escapeHtml(labelMini)}">
-        <div class="mini-info"><span class="mini-nome">${escapeHtml(labelMini)}</span></div>
-      </div>`;
-  }).join('');
-
-  const blocosTabelas = subdivisoes.map(sub => {
-    const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
-    if (itensDaSub.length === 0) return '';
-    itensDaSub.sort((a, b) => a.ordem_excel - b.ordem_excel);
-
-    return `
-      <div class="sub-bloco" style="margin-top: 10px;">
-        ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
-        <div class="lista-filhos" style="margin-top: 6px;">${itensDaSub.map(linhaCarretilha).join('')}</div>
-      </div>`;
-  }).join('');
-
-  return `
-    <div class="familia-bloco">
-      <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
-      <div class="molinete-card" id="card-fam-${fam.id}">
-        <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
-        <div class="molinete-info">
-          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes do produto</button>
-          <div class="topo-miniaturas">${miniaturasHtml}</div>
-          ${blocosTabelas}
-        </div>
-      </div>
-    </div>`;
-}
-
-function renderFamiliaMotor(fam, itens) {
-  const primeiroItem = itens[0];
-  const imgInicial = primeiroItem?.imagem_url || '';
-  let subdivisoes = fam.subdivisoes || [];
-  if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Todos', itens: fam.itens }];
-
-  const miniaturasHtml = itens.filter(it => it.estoque > 0).map(it => {
-    const info = analisarMotor(it);
-    const labelMini = [info.modelo, info.tagPotencia].filter(Boolean).join(' ');
-    return `
-      <div class="filho-mini" id="mini-${it.codigo}" onclick="selecionarCarretilha('${fam.id}', '${it.codigo}', '${it.imagem_url}')">
-        <img src="${it.imagem_url}" alt="${escapeHtml(labelMini)}">
-        <div class="mini-info"><span class="mini-nome">${escapeHtml(labelMini)}</span></div>
-      </div>`;
-  }).join('');
-
-  const blocosTabelas = subdivisoes.map(sub => {
-    const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
-    if (itensDaSub.length === 0) return '';
-    itensDaSub.sort((a, b) => a.ordem_excel - b.ordem_excel);
-
-    return `
-      <div class="sub-bloco" style="margin-top: 10px;">
-        ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
-        <div class="lista-filhos" style="margin-top: 6px;">${itensDaSub.map(linhaMotor).join('')}</div>
-      </div>`;
-  }).join('');
-
-  return `
-    <div class="familia-bloco">
-      <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
-      <div class="molinete-card" id="card-fam-${fam.id}">
-        <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
-        <div class="molinete-info">
-          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes do produto</button>
-          <div class="topo-miniaturas">${miniaturasHtml}</div>
-          ${blocosTabelas}
-        </div>
-      </div>
-    </div>`;
-}
-
-function selecionarCarretilha(famId, codigo, url) {
-  const card = document.getElementById(`card-fam-${famId}`);
-  card.querySelectorAll('.filho-mini').forEach(m => m.classList.remove('ativa'));
-  document.getElementById(`mini-${codigo}`).classList.add('ativa');
-  document.getElementById(`foto-pai-${famId}`).innerHTML = `<img src="${url}">`;
-}
-
 function renderFamiliaVara(fam, itens) {
   const primeiroItem = itens[0];
   const imgInicial = primeiroItem?.imagem_url || '';
@@ -872,17 +1130,17 @@ function renderFamiliaVara(fam, itens) {
       const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
       const info = analisarVara(it);
       const calc = it.calculoPreco;
-      const celulasSpecs = colunas.map(c => `<td style="text-align:center; font-size:0.7rem; color:var(--cinza-700);">${escapeHtml(info.especificacoes[c] || '-')}</td>`).join('');
+      const celulasSpecs = colunas.map(c => `<td style="text-align:center; font-size:0.65rem; color:var(--cinza-700); padding:6px;">${escapeHtml(info.especificacoes[c] || '-')}</td>`).join('');
 
       return `
         <tr class="linha-tabela-vara">
-          <td class="l-cod" style="font-family:monospace; font-weight:800; color:var(--azul-800);">${it.codigo}</td>
-          <td style="font-weight:800; color:var(--azul-800); font-size:0.75rem;">
+          <td class="l-cod" style="font-family:monospace; font-weight:800; color:var(--azul-800); padding:6px;">${it.codigo}</td>
+          <td style="font-weight:800; color:var(--azul-800); font-size:0.7rem; padding:6px;">
             ${escapeHtml(info.modeloJson)}
             ${calc.temOferta ? `<span class="tarja-oferta-item">🔥 -${calc.pctDesconto}%</span>` : ''}
           </td>
           ${celulasSpecs}
-          <td style="text-align:center; font-weight:800; color:var(--azul-800);">
+          <td style="text-align:center; font-weight:800; color:var(--azul-800); padding:6px;">
             ${calc.temOferta ? `
               <div class="preco-box-oferta">
                 <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
@@ -890,7 +1148,7 @@ function renderFamiliaVara(fam, itens) {
               </div>
             ` : `R$ ${fmtMoeda(calc.precoFinal)}`}
           </td>
-          <td style="text-align:center;" onclick="event.stopPropagation()">
+          <td style="text-align:center; padding:6px;" onclick="event.stopPropagation()">
             <div class="qtd-ctrl" style="display:inline-flex;">
               <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
               <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
@@ -901,15 +1159,15 @@ function renderFamiliaVara(fam, itens) {
     }).join('');
 
     return `
-      <div class="sub-bloco" style="margin-top: 16px;">
+      <div class="sub-bloco" style="margin-top: 12px;">
         ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
-        <div style="overflow-x: auto; width: 100%; margin-top: 8px; background: white; border-radius: 6px; border: 1px solid var(--cinza-200);">
+        <div style="overflow-x: auto; width: 100%; margin-top: 6px; background: white; border-radius: 6px; border: 1px solid var(--cinza-200); -webkit-overflow-scrolling: touch;">
           <table style="width: 100%; border-collapse: collapse; min-width: max-content;">
             <thead>
               <tr style="background: var(--cinza-50); border-bottom: 1px solid var(--cinza-200); font-size: 0.6rem; font-weight: 800; color: var(--cinza-500); text-transform: uppercase;">
-                <th style="padding: 8px; text-align: left;">Código</th><th style="padding: 8px; text-align: left;">Modelo</th>
-                ${colunas.map(c => `<th style="padding: 8px; text-align: center;">${escapeHtml(c)}</th>`).join('')}
-                <th style="padding: 8px; text-align: center;">Preço</th><th style="padding: 8px; text-align: center;">Qtd</th>
+                <th style="padding: 6px; text-align: left;">Código</th><th style="padding: 6px; text-align: left;">Modelo</th>
+                ${colunas.map(c => `<th style="padding: 6px; text-align: center;">${escapeHtml(c)}</th>`).join('')}
+                <th style="padding: 6px; text-align: center;">Preço</th><th style="padding: 6px; text-align: center;">Qtd</th>
               </tr>
             </thead>
             <tbody>${linhas}</tbody>
@@ -920,11 +1178,14 @@ function renderFamiliaVara(fam, itens) {
 
   return `
     <div class="familia-bloco">
-      <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
+      <div class="familia-head">
+        <h2>${escapeHtml(fam.nome)}</h2> 
+        ${renderMarcaBadge(itens[0].marca)}
+      </div>
       <div class="molinete-card" id="card-fam-${fam.id}">
         <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
         <div class="molinete-info" style="overflow: hidden;">
-          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes do produto</button>
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Detalhes</button>
           ${blocosTabelas}
         </div>
       </div>
@@ -948,40 +1209,43 @@ function renderFamiliaLinha(fam, itens) {
       const calc = it.calculoPreco;
       
       return `
-        <div class="isca-cor-card" style="padding: 12px; justify-content: flex-start; position:relative;">
-          ${calc.temOferta ? `<div style="position:absolute; top:4px; left:4px; background:#ef4444; color:white; font-size:9px; font-weight:900; padding:2px 5px; border-radius:4px;">-${calc.pctDesconto}%</div>` : ''}
-          <div style="font-size: 1.1rem; font-weight: 900; color: var(--azul-800); line-height: 1; margin-bottom: 6px; text-align: center; text-transform: uppercase; margin-top:8px;">${escapeHtml(info.bitola)}</div>
-          ${info.resistencia ? `<div style="font-size: .7rem; font-weight: 700; color: var(--cinza-500); text-align: center; margin-bottom: 12px; line-height: 1.2;">${escapeHtml(info.resistencia)}</div>` : '<div style="height: 20px;"></div>'}
+        <div class="isca-cor-card" style="padding: 8px; justify-content: flex-start; position:relative;">
+          ${calc.temOferta ? `<div style="position:absolute; top:4px; left:4px; background:#ef4444; color:white; font-size:8px; font-weight:900; padding:2px 4px; border-radius:4px;">-${calc.pctDesconto}%</div>` : ''}
+          <div style="font-size: 1rem; font-weight: 900; color: var(--azul-800); line-height: 1; margin-bottom: 4px; text-align: center; text-transform: uppercase; margin-top:6px;">${escapeHtml(info.bitola)}</div>
+          ${info.resistencia ? `<div style="font-size: .65rem; font-weight: 700; color: var(--cinza-500); text-align: center; margin-bottom: 8px;">${escapeHtml(info.resistencia)}</div>` : '<div style="height: 16px;"></div>'}
           
           ${calc.temOferta ? `
-            <div class="preco-box-oferta" style="margin-bottom:8px;">
+            <div class="preco-box-oferta" style="margin-bottom:6px; align-items:center;">
               <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
               <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
             </div>
-          ` : `<div class="cor-preco" style="font-size: 1rem; margin-bottom: 8px;">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+          ` : `<div class="cor-preco" style="font-size: .85rem; margin-bottom: 6px;">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
 
-          <div class="qtd-ctrl" style="display: flex; width: 100%; justify-content: space-between;" onclick="event.stopPropagation()">
+          <div class="qtd-ctrl" style="display: flex; width: 100%; justify-space-between;" onclick="event.stopPropagation()">
             <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
-            <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)" style="flex: 1; max-width: 50px;">
+            <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)" style="flex: 1;">
             <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
           </div>
         </div>`;
     }).join('');
 
     return `
-      <div class="sub-bloco" style="margin-top: 16px;">
+      <div class="sub-bloco" style="margin-top: 12px;">
         ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
-        <div class="isca-grade" style="margin-top: 12px; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));">${cardsHtml}</div>
+        <div class="isca-grade" style="margin-top: 8px;">${cardsHtml}</div>
       </div>`;
   }).join('');
 
   return `
     <div class="familia-bloco">
-      <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
+      <div class="familia-head">
+        <h2>${escapeHtml(fam.nome)}</h2> 
+        ${renderMarcaBadge(itens[0].marca)}
+      </div>
       <div class="molinete-card" id="card-fam-${fam.id}">
         <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
         <div class="molinete-info" style="overflow: hidden;">
-          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes do produto</button>
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Detalhes</button>
           ${blocosTabelas}
         </div>
       </div>
@@ -1008,23 +1272,23 @@ function renderFamiliaGrade(fam, itens) {
       
       return `
         <div class="card-solto ${isAtivo}" id="mini-${it.codigo}" 
-             style="position:relative; display:flex; flex-direction:column; justify-content:space-between; padding:12px; height: 100%; cursor:pointer; transition: 0.2s;"
+             style="position:relative; display:flex; flex-direction:column; justify-content:space-between; padding:8px; height: 100%; cursor:pointer;"
              onclick="selecionarAcessorio('${fam.id}', '${it.codigo}', '${it.imagem_url}', \`${escapeHtml(it.descricao_longa).replace(/`/g, '')}\`, \`${escapeHtml(it.subgrupo).replace(/`/g, '')}\`)">
           
-          ${calc.temOferta ? `<div style="position:absolute; top:6px; left:6px; background:#ef4444; color:white; font-size:9px; font-weight:900; padding:2px 5px; border-radius:4px; z-index:3;">-${calc.pctDesconto}%</div>` : ''}
-          ${q > 0 ? `<div style="position:absolute; top:6px; right:6px; background:var(--verde); color:white; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:900; border:2px solid white; z-index:3;">${q}</div>` : ''}
+          ${calc.temOferta ? `<div style="position:absolute; top:4px; left:4px; background:#ef4444; color:white; font-size:8px; font-weight:900; padding:2px 4px; border-radius:4px; z-index:3;">-${calc.pctDesconto}%</div>` : ''}
+          ${q > 0 ? `<div style="position:absolute; top:4px; right:4px; background:var(--verde); color:white; width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:900; border:2px solid white; z-index:3;">${q}</div>` : ''}
           
-          <div class="img" style="margin-bottom:12px; aspect-ratio:1; background:var(--cinza-50); border-radius:6px; overflow:hidden;">${temImagem ? `<img src="${it.imagem_url}" alt="${escapeHtml(it.subgrupo)}">` : '🖼️'}</div>
+          <div class="img" style="margin-bottom:8px; aspect-ratio:1; background:var(--cinza-50); border-radius:6px; overflow:hidden;">${temImagem ? `<img src="${it.imagem_url}" alt="${escapeHtml(it.subgrupo)}">` : '🖼️'}</div>
           <div style="flex:1; display:flex; flex-direction:column; justify-content:flex-start;">
-            <div class="nome" style="font-size:0.75rem; font-weight:800; color:var(--azul-800); margin-bottom:8px; line-height:1.2; text-align:left;">${escapeHtml(it.subgrupo)}</div>
+            <div class="nome" style="font-size:0.7rem; font-weight:800; color:var(--azul-800); margin-bottom:6px; line-height:1.2; text-align:left;">${escapeHtml(it.subgrupo)}</div>
           </div>
-          <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
+          <div style="display:flex; flex-direction:column; gap:6px; margin-top:6px;">
             ${calc.temOferta ? `
               <div class="preco-box-oferta" style="align-items:flex-start;">
                 <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
                 <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
               </div>
-            ` : `<div class="preco" style="font-size:.9rem; font-weight:900; color:var(--verde); text-align:left;">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+            ` : `<div class="preco" style="font-size:.8rem; font-weight:900; color:var(--verde); text-align:left;">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
             
             <div class="qtd-ctrl" style="display:flex; width:100%; justify-content:space-between;" onclick="event.stopPropagation()">
               <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
@@ -1036,19 +1300,22 @@ function renderFamiliaGrade(fam, itens) {
     }).join('');
 
     return `
-      <div class="sub-bloco" style="margin-top: 16px;">
+      <div class="sub-bloco" style="margin-top: 12px;">
         ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
-        <div class="grade-soltos" style="margin-top: 8px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px;">${cardsHtml}</div>
+        <div class="grade-soltos" style="margin-top: 6px;">${cardsHtml}</div>
       </div>`;
   }).join('');
 
   return `
     <div class="familia-bloco">
-      <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
+      <div class="familia-head">
+        <h2>${escapeHtml(fam.nome)}</h2> 
+        ${renderMarcaBadge(itens[0].marca)}
+      </div>
       <div class="molinete-card" id="card-fam-${fam.id}">
         <div class="familia-side">
           <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div>
-          <button class="btn-detalhes" id="btn-detalhes-${fam.id}" data-titulo="${escapeHtml(primeiroItem.subgrupo || fam.nome)}" data-desc="${escapeHtml(descInicial)}" onclick="abrirModalPorBotao(this)" style="justify-content:center; width:100%;">🔍 Ver detalhes</button>
+          <button class="btn-detalhes" id="btn-detalhes-${fam.id}" data-titulo="${escapeHtml(primeiroItem.subgrupo || fam.nome)}" data-desc="${escapeHtml(descInicial)}" onclick="abrirModalPorBotao(this)" style="justify-content:center; width:100%;">🔍 Detalhes</button>
         </div>
         <div class="molinete-info" style="overflow: hidden;">${blocosTabelas}</div>
       </div>
@@ -1094,7 +1361,7 @@ function renderFamiliaIsca(fam, itens) {
         <span class="isca-badge">${q}</span>
         <img src="${it.imagem_url}">
         <div class="cor-nome">${escapeHtml(info.cor || 'Padrão')}</div>
-        ${info.especificacoes ? `<div style="font-size:.65rem; color:var(--cinza-500); font-weight:600; text-align:center; margin-bottom:4px;">${info.especificacoes}</div>` : ''}
+        ${info.especificacoes ? `<div style="font-size:.6rem; color:var(--cinza-500); font-weight:600; text-align:center; margin-bottom:2px;">${info.especificacoes}</div>` : ''}
         
         ${calc.temOferta ? `
           <div class="preco-box-oferta">
@@ -1116,11 +1383,14 @@ function renderFamiliaIsca(fam, itens) {
   
   return `
     <div class="familia-bloco">
-      <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
+      <div class="familia-head">
+        <h2>${escapeHtml(fam.nome)}</h2> 
+        ${renderMarcaBadge(itens[0].marca)}
+      </div>
       <div class="isca-card" id="card-fam-${fam.id}">
         <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
         <div class="isca-info">
-          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver descrição</button>
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Descrição</button>
           <div class="isca-modelos-tabs">${tabsHtml}</div>
           <div class="isca-titulo-cores">Cores e Tamanhos</div>
           <div class="isca-grade" id="grade-cores-${fam.id}">${coresHtml}</div>
@@ -1148,7 +1418,7 @@ function trocarModeloIsca(famId, modeloNome) {
         <span class="isca-badge">${q}</span>
         <img src="${it.imagem_url}">
         <div class="cor-nome">${escapeHtml(info.cor || 'Padrão')}</div>
-        ${info.especificacoes ? `<div style="font-size:.65rem; color:var(--cinza-500); font-weight:600; text-align:center; margin-bottom:4px;">${info.especificacoes}</div>` : ''}
+        ${info.especificacoes ? `<div style="font-size:.6rem; color:var(--cinza-500); font-weight:600; text-align:center; margin-bottom:2px;">${info.especificacoes}</div>` : ''}
         
         ${calc.temOferta ? `
           <div class="preco-box-oferta">
@@ -1169,7 +1439,8 @@ function trocarModeloIsca(famId, modeloNome) {
 function selecionarIsca(famId, codigo, url) {
   const card = document.getElementById(`card-fam-${famId}`);
   card.querySelectorAll('.isca-cor-card').forEach(m => m.classList.remove('ativa'));
-  document.getElementById(`mini-${codigo}`).classList.add('ativa');
+  const targetMini = document.getElementById(`mini-${codigo}`);
+  if (targetMini) targetMini.classList.add('ativa');
   document.getElementById(`foto-pai-${famId}`).innerHTML = `<img src="${url}">`;
 }
 
@@ -1185,7 +1456,7 @@ function renderFamiliaAnzol(fam, itens) {
   const temOfertaNaFamilia = itensComEstoque.some(it => it.calculoPreco.temOferta);
   const maiorDesconto = Math.max(...itensComEstoque.map(it => it.calculoPreco.pctDesconto || 0));
 
-  const tabsHtml = subdivisoes.map((sub, idx) => `<button class="anzol-tab ${idx===0?'ativo':''}" onclick="trocarTipoAnzol('${fam.id}', ${idx})">${escapeHtml(sub.nome)}</button>`).join('');
+  const tabsHtml = subdivisoes.map((sub, idx) => `<button class="anzol-tab ${idx===0?'ativo':''}" onclick="trocarTipoAnzol('${fam.id}', ${idx})">${sub.nome}</button>`).join('');
   const itensIniciais = itensComEstoque.filter(it => subdivisoes[0].itens.includes(it.codigo));
   itensIniciais.sort((a, b) => a.ordem_excel - b.ordem_excel);
 
@@ -1198,7 +1469,7 @@ function renderFamiliaAnzol(fam, itens) {
       <div class="anzol-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}">
         <span class="anzol-badge">${q}</span>
         <div class="anzol-numero">${escapeHtml(info.numero)}</div>
-        ${info.qtd ? `<div style="font-size:.65rem; color:var(--cinza-500); font-weight:700; margin-bottom:4px; text-align:center;">${escapeHtml(info.qtd)}</div>` : ''}
+        ${info.qtd ? `<div style="font-size:.6rem; color:var(--cinza-500); font-weight:700; margin-bottom:2px; text-align:center;">${escapeHtml(info.qtd)}</div>` : ''}
         
         ${calc.temOferta ? `
           <div class="preco-box-oferta">
@@ -1223,18 +1494,24 @@ function renderFamiliaAnzol(fam, itens) {
   return `
     <div class="familia-bloco">
       <div class="familia-head">
-        <h2>${escapeHtml(fam.nome)}</h2> 
-        <span class="marca-badge">${escapeHtml(itens[0].marca)}</span>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <h2>${escapeHtml(fam.nome)}</h2>
+          ${temOfertaNaFamilia ? `
+            <span style="background: linear-gradient(135deg, #001b3a, #020617); border: 1px solid #38bdf8; color: #38bdf8; font-size: 0.65rem; font-weight: 900; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">
+              ⚡ GRUPO BLACK NOVEMBER -${maiorDesconto}%
+            </span>
+          ` : ''}
+        </div>
+        ${renderMarcaBadge(itens[0].marca)}
       </div>
       <div class="anzol-card" id="card-fam-${fam.id}">
-        ${temOfertaNaFamilia ? `<div class="badge-oferta-banner">⚡ GRUPO BLACK NOVEMBER -${maiorDesconto}%</div>` : ''}
         <div class="familia-side">
           <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">
             ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
           </div>
         </div>
         <div class="anzol-info">
-          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver descrição</button>
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Descrição</button>
           ${subdivisoes.length > 1 ? `<div class="anzol-tabs">${tabsHtml}</div>` : ''}
           <div class="isca-titulo-cores">OPÇÕES / ESPECIFICAÇÕES</div>
           <div class="anzol-grade" id="grade-numeros-${fam.id}">${numerosHtml}</div>
@@ -1262,7 +1539,7 @@ function trocarTipoAnzol(famId, subIndex) {
       <div class="anzol-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}">
         <span class="anzol-badge">${q}</span>
         <div class="anzol-numero">${escapeHtml(info.numero)}</div>
-        ${info.qtd ? `<div style="font-size:.65rem; color:var(--cinza-500); font-weight:700; margin-bottom:4px; text-align:center;">${escapeHtml(info.qtd)}</div>` : ''}
+        ${info.qtd ? `<div style="font-size:.6rem; color:var(--cinza-500); font-weight:700; margin-bottom:2px; text-align:center;">${escapeHtml(info.qtd)}</div>` : ''}
         
         ${calc.temOferta ? `
           <div class="preco-box-oferta">
@@ -1294,18 +1571,18 @@ function renderFamiliaComum(fam, itens) {
 
     return `
       <div class="linha-filho">
-        <div class="l-cod">${it.codigo}</div>
-        <div class="l-nome">
-          ${escapeHtml(it.subgrupo)}
-          ${calc.temOferta ? `<span class="tarja-oferta-item">🔥 -${calc.pctDesconto}%</span>` : ''}
+        <div class="l-info-main">
+          <span class="l-cod">${it.codigo}</span>
+          <span class="l-nome">${escapeHtml(it.subgrupo)} ${calc.temOferta ? `<span class="tarja-oferta-item">🔥 -${calc.pctDesconto}%</span>` : ''}</span>
         </div>
-        <div class="l-var-col"></div>
-        ${calc.temOferta ? `
-          <div class="preco-box-oferta">
-            <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
-            <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
-          </div>
-        ` : `<div class="l-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+        <div class="l-direita-wrap">
+          ${calc.temOferta ? `
+            <div class="preco-box-oferta">
+              <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
+              <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
+            </div>
+          ` : `<div class="l-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+        </div>
         <div class="l-qtd" onclick="event.stopPropagation()">
           <div class="qtd-ctrl"><button onclick="mudarQtd('${it.codigo}', -1)">−</button><input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)"><button onclick="mudarQtd('${it.codigo}', 1)">+</button></div>
         </div>
@@ -1314,11 +1591,14 @@ function renderFamiliaComum(fam, itens) {
 
   return `
     <div class="familia-bloco">
-      <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
+      <div class="familia-head">
+        <h2>${escapeHtml(fam.nome)}</h2> 
+        ${renderMarcaBadge(itens[0].marca)}
+      </div>
       <div class="familia-card" id="card-fam-${fam.id}">
         <div class="familia-side"><div class="familia-foto-principal" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
         <div class="familia-info">
-          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes</button>
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Detalhes</button>
           <div class="lista-filhos">${linhasHtml}</div>
         </div>
       </div>
@@ -1329,11 +1609,11 @@ function cardSoltos(it) {
   const calc = it.calculoPreco;
   return `
     <div class="card-solto" style="position:relative;">
-      ${calc.temOferta ? `<div style="position:absolute; top:4px; left:4px; background:#ef4444; color:white; font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px;">-${calc.pctDesconto}%</div>` : ''}
+      ${calc.temOferta ? `<div style="position:absolute; top:4px; left:4px; background:#ef4444; color:white; font-size:8px; font-weight:800; padding:2px 4px; border-radius:4px;">-${calc.pctDesconto}%</div>` : ''}
       <div class="img" onclick="abrirZoomImagem(this)">${it.imagem_url ? `<img src="${it.imagem_url}">` : '🖼️'}</div>
       <div class="nome">${escapeHtml(it.subgrupo)}</div>
       ${calc.temOferta ? `
-        <div class="preco-box-oferta">
+        <div class="preco-box-oferta" style="align-items:center;">
           <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
           <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
         </div>
@@ -1341,10 +1621,86 @@ function cardSoltos(it) {
     </div>`;
 }
 
+function abrirModalFamiliaOferta(nomeSubgrupo) {
+  const itensFam = todasAsOfertasCache.filter(i => (i.subgrupo || i.subgrupo_scraping || i.descricao) === nomeSubgrupo);
+  if (!itensFam.length) return;
+
+  let modalHtml = `
+    <div id="modalOfertaBg" class="modal-bg on" style="position:fixed; inset:0; background:rgba(0,27,58,0.85); display:flex; align-items:center; justify-content:center; padding:16px; z-index:9999;">
+      <div style="background:#ffffff; width:100%; max-width:700px; border-radius:16px; overflow:hidden; box-shadow:0 20px 50px rgba(0,0,0,0.4);">
+        
+        <div style="background:#001b3a; color:white; padding:16px 20px; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <span style="color:#38bdf8; font-size:0.75rem; font-weight:800; text-transform:uppercase;">SELECIONE O TAMANHO / OPÇÃO</span>
+            <h3 style="margin:2px 0 0 0; font-size:1.1rem; color:#white;">${nomeSubgrupo}</h3>
+          </div>
+          <button onclick="document.getElementById('modalOfertaBg').remove()" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">✕</button>
+        </div>
+
+        <div style="max-height:400px; overflow-y:auto; padding:16px;">
+          ${itensFam.map(item => {
+            const precoBase = Number(item.preco_venda || item.precoBase || 0);
+            const desc = Number(item.desconto_porcentagem || item.desconto || 0);
+            const precoFinal = precoBase * (1 - (desc / 100));
+
+            return `
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #e2e8f0; gap:12px;">
+                <div>
+                  <strong style="color:#001b3a; font-size:0.95rem;">Cód: ${item.codigo}</strong>
+                  <div style="color:#64748b; font-size:0.85rem;">${item.descricao_sistema || item.nome || ''}</div>
+                </div>
+
+                <div style="text-align:right;">
+                  <div style="text-decoration:line-through; color:#94a3b8; font-size:0.75rem;">De R$ ${precoBase.toFixed(2)}</div>
+                  <strong style="color:#ef4444; font-size:1.05rem;">Por R$ ${precoFinal.toFixed(2)}</strong>
+                </div>
+
+                <button style="background:#10b981; color:white; border:none; padding:8px 14px; border-radius:6px; font-weight:800; cursor:pointer; font-size:0.85rem;" onclick="adicionarOferta('${item.codigo}', ${desc}, ${precoBase}, '${item.imagem_url||''}', '${item.subgrupo||''}')">
+                  + Adicionar
+                </button>
+              </div>`;
+          }).join('')}
+        </div>
+
+      </div>
+    </div>`;
+
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+function obterHtmlPrecoEBadge(item, mapaOfertas, acrescimoUF = 0) {
+  const codStr = String(item.codigo);
+  const temOferta = mapaOfertas instanceof Map ? mapaOfertas.has(codStr) : Boolean(mapaOfertas[codStr]);
+  const pctDesconto = mapaOfertas instanceof Map ? (mapaOfertas.get(codStr)?.desconto_porcentagem || 0) : Number(mapaOfertas[codStr] || 0);
+
+  const precoBase = Number(item.preco_venda || item.precoBase || item.preco_tabela || 0);
+  const precoComUF = precoBase + (precoBase * acrescimoUF / 100);
+
+  if (temOferta && pctDesconto > 0) {
+    const precoPromocional = precoComUF - (precoComUF * (pctDesconto / 100));
+
+    return `
+      <div style="text-align:center; width:100%;">
+        <span style="background: linear-gradient(135deg, #001b3a, #0f172a); color: #38bdf8; border: 1px solid #38bdf8; font-size: 0.58rem; font-weight: 900; padding: 2px 5px; border-radius: 4px; display: inline-block; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.3px;">
+          ⚡ BLACK NOVEMBER -${pctDesconto}%
+        </span>
+        <div style="font-size: 0.7rem; color: #94a3b8; text-decoration: line-through; font-weight: 700; line-height:1.1;">
+          R$ ${fmtMoeda(precoComUF)}
+        </div>
+        <strong style="color: #ef4444; font-size: 0.9rem; font-weight: 900; line-height:1.1; display:block;">
+          R$ ${fmtMoeda(precoPromocional)}
+        </strong>
+      </div>
+    `;
+  }
+
+  return `<div style="font-size: 0.85rem; font-weight: 900; color: var(--verde); text-align:center;">R$ ${fmtMoeda(precoComUF)}</div>`;
+}
+
 function abrirModalDescricao(titulo, texto) {
   if (!texto) texto = 'Este produto não possui descrição detalhada.';
   document.getElementById('modalTitulo').textContent = titulo || 'Detalhes do Produto';
-  document.getElementById('modalBody').innerHTML = `<p>${escapeHtml(texto)}</p>`;
+  document.getElementById('modalBody').innerHTML = `<p style="font-size:0.85rem; line-height:1.4;">${escapeHtml(texto)}</p>`;
   document.getElementById('modalBg').classList.add('on');
 }
 function abrirModalPorBotao(btn) { abrirModalDescricao(btn.getAttribute('data-titulo'), btn.getAttribute('data-desc')); }
@@ -1354,85 +1710,49 @@ function fecharModal(ev, force) {
 }
 
 function buscarItem(codigo) { return todosItens.find(i => i.codigo === codigo); }
-function mudarQtd(cod, delta) { 
-  const a = carrinho[cod] ? carrinho[cod].qtd : 0; 
-  setQtd(cod, a + delta); 
-}
-
-/* LÓGICA DE ATUALIZAÇÃO DO CARRINHO COM PERSISTÊNCIA NO LOCALSTORAGE */
+function mudarQtd(cod, delta) { const a = carrinho[cod] ? carrinho[cod].qtd : 0; setQtd(cod, a + delta); }
 function setQtd(cod, valor) {
-  const q = parseInt(valor) || 0; 
-  const item = buscarItem(cod);
-
-  if (q <= 0) {
-    delete carrinho[cod];
-  } else {
-    carrinho[cod] = { 
-      codigo: cod,
-      qtd: q, 
-      precoBase: item ? item.precoBase : 0, 
-      desc: item ? item.subgrupo : `Produto ${cod}`, 
-      img: item ? item.imagem_url : '' 
-    };
-  }
+  const q = parseInt(valor) || 0; const item = buscarItem(cod);
+  if (q <= 0) delete carrinho[cod];
+  else carrinho[cod] = { qtd: q, precoBase: item.precoBase, desc: item.subgrupo, img: item.imagem_url };
   
-  localStorage.setItem('carrinho_b2b', JSON.stringify(carrinho));
-
   document.querySelectorAll(`input[onchange*="'${cod}'"]`).forEach(inp => inp.value = q);
   
   const card = document.getElementById(`mini-${cod}`);
   if (card) {
     const badge = card.querySelector('.anzol-badge') || card.querySelector('.isca-badge') || card.querySelector('.molinete-badge');
-    if (q > 0) { 
-      card.classList.add('tem-qtd'); 
-      if (badge) badge.textContent = q; 
-    } else {
-      card.classList.remove('tem-qtd');
-    }
+    if (q > 0) { card.classList.add('tem-qtd'); if (badge) badge.textContent = q; }
+    else card.classList.remove('tem-qtd');
   }
-
   atualizarCarrinho();
 }
 
 function atualizarCarrinho() {
-  try {
-    carrinho = JSON.parse(localStorage.getItem('carrinho_b2b') || '{}');
-  } catch(e) {
-    carrinho = {};
-  }
-
   const itens = Object.keys(carrinho); 
   let total = 0, qtdTotal = 0;
   
   const html = itens.map(cod => {
     const i = carrinho[cod];
     const calc = calcularValoresProduto(i.precoBase, cod);
-    const precoUnitario = i.preco ? i.preco : calc.precoFinal;
-    const sub = precoUnitario * i.qtd; 
-    total += sub; 
-    qtdTotal += i.qtd;
+    const sub = calc.precoFinal * i.qtd; 
+    total += sub; qtdTotal += i.qtd;
     
     return `
       <div class="item-carrinho">
-        ${i.img ? `<img src="${i.img}">` : '<div style="width:30px;text-align:center;font-size:20px;">🖼️</div>'}
+        ${i.img ? `<img src="${i.img}">` : '<div style="width:30px;text-align:center;font-size:16px;">🖼️</div>'}
         <div class="dados">
-          <span class="titulo">${escapeHtml(i.desc)}</span>
-          <span class="preco">${i.qtd}x R$ ${fmtMoeda(sub)}</span>
+          <span class="titulo" style="font-weight:bold; color:var(--azul-800);">${escapeHtml(i.desc)}</span>
+          <span class="preco" style="display:block; color:var(--verde); font-weight:bold;">${i.qtd}x R$ ${fmtMoeda(sub)}</span>
         </div>
-        <div class="acoes"><button onclick="setQtd('${cod}', 0)">✕</button></div>
+        <div class="acoes"><button onclick="setQtd('${cod}', 0)" style="background:none; border:none; color:var(--vermelho); font-weight:bold; cursor:pointer;">✕</button></div>
       </div>`;
   }).join('');
 
   const btnFab = document.getElementById('btnCarrinho');
   const badgeFab = document.getElementById('topoQtd');
   
-  if (qtdTotal > 0) { 
-    btnFab.style.display = 'flex'; 
-    badgeFab.textContent = qtdTotal; 
-  } else { 
-    btnFab.style.display = 'none'; 
-    fecharCarrinho(); 
-  }
+  if (qtdTotal > 0) { btnFab.style.display = 'flex'; badgeFab.textContent = qtdTotal; } 
+  else { btnFab.style.display = 'none'; fecharCarrinho(); }
 
   document.getElementById('carrinhoTotal').textContent = `R$ ${fmtMoeda(total)}`;
   document.getElementById('listaCarrinho').innerHTML = html || '<div style="text-align:center;color:#94a3b8;padding:20px;">Vazio</div>';
@@ -1441,19 +1761,9 @@ function atualizarCarrinho() {
 function toggleCarrinho() { document.getElementById('painelCarrinho').classList.toggle('on'); }
 function fecharCarrinho() { document.getElementById('painelCarrinho').classList.remove('on'); }
 
-/* OUVINTE DE MENSAGENS PARA SINCRONIZAÇÃO COM A ABA DE OFERTAS */
-window.addEventListener('message', function(event) {
-  if (event.data && event.data.tipo === 'ATUALIZAR_CARRINHO') {
-    atualizarCarrinho();
-  }
-  if (event.data && event.data.tipo === 'ABRIR_CARRINHO') {
-    document.getElementById('painelCarrinho').classList.add('on');
-  }
-});
-
 let deb;
 document.getElementById('busca').addEventListener('input', e => {
-  clearTimeout(deb); deb = setTimeout(() => { buscaAtual = e.target.value; renderizar(); }, 200);
+  clearTimeout(deb); deb = setTimeout(() => { buscaAtual = e.target.value; renderizar(); }, 150);
 });
 
 document.getElementById('inputCnpj').addEventListener('input', function(e) {
@@ -1468,6 +1778,13 @@ document.getElementById('inputCnpj').addEventListener('input', function(e) {
 
 document.getElementById('inputCnpj').addEventListener('keypress', function(e) {
   if (e.key === 'Enter') fazerLogin();
+});
+
+window.addEventListener('message', function(event) {
+  if (event.data && event.data.tipo === 'ATUALIZAR_CARRINHO') {
+    carrinho = JSON.parse(localStorage.getItem('carrinho_b2b') || '{}');
+    atualizarCarrinho();
+  }
 });
 </script>
 </body>
