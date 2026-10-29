@@ -1121,6 +1121,29 @@ async function criarVendedor() {
   } else alert('❌ Erro: ' + j.erro);
 }
 
+async function deletarFamilia(id) {
+  if (!confirm('Deseja excluir esta família? Os produtos cadastrados nela voltarão automaticamente para a lista de criação.')) return;
+
+  try {
+    const r = await fetch('/api/familias/' + id, { 
+      method: 'DELETE' 
+    });
+    
+    const j = await r.json();
+
+    if (j.ok) {
+      alert('✅ Família excluída com sucesso!');
+      // Recarrega o catálogo e as famílias para atualizar as duas listas na tela
+      await carregarDados(); 
+    } else {
+      alert('❌ Erro ao excluir família: ' + (j.erro || 'Erro no servidor'));
+    }
+  } catch (e) {
+    console.error("Erro ao deletar família:", e);
+    alert('❌ Erro de comunicação com o servidor.');
+  }
+}
+
 carregarStatus();
 </script>
 </body>

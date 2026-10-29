@@ -953,4 +953,34 @@ app.post('/api/regras', (req, res) => {
   res.json({ ok: true, mensagem: "Regras salvas com sucesso!" });
 });
 
+// ROTA PARA DELETAR UMA FAMÍLIA
+app.delete('/api/familias/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // -------------------------------------------------------------
+    // SE VOCÊ USA BANCO DE DADOS (Exemplo: Supabase / PostgreSQL)
+    // -------------------------------------------------------------
+    const { error } = await supabase
+      .from('familias')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+
+    /*
+    // -------------------------------------------------------------
+    // SE VOCÊ USA ARRAY EM MEMÓRIA / ARQUIVO JSON LOCAL
+    // -------------------------------------------------------------
+    familias = familias.filter(f => String(f.id) !== String(id));
+    */
+
+    return res.json({ ok: true, mensagem: "Família excluída com sucesso!" });
+  } catch (error) {
+    console.error("Erro ao deletar família:", error);
+    return res.status(500).json({ ok: false, erro: "Erro interno ao deletar família." });
+  }
+});
+
+
 app.listen(PORT, () => console.log(`🚀 Servidor rodando em http://localhost:${PORT}`));
