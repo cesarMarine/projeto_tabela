@@ -953,32 +953,38 @@ app.post('/api/regras', (req, res) => {
   res.json({ ok: true, mensagem: "Regras salvas com sucesso!" });
 });
 
-// ROTA PARA DELETAR UMA FAMÍLIA
+// ROTA CORRIGIDA PARA DELETAR FAMÍLIA
 app.delete('/api/familias/:id', async (req, res) => {
-  const { id } = req.params;
+  // Converte o id da URL explicitamente para número inteiro
+  const idFamilia = parseInt(req.params.id, 10);
+
+  if (isNaN(idFamilia)) {
+    return res.status(400).json({ ok: false, erro: "ID da família inválido." });
+  }
 
   try {
-    // -------------------------------------------------------------
-    // SE VOCÊ USA BANCO DE DADOS (Exemplo: Supabase / PostgreSQL)
-    // -------------------------------------------------------------
+    // 1. Se existirem subdivisões vinculadas a esta família, limpa/apaga primeiro
+    await supabase
+      .from('subdivisoes')
+      .delete()
+      .eq('familia_id', idFamilia);
+
+    // 2. Apaga a família da tabela 'familias'
     const { error } = await supabase
       .from('familias')
       .delete()
-      .eq('id', id);
+      .eq('id', idFamilia);
 
-    if (error) throw error;
+    if (error) {
+      console.error("Erro Supabase ao deletar família:", error);
+      throw error;
+    }
 
-    /*
-    // -------------------------------------------------------------
-    // SE VOCÊ USA ARRAY EM MEMÓRIA / ARQUIVO JSON LOCAL
-    // -------------------------------------------------------------
-    familias = familias.filter(f => String(f.id) !== String(id));
-    */
+    return res.json({ ok: true, mensagem: "Família excluída e produtos liberados com sucesso!" });
 
-    return res.json({ ok: true, mensagem: "Família excluída com sucesso!" });
   } catch (error) {
-    console.error("Erro ao deletar família:", error);
-    return res.status(500).json({ ok: false, erro: "Erro interno ao deletar família." });
+    console.error("Erro interno ao deletar família:", error);
+    return res.status(500).json({ ok: false, erro: error.message || "Erro interno ao deletar família." });
   }
 });
 
