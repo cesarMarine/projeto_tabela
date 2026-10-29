@@ -1393,11 +1393,17 @@ function renderFamiliaAnzol(fam, itens) {
   return `
     <div class="familia-bloco">
       <div class="familia-head">
-        <h2>${escapeHtml(fam.nome)}</h2> 
+        <div style="display:flex; align-items:center; gap:8px;">
+          <h2>${escapeHtml(fam.nome)}</h2>
+          ${temOfertaNaFamilia ? `
+            <span style="background: linear-gradient(135deg, #001b3a, #020617); border: 1px solid #38bdf8; color: #38bdf8; font-size: 0.65rem; font-weight: 900; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">
+              ⚡ GRUPO BLACK NOVEMBER -${maiorDesconto}%
+            </span>
+          ` : ''}
+        </div>
         ${renderMarcaBadge(itens[0].marca)}
       </div>
       <div class="anzol-card" id="card-fam-${fam.id}">
-        ${temOfertaNaFamilia ? `<div class="badge-oferta-banner">🔥 OFERTA -${maiorDesconto}%</div>` : ''}
         <div class="familia-side">
           <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">
             ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
