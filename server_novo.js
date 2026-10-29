@@ -953,9 +953,8 @@ app.post('/api/regras', (req, res) => {
   res.json({ ok: true, mensagem: "Regras salvas com sucesso!" });
 });
 
-// ROTA CORRIGIDA PARA DELETAR FAMÍLIA
+// ROTA DELETAR FAMÍLIA CORRIGIDA
 app.delete('/api/familias/:id', async (req, res) => {
-  // Converte o id da URL explicitamente para número inteiro
   const idFamilia = parseInt(req.params.id, 10);
 
   if (isNaN(idFamilia)) {
@@ -963,15 +962,9 @@ app.delete('/api/familias/:id', async (req, res) => {
   }
 
   try {
-    // 1. Se existirem subdivisões vinculadas a esta família, limpa/apaga primeiro
-    await supabase
-      .from('subdivisoes')
-      .delete()
-      .eq('familia_id', idFamilia);
-
-    // 2. Apaga a família da tabela 'familias'
+    // Apaga a família da tabela correta no Supabase
     const { error } = await supabase
-      .from('familias')
+      .from('catalogo_familias')
       .delete()
       .eq('id', idFamilia);
 
@@ -980,11 +973,11 @@ app.delete('/api/familias/:id', async (req, res) => {
       throw error;
     }
 
-    return res.json({ ok: true, mensagem: "Família excluída e produtos liberados com sucesso!" });
+    return res.json({ ok: true, mensagem: "Família excluída e produtos liberados!" });
 
   } catch (error) {
     console.error("Erro interno ao deletar família:", error);
-    return res.status(500).json({ ok: false, erro: error.message || "Erro interno ao deletar família." });
+    return res.status(500).json({ ok: false, erro: error.message || "Erro ao deletar família." });
   }
 });
 
