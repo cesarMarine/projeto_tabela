@@ -609,7 +609,7 @@ app.get('/api/vendedores', async (req, res) => {
   } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
 
-// POST: Criar Vendedor
+// POST: Criar Vendedor (Salva dados em 'vendedores' e a senha em 'vendedores_acesso')
 app.post('/api/vendedores', async (req, res) => {
   const { nome, codigo_representante, senha, whatsapp } = req.body;
 
@@ -617,27 +617,77 @@ app.post('/api/vendedores', async (req, res) => {
   const whatsappLimpo = whatsapp ? whatsapp.replace(/\D/g, '') : null;
 
   try {
-    const { data, error } = await supabase
+    // 1. Insere o vendedor na tabela 'vendedores' (Sem tentar gravar a 'senha' aqui!)
+    const { data: vendedor, error: errVendedor } = await supabase
       .from('vendedores')
-      .insert([{ nome, codigo_representante, senha, whatsapp: whatsappLimpo }]);
+      .insert([{ 
+        nome, 
+        codigo_representante, 
+        whatsapp: whatsappLimpo,
+        ativo: 1 
+      }])
+      .select('vendedor_id, id')
+      .single();
 
-    if (error) throw error;
+    if (errVendedor) throw errVendedor;
+
+    // Pega o ID correto gerado no banco (vendedor_id ou id)
+    const idCadastrado = vendedor.vendedor_id || vendedor.id;
+
+    // 2. Grava a senha na tabela 'vendedores_acesso'
+    if (senha && idCadastrado) {
+      const { error: errAcesso } = await supabase
+        .from('vendedores_acesso')
+        .upsert({ vendedor_id: idCadastrado, senha }, { onConflict: 'vendedor_id' });
+
+      if (errAcesso) throw errAcesso;
+    }
+
     res.json({ ok: true, mensagem: "Vendedor cadastrado com sucesso!" });
   } catch (e) {
+    console.error("Erro ao cadastrar vendedor:", e);
     res.status(500).json({ ok: false, erro: e.message });
   }
 });
 
 // GET: Listar Vendedores (garantir que retorna o campo whatsapp)
+// GET: Listar Vendedores (Traz o WhatsApp e faz JOIN com 'vendedores_acesso' para mostrar se tem senha)
 app.get('/api/vendedores', async (req, res) => {
   try {
     const { data: vendedores, error } = await supabase
       .from('vendedores')
-      .select('vendedor_id, nome, codigo_representante, ativo, senha, whatsapp');
+      .select(`
+        vendedor_id,
+        id,
+        nome,
+        codigo_representante,
+        ativo,
+        whatsapp,
+        vendedores_acesso ( senha )
+      `);
 
     if (error) throw error;
-    res.json({ ok: true, vendedores });
+
+    // Formata o array para que o frontend receba 'senha' e 'vendedor_id' no nível principal
+    const listaFormatada = vendedores.map(v => {
+      const idReal = v.vendedor_id || v.id;
+      const senhaEncontrada = Array.isArray(v.vendedores_acesso) && v.vendedores_acesso.length > 0 
+        ? v.vendedores_acesso[0].senha 
+        : (v.vendedores_acesso?.senha || null);
+
+      return {
+        vendedor_id: idReal,
+        nome: v.nome,
+        codigo_representante: v.codigo_representante,
+        ativo: v.ativo,
+        whatsapp: v.whatsapp,
+        senha: senhaEncontrada
+      };
+    });
+
+    res.json({ ok: true, vendedores: listaFormatada });
   } catch (e) {
+    console.error("Erro ao listar vendedores:", e);
     res.status(500).json({ ok: false, erro: e.message });
   }
 });
