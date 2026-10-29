@@ -854,20 +854,36 @@ function renderFamiliaEquipamentoDireto(fam, itens) {
       const info = isCarretilha ? analisarCarretilha(it) : analisarMolinete(it);
       const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
       const calc = it.calculoPreco;
-      const tagDetalhe = isCarretilha ? info.ladoTag : (info.variacao || 'Padrão');
+      
+      // Pega a variação principal (ex: 5000 FD, ou Esquerda)
+      const tagDetalhe = isCarretilha ? info.ladoTag : (info.variacao || '');
+      
+      // Tenta extrair só o tamanho principal se for molinete (ex: 5000)
+      let tamanhoDestaque = it.codigo;
+      if (info.modelo) {
+        const numMatch = info.modelo.match(/(\d{3,5})/);
+        if (numMatch) tamanhoDestaque = numMatch[1];
+      }
 
       return `
-        <div class="isca-cor-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" onclick="selecionarEquipamento('${fam.id}', '${it.codigo}', '${it.imagem_url}')" style="position:relative;">
+        <div class="isca-cor-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" onclick="selecionarEquipamento('${fam.id}', '${it.codigo}', '${it.imagem_url}')" style="position:relative; padding: 10px;">
           <span class="isca-badge">${q}</span>
-          ${it.imagem_url ? `<img src="${it.imagem_url}" style="height: 65px; object-fit: contain;">` : ''}
-          <div class="cor-nome" style="font-size: 0.7rem; font-weight: 800; color: var(--azul-800);">${it.codigo}</div>
-          <div style="font-size: .65rem; color: var(--azul-800); font-weight: 800; text-align: center; margin: 2px 0 4px 0;">${escapeHtml(tagDetalhe)}</div>
           
-          <!-- EXIBIÇÃO AUTOMÁTICA DE PREÇO COM TARJA BLACK NOVEMBER -->
+          <!-- Tamanho em destaque -->
+          <div style="font-size: 1.1rem; font-weight: 900; color: var(--azul-800); text-align: center; margin-bottom: 2px;">
+            ${escapeHtml(tamanhoDestaque)}
+          </div>
+          
+          <!-- Descrição curta da variação -->
+          <div style="font-size: .65rem; color: var(--azul-800); font-weight: 800; text-align: center; margin: 2px 0 8px 0; height: 18px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            ${escapeHtml(tagDetalhe)}
+          </div>
+          
+          <!-- PREÇOS -->
           ${calc.temOferta ? `
-            <div style="text-align:center; width:100%; margin-bottom:4px;">
+            <div style="text-align:center; width:100%; margin-bottom:6px;">
               <span style="background: linear-gradient(135deg, #001b3a, #0f172a); color: #38bdf8; border: 1px solid #38bdf8; font-size: 0.55rem; font-weight: 900; padding: 2px 4px; border-radius: 4px; display: inline-block; margin-bottom: 2px; text-transform: uppercase;">
-                ⚡ BLACK NOVEMBER -${calc.pctDesconto}%
+                ⚡ BLACK -${calc.pctDesconto}%
               </span>
               <div class="preco-de" style="font-size:0.68rem; color:#94a3b8; text-decoration:line-through; font-weight:700;">
                 R$ ${fmtMoeda(calc.precoOriginal)}
@@ -876,9 +892,14 @@ function renderFamiliaEquipamentoDireto(fam, itens) {
                 R$ ${fmtMoeda(calc.precoFinal)}
               </div>
             </div>
-          ` : `<div class="cor-preco" style="font-size:0.85rem; font-weight:900; color:var(--verde); margin-bottom:4px;">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+          ` : `
+            <div class="cor-preco" style="font-size:0.9rem; font-weight:900; color:var(--verde); margin-bottom:6px; text-align:center;">
+              R$ ${fmtMoeda(calc.precoFinal)}
+            </div>
+          `}
 
-          <div class="isca-qtd-ctrl" onclick="event.stopPropagation()">
+          <!-- BOTÃO DE ADICIONAR -->
+          <div class="isca-qtd-ctrl" onclick="event.stopPropagation()" style="margin-top: auto;">
             <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
             <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
             <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
@@ -887,9 +908,9 @@ function renderFamiliaEquipamentoDireto(fam, itens) {
     }).join('');
 
     return `
-      <div class="sub-bloco" style="margin-bottom: 12px;">
+      <div class="sub-bloco" style="margin-bottom: 16px;">
         <div class="sub-grupo-header">${escapeHtml(mod.nome)}</div>
-        <div class="isca-grade">${cardsHtml}</div>
+        <div class="isca-grade" style="grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));">${cardsHtml}</div>
       </div>`;
   }).join('');
 
@@ -900,11 +921,13 @@ function renderFamiliaEquipamentoDireto(fam, itens) {
         ${renderMarcaBadge(itens[0].marca)}
       </div>
       <div class="isca-card" id="card-fam-${fam.id}">
+        <!-- FOTO GRANDE DO MOLINETE -->
         <div class="familia-side">
           <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">
             ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
           </div>
         </div>
+        
         <div class="isca-info">
           <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Descrição / Ficha</button>
           <div style="margin-top: 6px;">${blocosModelosHtml}</div>
