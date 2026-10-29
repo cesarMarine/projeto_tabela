@@ -141,7 +141,6 @@
   .isca-qtd-ctrl input, .anzol-qtd-ctrl input { width:26px; height:22px; border:1px solid var(--cinza-300); border-radius:4px; text-align:center; font-weight:800; font-size:0.75rem; color:var(--azul-800); }
 
   /* LISTAS DE ITENS DA TABELA */
-  .lista-filhos { display:flex; flex-direction:column; gap:6px; }
   .linha-filho-container { display:flex; flex-direction:column; background:white; border:1px solid var(--cinza-200); border-radius:8px; overflow:hidden; }
   .linha-filho { display:flex; align-items:center; justify-content:space-between; gap:6px; padding:6px 8px; flex-wrap:wrap; }
   .l-info-main { display:flex; align-items:center; gap:4px; flex:1; min-width:140px; }
@@ -213,14 +212,14 @@
       <button class="btn-topo-sair" onclick="sairCliente()">Sair</button>
     </div>
 
-    <!-- FAIXA DE AVISO DA TABELA DE PREÇOS -->
-<div id="barraAvisoTabela" style="display:none; text-align:center; padding:8px 12px; font-weight:800; font-size:0.8rem; border-bottom:1px solid transparent;"></div>
-
     <div class="busca-wrap">
       <input type="search" id="busca" placeholder="🔍 Buscar produto por código, nome ou palavra-chave..." autocomplete="off">
     </div>
   </div>
 </header>
+
+<!-- AVISO DE VALIDADE DA TABELA -->
+<div id="barraAvisoTabela" style="display:none; text-align:center; padding:8px 12px; font-weight:800; font-size:0.8rem; border-bottom:1px solid transparent;"></div>
 
 <div class="chips-wrap"><div class="chips" id="chips"></div></div>
 
@@ -286,8 +285,6 @@ async function verificarValidadeTabela() {
     if (!j.ok || !j.regras || !j.regras.tabela_data_fim) return;
 
     const barra = document.getElementById('barraAvisoTabela');
-    
-    // Converte a data de hoje e a data cadastrada no Admin para comparação limpa (sem hora)
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
 
@@ -295,14 +292,12 @@ async function verificarValidadeTabela() {
     const dataFimTabela = new Date(anoFim, mesFim - 1, diaFim);
 
     if (hoje > dataFimTabela) {
-      // TABELA VENCIDA (SE JÁ PASSOU DA DATA FINAL)
       barra.style.background = '#fee2e2';
       barra.style.color = '#991b1b';
       barra.style.borderColor = '#fca5a5';
-      barra.innerHTML = `⚠️ <strong>TABELA VENCIDA!</strong> Esta tabela de preços expirou em <strong>${fmtDataBr(j.regras.tabela_data_fim)}</strong>. Os preços podem ter variação. Por favor, peça uma nova tabela atualizada ao seu vendedor.`;
+      barra.innerHTML = `⚠️ <strong>TABELA VENCIDA!</strong> Esta tabela expirou em <strong>${fmtDataBr(j.regras.tabela_data_fim)}</strong>. Os preços podem ter variação. Peça tabela nova ao seu vendedor.`;
       barra.style.display = 'block';
     } else {
-      // TABELA DENTRO DO PRAZO
       barra.style.background = '#dbeafe';
       barra.style.color = '#1e40af';
       barra.style.borderColor = '#93c5fd';
@@ -313,11 +308,6 @@ async function verificarValidadeTabela() {
     console.error('Erro ao verificar validade da tabela:', e);
   }
 }
-
-// Executa automaticamente quando o sistema carrega
-window.addEventListener('DOMContentLoaded', () => {
-  verificarValidadeTabela();
-});
 
 function getIconeUrl(grupo) {
   const g = grupo.toUpperCase().trim();
@@ -358,6 +348,8 @@ const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;',
 const parseAtributos = json => { try { return JSON.parse(json || '{}'); } catch { return {}; } };
 
 window.addEventListener('DOMContentLoaded', () => {
+  verificarValidadeTabela();
+
   const cliSalvo = localStorage.getItem('clienteLogadoB2B');
   const acrescimoSalvo = localStorage.getItem('acrescimoB2B');
 
@@ -717,7 +709,7 @@ function renderizar() {
         nomeFam.includes('ANZOL') || nomeFam.includes('EMPATE') || nomeFam.includes('GIRADOR') || 
         nomeFam.includes('SNAP') || nomeFam.includes('CABO') || nomeFam.includes('LUVA')
       ) tipo = 'anzol';
-      else if (nomeFam.includes('MOLINETE') || nomeFam.includes('CARRETILHA')) tipo = 'equipamento_direto'; // TUDO VISÍVEL EM SUB-BLOCO
+      else if (nomeFam.includes('MOLINETE') || nomeFam.includes('CARRETILHA')) tipo = 'equipamento_direto';
       else if (nomeFam.includes('MOTOR') || grupoItem.includes('MOTOR')) tipo = 'motor';
       
       if (tipo === 'isca') html += renderFamiliaIsca(fam, filhos);
@@ -740,13 +732,11 @@ function renderizar() {
   cont.innerHTML = html;
 }
 
-/* CARRETILHAS E MOLINETES: EXIBIÇÃO DIRETA SEM ABAS */
 function renderFamiliaEquipamentoDireto(fam, itens) {
   const primeiroItem = itens[0];
   const imgInicial = primeiroItem?.imagem_url || '';
   const isCarretilha = fam.nome.toUpperCase().includes('CARRETILHA');
 
-  // Mapeia modelos
   const modelosMap = new Map();
   itens.filter(it => it.estoque > 0).forEach(it => {
     const info = isCarretilha ? analisarCarretilha(it) : analisarMolinete(it);
@@ -1022,7 +1012,7 @@ function renderFamiliaLinha(fam, itens) {
             </div>
           ` : `<div class="cor-preco" style="font-size: .85rem; margin-bottom: 6px;">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
 
-          <div class="qtd-ctrl" style="display: flex; width: 100%; justify-content: space-between;" onclick="event.stopPropagation()">
+          <div class="qtd-ctrl" style="display: flex; width: 100%; justify-space-between;" onclick="event.stopPropagation()">
             <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
             <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)" style="flex: 1;">
             <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
