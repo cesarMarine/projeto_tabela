@@ -11,70 +11,87 @@
     --sky-400:#38bdf8; --vermelho-600:#ef4444;
     --cinza-100:#f1f5f9; --cinza-200:#e2e8f0; --cinza-600:#475569;
   }
-  body { font-family:'Inter','Segoe UI',system-ui,sans-serif; background:#f4f6f9; color:#0f172a; min-height:100vh; padding-bottom:90px; }
+  body { font-family:'Inter','Segoe UI',system-ui,sans-serif; background:#f4f6f9; color:#0f172a; min-height:100vh; padding: 12px; padding-bottom:90px; }
   button { font-family:inherit; cursor:pointer; }
 
-  /* BANNER HERO BLACK NOVEMBER EXCLUSIVO */
+  /* BANNER HERO BLACK NOVEMBER */
   .hero-black {
     background: linear-gradient(135deg, #001b3a 0%, #020617 100%);
-    color: white; padding: 24px 16px; text-align: center; position: relative;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5); border-bottom: 4px solid #38bdf8;
-    overflow: hidden;
+    color: white; padding: 16px; text-align: center; position: relative;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3); border-bottom: 3px solid #38bdf8;
+    border-radius: 12px; margin-bottom: 16px; overflow: hidden;
   }
-  .hero-black h1 { font-size: 1.8rem; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; color: #ffffff; margin-bottom: 2px; }
-  .hero-black h1 span { color: #38bdf8; text-shadow: 0 0 12px rgba(56,189,248,0.5); }
-  .hero-black p { font-size: 0.85rem; color: #94a3b8; font-weight: 700; margin-top: 4px; letter-spacing: 0.5px; }
-
-  /* BARRA DE AÇÕES SIMPLIFICADA */
-  .bar-acoes { background: white; padding: 10px 16px; border-bottom: 1px solid var(--cinza-200); display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; border-radius: 0 0 12px 12px; }
-  .btn-voltar-cat { background: var(--azul-900); color: white; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 800; font-size: 0.8rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+  .hero-black h1 { font-size: 1.4rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; color: #ffffff; }
+  .hero-black h1 span { color: #38bdf8; text-shadow: 0 0 10px rgba(56,189,248,0.5); }
+  .hero-black p { font-size: 0.75rem; color: #94a3b8; font-weight: 700; margin-top: 2px; }
 
   /* CONTAINER PRINCIPAL */
-  .encarte-container { max-width: 1200px; margin: 16px auto; padding: 0 12px; }
+  .encarte-container { max-width: 1400px; margin: 0 auto; }
 
-  /* MODAL LOGIN RÁPIDO */
-  #modalLogin { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 999; display: flex; align-items: center; justify-content: center; padding: 20px; }
-  .box-login { background: white; padding: 30px; border-radius: 16px; width: 100%; max-width: 380px; text-align: center; }
-  .box-login input { width: 100%; padding: 12px; border: 2px solid var(--cinza-200); border-radius: 8px; margin: 16px 0; text-align: center; font-weight: 800; font-size: 1.1rem; }
+  /* GRADE DE FAMÍLIAS E PRODUTOS (2 a 3 CARDS POR LINHA) */
+  .grid-familias-ofertas {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 16px;
+  }
 
-  /* CARRINHO FLUTUANTE */
-  .fab-carrinho { position:fixed; bottom:20px; right:20px; background:var(--azul-900); color:white; width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; box-shadow:0 4px 16px rgba(0,0,0,0.4); cursor:pointer; z-index:150; }
-  .fab-qtd { position:absolute; top:-4px; right:-4px; background:var(--vermelho-600); color:white; font-size:11px; font-weight:900; min-width:20px; height:20px; border-radius:10px; display:flex; align-items:center; justify-content:center; border:2px solid white; }
+  @media (max-width: 768px) {
+    .grid-familias-ofertas {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* CARD DA FAMÍLIA REESTRUTURADO EM BLOCO VERTICAL COMPACTO */
+  .card-oferta-pai {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 3px 10px rgba(0,27,58,0.06);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .card-oferta-pai:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0,27,58,0.12);
+  }
+
+  /* CARRINHO FLUTUANTE QUE AVISA O PAI */
+  .fab-carrinho {
+    position: fixed; bottom: 20px; right: 20px;
+    background: var(--azul-900); color: white;
+    width: 54px; height: 54px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    cursor: pointer; z-index: 150; border: 2px solid #38bdf8;
+  }
+  .fab-qtd {
+    position: absolute; top: -4px; right: -4px;
+    background: var(--vermelho-600); color: white;
+    font-size: 11px; font-weight: 900; min-width: 20px; height: 20px;
+    border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    border: 2px solid white;
+  }
 </style>
 </head>
 <body>
 
-<div id="modalLogin" style="display:none;">
-  <div class="box-login">
-    <h2 style="color:var(--azul-900); font-size:1.3rem; font-weight:900;">Acesse as Ofertas</h2>
-    <p style="font-size:0.85rem; color:#64748b; margin-top:4px;">Digite o seu CNPJ para ver os preços promocionais.</p>
-    <input type="text" id="cnpjInput" placeholder="00.000.000/0000-00">
-    <button onclick="fazerLogin()" style="width:100%; padding:12px; background:var(--azul-900); color:white; border:none; border-radius:8px; font-weight:800;">Entrar</button>
-  </div>
-</div>
-
-<!-- TOPO CHAMATIVO EXCLUSIVO BLACK NOVEMBER MARINE -->
+<!-- TOPO CHAMATIVO EXCLUSIVO BLACK NOVEMBER -->
 <header class="hero-black">
   <h1>⚡ BLACK NOVEMBER <span>MARINE</span> ⚡</h1>
   <p>OFERTAS ESPECIAIS B2B • ESTOQUE LIMITADO</p>
 </header>
 
-<div class="bar-acoes">
-  <a href="index.html" class="btn-voltar-cat">⬅️ Catálogo</a>
-  <span style="font-size: 0.75rem; font-weight: 900; color: #ef4444; background: #fee2e2; padding: 4px 8px; border-radius: 6px; text-transform: uppercase;">🔥 Preços Imbatíveis</span>
-</div>
-
 <main class="encarte-container">
-  <div id="bannerOfertasValidade" style="display:none; background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; text-align: center; padding: 8px 12px; font-weight: 800; font-size: 0.8rem; border-radius: 8px; margin-bottom: 16px;">
-    📅 OFERTAS VÁLIDAS ATÉ <span id="dataFimOfertasSpan">--/--/----</span>!
-  </div>
-
   <div id="gridOfertas">
-    <div style="text-align:center; padding:60px; color:#94a3b8; font-weight:700;">Carregando ofertas da Black November...</div>
+    <div style="text-align:center; padding:50px; color:#94a3b8; font-weight:700;">Carregando ofertas...</div>
   </div>
 </main>
 
-<div class="fab-carrinho" id="btnCarrinho" onclick="window.location.href='index.html'" style="display:none;">
+<!-- BOTÃO DO CARRINHO QUE ABRE O CARRINHO PRINCIPAL DO INDEX -->
+<div class="fab-carrinho" id="btnCarrinho" onclick="abrirCarrinhoPai()" style="display:none;">
   🛒
   <div class="fab-qtd" id="qtdCarrinho">0</div>
 </div>
@@ -87,47 +104,9 @@ let carrinho = JSON.parse(localStorage.getItem('carrinho_b2b') || '{}');
 const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 const fmtMoeda = v => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-function fmtDataBr(strData) {
-  if (!strData) return '';
-  const [ano, mes, dia] = strData.split('-');
-  return `${dia}/${mes}/${ano}`;
-}
-
-async function carregarValidadeOfertas() {
-  try {
-    const r = await fetch('/api/regras');
-    const j = await r.json();
-    if (j.ok && j.regras && j.regras.ofertas_data_fim) {
-      document.getElementById('dataFimOfertasSpan').textContent = fmtDataBr(j.regras.ofertas_data_fim);
-      document.getElementById('bannerOfertasValidade').style.display = 'block';
-    }
-  } catch (e) { console.error('Erro validade ofertas:', e); }
-}
-
 async function init() {
-  await carregarValidadeOfertas();
-  if (!clienteLogado) {
-    document.getElementById('modalLogin').style.display = 'flex';
-  } else {
-    await carregarOfertas();
-  }
+  await carregarOfertas();
   atualizarCarrinho();
-}
-
-async function fazerLogin() {
-  const cnpj = document.getElementById('cnpjInput').value.replace(/\D/g, '');
-  if (!cnpj) return alert('Digite o CNPJ');
-
-  try {
-    const r = await fetch('/api/login/' + cnpj);
-    const j = await r.json();
-    if (j.ok) {
-      clienteLogado = { ...j.cliente, acrescimo: j.regra_acrescimo.porcentagem };
-      localStorage.setItem('cliente_b2b', JSON.stringify(clienteLogado));
-      document.getElementById('modalLogin').style.display = 'none';
-      carregarOfertas();
-    } else { alert(j.erro || 'CNPJ inválido'); }
-  } catch (e) { alert('Erro na conexão'); }
 }
 
 async function carregarOfertas() {
@@ -168,12 +147,11 @@ async function carregarOfertas() {
 
     renderizarEncateComGrip(listaOfertas);
   } catch (e) {
-    console.error("Erro ao carregar ofertas:", e);
     document.getElementById('gridOfertas').innerHTML = `<div style="text-align:center; padding:60px; color:#ef4444;">Erro ao carregar ofertas.</div>`;
   }
 }
 
-// RENDERIZAÇÃO INTELIGENTE DE OFERTAS
+// RENDERIZAÇÃO EM GRID COM 2 A 3 CARDS POR LINHA
 function renderizarEncateComGrip(lista) {
   const container = document.getElementById('gridOfertas');
   if (!container) return;
@@ -197,9 +175,9 @@ function renderizarEncateComGrip(lista) {
     }
   });
 
-  let html = '';
+  let html = `<div class="grid-familias-ofertas">`;
 
-  // 1. CARDS DE FAMÍLIAS (Subgrupos com 2 ou mais itens em promoção)
+  // 1. CARDS COMPACTOS DE FAMÍLIAS (LADO A LADO)
   Object.keys(familiasReais).forEach(nomeFamilia => {
     const itens = familiasReais[nomeFamilia];
     const desc = itens[0].desconto_porcentagem || itens[0].desconto || 0;
@@ -207,41 +185,33 @@ function renderizarEncateComGrip(lista) {
     const marca = itens[0].marca || 'MARINE';
 
     html += `
-      <div class="card-oferta-pai" style="background:#ffffff; border:1px solid #cbd5e1; border-radius:14px; overflow:hidden; margin-bottom:20px; box-shadow:0 4px 14px rgba(0,27,58,0.08);">
+      <div class="card-oferta-pai">
         
-        <!-- CABEÇALHO DO CARD -->
-        <div style="background: linear-gradient(90deg, #001b3a 0%, #0f172a 100%); color:white; padding:10px 16px; display:flex; justify-content:space-between; align-items:center;">
-          <div style="display:flex; align-items:center; gap:8px;">
-            <span style="background:#ef4444; color:white; font-weight:900; padding:3px 10px; border-radius:6px; font-size:0.85rem;">
-              🔥 -${desc}% OFF
-            </span>
-            <span style="background:rgba(255,255,255,0.15); color:#ffffff; font-size:0.75rem; font-weight:800; padding:2px 8px; border-radius:4px; text-transform:uppercase;">
-              ${escapeHtml(marca)}
-            </span>
-          </div>
-          <span style="color:#38bdf8; font-weight:900; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px;">
-            ⚡ FAMÍLIA EM BLACK NOVEMBER
+        <!-- TOPO CARD -->
+        <div style="background: linear-gradient(90deg, #001b3a 0%, #0f172a 100%); color:white; padding:8px 12px; display:flex; justify-content:space-between; align-items:center;">
+          <span style="background:#ef4444; color:white; font-weight:900; padding:2px 8px; border-radius:4px; font-size:0.75rem;">
+            🔥 -${desc}% OFF
+          </span>
+          <span style="color:#38bdf8; font-weight:900; font-size:0.65rem; text-transform:uppercase; letter-spacing:0.5px;">
+            ⚡ BLACK NOVEMBER
           </span>
         </div>
 
-        <div style="padding:20px; display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
+        <!-- CORPO COMPACTO DO CARD -->
+        <div style="padding:12px; display:flex; flex-direction:column; align-items:center; text-align:center; flex:1; justify-content:space-between;">
           
-          <!-- FOTO DO GRUPO COM A TARJA BLACK NOVEMBER -->
-          <div style="position:relative; width:110px; height:110px; background:#f8fafc; border-radius:10px; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-            <div style="position:absolute; top:-8px; left:50%; transform:translateX(-50%); background: linear-gradient(135deg, #001b3a, #020617); border: 1px solid #38bdf8; color: #38bdf8; font-size: 0.55rem; font-weight: 900; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.3); z-index:3;">
-              ⚡ GRUPO BLACK
-            </div>
+          <div style="width:100px; height:100px; background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; margin-bottom:8px; padding:4px;">
             ${imgPai ? `<img src="${imgPai}" style="max-width:100%; max-height:100%; object-fit:contain;">` : '🖼️'}
           </div>
 
-          <div style="flex:1; min-width:200px;">
-            <h3 style="margin:0 0 6px 0; color:#001b3a; font-size:1.2rem; font-weight:800;">${escapeHtml(nomeFamilia)}</h3>
-            <p style="margin:0; color:#64748b; font-size:0.88rem;">
-              Toda a família está com desconto! Possui <strong>${itens.length} tamanhos/opções</strong> na promoção.
+          <div>
+            <h3 style="margin:0 0 4px 0; color:#001b3a; font-size:0.95rem; font-weight:800; line-height:1.2;">${escapeHtml(nomeFamilia)}</h3>
+            <p style="margin:0 0 10px 0; color:#64748b; font-size:0.75rem;">
+              Possui <strong>${itens.length} opções</strong> em promoção.
             </p>
           </div>
 
-          <button style="background:#001b3a; color:white; border:none; padding:12px 22px; border-radius:10px; font-weight:800; font-size:0.9rem; cursor:pointer; display:inline-flex; align-items:center; gap:8px;" onclick="abrirModalFamiliaOferta('${escapeHtml(nomeFamilia).replace(/'/g, "\\'")}')">
+          <button style="width:100%; background:#001b3a; color:white; border:none; padding:8px 12px; border-radius:8px; font-weight:800; font-size:0.8rem; cursor:pointer;" onclick="abrirModalFamiliaOferta('${escapeHtml(nomeFamilia).replace(/'/g, "\\'")}')">
             👁️ Ver Opções e Comprar
           </button>
         </div>
@@ -249,15 +219,17 @@ function renderizarEncateComGrip(lista) {
       </div>`;
   });
 
-  // 2. CARDS INDIVIDUAIS (Produtos únicos em promoção)
+  html += `</div>`;
+
+  // 2. OFERTAS INDIVIDUAIS
   if (produtosIndividuais.length > 0) {
     const acrescimo = clienteLogado?.acrescimo || 0;
 
     if (Object.keys(familiasReais).length > 0) {
-      html += `<h3 style="color:#001b3a; margin: 28px 0 16px 0; font-size: 1.15rem; font-weight: 800;">📌 Ofertas Individuais</h3>`;
+      html += `<h3 style="color:#001b3a; margin: 24px 0 12px 0; font-size: 1.05rem; font-weight: 800;">📌 Ofertas Individuais</h3>`;
     }
 
-    html += `<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">`;
+    html += `<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px;">`;
 
     produtosIndividuais.forEach(item => {
       const precoComAcrescimo = item.preco_base + (item.preco_base * acrescimo / 100);
@@ -266,31 +238,29 @@ function renderizarEncateComGrip(lista) {
       const q = carrinho[item.codigo] ? carrinho[item.codigo].qtd : 0;
 
       html += `
-        <div style="background:white; border-radius:14px; border:1px solid #cbd5e1; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.05); display:flex; flex-direction:column; position:relative;">
+        <div style="background:white; border-radius:10px; border:1px solid #cbd5e1; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.04); display:flex; flex-direction:column; justify-content:space-between; position:relative; padding:10px;">
           
-          <div style="position:absolute; top:10px; left:10px; background:#ef4444; color:white; font-weight:900; font-size:0.8rem; padding:4px 10px; border-radius:6px; z-index:2;">
-            -${desc}% OFF
+          <div style="position:absolute; top:6px; left:6px; background:#ef4444; color:white; font-weight:900; font-size:0.7rem; padding:2px 6px; border-radius:4px; z-index:2;">
+            -${desc}%
           </div>
 
-          <div style="width:100%; aspect-ratio:1; padding:16px; display:flex; align-items:center; justify-content:center; background:#fff;">
+          <div style="width:100%; aspect-ratio:1; padding:8px; display:flex; align-items:center; justify-content:center; background:#fff;">
             ${item.imagem_oferta ? `<img src="${item.imagem_oferta}" style="max-width:100%; max-height:100%; object-fit:contain;">` : '🖼️'}
           </div>
 
-          <div style="padding:16px; background:#fafafa; border-top:1px solid #e2e8f0; flex:1; display:flex; flex-direction:column; justify-content:space-between;">
-            <div>
-              <span style="font-size:0.7rem; font-weight:800; color:#001b3a; background:#e2e8f0; padding:2px 6px; border-radius:4px;">CÓD: ${item.codigo}</span>
-              <h4 style="margin:8px 0; color:#0f172a; font-size:0.95rem; font-weight:800; line-height:1.3;">${escapeHtml(item.descricao_item || item.subgrupo)}</h4>
-            </div>
-
-            <div style="background:#fef2f2; border:1px dashed #fca5a5; padding:8px; border-radius:8px; text-align:center; margin:10px 0;">
-              <span style="font-size:0.75rem; color:#94a3b8; text-decoration:line-through; font-weight:700; display:block;">De: R$ ${fmtMoeda(precoComAcrescimo)}</span>
-              <span style="font-size:1.2rem; color:#ef4444; font-weight:900; display:block;">Por: R$ ${fmtMoeda(precoPromocional)}</span>
-            </div>
-
-            <button style="width:100%; background:#10b981; color:white; border:none; padding:10px; border-radius:8px; font-weight:800; font-size:0.85rem; cursor:pointer;" onclick="adicionarOferta('${item.codigo}', ${desc}, ${item.preco_base}, '${item.imagem_oferta}', '${escapeHtml(item.subgrupo).replace(/'/g, "\\'")}')">
-              🛒 ${q > 0 ? `No Pedido (${q})` : 'Adicionar ao Pedido'}
-            </button>
+          <div>
+            <span style="font-size:0.65rem; font-weight:800; color:#001b3a; background:#e2e8f0; padding:1px 4px; border-radius:3px;">CÓD: ${item.codigo}</span>
+            <h4 style="margin:4px 0; color:#0f172a; font-size:0.8rem; font-weight:800; line-height:1.2;">${escapeHtml(item.descricao_item || item.subgrupo)}</h4>
           </div>
+
+          <div style="background:#fef2f2; border:1px dashed #fca5a5; padding:4px; border-radius:6px; text-align:center; margin:6px 0;">
+            <span style="font-size:0.65rem; color:#94a3b8; text-decoration:line-through; font-weight:700; display:block;">De: R$ ${fmtMoeda(precoComAcrescimo)}</span>
+            <span style="font-size:0.95rem; color:#ef4444; font-weight:900; display:block;">Por: R$ ${fmtMoeda(precoPromocional)}</span>
+          </div>
+
+          <button style="width:100%; background:#10b981; color:white; border:none; padding:6px; border-radius:6px; font-weight:800; font-size:0.75rem; cursor:pointer;" onclick="adicionarOferta('${item.codigo}', ${desc}, ${item.preco_base}, '${item.imagem_oferta}', '${escapeHtml(item.subgrupo).replace(/'/g, "\\'")}')">
+            🛒 ${q > 0 ? `No Pedido (${q})` : 'Adicionar'}
+          </button>
 
         </div>`;
     });
@@ -310,17 +280,17 @@ function abrirModalFamiliaOferta(nomeSubgrupo) {
 
   let modalHtml = `
     <div id="modalOfertaBg" style="position:fixed; inset:0; background:rgba(0,27,58,0.85); display:flex; align-items:center; justify-content:center; padding:16px; z-index:9999;">
-      <div style="background:#ffffff; width:100%; max-width:700px; border-radius:16px; overflow:hidden; box-shadow:0 20px 50px rgba(0,0,0,0.4);">
+      <div style="background:#ffffff; width:100%; max-width:650px; border-radius:12px; overflow:hidden; box-shadow:0 20px 50px rgba(0,0,0,0.4);">
         
-        <div style="background:#001b3a; color:white; padding:16px 20px; display:flex; justify-content:space-between; align-items:center;">
+        <div style="background:#001b3a; color:white; padding:12px 16px; display:flex; justify-content:space-between; align-items:center;">
           <div>
-            <span style="color:#38bdf8; font-size:0.75rem; font-weight:800; text-transform:uppercase;">⚡ FAMÍLIA EM BLACK NOVEMBER</span>
-            <h3 style="margin:2px 0 0 0; font-size:1.15rem; color:#ffffff;">${escapeHtml(nomeSubgrupo)}</h3>
+            <span style="color:#38bdf8; font-size:0.7rem; font-weight:800; text-transform:uppercase;">⚡ BLACK NOVEMBER</span>
+            <h3 style="margin:0; font-size:1rem; color:#ffffff;">${escapeHtml(nomeSubgrupo)}</h3>
           </div>
-          <button onclick="document.getElementById('modalOfertaBg').remove()" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer; line-height:1;">✕</button>
+          <button onclick="document.getElementById('modalOfertaBg').remove()" style="background:none; border:none; color:white; font-size:1.4rem; cursor:pointer;">✕</button>
         </div>
 
-        <div style="max-height:420px; overflow-y:auto; padding:16px;">
+        <div style="max-height:380px; overflow-y:auto; padding:12px;">
           ${itensFam.map(item => {
             const precoComAcrescimo = item.preco_base + (item.preco_base * acrescimo / 100);
             const desc = Number(item.desconto_porcentagem || 0);
@@ -328,22 +298,20 @@ function abrirModalFamiliaOferta(nomeSubgrupo) {
             const q = carrinho[item.codigo] ? carrinho[item.codigo].qtd : 0;
 
             return `
-              <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #e2e8f0; gap:12px; flex-wrap:wrap;">
-                <div style="flex:1; min-width:180px;">
-                  <strong style="color:#001b3a; font-size:0.95rem;">Cód: ${item.codigo}</strong>
-                  <div style="color:#64748b; font-size:0.85rem;">${escapeHtml(item.descricao_item || item.subgrupo)}</div>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #e2e8f0; gap:10px;">
+                <div>
+                  <strong style="color:#001b3a; font-size:0.85rem;">Cód: ${item.codigo}</strong>
+                  <div style="color:#64748b; font-size:0.75rem;">${escapeHtml(item.descricao_item || item.subgrupo)}</div>
                 </div>
 
                 <div style="text-align:right;">
-                  <div style="text-decoration:line-through; color:#94a3b8; font-size:0.75rem; font-weight:700;">De: R$ ${fmtMoeda(precoComAcrescimo)}</div>
-                  <strong style="color:#ef4444; font-size:1.1rem; font-weight:900;">Por: R$ ${fmtMoeda(precoFinal)}</strong>
+                  <div style="text-decoration:line-through; color:#94a3b8; font-size:0.65rem;">De: R$ ${fmtMoeda(precoComAcrescimo)}</div>
+                  <strong style="color:#ef4444; font-size:0.95rem;">Por: R$ ${fmtMoeda(precoFinal)}</strong>
                 </div>
 
-                <div style="display:flex; align-items:center; gap:8px;">
-                  <button style="background:#10b981; color:white; border:none; padding:8px 14px; border-radius:8px; font-weight:800; cursor:pointer; font-size:0.85rem;" onclick="adicionarOferta('${item.codigo}', ${desc}, ${item.preco_base}, '${item.imagem_oferta}', '${escapeHtml(item.subgrupo).replace(/'/g, "\\'")}')">
-                    🛒 ${q > 0 ? `No Pedido (${q})` : '+ Adicionar'}
-                  </button>
-                </div>
+                <button style="background:#10b981; color:white; border:none; padding:6px 12px; border-radius:6px; font-weight:800; cursor:pointer; font-size:0.75rem;" onclick="adicionarOferta('${item.codigo}', ${desc}, ${item.preco_base}, '${item.imagem_oferta}', '${escapeHtml(item.subgrupo).replace(/'/g, "\\'")}')">
+                  🛒 ${q > 0 ? `(${q})` : '+ Adicionar'}
+                </button>
               </div>`;
           }).join('')}
         </div>
@@ -364,7 +332,7 @@ function adicionarOferta(cod, desc, precoBase, img, nome) {
 
   carrinho[cod] = {
     codigo: cod,
-    nome: nome || `Produto ${cod}`,
+    desc: nome || `Produto ${cod}`,
     qtd: qtdAtual + 1,
     precoBase: precoBase,
     desconto: desc,
@@ -374,9 +342,10 @@ function adicionarOferta(cod, desc, precoBase, img, nome) {
 
   localStorage.setItem('carrinho_b2b', JSON.stringify(carrinho));
   atualizarCarrinho();
-  
-  if (document.getElementById('modalOfertaBg')) {
-    abrirModalFamiliaOferta(nome);
+
+  // ENVIA MENSAGEM PARA O INDEX.HTML ATUALIZAR O CARRINHO PRINCIPAL
+  if (window.parent) {
+    window.parent.postMessage({ tipo: 'ATUALIZAR_CARRINHO' }, '*');
   }
 }
 
@@ -392,15 +361,11 @@ function atualizarCarrinho() {
   }
 }
 
-document.getElementById('cnpjInput')?.addEventListener('input', function(e) {
-  let v = e.target.value.replace(/\D/g, '');
-  if (v.length > 14) v = v.slice(0, 14);
-  v = v.replace(/^(\d{2})(\d)/, '$1.$2');
-  v = v.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
-  v = v.replace(/\.(\d{3})(\d)/, '.$1/$2');
-  v = v.replace(/(\d{4})(\d)/, '$1-$2');
-  e.target.value = v;
-});
+function abrirCarrinhoPai() {
+  if (window.parent) {
+    window.parent.postMessage({ tipo: 'ABRIR_CARRINHO' }, '*');
+  }
+}
 
 init();
 </script>
