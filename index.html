@@ -1506,6 +1506,56 @@ function cardSoltos(it) {
     </div>`;
 }
 
+function abrirModalFamiliaOferta(nomeSubgrupo) {
+  // Busca os produtos desta família na lista
+  const itensFam = todasAsOfertasCache.filter(i => (i.subgrupo || i.subgrupo_scraping || i.descricao) === nomeSubgrupo);
+  if (!itensFam.length) return;
+
+  let modalHtml = `
+    <div id="modalOfertaBg" class="modal-bg on" style="position:fixed; inset:0; background:rgba(0,27,58,0.85); display:flex; align-items:center; justify-content:center; padding:16px; z-index:9999;">
+      <div style="background:#ffffff; width:100%; max-width:700px; border-radius:16px; overflow:hidden; box-shadow:0 20px 50px rgba(0,0,0,0.4);">
+        
+        <!-- CABEÇALHO MODAL -->
+        <div style="background:#001b3a; color:white; padding:16px 20px; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <span style="color:#38bdf8; font-size:0.75rem; font-weight:800; text-transform:uppercase;">SELECIONE O TAMANHO / OPÇÃO</span>
+            <h3 style="margin:2px 0 0 0; font-size:1.1rem; color:#white;">${nomeSubgrupo}</h3>
+          </div>
+          <button onclick="document.getElementById('modalOfertaBg').remove()" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">✕</button>
+        </div>
+
+        <!-- LISTA DE ITENS DA FAMÍLIA -->
+        <div style="max-height:400px; overflow-y:auto; padding:16px;">
+          ${itensFam.map(item => {
+            const precoBase = Number(item.preco_venda || item.precoBase || 0);
+            const desc = Number(item.desconto_porcentagem || item.desconto || 0);
+            const precoFinal = precoBase * (1 - (desc / 100));
+
+            return `
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #e2e8f0; gap:12px;">
+                <div>
+                  <strong style="color:#001b3a; font-size:0.95rem;">Cód: ${item.codigo}</strong>
+                  <div style="color:#64748b; font-size:0.85rem;">${item.descricao_sistema || item.nome || ''}</div>
+                </div>
+
+                <div style="text-align:right;">
+                  <div style="text-decoration:line-through; color:#94a3b8; font-size:0.75rem;">De R$ ${precoBase.toFixed(2)}</div>
+                  <strong style="color:#ef4444; font-size:1.05rem;">Por R$ ${precoFinal.toFixed(2)}</strong>
+                </div>
+
+                <button style="background:#10b981; color:white; border:none; padding:8px 14px; border-radius:6px; font-weight:800; cursor:pointer; font-size:0.85rem;" onclick="adicionarOferta('${item.codigo}', ${desc}, ${precoBase}, '${item.imagem_url||''}', '${item.subgrupo||''}')">
+                  + Adicionar
+                </button>
+              </div>`;
+          }).join('')}
+        </div>
+
+      </div>
+    </div>`;
+
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
 function abrirModalDescricao(titulo, texto) {
   if (!texto) texto = 'Este produto não possui descrição detalhada.';
   document.getElementById('modalTitulo').textContent = titulo || 'Detalhes do Produto';
