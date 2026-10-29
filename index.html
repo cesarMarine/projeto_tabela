@@ -857,18 +857,26 @@ function renderFamiliaEquipamentoDireto(fam, itens) {
       const tagDetalhe = isCarretilha ? info.ladoTag : (info.variacao || 'Padrão');
 
       return `
-        <div class="isca-cor-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" onclick="selecionarEquipamento('${fam.id}', '${it.codigo}', '${it.imagem_url}')">
+        <div class="isca-cor-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" onclick="selecionarEquipamento('${fam.id}', '${it.codigo}', '${it.imagem_url}')" style="position:relative;">
           <span class="isca-badge">${q}</span>
           ${it.imagem_url ? `<img src="${it.imagem_url}" style="height: 65px; object-fit: contain;">` : ''}
           <div class="cor-nome" style="font-size: 0.7rem; font-weight: 800; color: var(--azul-800);">${it.codigo}</div>
-          <div style="font-size: .65rem; color: var(--azul-800); font-weight: 800; text-align: center; margin: 2px 0;">${escapeHtml(tagDetalhe)}</div>
+          <div style="font-size: .65rem; color: var(--azul-800); font-weight: 800; text-align: center; margin: 2px 0 4px 0;">${escapeHtml(tagDetalhe)}</div>
           
+          <!-- EXIBIÇÃO AUTOMÁTICA DE PREÇO COM TARJA BLACK NOVEMBER -->
           ${calc.temOferta ? `
-            <div class="preco-box-oferta">
-              <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
-              <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
+            <div style="text-align:center; width:100%; margin-bottom:4px;">
+              <span style="background: linear-gradient(135deg, #001b3a, #0f172a); color: #38bdf8; border: 1px solid #38bdf8; font-size: 0.55rem; font-weight: 900; padding: 2px 4px; border-radius: 4px; display: inline-block; margin-bottom: 2px; text-transform: uppercase;">
+                ⚡ BLACK NOVEMBER -${calc.pctDesconto}%
+              </span>
+              <div class="preco-de" style="font-size:0.68rem; color:#94a3b8; text-decoration:line-through; font-weight:700;">
+                R$ ${fmtMoeda(calc.precoOriginal)}
+              </div>
+              <div class="preco-por" style="color:#ef4444; font-size:0.9rem; font-weight:900;">
+                R$ ${fmtMoeda(calc.precoFinal)}
+              </div>
             </div>
-          ` : `<div class="cor-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+          ` : `<div class="cor-preco" style="font-size:0.85rem; font-weight:900; color:var(--verde); margin-bottom:4px;">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
 
           <div class="isca-qtd-ctrl" onclick="event.stopPropagation()">
             <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
@@ -1554,6 +1562,37 @@ function abrirModalFamiliaOferta(nomeSubgrupo) {
     </div>`;
 
   document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+// Função para renderizar o preço normal OU a badge da Black November + Preço Riscado
+// 1. FUNÇÃO DE PREÇO E BADGE BLACK NOVEMBER (Para uso geral e modular)
+function obterHtmlPrecoEBadge(item, mapaOfertas, acrescimoUF = 0) {
+  const codStr = String(item.codigo);
+  const temOferta = mapaOfertas instanceof Map ? mapaOfertas.has(codStr) : Boolean(mapaOfertas[codStr]);
+  const pctDesconto = mapaOfertas instanceof Map ? (mapaOfertas.get(codStr)?.desconto_porcentagem || 0) : Number(mapaOfertas[codStr] || 0);
+
+  const precoBase = Number(item.preco_venda || item.precoBase || item.preco_tabela || 0);
+  const precoComUF = precoBase + (precoBase * acrescimoUF / 100);
+
+  if (temOferta && pctDesconto > 0) {
+    const precoPromocional = precoComUF - (precoComUF * (pctDesconto / 100));
+
+    return `
+      <div style="text-align:center; width:100%;">
+        <span style="background: linear-gradient(135deg, #001b3a, #0f172a); color: #38bdf8; border: 1px solid #38bdf8; font-size: 0.58rem; font-weight: 900; padding: 2px 5px; border-radius: 4px; display: inline-block; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.3px;">
+          ⚡ BLACK NOVEMBER -${pctDesconto}%
+        </span>
+        <div style="font-size: 0.7rem; color: #94a3b8; text-decoration: line-through; font-weight: 700; line-height:1.1;">
+          R$ ${fmtMoeda(precoComUF)}
+        </div>
+        <strong style="color: #ef4444; font-size: 0.9rem; font-weight: 900; line-height:1.1; display:block;">
+          R$ ${fmtMoeda(precoPromocional)}
+        </strong>
+      </div>
+    `;
+  }
+
+  return `<div style="font-size: 0.85rem; font-weight: 900; color: var(--verde); text-align:center;">R$ ${fmtMoeda(precoComUF)}</div>`;
 }
 
 function abrirModalDescricao(titulo, texto) {

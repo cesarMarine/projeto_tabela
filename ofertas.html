@@ -71,7 +71,6 @@
 </div>
 
 <main class="encarte-container">
-  <!-- ÁREA DE CARDS AGRUPADOS DAS FAMÍLIAS -->
   <div id="gridOfertas">
     <div style="text-align:center; padding:60px; color:#94a3b8; font-weight:700;">Carregando encarte promocional...</div>
   </div>
@@ -179,7 +178,6 @@ async function carregarOfertas() {
   }
 }
 
-// RENDERIZAÇÃO AGRUPADA POR FAMÍLIA/SUBGRUPO
 // RENDERIZAÇÃO INTELIGENTE DE OFERTAS
 function renderizarEncateComGrip(lista) {
   const container = document.getElementById('gridOfertas');
@@ -199,7 +197,6 @@ function renderizarEncateComGrip(lista) {
 
   Object.keys(grupos).forEach(nomeSub => {
     const itens = grupos[nomeSub];
-    // Se o grupo é "Individual", "Geral" ou tem APENAS 1 PRODUTO, trata como individual
     if (nomeSub === 'Individual' || nomeSub === 'Geral' || itens.length === 1) {
       produtosIndividuais.push(...itens);
     } else {
@@ -209,7 +206,7 @@ function renderizarEncateComGrip(lista) {
 
   let html = '';
 
-  // BANNER BLACK NOVEMBER MARINE (02/11 a 30/11)
+  // BANNER BLACK NOVEMBER MARINE (02/11/2026 a 30/11/2026)
   const hoje = new Date();
   const inicioBlack = new Date('2026-11-02T00:00:00');
   const fimBlack = new Date('2026-11-30T23:59:59');
@@ -232,7 +229,6 @@ function renderizarEncateComGrip(lista) {
     html += `
       <div class="card-oferta-pai" style="background:#ffffff; border:1px solid #cbd5e1; border-radius:14px; overflow:hidden; margin-bottom:20px; box-shadow:0 4px 14px rgba(0,27,58,0.08);">
         
-        <!-- TARJA DE DESTAQUE FAMÍLIA -->
         <div style="background: linear-gradient(90deg, #001b3a 0%, #0f172a 100%); color:white; padding:10px 18px; display:flex; justify-content:space-between; align-items:center;">
           <div style="display:flex; align-items:center; gap:8px;">
             <span style="background:#ef4444; color:white; font-weight:900; padding:3px 10px; border-radius:6px; font-size:0.85rem;">
@@ -324,14 +320,12 @@ function abrirModalFamiliaOferta(nomeSubgrupo) {
 
   const acrescimo = clienteLogado?.acrescimo || 0;
 
-  // Remove modal antigo se houver
   document.getElementById('modalOfertaBg')?.remove();
 
   let modalHtml = `
     <div id="modalOfertaBg" style="position:fixed; inset:0; background:rgba(0,27,58,0.85); display:flex; align-items:center; justify-content:center; padding:16px; z-index:9999;">
       <div style="background:#ffffff; width:100%; max-width:700px; border-radius:16px; overflow:hidden; box-shadow:0 20px 50px rgba(0,0,0,0.4);">
         
-        <!-- CABEÇALHO DO MODAL -->
         <div style="background:#001b3a; color:white; padding:16px 20px; display:flex; justify-content:space-between; align-items:center;">
           <div>
             <span style="color:#38bdf8; font-size:0.75rem; font-weight:800; text-transform:uppercase;">SELECIONE A OPÇÃO DESEJADA</span>
@@ -340,7 +334,6 @@ function abrirModalFamiliaOferta(nomeSubgrupo) {
           <button onclick="document.getElementById('modalOfertaBg').remove()" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer; line-height:1;">✕</button>
         </div>
 
-        <!-- LISTA DE ITENS DA FAMÍLIA -->
         <div style="max-height:420px; overflow-y:auto; padding:16px;">
           ${itensFam.map(item => {
             const precoComAcrescimo = item.preco_base + (item.preco_base * acrescimo / 100);
@@ -375,7 +368,7 @@ function abrirModalFamiliaOferta(nomeSubgrupo) {
   document.body.insertAdjacentHTML('beforeend', modalHtml);
 }
 
-// FUNÇÃO PARA GRAVAR A OFERTA NO CARRINHO_B2B COMPATÍVEL COM O INDEX.HTML
+// FUNÇÃO PARA GRAVAR A OFERTA NO CARRINHO_B2B
 function adicionarOferta(cod, desc, precoBase, img, nome) {
   const acrescimo = clienteLogado?.acrescimo || 0;
   const precoComAcrescimo = precoBase + (precoBase * acrescimo / 100);
@@ -396,10 +389,8 @@ function adicionarOferta(cod, desc, precoBase, img, nome) {
 
   localStorage.setItem('carrinho_b2b', JSON.stringify(carrinho));
 
-  // Atualiza carrinho e recarrega os modais
   atualizarCarrinho();
   
-  // Atualiza o botão no modal se ele estiver aberto
   const modalAberto = document.getElementById('modalOfertaBg');
   if (modalAberto) {
     abrirModalFamiliaOferta(nome);
