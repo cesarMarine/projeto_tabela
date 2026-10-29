@@ -610,6 +610,8 @@ app.get('/api/vendedores', async (req, res) => {
 });
 
 // POST: Criar Vendedor (Salva dados em 'vendedores' e a senha em 'vendedores_acesso')
+// POST: Criar Vendedor
+// POST: Criar Vendedor
 app.post('/api/vendedores', async (req, res) => {
   const { nome, codigo_representante, senha, whatsapp } = req.body;
 
@@ -617,7 +619,7 @@ app.post('/api/vendedores', async (req, res) => {
   const whatsappLimpo = whatsapp ? whatsapp.replace(/\D/g, '') : null;
 
   try {
-    // 1. Insere o vendedor na tabela 'vendedores' (Sem tentar gravar a 'senha' aqui!)
+    // 1. Insere na tabela 'vendedores' pegando o 'id' retornado
     const { data: vendedor, error: errVendedor } = await supabase
       .from('vendedores')
       .insert([{ 
@@ -626,19 +628,16 @@ app.post('/api/vendedores', async (req, res) => {
         whatsapp: whatsappLimpo,
         ativo: 1 
       }])
-      .select('vendedor_id, id')
+      .select('id')
       .single();
 
     if (errVendedor) throw errVendedor;
 
-    // Pega o ID correto gerado no banco (vendedor_id ou id)
-    const idCadastrado = vendedor.vendedor_id || vendedor.id;
-
-    // 2. Grava a senha na tabela 'vendedores_acesso'
-    if (senha && idCadastrado) {
+    // 2. Grava a senha em 'vendedores_acesso' relacionando com 'vendedor_id'
+    if (senha && vendedor?.id) {
       const { error: errAcesso } = await supabase
         .from('vendedores_acesso')
-        .upsert({ vendedor_id: idCadastrado, senha }, { onConflict: 'vendedor_id' });
+        .upsert({ vendedor_id: vendedor.id, senha }, { onConflict: 'vendedor_id' });
 
       if (errAcesso) throw errAcesso;
     }
@@ -650,14 +649,12 @@ app.post('/api/vendedores', async (req, res) => {
   }
 });
 
-// GET: Listar Vendedores (garantir que retorna o campo whatsapp)
-// GET: Listar Vendedores (Traz o WhatsApp e faz JOIN com 'vendedores_acesso' para mostrar se tem senha)
+// GET: Listar Vendedores (Removida a referência inválida a 'vendedores.vendedor_id')
 app.get('/api/vendedores', async (req, res) => {
   try {
     const { data: vendedores, error } = await supabase
       .from('vendedores')
       .select(`
-        vendedor_id,
         id,
         nome,
         codigo_representante,
@@ -668,15 +665,14 @@ app.get('/api/vendedores', async (req, res) => {
 
     if (error) throw error;
 
-    // Formata o array para que o frontend receba 'senha' e 'vendedor_id' no nível principal
+    // Mapeia 'id' da tabela para 'vendedor_id' esperado pelo frontend
     const listaFormatada = vendedores.map(v => {
-      const idReal = v.vendedor_id || v.id;
       const senhaEncontrada = Array.isArray(v.vendedores_acesso) && v.vendedores_acesso.length > 0 
         ? v.vendedores_acesso[0].senha 
         : (v.vendedores_acesso?.senha || null);
 
       return {
-        vendedor_id: idReal,
+        vendedor_id: v.id,
         nome: v.nome,
         codigo_representante: v.codigo_representante,
         ativo: v.ativo,
