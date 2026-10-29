@@ -1685,15 +1685,11 @@ document.getElementById('inputCnpj').addEventListener('keypress', function(e) {
 });
 
 // Ouve atualizações de carrinho vindas do iframe de Ofertas
+// Atualiza o carrinho principal quando algo é adicionado na aba de Ofertas
 window.addEventListener('message', function(event) {
   if (event.data && event.data.tipo === 'ATUALIZAR_CARRINHO') {
-    // Recarrega o carrinho no index.html e atualiza os contadores
-    const carrinhoOfertas = JSON.parse(localStorage.getItem('carrinho_b2b') || '{}');
-    Object.assign(carrinho, carrinhoOfertas);
-    atualizarCarrinho();
-  }
-  if (event.data && event.data.tipo === 'ABRIR_CARRINHO') {
-    toggleCarrinho();
+    carrinho = JSON.parse(localStorage.getItem('carrinho_b2b') || '{}');
+    atualizarCarrinho(); // Função do index.html que atualiza o contador e os valores
   }
 });
 </script>

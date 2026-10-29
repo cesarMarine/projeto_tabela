@@ -66,6 +66,7 @@
     display: flex; align-items: center; justify-content: center;
     font-size: 22px; box-shadow: 0 4px 16px rgba(0,0,0,0.4);
     cursor: pointer; z-index: 150; border: 2px solid #38bdf8;
+    display: none !important;
   }
   .fab-qtd {
     position: absolute; top: -4px; right: -4px;
@@ -341,10 +342,9 @@ function adicionarOferta(cod, desc, precoBase, img, nome) {
   };
 
   localStorage.setItem('carrinho_b2b', JSON.stringify(carrinho));
-  atualizarCarrinho();
 
-  // ENVIA MENSAGEM PARA O INDEX.HTML ATUALIZAR O CARRINHO PRINCIPAL
-  if (window.parent) {
+  // Notifica o index.html pai para atualizar a contagem do carrinho único
+  if (window.parent && window.parent !== window) {
     window.parent.postMessage({ tipo: 'ATUALIZAR_CARRINHO' }, '*');
   }
 }
