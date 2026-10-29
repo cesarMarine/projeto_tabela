@@ -549,6 +549,36 @@ async function carregarGruposParaOferta() {
   }
 }
 
+async function carregarOfertasAdmin() {
+  const tbody = document.querySelector('#tabOfertas tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Carregando ofertas...</td></tr>';
+
+  try {
+    const r = await fetch('/api/admin/ofertas-agrupadas');
+    const j = await r.json();
+
+    if (!j.ok || !j.ofertas_agrupadas.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#94a3b8;">Nenhuma oferta cadastrada.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = j.ofertas_agrupadas.map(g => `
+      <tr>
+        <td><strong style="color:#38bdf8; font-size:1rem;">🏷️ ${g.grupo}</strong> <small style="color:#94a3b8;">(${g.total_itens} produtos)</small></td>
+        <td><span style="background:#ef4444; color:white; padding:4px 10px; border-radius:12px; font-weight:800;">-${g.desconto}% OFF</span></td>
+        <td>${g.data_fim ? new Date(g.data_fim).toLocaleDateString('pt-BR') : 'Sem data limite'}</td>
+        <td><span style="background:#064e3b; color:#6ee7b7; padding:2px 8px; border-radius:4px; font-size:12px; font-weight:700;">Ativa</span></td>
+        <td>
+          <button class="btn-del" onclick="removerOfertaGrupo('${g.grupo}')">Remover Grupo</button>
+        </td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Erro: ${e.message}</td></tr>`;
+  }
+}
+
 // Aplica a oferta para todo o Grupo selecionado
 async function aplicarOfertaGrupo() {
   const grupo = document.getElementById('ofertaSelectGrupo').value;

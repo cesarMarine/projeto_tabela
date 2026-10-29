@@ -668,6 +668,43 @@ app.get('/api/ofertas/detalhadas', async (req, res) => {
   }
 });
 
+// GET: Buscar ofertas agrupadas para a tabela do Admin
+app.get('/api/admin/ofertas-agrupadas', async (req, res) => {
+  try {
+    const { data: ofertas, error } = await supabase.from('ofertas').select('*');
+    if (error) throw error;
+
+    const { data: produtos } = await supabase.from('scraping_produtos').select('codigo, subgrupo');
+
+    // Mapeia o subgrupo/família de cada item
+    const ofertasComGrupo = ofertas.map(o => {
+      const prod = produtos?.find(p => String(p.codigo) === String(o.codigo));
+      return { ...o, grupo: prod?.subgrupo || 'Individual' };
+    });
+
+    // Agrupa por Nome do Grupo se o desconto for igual
+    const gruposMap = {};
+    ofertasComGrupo.forEach(o => {
+      const chave = `${o.grupo}_${o.desconto_porcentagem}`;
+      if (!gruposMap[chave]) {
+        gruposMap[chave] = {
+          grupo: o.grupo,
+          desconto: o.desconto_porcentagem,
+          data_fim: o.data_fim,
+          total_itens: 0,
+          codigos: []
+        };
+      }
+      gruposMap[chave].total_itens++;
+      gruposMap[chave].codigos.push(o.codigo);
+    });
+
+    res.json({ ok: true, ofertas_agrupadas: Object.values(gruposMap) });
+  } catch (e) {
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
+
 
 // POST: Importar Ofertas em Lote via Excel
 app.post('/api/ofertas/lote', async (req, res) => {
