@@ -314,36 +314,31 @@ function montarBarraMarcas() {
   const wrap = document.getElementById('barramarcasWrap');
   const container = document.getElementById('barramarcas');
 
-  // Se estiver em "Ofertas" ou sem grupo definido, esconde a barra de marcas
   if (grupoAtual === '__OFERTAS__' || grupoAtual === '__TODOS__') {
     wrap.style.display = 'none';
     return;
   }
 
-  // Pega apenas os produtos do grupo ativo que têm estoque
   const produtosDoGrupo = todosItens.filter(it => it.grupo === grupoAtual && it.estoque > 0);
   
-  // Extrai as marcas únicas presentes nesse grupo
   const marcasSet = new Set();
   produtosDoGrupo.forEach(it => { if (it.marca) marcasSet.add(it.marca.trim()); });
   const marcas = Array.from(marcasSet).sort();
 
-  // Se houver menos de 2 marcas, não precisa exibir a barra
   if (marcas.length <= 1) {
     wrap.style.display = 'none';
     return;
   }
 
-  // Monta o botão "Todas" + botões de cada marca com sua logo
   let html = `
     <button onclick="filtrarPorMarca('', this)" 
-            style="padding:4px 10px; border-radius:12px; border:1px solid #cbd5e1; background:${marcaAtual===''?'#003366':'#white'}; color:${marcaAtual===''?'#fff':'#334155'}; font-weight:800; font-size:0.7rem; cursor:pointer; white-space:nowrap;">
+            style="padding:4px 10px; border-radius:12px; border:1px solid #cbd5e1; background:${marcaAtual===''?'#003366':'white'}; color:${marcaAtual===''?'#fff':'#334155'}; font-weight:800; font-size:0.7rem; cursor:pointer; white-space:nowrap;">
       TODAS AS MARCAS
     </button>
   `;
 
   marcas.forEach(marca => {
-    const logoUrl = getLogoMarcaUrl(marca); // Busca no bucket a imagem da logo
+    const logoUrl = getLogoMarcaUrl(marca);
     const ativo = marcaAtual.toUpperCase() === marca.toUpperCase();
     const bg = ativo ? '#003366' : '#ffffff';
     const borderColor = ativo ? '#003366' : '#cbd5e1';
@@ -356,7 +351,7 @@ function montarBarraMarcas() {
     `;
   });
 
-  containe.innerHTML = html;
+  container.innerHTML = html; // CORRIGIDO AQUI (era containe)
   wrap.style.display = 'block';
 }
 
@@ -633,6 +628,19 @@ function normalizarItem(it) {
   };
 }
 
+/* EXTRAI O TAMANHO DO VESTUÁRIO/ROUPAS DO ATRIBUTO JSON OU SUBGRUPO */
+function analisarVestuario(it) {
+  const attrs = it.atributos || {};
+  let tamanho = attrs['Tamanho'] || attrs['TAMANHO'] || attrs['Tamanho (cm)'] || '';
+  
+  if (!tamanho) {
+    const match = (it.subgrupo || '').match(/\b(PP|P|M|G|GG|XG|XGG|EG|EXG|\d{2})\b/i);
+    if (match) tamanho = match[1].toUpperCase();
+  }
+  
+  return { tamanho: tamanho || '' };
+}
+
 function analisarAnzol(it) {
   const attrs = it.atributos || {};
   let numero = '';
@@ -834,7 +842,7 @@ function filtrar() {
     lista = lista.filter(it => it.codigo.includes(q) || it.subgrupo.toLowerCase().includes(q) || it.marca.toLowerCase().includes(q));
   }
 
-  //
+  
   
   return lista;
 }
