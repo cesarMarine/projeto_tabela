@@ -538,8 +538,8 @@ async function carregarGruposParaOferta() {
     const j = await r.json();
     const produtos = j.itens || j;
     
-    // Extrai subgrupos únicos
-    const gruposUnicos = [...new Set(produtos.map(p => p.subgrupo_scraping).filter(Boolean))].sort();
+    // Extrai subgrupos únicos da tabela
+    const gruposUnicos = [...new Set(produtos.map(p => p.subgrupo || p.subgrupo_scraping).filter(Boolean))].sort();
     
     sel.innerHTML = '<option value="">-- Selecione o Grupo --</option>' + 
       gruposUnicos.map(g => `<option value="${g.replace(/"/g,'&quot;')}">${g}</option>`).join('');

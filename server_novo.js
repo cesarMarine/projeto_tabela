@@ -595,6 +595,7 @@ app.get('/api/login/:cnpj', async (req, res) => {
 
 // POST: Criar / Atualizar Oferta por Grupo/Família
 // POST: Criar / Atualizar Oferta por Subgrupo/Família
+// POST: Criar / Atualizar Oferta por Subgrupo/Família
 app.post('/api/ofertas/grupo', async (req, res) => {
   const { grupo, desconto_porcentagem, data_fim } = req.body;
 
@@ -603,11 +604,11 @@ app.post('/api/ofertas/grupo', async (req, res) => {
   }
 
   try {
-    // 1. Busca todos os produtos pertencentes a este subgrupo_scraping
+    // 1. Busca todos os produtos do subgrupo informado
     const { data: produtos, error: errProd } = await supabase
       .from('scraping_produtos')
       .select('codigo')
-      .eq('subgrupo_scraping', grupo);
+      .eq('subgrupo', grupo);
 
     if (errProd) throw errProd;
 
@@ -615,14 +616,14 @@ app.post('/api/ofertas/grupo', async (req, res) => {
       return res.status(404).json({ ok: false, erro: "Nenhum produto encontrado para este grupo." });
     }
 
-    // 2. Monta os objetos de oferta
+    // 2. Prepara os registros para salvar na tabela 'ofertas'
     const registrosOferta = produtos.map(p => ({
       codigo: String(p.codigo).trim(),
       desconto_porcentagem: parseFloat(desconto_porcentagem),
       data_fim: data_fim || null
     }));
 
-    // 3. Grava no banco na tabela 'ofertas'
+    // 3. Insere / atualiza os descontos
     const { error: errOferta } = await supabase
       .from('ofertas')
       .upsert(registrosOferta, { onConflict: 'codigo' });
@@ -631,7 +632,7 @@ app.post('/api/ofertas/grupo', async (req, res) => {
 
     res.json({ 
       ok: true, 
-      mensagem: `Desconto de ${desconto_porcentagem}% aplicado a ${produtos.length} produto(s) de "${grupo}"!` 
+      mensagem: `Desconto de ${desconto_porcentagem}% aplicado com sucesso a ${produtos.length} produto(s) do grupo "${grupo}"!` 
     });
 
   } catch (e) {
