@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin — Gestão de Produtos</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
   body { background: #0f172a; color: #e2e8f0; min-height: 100vh; display: flex; flex-direction: column; }
@@ -41,14 +42,16 @@
   .row { display: flex; gap: 16px; align-items: flex-end; margin-bottom: 16px; flex-wrap: wrap; }
   .row > * { flex: 1; min-width: 200px; }
   label { display: block; font-size: 12px; font-weight: 700; color: #94a3b8; margin-bottom: 6px; text-transform: uppercase; }
-  input[type="text"], input[type="file"], input[type="number"], input[type="date"] { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; font-size: 14px; }
-  input:focus { outline: none; border-color: #38bdf8; }
+  input[type="text"], input[type="file"], input[type="number"], input[type="date"], select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; font-size: 14px; }
+  input:focus, select:focus { outline: none; border-color: #38bdf8; }
   
   .btn-primario { background: #2563eb; color: white; border: none; border-radius: 8px; padding: 12px 24px; font-weight: 700; cursor: pointer; }
   .btn-primario:hover { background: #1d4ed8; }
   .btn-salvar { background: #10b981; color: white; border: none; border-radius: 8px; padding: 14px; font-weight: 800; cursor: pointer; width: 100%; margin-top: 12px; }
   .btn-salvar:disabled { opacity: 0.5; cursor: not-allowed; }
   .btn-mini { padding: 6px 12px; font-size: 12px; border-radius: 6px; }
+  .btn-del { background: #991b1b; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; }
+  .btn-del:hover { background: #dc2626; }
   
   .familia-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 20px; }
   .lista-subgrupos { background: #0f172a; border: 1px solid #334155; border-radius: 8px; max-height: 400px; overflow-y: auto; padding: 8px; }
@@ -64,7 +67,6 @@
   .card-familia-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 12px; }
   .card-familia-head strong { color: #38bdf8; font-size: 18px; }
   .btn-add-sub { background: #334155; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; }
-  .btn-del { background: #991b1b; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; margin-left: 8px; }
   .btn-reord { background: #eab308; color: #000; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; margin-left: 8px; font-weight: 700; }
   .btn-reord:hover { background: #ca8a04; }
   .sub-item { display: flex; justify-content: space-between; background: #1e293b; padding: 8px 12px; border-radius: 6px; font-size: 13px; border-left: 3px solid #a78bfa; margin-bottom: 6px; }
@@ -80,28 +82,10 @@
   .btn-cancel { background: none; border: 1px solid #475569; color: white; padding: 10px 16px; border-radius: 8px; cursor: pointer; }
   .btn-save { background: #10b981; border: none; color: white; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; }
  
- @media(max-width: 800px) { .wrap { flex-direction: column; } .sidebar { width: 100%; flex-direction: row; overflow-x: auto; padding: 8px; } .sidebar button { white-space: nowrap; border-left: none; border-bottom: 3px solid transparent; } .sidebar button.active { border-left: none; border-bottom-color: #38bdf8; } .familia-grid, .status-cards { grid-template-columns: 1fr; } }
-
-
+  @media(max-width: 800px) { .wrap { flex-direction: column; } .sidebar { width: 100%; flex-direction: row; overflow-x: auto; padding: 8px; } .sidebar button { white-space: nowrap; border-left: none; border-bottom: 3px solid transparent; } .sidebar button.active { border-left: none; border-bottom-color: #38bdf8; } .familia-grid, .status-cards { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
-
-    <!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <title>Admin - Gestão de Produtos</title>
-  
-  <!-- OUTROS ESTILOS / SCRIPTS QUE VOCÊ JÁ TEM -->
-  <link rel="stylesheet" href="style.css">
-
-  <!-- 🔥 COLE A LINHA DO SHEETJS AQUI ABAIXO: -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
-</head>
-<body>
-  ... resto do seu HTML ...
 
 <header>
   <h1>Admin <span>Gestão de Produtos</span></h1>
@@ -214,47 +198,89 @@
 
     <!-- PÁGINA: GESTÃO DE OFERTAS -->
     <section class="page" id="page-ofertas">
-  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
 
-    <!-- PAINEL 1: CADASTRAR POR GRUPO / FAMÍLIA -->
-    <div class="painel" style="background:#0f172a; border:1px dashed #3b82f6;">
-      <h2 style="color:#60a5fa;">🏷️ Oferta por Grupo de Produtos</h2>
-      <p style="font-size:13px; color:#94a3b8; margin-bottom:12px;">Aplica o desconto em todos os produtos do grupo selecionado.</p>
-      
-      <div style="display:flex; flex-direction:column; gap:10px;">
-        <div>
-          <label>Selecione o Grupo/Família</label>
-          <select id="ofertaSelectGrupo" style="width:100%; padding:8px; border-radius:6px; background:#1e293b; color:white; border:1px solid #475569;">
-            <option value="">Carregando grupos...</option>
-          </select>
+        <!-- PAINEL 1: CADASTRAR POR GRUPO / FAMÍLIA -->
+        <div class="painel" style="background:#0f172a; border:1px dashed #3b82f6; margin-bottom:0;">
+          <h2 style="color:#60a5fa;">🏷️ Oferta por Grupo de Produtos</h2>
+          <p style="font-size:13px; color:#94a3b8; margin-bottom:12px;">Aplica o desconto em todos os produtos do grupo selecionado.</p>
+          
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div>
+              <label>Selecione o Grupo/Família</label>
+              <select id="ofertaSelectGrupo">
+                <option value="">Carregando grupos...</option>
+              </select>
+            </div>
+            <div style="display:flex; gap:10px;">
+              <div style="flex:1;">
+                <label>Desconto (%)</label>
+                <input type="number" id="ofertaGrupoPorcentagem" placeholder="Ex: 15">
+              </div>
+              <div style="flex:1;">
+                <label>Validade (Opcional)</label>
+                <input type="date" id="ofertaGrupoDataFim">
+              </div>
+            </div>
+            <button class="btn-primario" style="background:#2563eb; margin-top:5px;" onclick="aplicarOfertaGrupo()">Aplicar Desconto no Grupo</button>
+          </div>
         </div>
-        <div style="display:flex; gap:10px;">
-          <div style="flex:1;">
+
+        <!-- PAINEL 2: IMPORTAR PLANILHA EXCEL -->
+        <div class="painel" style="background:#0f172a; border:1px dashed #10b981; margin-bottom:0;">
+          <h2 style="color:#34d399;">📥 Importar Planilha Excel (.xlsx / .xls)</h2>
+          <p style="font-size:13px; color:#94a3b8; margin-bottom:12px;">Planilha deve conter as colunas: <strong>codigo</strong> e <strong>desc</strong>.</p>
+          
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <input type="file" id="arquivoExcelOfertas" accept=".xlsx, .xls">
+            <button class="btn-primario" style="background:#059669;" onclick="processarExcelOfertas()">Importar Planilha de Ofertas</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- PAINEL 3: CADASTRAR PRODUTO INDIVIDUAL -->
+      <div class="painel" style="background:#0f172a; border:1px dashed #a78bfa;">
+        <h2 style="color:#c084fc;">➕ Oferta por Produto Individual</h2>
+        <div class="row">
+          <div style="position:relative; flex:2;">
+            <label>Buscar Produto (Código ou Nome)</label>
+            <input type="text" id="buscaProdutoOferta" placeholder="Digite o código ou nome do produto..." oninput="filtrarProdutosOferta()">
+            <input type="hidden" id="ofertaCod">
+            <div id="dropdownProdutosOferta"></div>
+          </div>
+          <div>
             <label>Desconto (%)</label>
-            <input type="number" id="ofertaGrupoPorcentagem" placeholder="Ex: 15" style="width:100%;">
+            <input type="number" id="ofertaPct" placeholder="Ex: 10">
           </div>
-          <div style="flex:1;">
-            <label>Validade (Opcional)</label>
-            <input type="date" id="ofertaGrupoDataFim" style="width:100%;">
+          <div style="flex:0 0 auto;">
+            <button class="btn-primario" style="background:#8b5cf6;" onclick="salvarOferta()">Cadastrar Oferta</button>
           </div>
         </div>
-        <button class="btn-primario" style="background:#2563eb; margin-top:5px;" onclick="aplicarOfertaGrupo()">Aplicar Desconto no Grupo</button>
       </div>
-    </div>
 
-    <!-- PAINEL 2: IMPORTAR PLANILHA EXCEL -->
-    <div class="painel" style="background:#0f172a; border:1px dashed #10b981;">
-      <h2 style="color:#34d399;">📥 Importar Planilha Excel (.xlsx / .xls)</h2>
-      <p style="font-size:13px; color:#94a3b8; margin-bottom:12px;">Planilha deve conter as colunas: <strong>codigo</strong> e <strong>desc</strong>.</p>
-      
-      <div style="display:flex; flex-direction:column; gap:12px;">
-        <input type="file" id="arquivoExcelOfertas" accept=".xlsx, .xls" style="padding:8px; background:#1e293b; border-radius:6px; color:white;">
-        <button class="btn-primario" style="background:#059669;" onclick="processarExcelOfertas()">Importar Planilha de Ofertas</button>
+      <!-- PAINEL 4: TABELA DE OFERTAS CADASTRADAS -->
+      <div class="painel">
+        <h2>🔥 Ofertas Ativas no Catálogo</h2>
+        <div style="overflow-x:auto;">
+          <table id="tabOfertas">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Produto / Subgrupo</th>
+                <th>Preço Tabela</th>
+                <th>Desconto</th>
+                <th>Preço em Oferta</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="6" style="text-align:center;">Carregando ofertas...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
-
-  </div>
-</section>
+    </section>
 
     <!-- PÁGINA: FAMÍLIAS -->
     <section class="page" id="page-familias">
@@ -341,7 +367,7 @@
       </div>
     </section>
 
-<!-- PÁGINA: VENDEDORES -->
+    <!-- PÁGINA: VENDEDORES -->
     <section class="page" id="page-vendedores">
       <div class="painel" style="background:#0f172a; border:1px dashed #475569;">
         <h2 style="margin-bottom:16px;">➕ Novo Vendedor</h2>
@@ -431,7 +457,7 @@
   </div>
 </div>
 
-<!-- MODAL DE CONFIGURAÇÃO DE REGRAS (DARK THEME) -->
+<!-- MODAL DE CONFIGURAÇÃO DE REGRAS -->
 <div id="modalRegras" class="modal-bg">
   <div class="modal" style="max-width:500px;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
@@ -503,20 +529,22 @@ document.querySelectorAll('.sidebar button').forEach(b => {
   };
 });
 
-// Carrega as opções de grupos no <select>
+// Carrega as opções de grupos/famílias no <select> de ofertas
 async function carregarGruposParaOferta() {
   const sel = document.getElementById('ofertaSelectGrupo');
+  if (!sel) return;
   try {
-    const r = await fetch('/api/produtos');
+    const r = await fetch('/api/catalogo');
     const j = await r.json();
-    const produtos = j.produtos || j;
+    const produtos = j.itens || j;
     
-    // Extrai grupos únicos
-    const gruposUnicos = [...new Set(produtos.map(p => p.grupo).filter(Boolean))].sort();
+    // Extrai subgrupos únicos
+    const gruposUnicos = [...new Set(produtos.map(p => p.subgrupo_scraping).filter(Boolean))].sort();
     
     sel.innerHTML = '<option value="">-- Selecione o Grupo --</option>' + 
-      gruposUnicos.map(g => `<option value="${g}">${g}</option>`).join('');
+      gruposUnicos.map(g => `<option value="${g.replace(/"/g,'&quot;')}">${g}</option>`).join('');
   } catch (e) {
+    console.error("Erro ao carregar grupos:", e);
     sel.innerHTML = '<option value="">Erro ao carregar grupos</option>';
   }
 }
@@ -542,6 +570,7 @@ async function aplicarOfertaGrupo() {
   const j = await r.json();
   if (j.ok) {
     alert('✅ ' + j.mensagem);
+    document.getElementById('ofertaGrupoPorcentagem').value = '';
     carregarOfertas();
   } else {
     alert('❌ Erro: ' + j.erro);
@@ -576,7 +605,7 @@ async function processarExcelOfertas() {
       }).filter(o => o.codigo && o.desc);
 
       if (!ofertasMapeadas.length) {
-        return alert('❌ Nenhuma linha válida encontrada. Verifique os nomes das colunas: codigo e desc.');
+        return alert('❌ Nenhuma linha válida encontrada. Verifique se a planilha possui as colunas "codigo" e "desc".');
       }
 
       // Envia os dados convertidos ao backend
@@ -601,6 +630,111 @@ async function processarExcelOfertas() {
   };
 
   reader.readAsArrayBuffer(file);
+}
+
+async function carregarOfertas() {
+  const tbody = document.querySelector('#tabOfertas tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Carregando ofertas...</td></tr>';
+  
+  // Tenta carregar lista de grupos caso ainda não esteja carregada
+  carregarGruposParaOferta();
+
+  if (!todosOsProdutos.length) {
+    try {
+      const r = await fetch('/api/catalogo'); 
+      const j = await r.json();
+      todosOsProdutos = j.itens || [];
+    } catch(e) { console.error(e); }
+  }
+
+  try {
+    const r = await fetch('/api/ofertas'); const j = await r.json();
+    ofertasCache = j.ofertas || [];
+    
+    if (!ofertasCache.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#94a3b8;">Nenhum produto em oferta no momento.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = ofertasCache.map(o => {
+      const prod = todosOsProdutos.find(p => String(p.codigo) === String(o.codigo)) || {};
+      const precoBase = Number(prod.preco_venda || o.preco_venda || 0);
+      const precoComDesconto = precoBase - (precoBase * o.desconto_porcentagem / 100);
+
+      return `
+        <tr>
+          <td><strong style="color:#38bdf8;">${o.codigo}</strong></td>
+          <td>${prod.subgrupo_scraping || prod.descricao_sistema || 'Produto ' + o.codigo}</td>
+          <td>R$ ${precoBase.toFixed(2)}</td>
+          <td><span style="background:#ef4444; color:white; padding:2px 8px; border-radius:12px; font-weight:800; font-size:12px;">-${o.desconto_porcentagem}%</span></td>
+          <td><strong style="color:#10b981;">R$ ${precoComDesconto.toFixed(2)}</strong></td>
+          <td><button class="btn-del" onclick="removerOferta('${o.codigo}')">Remover</button></td>
+        </tr>`;
+    }).join('');
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:red;">Erro ao carregar ofertas: ${e.message}</td></tr>`;
+  }
+}
+
+function filtrarProdutosOferta() {
+  const q = document.getElementById('buscaProdutoOferta').value.toLowerCase().trim();
+  const div = document.getElementById('dropdownProdutosOferta');
+  if (q.length < 2) { div.innerHTML = ''; return; }
+
+  const filtrados = todosOsProdutos.filter(p => 
+    String(p.codigo).toLowerCase().includes(q) || (p.subgrupo_scraping && p.subgrupo_scraping.toLowerCase().includes(q))
+  ).slice(0, 10);
+
+  if (!filtrados.length) {
+    div.innerHTML = '<div style="position:absolute; background:#1e293b; border:1px solid #475569; width:100%; padding:10px; color:#94a3b8; z-index:10;">Nenhum produto encontrado.</div>';
+    return;
+  }
+
+  div.innerHTML = `
+    <div style="position:absolute; background:#1e293b; border:1px solid #475569; width:100%; max-height:200px; overflow-y:auto; border-radius:8px; z-index:10; box-shadow:0 10px 25px rgba(0,0,0,0.5);">
+      ${filtrados.map(p => `
+        <div style="padding:10px; border-bottom:1px solid #334155; cursor:pointer;" onclick="selecionarProdutoOferta('${p.codigo}', \`${(p.subgrupo_scraping||p.codigo).replace(/`/g,'')}\`)">
+          <strong style="color:#38bdf8;">${p.codigo}</strong> — ${p.subgrupo_scraping || p.descricao_sistema}
+        </div>
+      `).join('')}
+    </div>`;
+}
+
+function selecionarProdutoOferta(cod, nome) {
+  document.getElementById('ofertaCod').value = cod;
+  document.getElementById('buscaProdutoOferta').value = `${cod} - ${nome}`;
+  document.getElementById('dropdownProdutosOferta').innerHTML = '';
+}
+
+async function salvarOferta() {
+  const codigo = document.getElementById('ofertaCod').value.trim();
+  const desconto = parseFloat(document.getElementById('ofertaPct').value);
+
+  if (!codigo || isNaN(desconto) || desconto <= 0) return alert('Selecione um produto e informe um desconto válido (%).');
+
+  const r = await fetch('/api/ofertas', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ codigo, desconto_porcentagem: desconto })
+  });
+  const j = await r.json();
+
+  if (j.ok) {
+    alert('🔥 Produto adicionado às ofertas com sucesso!');
+    document.getElementById('ofertaCod').value = '';
+    document.getElementById('buscaProdutoOferta').value = '';
+    document.getElementById('ofertaPct').value = '';
+    carregarOfertas();
+  } else {
+    alert('❌ Erro ao salvar oferta: ' + j.erro);
+  }
+}
+
+async function removerOferta(codigo) {
+  if (!confirm(`Deseja remover o produto ${codigo} das ofertas?`)) return;
+  await fetch('/api/ofertas/' + codigo, { method: 'DELETE' });
+  carregarOfertas();
 }
 
 function alerta(msg, tipo = 'ok') {
@@ -827,104 +961,6 @@ async function carregarDados() {
   } catch(e) { console.error(e); }
 }
 
-async function carregarOfertas() {
-  const tbody = document.querySelector('#tabOfertas tbody');
-  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Carregando ofertas...</td></tr>';
-  
-  if (!todosOsProdutos.length) {
-    const r = await fetch('/api/catalogo'); const j = await r.json();
-    todosOsProdutos = j.itens || [];
-  }
-
-  try {
-    const r = await fetch('/api/ofertas'); const j = await r.json();
-    ofertasCache = j.ofertas || [];
-    
-    if (!ofertasCache.length) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#94a3b8;">Nenhum produto em oferta no momento.</td></tr>';
-      return;
-    }
-
-    tbody.innerHTML = ofertasCache.map(o => {
-      const prod = todosOsProdutos.find(p => p.codigo === o.codigo) || {};
-      const precoBase = Number(prod.preco_venda || o.preco_venda || 0);
-      const precoComDesconto = precoBase - (precoBase * o.desconto_porcentagem / 100);
-
-      return `
-        <tr>
-          <td><strong style="color:#38bdf8;">${o.codigo}</strong></td>
-          <td>${prod.subgrupo_scraping || prod.descricao_sistema || 'Produto ' + o.codigo}</td>
-          <td>R$ ${precoBase.toFixed(2)}</td>
-          <td><span style="background:#ef4444; color:white; padding:2px 8px; border-radius:12px; font-weight:800; font-size:12px;">-${o.desconto_porcentagem}%</span></td>
-          <td><strong style="color:#10b981;">R$ ${precoComDesconto.toFixed(2)}</strong></td>
-          <td><button class="btn-del" onclick="removerOferta('${o.codigo}')">Remover</button></td>
-        </tr>`;
-    }).join('');
-  } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:red;">Erro ao carregar ofertas: ${e.message}</td></tr>`;
-  }
-}
-
-function filtrarProdutosOferta() {
-  const q = document.getElementById('buscaProdutoOferta').value.toLowerCase().trim();
-  const div = document.getElementById('dropdownProdutosOferta');
-  if (q.length < 2) { div.innerHTML = ''; return; }
-
-  const filtrados = todosOsProdutos.filter(p => 
-    p.codigo.toLowerCase().includes(q) || (p.subgrupo_scraping && p.subgrupo_scraping.toLowerCase().includes(q))
-  ).slice(0, 10);
-
-  if (!filtrados.length) {
-    div.innerHTML = '<div style="position:absolute; background:#1e293b; border:1px solid #475569; width:100%; padding:10px; color:#94a3b8; z-index:10;">Nenhum produto encontrado.</div>';
-    return;
-  }
-
-  div.innerHTML = `
-    <div style="position:absolute; background:#1e293b; border:1px solid #475569; width:100%; max-height:200px; overflow-y:auto; border-radius:8px; z-index:10; box-shadow:0 10px 25px rgba(0,0,0,0.5);">
-      ${filtrados.map(p => `
-        <div style="padding:10px; border-bottom:1px solid #334155; cursor:pointer;" onclick="selecionarProdutoOferta('${p.codigo}', \`${(p.subgrupo_scraping||p.codigo).replace(/`/g,'')}\`)">
-          <strong style="color:#38bdf8;">${p.codigo}</strong> — ${p.subgrupo_scraping || p.descricao_sistema}
-        </div>
-      `).join('')}
-    </div>`;
-}
-
-function selecionarProdutoOferta(cod, nome) {
-  document.getElementById('ofertaCod').value = cod;
-  document.getElementById('buscaProdutoOferta').value = `${cod} - ${nome}`;
-  document.getElementById('dropdownProdutosOferta').innerHTML = '';
-}
-
-async function salvarOferta() {
-  const codigo = document.getElementById('ofertaCod').value.trim();
-  const desconto = parseFloat(document.getElementById('ofertaPct').value);
-
-  if (!codigo || isNaN(desconto) || desconto <= 0) return alert('Selecione um produto e informe um desconto válido (%).');
-
-  const r = await fetch('/api/ofertas', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ codigo, desconto_porcentagem: desconto })
-  });
-  const j = await r.json();
-
-  if (j.ok) {
-    alert('🔥 Produto adicionado às ofertas com sucesso!');
-    document.getElementById('ofertaCod').value = '';
-    document.getElementById('buscaProdutoOferta').value = '';
-    document.getElementById('ofertaPct').value = '';
-    carregarOfertas();
-  } else {
-    alert('❌ Erro ao salvar oferta: ' + j.erro);
-  }
-}
-
-async function removerOferta(codigo) {
-  if (!confirm(`Deseja remover o produto ${codigo} das ofertas?`)) return;
-  await fetch('/api/ofertas/' + codigo, { method: 'DELETE' });
-  carregarOfertas();
-}
-
 function filtrarListaSubgrupos() {
   const t = document.getElementById('busca-subgrupo').value.toLowerCase();
   const d = document.getElementById('lista-subgrupos');
@@ -968,9 +1004,22 @@ async function criarFamilia() {
 }
 
 async function deletarFamilia(id) {
-  if(!confirm('Excluir família?')) return;
-  await fetch('/api/familias/'+id, {method:'DELETE'}); 
-  await carregarDados();
+  if (!confirm('Deseja excluir esta família? Os produtos cadastrados nela voltarão automaticamente para a lista de criação.')) return;
+
+  try {
+    const r = await fetch('/api/familias/' + id, { method: 'DELETE' });
+    const j = await r.json();
+
+    if (j.ok) {
+      alert('✅ Família excluída com sucesso!');
+      await carregarDados(); 
+    } else {
+      alert('❌ Erro ao excluir família: ' + (j.erro || 'Erro no servidor'));
+    }
+  } catch (e) {
+    console.error("Erro ao deletar família:", e);
+    alert('❌ Erro de comunicação com o servidor.');
+  }
 }
 
 async function carregarFamiliasCriadas() {
@@ -989,7 +1038,7 @@ async function carregarFamiliasCriadas() {
           <span style="font-size:13px; color:#10b981; font-weight:800;">Estoque total: ${estoqueFam}</span>
           <div>
             <button class="btn-add-sub" onclick="abrirModalSub(${f.id})">+ Subdivisão</button>
-            <button class="btn-reord" onclick="ordenarTamanhosAnzol(${f.id})" title="Ordenar tamanhos de anzol (18, 16, 14...)">📏 Ordenar Tamanhos</button>
+            <button class="btn-reord" onclick="ordenarTamanhosAnzol(${f.id})" title="Ordenar tamanhos de anzol">📏 Ordenar Tamanhos</button>
             <button class="btn-del" onclick="deletarFamilia(${f.id})">Excluir</button>
           </div>
         </div>
@@ -1204,19 +1253,20 @@ async function mudarGrupoUF(uf, grupoId) {
 }
 
 async function carregarVendedores() {
-  const tbody = document.querySelector('#tabVendedores tbody'); tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Carregando...</td></tr>';
+  const tbody = document.querySelector('#tabVendedores tbody'); tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Carregando...</td></tr>';
   try {
     const r = await fetch('/api/vendedores'); const j = await r.json();
-    if (!j.vendedores.length) return tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum vendedor.</td></tr>';
+    if (!j.vendedores.length) return tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Nenhum vendedor.</td></tr>';
     tbody.innerHTML = j.vendedores.map(v => `
       <tr>
         <td><strong>${v.codigo_representante}</strong></td>
         <td>${v.nome}</td>
         <td>${v.ativo ? '<span style="background:#064e3b; color:#6ee7b7; padding:2px 8px; border-radius:4px; font-size:12px; font-weight:700;">Ativo</span>' : '<span style="background:#7f1d1d; color:#fca5a5; padding:2px 8px; border-radius:4px; font-size:12px; font-weight:700;">Inativo</span>'}</td>
         <td>${v.senha ? '<span style="color:#10b981; font-weight:bold;">Cadastrada</span>' : '<span style="color:#94a3b8;">Nenhuma</span>'}</td>
+        <td>${v.whatsapp ? `<span style="color:#38bdf8; font-weight:bold;">${v.whatsapp}</span>` : '<span style="color:#94a3b8;">—</span>'}</td>
         <td><button class="btn-primario btn-mini" onclick="editarSenhaVendedor(${v.vendedor_id}, '${v.nome}', ${v.senha ? 'true' : 'false'})">${v.senha ? '🔑 Alterar' : '➕ Definir'}</button></td>
       </tr>`).join('');
-  } catch (e) { tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Erro: ${e.message}</td></tr>`; }
+  } catch (e) { tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:red;">Erro: ${e.message}</td></tr>`; }
 }
 
 async function editarSenhaVendedor(id, nome, temSenha) {
@@ -1252,31 +1302,6 @@ async function criarVendedor() {
     carregarVendedores();
   } else {
     alert('❌ Erro: ' + j.erro);
-  }
-}
-
-
-
-async function deletarFamilia(id) {
-  if (!confirm('Deseja excluir esta família? Os produtos cadastrados nela voltarão automaticamente para a lista de criação.')) return;
-
-  try {
-    const r = await fetch('/api/familias/' + id, { 
-      method: 'DELETE' 
-    });
-    
-    const j = await r.json();
-
-    if (j.ok) {
-      alert('✅ Família excluída com sucesso!');
-      // Recarrega o catálogo e as famílias para atualizar as duas listas na tela
-      await carregarDados(); 
-    } else {
-      alert('❌ Erro ao excluir família: ' + (j.erro || 'Erro no servidor'));
-    }
-  } catch (e) {
-    console.error("Erro ao deletar família:", e);
-    alert('❌ Erro de comunicação com o servidor.');
   }
 }
 
