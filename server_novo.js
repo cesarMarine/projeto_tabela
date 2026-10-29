@@ -594,37 +594,46 @@ app.get('/api/login/:cnpj', async (req, res) => {
 });
 
 // POST: Criar / Atualizar Oferta por Grupo/Família
+// POST: Criar / Atualizar Oferta por Subgrupo/Família
 app.post('/api/ofertas/grupo', async (req, res) => {
-  const { grupo, desconto_porcentagem, data_inicio, data_fim } = req.body;
+  const { grupo, desconto_porcentagem, data_fim } = req.body;
+
+  if (!grupo || !desconto_porcentagem) {
+    return res.status(400).json({ ok: false, erro: "Informe o grupo e a porcentagem de desconto." });
+  }
 
   try {
-    // 1. Busca todos os produtos do grupo/família
+    // 1. Busca todos os produtos pertencentes a este subgrupo_scraping
     const { data: produtos, error: errProd } = await supabase
       .from('scraping_produtos')
       .select('codigo')
-      .eq('grupo', grupo);
+      .eq('subgrupo_scraping', grupo);
 
-    if (errProd || !produtos.length) {
+    if (errProd) throw errProd;
+
+    if (!produtos || produtos.length === 0) {
       return res.status(404).json({ ok: false, erro: "Nenhum produto encontrado para este grupo." });
     }
 
-    // 2. Prepara os registros de oferta para cada produto do grupo
+    // 2. Monta os objetos de oferta
     const registrosOferta = produtos.map(p => ({
-      codigo: p.codigo,
+      codigo: String(p.codigo).trim(),
       desconto_porcentagem: parseFloat(desconto_porcentagem),
-      data_inicio: data_inicio || null,
-      data_fim: data_fim || null,
-      grupo_aplicado: grupo
+      data_fim: data_fim || null
     }));
 
-    // 3. Upsert no Supabase na tabela 'ofertas'
+    // 3. Grava no banco na tabela 'ofertas'
     const { error: errOferta } = await supabase
       .from('ofertas')
       .upsert(registrosOferta, { onConflict: 'codigo' });
 
     if (errOferta) throw errOferta;
 
-    res.json({ ok: true, mensagem: `Oferta de ${desconto_porcentagem}% aplicada a ${produtos.length} produtos do grupo ${grupo}!` });
+    res.json({ 
+      ok: true, 
+      mensagem: `Desconto de ${desconto_porcentagem}% aplicado a ${produtos.length} produto(s) de "${grupo}"!` 
+    });
+
   } catch (e) {
     console.error("Erro ao aplicar oferta por grupo:", e);
     res.status(500).json({ ok: false, erro: e.message });
@@ -632,9 +641,9 @@ app.post('/api/ofertas/grupo', async (req, res) => {
 });
 
 
-// POST: Importar Lista de Ofertas em Lote (Lendo Excel enviado do frontend)
+// POST: Importar Ofertas em Lote via Excel
 app.post('/api/ofertas/lote', async (req, res) => {
-  const { ofertas } = req.body; // Array de objetos [{ codigo: '123', desc: 15 }, ...]
+  const { ofertas } = req.body;
 
   if (!Array.isArray(ofertas) || !ofertas.length) {
     return res.status(400).json({ ok: false, erro: "Nenhuma oferta enviada para importação." });
