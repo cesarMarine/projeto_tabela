@@ -551,32 +551,46 @@ app.post('/api/acrescimos/uf', async (req, res) => {
 // LOGIN DO CLIENTE
 // ==========================================
 app.get('/api/login/:cnpj', async (req, res) => {
+  const { cnpj } = req.params;
+
   try {
-    const cnpjLimpo = String(req.params.cnpj).replace(/\D/g, '');
-    
-    const { data: cliente, error: errCli } = await supabase.from('clientes').select('*').eq('cnpj', cnpjLimpo).single();
-    if (errCli || !cliente) return res.status(404).json({ ok: false, erro: 'CNPJ não encontrado em nossa base.' });
+    // 1. Busca cliente
+    const { data: cliente, error: errCli } = await supabase
+      .from('clientes')
+      .select('*')
+      .eq('cnpj', cnpj)
+      .single();
 
-    if (cliente.acesso_liberado !== 1) {
-      return res.status(403).json({ ok: false, erro: 'Seu acesso à tabela de preços está bloqueado. Por favor, solicite a liberação ao seu vendedor.' });
+    if (errCli || !cliente) return res.status(404).json({ ok: false, erro: "CNPJ não encontrado." });
+
+    // 2. Busca o vendedor vinculado ao representante do cliente
+    let vendedorInfo = null;
+    if (cliente.codigo_representante) {
+      const { data: vendedor } = await supabase
+        .from('vendedores')
+        .select('nome, whatsapp')
+        .eq('codigo_representante', cliente.codigo_representante)
+        .single();
+
+      if (vendedor) vendedorInfo = vendedor;
     }
 
-    let acrescimo = 0;
-    let grupoNome = 'Padrão (Sem Grupo)';
-    if (cliente.uf) {
-      const { data: ufData } = await supabase.from('uf_acrescimo').select('grupo_id').eq('uf', cliente.uf).single();
-      if (ufData && ufData.grupo_id) {
-        const { data: grupoData } = await supabase.from('grupos_acrescimo').select('nome, acrescimo').eq('id', ufData.grupo_id).single();
-        if (grupoData) { acrescimo = grupoData.acrescimo; grupoNome = grupoData.nome; }
-      }
-    }
-
-    res.json({ 
-      ok: true, 
-      cliente: { codigo: cliente.codigo, nome: cliente.nome_fantasia || cliente.razao_social, cnpj: cliente.cnpj, uf: cliente.uf, representante: cliente.codigo_representante },
-      regra_acrescimo: { grupo: grupoNome, porcentagem: acrescimo }
+    // Retorna a regra de acréscimo + dados do cliente e do vendedor
+    res.json({
+      ok: true,
+      cliente: {
+        cnpj: cliente.cnpj,
+        nome: cliente.nome_fantasia || cliente.razao_social,
+        uf: cliente.uf,
+        representante: cliente.codigo_representante,
+        vendedor: vendedorInfo // Contém { nome, whatsapp }
+      },
+      regra_acrescimo: { porcentagem: 0 } // Sua regra atual de UF
     });
-  } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }
+
+  } catch (e) {
+    res.status(500).json({ ok: false, erro: e.message });
+  }
 });
 
 // ==========================================
@@ -595,19 +609,38 @@ app.get('/api/vendedores', async (req, res) => {
   } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
 
+// POST: Criar Vendedor
 app.post('/api/vendedores', async (req, res) => {
+  const { nome, codigo_representante, senha, whatsapp } = req.body;
+
+  // Limpa o WhatsApp mantendo apenas números
+  const whatsappLimpo = whatsapp ? whatsapp.replace(/\D/g, '') : null;
+
   try {
-    const { nome, codigo_representante, senha } = req.body;
-    const { data, error } = await supabase.from('vendedores').insert({ nome, codigo_representante, ativo: 1 }).select();
-    if (error) {
-      if (error.code === '23505') return res.status(400).json({ ok: false, erro: 'Este código de representante já está em uso.' });
-      throw error;
-    }
-    await supabase.from('vendedores_acesso').insert({ vendedor_id: data[0].id, senha });
-    res.json({ ok: true });
-  } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }
+    const { data, error } = await supabase
+      .from('vendedores')
+      .insert([{ nome, codigo_representante, senha, whatsapp: whatsappLimpo }]);
+
+    if (error) throw error;
+    res.json({ ok: true, mensagem: "Vendedor cadastrado com sucesso!" });
+  } catch (e) {
+    res.status(500).json({ ok: false, erro: e.message });
+  }
 });
 
+// GET: Listar Vendedores (garantir que retorna o campo whatsapp)
+app.get('/api/vendedores', async (req, res) => {
+  try {
+    const { data: vendedores, error } = await supabase
+      .from('vendedores')
+      .select('vendedor_id, nome, codigo_representante, ativo, senha, whatsapp');
+
+    if (error) throw error;
+    res.json({ ok: true, vendedores });
+  } catch (e) {
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
 app.post('/api/vendedores/senha', async (req, res) => {
   try {
     const { vendedor_id, senha } = req.body;

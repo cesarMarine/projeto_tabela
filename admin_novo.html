@@ -335,6 +335,15 @@
           </div>
         </div>
       </div>
+      <div class="row">
+  <div><label>Nome</label><input type="text" id="novoVendedorNome" placeholder="Ex: LEANDRO"></div>
+  <div><label>Código Representante</label><input type="text" id="novoVendedorCod" placeholder="Ex: 36"></div>
+  <div><label>WhatsApp (DDD + Número)</label><input type="text" id="novoVendedorWhats" placeholder="Ex: 11999998888"></div>
+  <div><label>Senha de Acesso</label><input type="text" id="novoVendedorSenha" placeholder="Ex: 1234"></div>
+  <div style="flex:0 0 auto;">
+    <button class="btn-primario" style="background:#10b981;" onclick="criarVendedor()">Cadastrar</button>
+  </div>
+</div>
 
       <div class="painel">
         <h2>👤 Vendedores Cadastrados</h2>
@@ -1110,16 +1119,31 @@ async function editarSenhaVendedor(id, nome, temSenha) {
 async function criarVendedor() {
   const nome = document.getElementById('novoVendedorNome').value.trim();
   const codigo = document.getElementById('novoVendedorCod').value.trim();
+  const whatsapp = document.getElementById('novoVendedorWhats').value.trim();
   const senha = document.getElementById('novoVendedorSenha').value.trim();
-  if (!nome || !codigo || !senha) return alert('Preencha todos os campos.');
-  const r = await fetch('/api/vendedores', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome, codigo_representante: codigo, senha }) });
+
+  if (!nome || !codigo || !senha) return alert('Preencha os campos obrigatórios.');
+
+  const r = await fetch('/api/vendedores', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nome, codigo_representante: codigo, whatsapp, senha })
+  });
+
   const j = await r.json();
   if (j.ok) {
-    alert('✅ Vendedor cadastrado!');
-    document.getElementById('novoVendedorNome').value = ''; document.getElementById('novoVendedorCod').value = ''; document.getElementById('novoVendedorSenha').value = '';
+    alert('✅ Vendedor cadastrado com sucesso!');
+    document.getElementById('novoVendedorNome').value = '';
+    document.getElementById('novoVendedorCod').value = '';
+    document.getElementById('novoVendedorWhats').value = '';
+    document.getElementById('novoVendedorSenha').value = '';
     carregarVendedores();
-  } else alert('❌ Erro: ' + j.erro);
+  } else {
+    alert('❌ Erro: ' + j.erro);
+  }
 }
+
+
 
 async function deletarFamilia(id) {
   if (!confirm('Deseja excluir esta família? Os produtos cadastrados nela voltarão automaticamente para a lista de criação.')) return;

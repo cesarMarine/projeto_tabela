@@ -191,6 +191,10 @@
   .zoom-x { position: absolute; top: -12px; right: -12px; background: var(--vermelho); color: white; border: 2px solid white; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 14px; font-weight: bold; }
 </style>
 </head>
+<!-- BOTÃO FLUTUANTE DISCRETO DO WHATSAPP -->
+<a id="btnWhatsVendedor" href="#" target="_blank" style="display:none; position:fixed; bottom:20px; left:20px; background:#25D366; color:white; padding:10px 16px; border-radius:30px; font-weight:800; font-size:0.8rem; text-decoration:none; box-shadow:0 4px 16px rgba(37,211,102,0.4); z-index:150; align-items:center; gap:8px;">
+  <span style="font-size:1.1rem;">💬</span> Falar com <span id="nomeVendedorWhats">Vendedor</span>
+</a>
 <body>
 
 <div id="telaLogin">
@@ -271,6 +275,24 @@ let porcentagemAcrescimo = 0;
 let mapaOfertas = {}; 
 
 const BUCKET_ICONIS = 'https://gpzqzwrqndawhhglycat.supabase.co/storage/v1/object/public/icones_area_trabalho/';
+
+
+function ativarWhatsAppVendedor() {
+  if (clienteLogado && clienteLogado.vendedor && clienteLogado.vendedor.whatsapp) {
+    const numWhats = clienteLogado.vendedor.whatsapp.replace(/\D/g, '');
+    const nomeVendedor = clienteLogado.vendedor.nome.split(' ')[0];
+    
+    // Mensagem padrão já montada com a identificação do cliente
+    const mensagem = encodeURIComponent(`Olá ${nomeVendedor}, sou a empresa ${clienteLogado.nome} (CNPJ: ${clienteLogado.cnpj}) e gostaria de tirar uma dúvida sobre a tabela de preços.`);
+
+    const link = `https://wa.me/55${numWhats}?text=${mensagem}`;
+    
+    const btn = document.getElementById('btnWhatsVendedor');
+    document.getElementById('nomeVendedorWhats').textContent = nomeVendedor;
+    btn.href = link;
+    btn.style.display = 'inline-flex';
+  }
+}
 
 function fmtDataBr(strData) {
   if (!strData) return '';
