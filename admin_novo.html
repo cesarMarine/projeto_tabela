@@ -79,11 +79,29 @@
   .modal-actions { display: flex; justify-content: flex-end; gap: 12px; }
   .btn-cancel { background: none; border: 1px solid #475569; color: white; padding: 10px 16px; border-radius: 8px; cursor: pointer; }
   .btn-save { background: #10b981; border: none; color: white; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-  
-  @media(max-width: 800px) { .wrap { flex-direction: column; } .sidebar { width: 100%; flex-direction: row; overflow-x: auto; padding: 8px; } .sidebar button { white-space: nowrap; border-left: none; border-bottom: 3px solid transparent; } .sidebar button.active { border-left: none; border-bottom-color: #38bdf8; } .familia-grid, .status-cards { grid-template-columns: 1fr; } }
+ 
+ @media(max-width: 800px) { .wrap { flex-direction: column; } .sidebar { width: 100%; flex-direction: row; overflow-x: auto; padding: 8px; } .sidebar button { white-space: nowrap; border-left: none; border-bottom: 3px solid transparent; } .sidebar button.active { border-left: none; border-bottom-color: #38bdf8; } .familia-grid, .status-cards { grid-template-columns: 1fr; } }
+
+
 </style>
 </head>
 <body>
+
+    <!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin - Gestão de Produtos</title>
+  
+  <!-- OUTROS ESTILOS / SCRIPTS QUE VOCÊ JÁ TEM -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- 🔥 COLE A LINHA DO SHEETJS AQUI ABAIXO: -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+</head>
+<body>
+  ... resto do seu HTML ...
 
 <header>
   <h1>Admin <span>Gestão de Produtos</span></h1>
@@ -196,46 +214,47 @@
 
     <!-- PÁGINA: GESTÃO DE OFERTAS -->
     <section class="page" id="page-ofertas">
-      <div class="painel" style="background:#0f172a; border:1px dashed #ef4444;">
-        <h2 style="color:#f87171;">🔥 Cadastrar Produto em Oferta</h2>
-        <p style="font-size:14px; color:#94a3b8; margin-bottom:16px;">Pesquise pelo código ou nome do produto do scraping e aplique uma porcentagem de desconto sobre o preço base.</p>
-        <div class="row">
-          <div style="flex:2;">
-            <label>Buscar Produto (Código ou Subgrupo)</label>
-            <input type="text" id="buscaProdutoOferta" placeholder="Ex: 10023, Anzol Chinu, Carretilha..." oninput="filtrarProdutosOferta()">
-            <div id="dropdownProdutosOferta" style="position:relative;"></div>
-          </div>
-          <div style="flex:1;">
-            <label>Código Selecionado</label>
-            <input type="text" id="ofertaCod" readonly style="background:#1e293b; color:#38bdf8; font-weight:800;">
-          </div>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+
+    <!-- PAINEL 1: CADASTRAR POR GRUPO / FAMÍLIA -->
+    <div class="painel" style="background:#0f172a; border:1px dashed #3b82f6;">
+      <h2 style="color:#60a5fa;">🏷️ Oferta por Grupo de Produtos</h2>
+      <p style="font-size:13px; color:#94a3b8; margin-bottom:12px;">Aplica o desconto em todos os produtos do grupo selecionado.</p>
+      
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div>
+          <label>Selecione o Grupo/Família</label>
+          <select id="ofertaSelectGrupo" style="width:100%; padding:8px; border-radius:6px; background:#1e293b; color:white; border:1px solid #475569;">
+            <option value="">Carregando grupos...</option>
+          </select>
+        </div>
+        <div style="display:flex; gap:10px;">
           <div style="flex:1;">
             <label>Desconto (%)</label>
-            <input type="number" id="ofertaPct" placeholder="Ex: 15" min="1" max="99">
+            <input type="number" id="ofertaGrupoPorcentagem" placeholder="Ex: 15" style="width:100%;">
           </div>
-          <div style="flex:0 0 auto;">
-            <button class="btn-primario" style="background:#ef4444;" onclick="salvarOferta()">Colocar em Oferta</button>
+          <div style="flex:1;">
+            <label>Validade (Opcional)</label>
+            <input type="date" id="ofertaGrupoDataFim" style="width:100%;">
           </div>
         </div>
+        <button class="btn-primario" style="background:#2563eb; margin-top:5px;" onclick="aplicarOfertaGrupo()">Aplicar Desconto no Grupo</button>
       </div>
+    </div>
 
-      <div class="painel">
-        <h2>🔥 Produtos Atualmente em Oferta</h2>
-        <table id="tabOfertas">
-          <thead>
-            <tr>
-              <th>Código</th>
-              <th>Produto</th>
-              <th>Preço Base</th>
-              <th>Desconto</th>
-              <th>Preço c/ Desconto</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
+    <!-- PAINEL 2: IMPORTAR PLANILHA EXCEL -->
+    <div class="painel" style="background:#0f172a; border:1px dashed #10b981;">
+      <h2 style="color:#34d399;">📥 Importar Planilha Excel (.xlsx / .xls)</h2>
+      <p style="font-size:13px; color:#94a3b8; margin-bottom:12px;">Planilha deve conter as colunas: <strong>codigo</strong> e <strong>desc</strong>.</p>
+      
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <input type="file" id="arquivoExcelOfertas" accept=".xlsx, .xls" style="padding:8px; background:#1e293b; border-radius:6px; color:white;">
+        <button class="btn-primario" style="background:#059669;" onclick="processarExcelOfertas()">Importar Planilha de Ofertas</button>
       </div>
-    </section>
+    </div>
+
+  </div>
+</section>
 
     <!-- PÁGINA: FAMÍLIAS -->
     <section class="page" id="page-familias">
@@ -483,6 +502,106 @@ document.querySelectorAll('.sidebar button').forEach(b => {
     if (pageId === 'regras') carregarRegrasPagina();
   };
 });
+
+// Carrega as opções de grupos no <select>
+async function carregarGruposParaOferta() {
+  const sel = document.getElementById('ofertaSelectGrupo');
+  try {
+    const r = await fetch('/api/produtos');
+    const j = await r.json();
+    const produtos = j.produtos || j;
+    
+    // Extrai grupos únicos
+    const gruposUnicos = [...new Set(produtos.map(p => p.grupo).filter(Boolean))].sort();
+    
+    sel.innerHTML = '<option value="">-- Selecione o Grupo --</option>' + 
+      gruposUnicos.map(g => `<option value="${g}">${g}</option>`).join('');
+  } catch (e) {
+    sel.innerHTML = '<option value="">Erro ao carregar grupos</option>';
+  }
+}
+
+// Aplica a oferta para todo o Grupo selecionado
+async function aplicarOfertaGrupo() {
+  const grupo = document.getElementById('ofertaSelectGrupo').value;
+  const desconto = document.getElementById('ofertaGrupoPorcentagem').value;
+  const dataFim = document.getElementById('ofertaGrupoDataFim').value;
+
+  if (!grupo || !desconto) return alert('Selecione o grupo e o valor do desconto.');
+
+  const r = await fetch('/api/ofertas/grupo', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      grupo,
+      desconto_porcentagem: desconto,
+      data_fim: dataFim
+    })
+  });
+
+  const j = await r.json();
+  if (j.ok) {
+    alert('✅ ' + j.mensagem);
+    carregarOfertas();
+  } else {
+    alert('❌ Erro: ' + j.erro);
+  }
+}
+
+// Leitor da planilha Excel no navegador
+async function processarExcelOfertas() {
+  const input = document.getElementById('arquivoExcelOfertas');
+  if (!input.files || !input.files[0]) return alert('Selecione um arquivo Excel (.xlsx ou .xls).');
+
+  const file = input.files[0];
+  const reader = new FileReader();
+
+  reader.onload = async function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      const json = XLSX.utils.sheet_to_json(firstSheet);
+
+      // Mapeia garantindo chaves minúsculas (codigo e desc)
+      const ofertasMapeadas = json.map(row => {
+        const keys = Object.keys(row);
+        const colCodigo = keys.find(k => k.toLowerCase().trim() === 'codigo' || k.toLowerCase().trim() === 'código');
+        const colDesc = keys.find(k => k.toLowerCase().trim() === 'desc' || k.toLowerCase().trim() === 'desconto');
+
+        return {
+          codigo: row[colCodigo],
+          desc: row[colDesc]
+        };
+      }).filter(o => o.codigo && o.desc);
+
+      if (!ofertasMapeadas.length) {
+        return alert('❌ Nenhuma linha válida encontrada. Verifique os nomes das colunas: codigo e desc.');
+      }
+
+      // Envia os dados convertidos ao backend
+      const r = await fetch('/api/ofertas/lote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ofertas: ofertasMapeadas })
+      });
+
+      const j = await r.json();
+      if (j.ok) {
+        alert('✅ ' + j.mensagem);
+        input.value = '';
+        carregarOfertas();
+      } else {
+        alert('❌ Erro no servidor: ' + j.erro);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('❌ Erro ao ler a planilha Excel.');
+    }
+  };
+
+  reader.readAsArrayBuffer(file);
+}
 
 function alerta(msg, tipo = 'ok') {
   const el = document.getElementById('alerta');

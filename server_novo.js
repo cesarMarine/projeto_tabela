@@ -593,6 +593,72 @@ app.get('/api/login/:cnpj', async (req, res) => {
   }
 });
 
+// POST: Criar / Atualizar Oferta por Grupo/Família
+app.post('/api/ofertas/grupo', async (req, res) => {
+  const { grupo, desconto_porcentagem, data_inicio, data_fim } = req.body;
+
+  try {
+    // 1. Busca todos os produtos do grupo/família
+    const { data: produtos, error: errProd } = await supabase
+      .from('scraping_produtos')
+      .select('codigo')
+      .eq('grupo', grupo);
+
+    if (errProd || !produtos.length) {
+      return res.status(404).json({ ok: false, erro: "Nenhum produto encontrado para este grupo." });
+    }
+
+    // 2. Prepara os registros de oferta para cada produto do grupo
+    const registrosOferta = produtos.map(p => ({
+      codigo: p.codigo,
+      desconto_porcentagem: parseFloat(desconto_porcentagem),
+      data_inicio: data_inicio || null,
+      data_fim: data_fim || null,
+      grupo_aplicado: grupo
+    }));
+
+    // 3. Upsert no Supabase na tabela 'ofertas'
+    const { error: errOferta } = await supabase
+      .from('ofertas')
+      .upsert(registrosOferta, { onConflict: 'codigo' });
+
+    if (errOferta) throw errOferta;
+
+    res.json({ ok: true, mensagem: `Oferta de ${desconto_porcentagem}% aplicada a ${produtos.length} produtos do grupo ${grupo}!` });
+  } catch (e) {
+    console.error("Erro ao aplicar oferta por grupo:", e);
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
+
+
+// POST: Importar Lista de Ofertas em Lote (Lendo Excel enviado do frontend)
+app.post('/api/ofertas/lote', async (req, res) => {
+  const { ofertas } = req.body; // Array de objetos [{ codigo: '123', desc: 15 }, ...]
+
+  if (!Array.isArray(ofertas) || !ofertas.length) {
+    return res.status(400).json({ ok: false, erro: "Nenhuma oferta enviada para importação." });
+  }
+
+  try {
+    const registros = ofertas.map(o => ({
+      codigo: String(o.codigo).trim(),
+      desconto_porcentagem: parseFloat(o.desc) || 0
+    })).filter(o => o.codigo && o.desconto_porcentagem > 0);
+
+    const { error } = await supabase
+      .from('ofertas')
+      .upsert(registros, { onConflict: 'codigo' });
+
+    if (error) throw error;
+
+    res.json({ ok: true, mensagem: `${registros.length} ofertas importadas com sucesso!` });
+  } catch (e) {
+    console.error("Erro ao importar lote de ofertas:", e);
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
+
 // ==========================================
 // VENDEDORES
 // ==========================================

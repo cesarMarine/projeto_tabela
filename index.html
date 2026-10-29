@@ -294,6 +294,63 @@ function ativarWhatsAppVendedor() {
   }
 }
 
+function renderizarCardFamiliaOuGrupo(grupoNome, produtosGrupo, ofertasMap) {
+  // 1. Verifica se TODOS os produtos deste grupo possuem desconto
+  const produtosComDesconto = produtosGrupo.filter(p => ofertasMap[p.codigo]);
+  const todosPossuemDesconto = produtosComDesconto.length === produtosGrupo.length && produtosGrupo.length > 0;
+
+  // 2. Se todos têm desconto e a porcentagem é igual, pega a porcentagem do grupo
+  let porcentagemGrupo = null;
+  if (todosPossuemDesconto) {
+    const descPrimeiro = ofertasMap[produtosGrupo[0].codigo].desconto_porcentagem;
+    const todosIguais = produtosGrupo.every(p => ofertasMap[p.codigo].desconto_porcentagem === descPrimeiro);
+    if (todosIguais) porcentagemGrupo = descPrimeiro;
+  }
+
+  // HTML do Badge de Grupo no topo
+  let htmlBadgeGrupo = '';
+  if (porcentagemGrupo) {
+    htmlBadgeGrupo = `
+      <div style="background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; padding: 6px 12px; border-radius: 6px; font-weight: 800; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);">
+        🔥 OFERTA DO GRUPO: ${porcentagemGrupo}% OFF
+      </div>`;
+  }
+
+  // Renderização produto a produto (Mantendo Antes e Depois)
+  const htmlProdutos = produtosGrupo.map(p => {
+    const oferta = ofertasMap[p.codigo];
+    const precoOriginal = p.preco_tabela;
+    
+    let precoFinal = precoOriginal;
+    let htmlPreco = `<span style="font-size:1rem; font-weight:bold; color:#10b981;">R$ ${precoOriginal.toFixed(2)}</span>`;
+
+    if (oferta && oferta.desconto_porcentagem > 0) {
+      precoFinal = precoOriginal * (1 - (oferta.desconto_porcentagem / 100));
+      htmlPreco = `
+        <div style="display:flex; flex-direction:column;">
+          <span style="font-size:0.75rem; color:#94a3b8; text-decoration:line-through;">De R$ ${precoOriginal.toFixed(2)}</span>
+          <span style="font-size:1rem; font-weight:bold; color:#ef4444;">Por R$ ${precoFinal.toFixed(2)} <small style="font-size:0.7rem; background:#fee2e2; color:#dc2626; padding:1px 4px; border-radius:3px;">-${oferta.desconto_porcentagem}%</small></span>
+        </div>`;
+    }
+
+    return `
+      <div class="item-produto-linha" style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #334155;">
+        <div>
+          <div style="font-weight:600; font-size:0.85rem;">${p.descricao || p.nome}</div>
+          <small style="color:#64748b;">Cód: ${p.codigo}</small>
+        </div>
+        <div>${htmlPreco}</div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="card-grupo" style="background:#1e293b; border-radius:12px; padding:16px; margin-bottom:16px; border:1px solid #334155;">
+      ${htmlBadgeGrupo}
+      <h3 style="margin-top:0; color:#f8fafc;">${grupoNome}</h3>
+      <div class="lista-produtos">${htmlProdutos}</div>
+    </div>`;
+}
+
 function configurarWhatsAppVendedor() {
   if (clienteLogado && clienteLogado.vendedor && clienteLogado.vendedor.whatsapp) {
     const numWhats = clienteLogado.vendedor.whatsapp.replace(/\D/g, '');
