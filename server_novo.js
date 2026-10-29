@@ -356,25 +356,42 @@ app.get('/api/catalogo', async (req, res) => {
 app.post('/api/importar/clientes', upload.single('arquivo'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ erro: 'Nenhum arquivo enviado.' });
+    
     const wb = XLSX.read(req.file.buffer, { type: 'buffer' });
     const aba = wb.SheetNames[0]; 
     const linhas = XLSX.utils.sheet_to_json(wb.Sheets[aba], { defval: '' });
 
     let inseridos = 0;
     for (const r of linhas) {
-      const cnpjRaw = r['CPF/CNPJ'] ?? r['CNPJ'] ?? r['cnpj'] ?? '';
+      // 1. Busca CNPJ / CPF
+      const cnpjRaw = r['CPF/CNPJ'] ?? r['CPF_CNPJ'] ?? r['CNPJ'] ?? r['cnpj'] ?? '';
       const cnpj = String(cnpjRaw).replace(/\D/g, ''); 
-      const codigo = String(r['CÓDIGO'] ?? r['codigo'] ?? '').trim();
+
+      // 2. Busca CÓDIGO (com e sem acento)
+      const codigo = String(r['CODIGO'] ?? r['CÓDIGO'] ?? r['codigo'] ?? '').trim();
+      
+      // Se não tiver CNPJ ou Código, pula a linha
       if (!cnpj || !codigo) continue; 
 
-      const rep = r['Representante'] ?? r['REPRESENTANTE'] ?? r['representante'] ?? r['COD REP'] ?? r['Cód. Rep'] ?? r['codigo_representante'] ?? '';
+      // 3. Busca Representante / Vendedor
+      const rep = r['VENDEDOR'] ?? r['Vendedor'] ?? r['vendedor'] ?? 
+                  r['Representante'] ?? r['REPRESENTANTE'] ?? r['representante'] ?? 
+                  r['COD REP'] ?? r['Cód. Rep'] ?? r['codigo_representante'] ?? '';
+
+      // 4. Busca Nome Fantasia e Razão Social
+      const nomeFantasia = r['NOME_FANTASIA'] ?? r['Nome Fantasia'] ?? r['NOME'] ?? r['Nome'] ?? '';
+      const razaoSocial = r['RAZAO_SOCIAL'] ?? r['RAZÃO SOCIAL'] ?? r['Razão Social'] ?? r['Razao'] ?? '';
+
+      // 5. Busca UF / Estado
+      const uf = r['ESTADO'] ?? r['Estado'] ?? r['UF'] ?? r['uf'] ?? '';
 
       const item = {
-        codigo: codigo, cnpj: cnpj,
-        nome_fantasia: String(r['NOME'] ?? r['Nome'] ?? '').trim(),
-        razao_social: String(r['RAZÃO SOCIAL'] ?? r['Razão Social'] ?? r['Razao'] ?? '').trim(),
+        codigo: codigo,
+        cnpj: cnpj,
+        nome_fantasia: String(nomeFantasia).trim(),
+        razao_social: String(razaoSocial).trim(),
         cidade: String(r['CIDADE'] ?? r['Cidade'] ?? '').trim(),
-        uf: String(r['ESTADO'] ?? r['Estado'] ?? r['UF'] ?? r['uf'] ?? '').trim().toUpperCase(),
+        uf: String(uf).trim().toUpperCase(),
         codigo_representante: String(rep).trim(),
         ativo: 1
       };
@@ -382,8 +399,11 @@ app.post('/api/importar/clientes', upload.single('arquivo'), async (req, res) =>
       const { error } = await supabase.from('clientes').upsert(item, { onConflict: 'cnpj' });
       if (!error) inseridos++;
     }
+
     res.json({ ok: true, inseridos });
-  } catch (e) { res.status(500).json({ erro: e.message }); }
+  } catch (e) { 
+    res.status(500).json({ erro: e.message }); 
+  }
 });
 
 // ==========================================
