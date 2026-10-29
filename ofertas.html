@@ -261,12 +261,112 @@ function renderizarEncate() {
   document.getElementById('gridOfertas').innerHTML = html;
 }
 
-function adicionarOferta(cod, desc, precoBase, img) {
-  const atual = carrinho[cod] ? carrinho[cod].qtd : 0;
-  carrinho[cod] = { qtd: atual + 1, precoBase, desc, img };
+// 1. Função para adicionar produtos em promoção diretamente ao carrinho do index
+function adicionarOferta(cod, desc, precoBase, img, nome) {
+  // Calcula o preço promocional com desconto
+  const precoComDesconto = precoBase * (1 - (desc / 100));
+
+  // Lê o carrinho atual guardado no localStorage (mesma chave usada no index.html)
+  let carrinho = JSON.parse(localStorage.getItem('carrinho_b2b') || '{}');
+
+  // Incrementa a quantidade se já existir ou inicia com 1
+  const qtdAtual = carrinho[cod] ? carrinho[cod].qtd : 0;
+
+  // Salva o item com o preço já com desconto calculado
+  carrinho[cod] = {
+    codigo: cod,
+    nome: nome || `Produto ${cod}`,
+    qtd: qtdAtual + 1,
+    precoBase: precoBase,
+    desconto: desc,
+    preco: precoComDesconto,
+    img: img || ''
+  };
+
   localStorage.setItem('carrinho_b2b', JSON.stringify(carrinho));
-  renderizarEncate();
-  atualizarCarrinho();
+
+  // Atualiza as funções de interface se existirem na página
+  if (typeof renderizarEncarte === 'function') renderizarEncarte();
+  if (typeof renderizarEncate === 'function') renderizarEncate();
+  if (typeof atualizarCarrinho === 'function') atualizarCarrinho();
+
+  alert(`🛒 Produto ${cod} adicionado ao carrinho!`);
+}
+
+// 2. Função para renderizar as ofertas agrupadas e exibir o Banner da Black November Marine
+function renderizarPaginaOfertas(listaOfertas) {
+  const container = document.getElementById('containerOfertas');
+  if (!container) return;
+
+  // Agrupa os produtos por Subgrupo/Família
+  const porSubgrupo = {};
+  listaOfertas.forEach(item => {
+    const nomeSub = item.subgrupo || item.subgrupo_scraping || 'Geral';
+    if (!porSubgrupo[nomeSub]) porSubgrupo[nomeSub] = [];
+    porSubgrupo[nomeSub].push(item);
+  });
+
+  let html = '';
+
+  // Banner automático do Black November Marine (Ativo entre 02/11/2026 e 30/11/2026)
+  const hoje = new Date();
+  const inicioBlack = new Date('2026-11-02T00:00:00');
+  const fimBlack = new Date('2026-11-30T23:59:59');
+
+  if (hoje >= inicioBlack && hoje <= fimBlack) {
+    html += `
+      <div style="background: linear-gradient(135deg, #000000, #0f172a); color: #f59e0b; border: 2px solid #f59e0b; padding: 20px; border-radius: 12px; margin-bottom: 24px; text-align: center; box-shadow: 0 4px 20px rgba(245, 158, 11, 0.2);">
+        <h1 style="font-size: 1.8rem; font-weight: 900; margin: 0; text-transform: uppercase; letter-spacing: 2px; color:#f59e0b;">⚡ BLACK NOVEMBER MARINE ⚡</h1>
+        <p style="color: #e2e8f0; margin-top: 6px; font-size: 0.95rem;">Ofertas exclusivas de 02/11 a 30/11 com descontos imperdíveis!</p>
+      </div>`;
+  }
+
+  // Renderiza cada grupo ou produto
+  Object.keys(porSubgrupo).forEach(subgrupoNome => {
+    const itens = porSubgrupo[subgrupoNome];
+    const descPrimeiro = itens[0].desconto_porcentagem;
+    const todosIguais = itens.every(i => i.desconto_porcentagem === descPrimeiro);
+
+    // Se todo o subgrupo estiver com o mesmo desconto, exibe o card compacto do grupo
+    if (itens.length > 1 && todosIguais) {
+      const imgPrincipal = itens[0].imagem_url || '';
+      html += `
+        <div class="card-oferta-grupo" style="background:#1e293b; border-radius:12px; padding:16px; margin-bottom:16px; border:1px solid #334155; display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+          <img src="${imgPrincipal}" style="width:80px; height:80px; object-fit:contain; background:white; border-radius:8px; padding:4px;">
+          <div style="flex:1; min-width:200px;">
+            <span style="background:#ef4444; color:white; font-weight:800; padding:2px 8px; border-radius:4px; font-size:0.75rem;">🔥 -${descPrimeiro}% OFF</span>
+            <h3 style="margin:6px 0 2px 0; color:#f8fafc; font-size:1.1rem;">${subgrupoNome}</h3>
+            <span style="color:#94a3b8; font-size:0.85rem;">Todos os ${itens.length} modelos em promoção</span>
+          </div>
+          <button class="btn-primario" style="background:#2563eb; color:white; padding:10px 18px; border-radius:8px; cursor:pointer; border:none; font-weight:bold;" onclick="abrirModalSubgrupoOferta('${subgrupoNome.replace(/'/g, "\\'")}')">
+            👁️ Ver Modelos
+          </button>
+        </div>`;
+    } else {
+      // Exibe os produtos de forma individual se os descontos forem pontuais
+      itens.forEach(item => {
+        const precoBase = Number(item.preco_venda || 0);
+        const precoComDesconto = precoBase * (1 - (item.desconto_porcentagem / 100));
+
+        html += `
+          <div class="card-oferta-item" style="background:#1e293b; border-radius:12px; padding:16px; margin-bottom:12px; border:1px solid #334155; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div>
+              <span style="background:#ef4444; color:white; font-weight:800; padding:2px 6px; border-radius:4px; font-size:0.7rem;">-${item.desconto_porcentagem}% OFF</span>
+              <h4 style="margin:4px 0; color:#f8fafc;">${item.subgrupo || 'Produto'} (Cód: ${item.codigo})</h4>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <span style="text-decoration:line-through; color:#64748b; font-size:0.85rem;">De R$ ${precoBase.toFixed(2)}</span>
+                <strong style="color:#ef4444; font-size:1.1rem;">Por R$ ${precoComDesconto.toFixed(2)}</strong>
+              </div>
+            </div>
+            <button class="btn-primario" style="background:#10b981; color:white; padding:8px 14px; border-radius:6px; cursor:pointer; border:none; font-weight:bold;" onclick="adicionarOferta('${item.codigo}', ${item.desconto_porcentagem}, ${precoBase}, '${item.imagem_url||''}', '${item.subgrupo}')">
+              🛒 Adicionar ao Carrinho
+            </button>
+          </div>`;
+      });
+    }
+  });
+
+  container.innerHTML = html;
 }
 
 function atualizarCarrinho() {

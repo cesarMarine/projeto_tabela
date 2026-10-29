@@ -641,6 +641,33 @@ app.post('/api/ofertas/grupo', async (req, res) => {
   }
 });
 
+// GET: Buscar todas as ofertas ativas com os dados do produto
+app.get('/api/ofertas/detalhadas', async (req, res) => {
+  try {
+    const { data: ofertas, error: errOf } = await supabase.from('ofertas').select('*');
+    if (errOf) throw errOf;
+
+    const { data: produtos, error: errProd } = await supabase.from('scraping_produtos').select('*');
+    if (errProd) throw errProd;
+
+    // Cruza ofertas com dados dos produtos
+    const lista = ofertas.map(o => {
+      const prod = produtos.find(p => String(p.codigo) === String(o.codigo));
+      return {
+        ...o,
+        subgrupo: prod?.subgrupo || prod?.subgrupo_scraping || 'Geral',
+        descricao: prod?.descricao_longa || prod?.descricao_sistema || '',
+        preco_venda: prod?.preco_venda || 0,
+        imagem_url: prod?.imagem_url || ''
+      };
+    });
+
+    res.json({ ok: true, ofertas: lista });
+  } catch (e) {
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
+
 
 // POST: Importar Ofertas em Lote via Excel
 app.post('/api/ofertas/lote', async (req, res) => {
