@@ -668,7 +668,7 @@ app.get('/api/ofertas/detalhadas', async (req, res) => {
   }
 });
 
-// GET: Buscar ofertas agrupadas para a tabela do Admin
+// 1. GET: Retorna as ofertas agrupadas por Grupo/Subgrupo
 app.get('/api/admin/ofertas-agrupadas', async (req, res) => {
   try {
     const { data: ofertas, error } = await supabase.from('ofertas').select('*');
@@ -676,13 +676,11 @@ app.get('/api/admin/ofertas-agrupadas', async (req, res) => {
 
     const { data: produtos } = await supabase.from('scraping_produtos').select('codigo, subgrupo');
 
-    // Mapeia o subgrupo/família de cada item
     const ofertasComGrupo = ofertas.map(o => {
       const prod = produtos?.find(p => String(p.codigo) === String(o.codigo));
       return { ...o, grupo: prod?.subgrupo || 'Individual' };
     });
 
-    // Agrupa por Nome do Grupo se o desconto for igual
     const gruposMap = {};
     ofertasComGrupo.forEach(o => {
       const chave = `${o.grupo}_${o.desconto_porcentagem}`;
@@ -700,6 +698,37 @@ app.get('/api/admin/ofertas-agrupadas', async (req, res) => {
     });
 
     res.json({ ok: true, ofertas_agrupadas: Object.values(gruposMap) });
+  } catch (e) {
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
+
+// 2. DELETE: Remove todas as ofertas pertencentes a um determinado Grupo/Subgrupo
+app.delete('/api/ofertas/grupo/:nomeGrupo', async (req, res) => {
+  const { nomeGrupo } = req.params;
+
+  try {
+    const { data: produtos, error: errProd } = await supabase
+      .from('scraping_produtos')
+      .select('codigo')
+      .eq('subgrupo', nomeGrupo);
+
+    if (errProd) throw errProd;
+
+    if (!produtos || produtos.length === 0) {
+      return res.status(404).json({ ok: false, erro: "Nenhum produto encontrado para este grupo." });
+    }
+
+    const codigos = produtos.map(p => String(p.codigo));
+
+    const { error: errDel } = await supabase
+      .from('ofertas')
+      .delete()
+      .in('codigo', codigos);
+
+    if (errDel) throw errDel;
+
+    res.json({ ok: true, mensagem: `Ofertas do grupo "${nomeGrupo}" removidas com sucesso!` });
   } catch (e) {
     res.status(500).json({ ok: false, erro: e.message });
   }

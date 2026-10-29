@@ -9,7 +9,7 @@
   :root {
     --vermelho-900:#7f1d1d; --vermelho-600:#dc2626; --vermelho-500:#ef4444;
     --amarelo-400:#facc15; --amarelo-500:#eab308;
-    --azul-900:#001f3f; --azul-800:#003366;
+    --azul-900:#001f3f; --azul-800:#001b3a;
     --cinza-50:#f8fafc; --cinza-100:#f1f5f9; --cinza-200:#e2e8f0; --cinza-700:#334155;
     --verde:#10b981; --verde-hover:#059669;
   }
@@ -18,82 +18,78 @@
 
   /* BANNER HERO DE OFERTAS */
   .hero-ofertas {
-    background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
+    background: linear-gradient(135deg, #001b3a 0%, #0f172a 100%);
     color: white; padding: 30px 20px; text-align: center; position: relative;
-    box-shadow: 0 4px 20px rgba(185, 28, 28, 0.3); border-bottom: 4px solid var(--amarelo-400);
+    box-shadow: 0 4px 20px rgba(0, 27, 58, 0.4); border-bottom: 4px solid #38bdf8;
   }
-  .hero-ofertas h1 { font-size: 2rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.5px; margin-bottom: 6px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
-  .hero-ofertas p { font-size: 0.95rem; opacity: 0.9; max-width: 600px; margin: 0 auto; font-weight: 600; }
-  .badge-semana { display: inline-block; background: var(--amarelo-400); color: var(--vermelho-900); font-weight: 900; padding: 4px 14px; border-radius: 20px; font-size: 0.75rem; text-transform: uppercase; margin-top: 10px; }
+  .hero-ofertas h1 { font-size: 2rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.5px; margin-bottom: 6px; }
+  .hero-ofertas p { font-size: 0.95rem; opacity: 0.9; max-width: 600px; margin: 0 auto; font-weight: 600; color: #94a3b8; }
+  .badge-semana { display: inline-block; background: #38bdf8; color: #020617; font-weight: 900; padding: 4px 14px; border-radius: 20px; font-size: 0.75rem; text-transform: uppercase; margin-top: 10px; }
 
   /* NAVEGAÇÃO / LOGIN */
-  .bar-cliente { background: white; padding: 10px 20px; border-bottom: 1px solid var(--cinza-200); display: flex; justify-content: space-between; align-items: center; max-width: 1300px; margin: 0 auto; border-radius: 0 0 12px 12px; }
-  .btn-voltar-cat { background: var(--azul-800); color: white; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 800; font-size: 0.8rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+  .bar-cliente { background: white; padding: 12px 20px; border-bottom: 1px solid var(--cinza-200); display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; border-radius: 0 0 12px 12px; }
+  .btn-voltar-cat { background: var(--azul-800); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 800; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
 
-  /* GRADE DE ENCARTE */
-  .encarte-container { max-width: 1300px; margin: 24px auto; padding: 0 20px; }
-  .grade-ofertas { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
-
-  /* CARD BALCÃO DE PROMOÇÃO */
-  .card-oferta {
-    background: white; border-radius: 16px; border: 2px solid #fecaca;
-    overflow: hidden; box-shadow: 0 10px 25px rgba(239, 68, 68, 0.08);
-    display: flex; flex-direction: column; position: relative; transition: transform 0.2s, box-shadow 0.2s;
-  }
-  .card-oferta:hover { transform: translateY(-4px); box-shadow: 0 15px 35px rgba(239, 68, 68, 0.18); }
-
-  /* SELO DE DESCONTO EM DESTAQUE */
-  .selo-desconto {
-    position: absolute; top: 12px; left: 12px; z-index: 5;
-    background: linear-gradient(135deg, var(--vermelho-600), var(--vermelho-900));
-    color: white; font-weight: 900; font-size: 1rem; padding: 6px 12px; border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(220, 38, 38, 0.4); border: 2px solid white;
-  }
-
-  .img-box {
-    width: 100%; aspect-ratio: 1; background: #fff; padding: 16px;
-    display: flex; align-items: center; justify-content: center; position: relative; cursor: pointer;
-  }
-  .img-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
-
-  .corpo-oferta { padding: 16px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; background: #fafafa; border-top: 1px solid var(--cinza-100); }
-  .marca-tag { font-size: 0.65rem; font-weight: 800; color: var(--azul-800); text-transform: uppercase; background: var(--cinza-200); padding: 2px 6px; border-radius: 4px; align-self: flex-start; margin-bottom: 6px; }
-  .titulo-prod { font-size: 0.95rem; font-weight: 800; color: #0f172a; line-height: 1.3; margin-bottom: 12px; }
-
-  /* BLOCO DE PREÇOS (DE / POR) */
-  .bloco-preco-balcao {
-    background: #fef2f2; border: 1px dashed #fca5a5; padding: 10px;
-    border-radius: 10px; text-align: center; margin-bottom: 12px;
-  }
-  .txt-de { font-size: 0.8rem; color: #94a3b8; text-decoration: line-through; font-weight: 700; display: block; }
-  .txt-por { font-size: 1.4rem; color: var(--vermelho-600); font-weight: 900; display: block; line-height: 1.1; }
-
-  /* CONTROLE DE COMPRA */
-  .btn-add-oferta {
-    width: 100%; background: var(--verde); color: white; border: none;
-    padding: 12px; border-radius: 10px; font-weight: 900; font-size: 0.9rem;
-    display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;
-  }
-  .btn-add-oferta:hover { background: var(--verde-hover); }
+  /* CONTAINER PRINCIPAL */
+  .encarte-container { max-width: 1200px; margin: 24px auto; padding: 0 20px; }
 
   /* MODAL LOGIN RÁPIDO */
-  #modalLogin { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  #modalLogin { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 999; display: flex; align-items: center; justify-content: center; padding: 20px; }
   .box-login { background: white; padding: 30px; border-radius: 16px; width: 100%; max-width: 380px; text-align: center; }
   .box-login input { width: 100%; padding: 12px; border: 2px solid var(--cinza-200); border-radius: 8px; margin: 16px 0; text-align: center; font-weight: 800; font-size: 1.1rem; }
 
   /* CARRINHO FLUTUANTE */
-  .fab-carrinho { position:fixed; bottom:24px; right:24px; background:var(--azul-800); color:white; width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; box-shadow:0 4px 16px rgba(0,51,102,0.4); cursor:pointer; z-index:150; }
+  .fab-carrinho { position:fixed; bottom:24px; right:24px; background:var(--azul-800); color:white; width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; box-shadow:0 4px 16px rgba(0,27,58,0.4); cursor:pointer; z-index:150; }
   .fab-qtd { position:absolute; top:-5px; right:-5px; background:var(--vermelho-600); color:white; font-size:12px; font-weight:900; min-width:22px; height:22px; border-radius:11px; display:flex; align-items:center; justify-content:center; border:2px solid white; }
 </style>
 </head>
 <body>
 
-    <!-- BANNER DE AVISO DE VALIDADE DAS OFERTAS -->
+<!-- BANNER DE AVISO DE VALIDADE DAS OFERTAS -->
 <div id="bannerOfertasValidade" style="display:none; background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); color: white; text-align: center; padding: 10px 14px; font-weight: 800; font-size: 0.85rem; border-radius: 8px; margin: 12px; box-shadow: 0 4px 12px rgba(239,68,68,0.25);">
   🔥 ENCARTE DE OFERTAS VÁLIDO ATÉ <span id="dataFimOfertasSpan">--/--/----</span>! APROVEITE ENQUANTO DURAREM OS ESTOQUES.
 </div>
 
+<div id="modalLogin" style="display:none;">
+  <div class="box-login">
+    <h2 style="color:var(--azul-800); font-size:1.3rem; font-weight:900;">Acesse as Ofertas</h2>
+    <p style="font-size:0.85rem; color:#64748b; margin-top:4px;">Digite o seu CNPJ para ver os preços exclusivos.</p>
+    <input type="text" id="cnpjInput" placeholder="00.000.000/0000-00">
+    <button onclick="fazerLogin()" style="width:100%; padding:12px; background:var(--azul-800); color:white; border:none; border-radius:8px; font-weight:800;">Entrar</button>
+  </div>
+</div>
+
+<header class="hero-ofertas">
+  <h1>🔥 ENCARTE DE OFERTAS B2B</h1>
+  <p>Preços e condições especiais válidas enquanto durarem os estoques!</p>
+  <span class="badge-semana">OFERTAS EXCLUSIVAS</span>
+</header>
+
+<div class="bar-cliente">
+  <a href="index.html" class="btn-voltar-cat">⬅️ Voltar ao Catálogo Completo</a>
+  <div id="cliInfo" style="font-weight:800; font-size:0.85rem; color:var(--azul-800);">—</div>
+</div>
+
+<main class="encarte-container">
+  <!-- ÁREA DE CARDS AGRUPADOS DAS FAMÍLIAS -->
+  <div id="gridOfertas">
+    <div style="text-align:center; padding:60px; color:#94a3b8; font-weight:700;">Carregando encarte promocional...</div>
+  </div>
+</main>
+
+<div class="fab-carrinho" id="btnCarrinho" onclick="window.location.href='index.html'" style="display:none;">
+  🛒
+  <div class="fab-qtd" id="qtdCarrinho">0</div>
+</div>
+
 <script>
+let clienteLogado = JSON.parse(localStorage.getItem('cliente_b2b') || 'null');
+let listaOfertas = [];
+let carrinho = JSON.parse(localStorage.getItem('carrinho_b2b') || '{}');
+
+const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const fmtMoeda = v => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 function fmtDataBr(strData) {
   if (!strData) return '';
   const [ano, mes, dia] = strData.split('-');
@@ -111,49 +107,8 @@ async function carregarValidadeOfertas() {
   } catch (e) { console.error('Erro validade ofertas:', e); }
 }
 
-window.addEventListener('DOMContentLoaded', carregarValidadeOfertas);
-</script>
-
-<div id="modalLogin" style="display:none;">
-  <div class="box-login">
-    <h2 style="color:var(--azul-800); font-size:1.3rem; font-weight:900;">Acesse as Ofertas</h2>
-    <p style="font-size:0.85rem; color:#64748b; margin-top:4px;">Digite o seu CNPJ para ver os preços exclusivos.</p>
-    <input type="text" id="cnpjInput" placeholder="00.000.000/0000-00">
-    <button onclick="fazerLogin()" style="width:100%; padding:12px; background:var(--azul-800); color:white; border:none; border-radius:8px; font-weight:800;">Entrar</button>
-  </div>
-</div>
-
-<header class="hero-ofertas">
-  <h1>🔥 ENCARTE DE OFERTAS</h1>
-  <p>Preços e condições especiais válidas enquanto durarem os estoques!</p>
-  <span class="badge-semana">OFERTAS DA SEMANA</span>
-</header>
-
-<div class="bar-cliente">
-  <a href="index.html" class="btn-voltar-cat">⬅️ Voltar ao Catálogo Completo</a>
-  <div id="cliInfo" style="font-weight:800; font-size:0.85rem; color:var(--azul-800);">—</div>
-</div>
-
-<main class="encarte-container">
-  <div class="grade-ofertas" id="gridOfertas">
-    <div style="grid-column:1/-1; text-align:center; padding:60px; color:#94a3b8; font-weight:700;">Carregando encarte promocional...</div>
-  </div>
-</main>
-
-<div class="fab-carrinho" id="btnCarrinho" onclick="window.location.href='index.html'" style="display:none;">
-  🛒
-  <div class="fab-qtd" id="qtdCarrinho">0</div>
-</div>
-
-<script>
-let clienteLogado = JSON.parse(localStorage.getItem('cliente_b2b') || 'null');
-let listaOfertas = [];
-let carrinho = JSON.parse(localStorage.getItem('carrinho_b2b') || '{}');
-
-const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
-const fmtMoeda = v => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
 async function init() {
+  await carregarValidadeOfertas();
   if (!clienteLogado) {
     document.getElementById('modalLogin').style.display = 'flex';
   } else {
@@ -186,7 +141,7 @@ async function carregarOfertas() {
     const j = await r.json();
 
     if (!j.ok || !j.ofertas || j.ofertas.length === 0) {
-      document.getElementById('gridOfertas').innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:60px; color:#94a3b8;">Nenhuma oferta ativa no momento.</div>`;
+      document.getElementById('gridOfertas').innerHTML = `<div style="text-align:center; padding:60px; color:#94a3b8;">Nenhuma oferta ativa no momento.</div>`;
       return;
     }
 
@@ -201,78 +156,171 @@ async function carregarOfertas() {
     listaOfertas = j.ofertas.map(of => {
       const cat = mapaCatalogo.get(String(of.codigo)) || {};
       
-      const subgrupo = of.subgrupo || cat.subgrupo_scraping || cat.descricao_sistema || `Produto ${of.codigo}`;
+      const subgrupo = of.subgrupo || cat.subgrupo || cat.subgrupo_scraping || cat.descricao_sistema || `Produto ${of.codigo}`;
       const precoBase = Number(of.preco_base || cat.preco_venda || 0);
       const imagem = of.imagem_oferta || cat.imagem_url || '';
-      const marca = of.marca || cat.marca || '';
+      const marca = of.marca || cat.marca || 'MARINE';
+      const descItem = cat.descricao_sistema || cat.descricao_longa || '';
 
       return {
         ...of,
         subgrupo,
         preco_base: precoBase,
         imagem_oferta: imagem,
-        marca
+        marca,
+        descricao_item: descItem
       };
     });
 
-    renderizarEncate();
+    renderizarEncateComGrip(listaOfertas);
   } catch (e) {
     console.error("Erro ao carregar ofertas:", e);
-    document.getElementById('gridOfertas').innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:60px; color:#ef4444;">Erro ao carregar ofertas.</div>`;
+    document.getElementById('gridOfertas').innerHTML = `<div style="text-align:center; padding:60px; color:#ef4444;">Erro ao carregar ofertas.</div>`;
   }
 }
 
-function renderizarEncate() {
-  const acrescimo = clienteLogado?.acrescimo || 0;
+// RENDERIZAÇÃO AGRUPADA POR FAMÍLIA/SUBGRUPO
+function renderizarEncateComGrip(lista) {
+  const container = document.getElementById('gridOfertas');
+  if (!container) return;
 
-  const html = listaOfertas.map(item => {
-    const precoComAcrescimo = item.preco_base + (item.preco_base * acrescimo / 100);
-    const pctDesconto = Number(item.desconto_porcentagem || 0);
-    const precoPromocional = precoComAcrescimo - (precoComAcrescimo * pctDesconto / 100);
-    const q = carrinho[item.codigo] ? carrinho[item.codigo].qtd : 0;
+  // Agrupa os itens da lista pelo Subgrupo/Família
+  const familias = {};
+  lista.forEach(item => {
+    const nomeFam = item.subgrupo || 'Geral';
+    if (!familias[nomeFam]) familias[nomeFam] = [];
+    familias[nomeFam].push(item);
+  });
 
-    const imgHtml = item.imagem_oferta && item.imagem_oferta.trim() !== '' 
-      ? `<img src="${item.imagem_oferta}" alt="${escapeHtml(item.subgrupo)}" onerror="this.onerror=null; this.parentElement.innerHTML='🖼️';">`
-      : '🖼️';
+  let html = '';
 
-    return `
-      <div class="card-oferta">
-        <div class="selo-desconto">-${pctDesconto}% OFF</div>
-        <div class="img-box">
-          ${imgHtml}
-        </div>
-        <div class="corpo-oferta">
-          ${item.marca ? `<span class="marca-tag">${escapeHtml(item.marca)}</span>` : ''}
-          <div class="titulo-prod">${escapeHtml(item.subgrupo)}</div>
+  // BANNER BLACK NOVEMBER MARINE (Ativo entre 02/11/2026 e 30/11/2026)
+  const hoje = new Date();
+  const inicioBlack = new Date('2026-11-02T00:00:00');
+  const fimBlack = new Date('2026-11-30T23:59:59');
 
-          <div class="bloco-preco-balcao">
-            <span class="txt-de">De: R$ ${fmtMoeda(precoComAcrescimo)}</span>
-            <span class="txt-por">Por: R$ ${fmtMoeda(precoPromocional)}</span>
+  if (hoje >= inicioBlack && hoje <= fimBlack) {
+    html += `
+      <div style="background: linear-gradient(135deg, #001b3a, #020617); border: 2px solid #38bdf8; color: white; padding: 20px; border-radius: 14px; margin-bottom: 24px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+        <h1 style="font-size: 1.8rem; font-weight: 900; margin: 0; text-transform: uppercase; letter-spacing: 2px; color:#ffffff;">⚡ BLACK NOVEMBER <span style="color:#38bdf8;">MARINE</span> ⚡</h1>
+        <p style="color: #94a3b8; margin-top: 4px; font-size: 0.9rem;">Ofertas especiais ativas direto na tabela B2B!</p>
+      </div>`;
+  }
+
+  // CARDS DAS FAMÍLIAS EM OFERTA (1 Único Card por Família)
+  Object.keys(familias).forEach(nomeFamilia => {
+    const itens = familias[nomeFamilia];
+    const desc = itens[0].desconto_porcentagem || itens[0].desconto || 0;
+    const imgPai = itens[0].imagem_oferta || '';
+    const marca = itens[0].marca || 'MARINE';
+
+    html += `
+      <div class="card-oferta-pai" style="background:#ffffff; border:1px solid #cbd5e1; border-radius:14px; overflow:hidden; margin-bottom:20px; box-shadow:0 4px 14px rgba(0,27,58,0.08);">
+        
+        <!-- TARJA DE DESTAQUE (Preto + Azul Marinho + Branco) -->
+        <div style="background: linear-gradient(90deg, #001b3a 0%, #0f172a 100%); color:white; padding:10px 18px; display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="background:#ef4444; color:white; font-weight:900; padding:3px 10px; border-radius:6px; font-size:0.85rem;">
+              🔥 -${desc}% OFF
+            </span>
+            <span style="background:rgba(255,255,255,0.15); color:#ffffff; font-size:0.75rem; font-weight:800; padding:2px 8px; border-radius:4px; text-transform:uppercase;">
+              ${escapeHtml(marca)}
+            </span>
           </div>
+          <span style="color:#38bdf8; font-weight:800; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.5px;">
+            FAMÍLIA EM OFERTA
+          </span>
+        </div>
 
-          <button class="btn-add-oferta" onclick="adicionarOferta('${item.codigo}', '${escapeHtml(item.subgrupo).replace(/'/g, "\\'")}', ${item.preco_base}, '${item.imagem_oferta}')">
-            🛒 ${q > 0 ? `No Pedido (${q})` : 'Adicionar ao Pedido'}
+        <!-- CORPO DO CARD COM FOTO PAI E BOTAO VER OPCOES -->
+        <div style="padding:20px; display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
+          <div style="width:100px; height:100px; background:#f8fafc; border-radius:10px; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            ${imgPai ? `<img src="${imgPai}" style="max-width:100%; max-height:100%; object-fit:contain;">` : '🖼️'}
+          </div>
+          <div style="flex:1; min-width:200px;">
+            <h3 style="margin:0 0 6px 0; color:#001b3a; font-size:1.2rem; font-weight:800;">${escapeHtml(nomeFamilia)}</h3>
+            <p style="margin:0; color:#64748b; font-size:0.88rem;">
+              Esta família possui <strong>${itens.length} opção(ões)/tamanho(s)</strong> promocional(ais).
+            </p>
+          </div>
+          <button style="background:#001b3a; color:white; border:none; padding:12px 22px; border-radius:10px; font-weight:800; font-size:0.9rem; cursor:pointer; display:inline-flex; align-items:center; gap:8px;" onclick="abrirModalFamiliaOferta('${escapeHtml(nomeFamilia).replace(/'/g, "\\'")}')">
+            👁️ Ver Opções e Comprar
           </button>
         </div>
-      </div>
-    `;
-  }).join('');
 
-  document.getElementById('gridOfertas').innerHTML = html;
+      </div>`;
+  });
+
+  container.innerHTML = html;
 }
 
-// 1. Função para adicionar produtos em promoção diretamente ao carrinho do index
+// MODAL PARA LISTAR AS OPÇÕES/TAMANHOS E ADICIONAR QUANTIDADES
+function abrirModalFamiliaOferta(nomeSubgrupo) {
+  const itensFam = listaOfertas.filter(i => (i.subgrupo || 'Geral') === nomeSubgrupo);
+  if (!itensFam.length) return;
+
+  const acrescimo = clienteLogado?.acrescimo || 0;
+
+  // Remove modal antigo se houver
+  document.getElementById('modalOfertaBg')?.remove();
+
+  let modalHtml = `
+    <div id="modalOfertaBg" style="position:fixed; inset:0; background:rgba(0,27,58,0.85); display:flex; align-items:center; justify-content:center; padding:16px; z-index:9999;">
+      <div style="background:#ffffff; width:100%; max-width:700px; border-radius:16px; overflow:hidden; box-shadow:0 20px 50px rgba(0,0,0,0.4);">
+        
+        <!-- CABEÇALHO DO MODAL -->
+        <div style="background:#001b3a; color:white; padding:16px 20px; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <span style="color:#38bdf8; font-size:0.75rem; font-weight:800; text-transform:uppercase;">SELECIONE A OPÇÃO DESEJADA</span>
+            <h3 style="margin:2px 0 0 0; font-size:1.15rem; color:#ffffff;">${escapeHtml(nomeSubgrupo)}</h3>
+          </div>
+          <button onclick="document.getElementById('modalOfertaBg').remove()" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer; line-height:1;">✕</button>
+        </div>
+
+        <!-- LISTA DE ITENS DA FAMÍLIA -->
+        <div style="max-height:420px; overflow-y:auto; padding:16px;">
+          ${itensFam.map(item => {
+            const precoComAcrescimo = item.preco_base + (item.preco_base * acrescimo / 100);
+            const desc = Number(item.desconto_porcentagem || 0);
+            const precoFinal = precoComAcrescimo - (precoComAcrescimo * desc / 100);
+            const q = carrinho[item.codigo] ? carrinho[item.codigo].qtd : 0;
+
+            return `
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #e2e8f0; gap:12px; flex-wrap:wrap;">
+                <div style="flex:1; min-width:180px;">
+                  <strong style="color:#001b3a; font-size:0.95rem;">Cód: ${item.codigo}</strong>
+                  <div style="color:#64748b; font-size:0.85rem;">${escapeHtml(item.descricao_item || item.subgrupo)}</div>
+                </div>
+
+                <div style="text-align:right;">
+                  <div style="text-decoration:line-through; color:#94a3b8; font-size:0.75rem; font-weight:700;">De: R$ ${fmtMoeda(precoComAcrescimo)}</div>
+                  <strong style="color:#ef4444; font-size:1.1rem; font-weight:900;">Por: R$ ${fmtMoeda(precoFinal)}</strong>
+                </div>
+
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <button style="background:#10b981; color:white; border:none; padding:8px 14px; border-radius:8px; font-weight:800; cursor:pointer; font-size:0.85rem;" onclick="adicionarOferta('${item.codigo}', ${desc}, ${item.preco_base}, '${item.imagem_oferta}', '${escapeHtml(item.subgrupo).replace(/'/g, "\\'")}')">
+                    🛒 ${q > 0 ? `No Pedido (${q})` : '+ Adicionar'}
+                  </button>
+                </div>
+              </div>`;
+          }).join('')}
+        </div>
+
+      </div>
+    </div>`;
+
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+// FUNÇÃO PARA GRAVAR A OFERTA NO CARRINHO_B2B COMPATÍVEL COM O INDEX.HTML
 function adicionarOferta(cod, desc, precoBase, img, nome) {
-  // Calcula o preço promocional com desconto
-  const precoComDesconto = precoBase * (1 - (desc / 100));
+  const acrescimo = clienteLogado?.acrescimo || 0;
+  const precoComAcrescimo = precoBase + (precoBase * acrescimo / 100);
+  const precoComDesconto = precoComAcrescimo - (precoComAcrescimo * (desc / 100));
 
-  // Lê o carrinho atual guardado no localStorage (mesma chave usada no index.html)
-  let carrinho = JSON.parse(localStorage.getItem('carrinho_b2b') || '{}');
-
-  // Incrementa a quantidade se já existir ou inicia com 1
+  carrinho = JSON.parse(localStorage.getItem('carrinho_b2b') || '{}');
   const qtdAtual = carrinho[cod] ? carrinho[cod].qtd : 0;
 
-  // Salva o item com o preço já com desconto calculado
   carrinho[cod] = {
     codigo: cod,
     nome: nome || `Produto ${cod}`,
@@ -285,161 +333,18 @@ function adicionarOferta(cod, desc, precoBase, img, nome) {
 
   localStorage.setItem('carrinho_b2b', JSON.stringify(carrinho));
 
-  // Atualiza as funções de interface se existirem na página
-  if (typeof renderizarEncarte === 'function') renderizarEncarte();
-  if (typeof renderizarEncate === 'function') renderizarEncate();
-  if (typeof atualizarCarrinho === 'function') atualizarCarrinho();
-
-  alert(`🛒 Produto ${cod} adicionado ao carrinho!`);
-}
-
-// 2. Função para renderizar as ofertas agrupadas e exibir o Banner da Black November Marine
-function renderizarPaginaOfertas(listaOfertas) {
-  const container = document.getElementById('containerOfertas') || document.querySelector('.grid-ofertas') || document.querySelector('.container');
-  if (!container) return;
-
-  // 1. Agrupa os produtos por Subgrupo / Família
-  const porSubgrupo = {};
-  listaOfertas.forEach(item => {
-    const nomeSub = item.subgrupo || item.subgrupo_scraping || item.descricao || 'Outros';
-    if (!porSubgrupo[nomeSub]) porSubgrupo[nomeSub] = [];
-    porSubgrupo[nomeSub].push(item);
-  });
-
-  let html = '';
-
-  // 2. Banner do Black November Marine (Ativo entre 02/11/2026 e 30/11/2026)
-  const hoje = new Date();
-  const inicioBlack = new Date('2026-11-02T00:00:00');
-  const fimBlack = new Date('2026-11-30T23:59:59');
-
-  if (hoje >= inicioBlack && hoje <= fimBlack) {
-    html += `
-      <div style="background: linear-gradient(135deg, #020617, #0f172a); border: 2px solid #38bdf8; color: white; padding: 20px 24px; border-radius: 16px; margin-bottom: 28px; text-align: center; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); position: relative; overflow: hidden;">
-        <div style="position: absolute; top: -10px; right: -10px; background: #38bdf8; color: #020617; font-weight: 900; font-size: 0.75rem; padding: 4px 12px; border-radius: 20px; text-transform: uppercase;">Exclusivo B2B</div>
-        <h1 style="font-size: 2rem; font-weight: 900; margin: 0; text-transform: uppercase; letter-spacing: 2px; color: #ffffff;">⚡ BLACK NOVEMBER <span style="color:#38bdf8;">MARINE</span> ⚡</h1>
-        <p style="color: #94a3b8; margin-top: 6px; font-size: 0.95rem; font-weight: 600;">Condições especiais de 02/11 a 30/11 — Descontos aplicados direto na tabela!</p>
-      </div>`;
+  // Atualiza carrinho e recarrega os modais
+  atualizarCarrinho();
+  
+  // Atualiza o botão no modal se ele estiver aberto
+  const modalAberto = document.getElementById('modalOfertaBg');
+  if (modalAberto) {
+    abrirModalFamiliaOferta(nome);
   }
-
-  // 3. Renderização dos Cards Agrupados por Família
-  Object.keys(porSubgrupo).forEach(subgrupoNome => {
-    const itens = porSubgrupo[subgrupoNome];
-    const descPrimeiro = itens[0].desconto_porcentagem || itens[0].desconto || 50;
-    const imgPrincipal = itens[0].imagem_url || itens[0].img || '';
-    const marca = itens[0].marca || 'MARINE';
-
-    // RENDERIZA APENAS 1 CARD POR FAMÍLIA / SUBGRUPO
-    html += `
-      <div class="card-familia-oferta" style="background: #ffffff; border-radius: 16px; border: 1px solid #cbd5e1; overflow: hidden; box-shadow: 0 4px 16px rgba(0,27,58,0.08); margin-bottom: 24px; transition: transform 0.2s;">
-        
-        <!-- TARJA DE DESTAQUE (Combinação Preto, Azul e Branco) -->
-        <div style="background: linear-gradient(90deg, #001b3a 0%, #003366 100%); padding: 10px 16px; display: flex; justify-content: space-between; align-align: center; color: white;">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="background: #ef4444; color: white; font-weight: 900; padding: 3px 10px; border-radius: 6px; font-size: 0.85rem; letter-spacing: 0.5px;">
-              OFF -${descPrimeiro}%
-            </span>
-            <span style="background: rgba(255,255,255,0.15); color: #ffffff; font-size: 0.75rem; font-weight: 800; padding: 3px 8px; border-radius: 4px; text-transform: uppercase;">
-              ${marca}
-            </span>
-          </div>
-          <span style="font-size: 0.8rem; font-weight: 700; color: #93c5fd; display: flex; align-items: center; gap: 4px;">
-            🏷️ FAMÍLIA EM OFERTA
-          </span>
-        </div>
-
-        <!-- CONTEÚDO DO CARD DA FAMÍLIA -->
-        <div style="padding: 20px; display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
-          <div style="width: 110px; height: 110px; flex-shrink: 0; background: #f8fafc; border-radius: 12px; padding: 8px; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center;">
-            <img src="${imgPrincipal}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
-          </div>
-
-          <div style="flex: 1; min-width: 220px;">
-            <h3 style="margin: 0 0 6px 0; color: #001b3a; font-size: 1.2rem; font-weight: 800;">${subgrupoNome}</h3>
-            <p style="margin: 0 0 12px 0; color: #64748b; font-size: 0.88rem;">
-              Esta família possui <strong>${itens.length} opções/tamanhos</strong> com ${descPrimeiro}% de desconto.
-            </p>
-            
-            <button class="btn-ver-modelos" style="background: #001b3a; color: #ffffff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s;" onclick="abrirModalFamiliaOferta('${subgrupoNome.replace(/'/g, "\\'")}')">
-              👁️ Ver Opções e Comprar
-            </button>
-          </div>
-        </div>
-
-      </div>`;
-  });
-
-  container.innerHTML = html;
-}
-
-// Renderização do Encarte / Ofertas no Cliente
-function renderizarEncateComGrip(listaOfertas) {
-  const container = document.getElementById('containerOfertas');
-  if (!container) return;
-
-  // Agrupa os itens da lista pelo Subgrupo/Família
-  const familias = {};
-  listaOfertas.forEach(item => {
-    const nomeFam = item.subgrupo || item.subgrupo_scraping || 'Geral';
-    if (!familias[nomeFam]) familias[nomeFam] = [];
-    familias[nomeFam].push(item);
-  });
-
-  let html = '';
-
-  // 1. BANNER BLACK NOVEMBER MARINE (Estilo Azul/Preto/Branco)
-  const hoje = new Date();
-  const inicioBlack = new Date('2026-11-02T00:00:00');
-  const fimBlack = new Date('2026-11-30T23:59:59');
-
-  if (hoje >= inicioBlack && hoje <= fimBlack) {
-    html += `
-      <div style="background: linear-gradient(135deg, #001b3a, #020617); border: 2px solid #38bdf8; color: white; padding: 20px; border-radius: 14px; margin-bottom: 24px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
-        <h1 style="font-size: 1.8rem; font-weight: 900; margin: 0; text-transform: uppercase; letter-spacing: 2px; color:#ffffff;">⚡ BLACK NOVEMBER <span style="color:#38bdf8;">MARINE</span> ⚡</h1>
-        <p style="color: #94a3b8; margin-top: 4px; font-size: 0.9rem;">Ofertas especiais de 02/11 a 30/11 ativas na tabela!</p>
-      </div>`;
-  }
-
-  // 2. CARDS DAS FAMÍLIAS EM OFERTA (Mesmo layout visual do index.html)
-  Object.keys(familias).forEach(nomeFamilia => {
-    const itens = familias[nomeFamilia];
-    const desc = itens[0].desconto_porcentagem || itens[0].desconto || 0;
-    const imgPai = itens[0].imagem_url || itens[0].img || '';
-
-    html += `
-      <div class="card-oferta-pai" style="background:#ffffff; border:1px solid #cbd5e1; border-radius:12px; overflow:hidden; margin-bottom:20px; box-shadow:0 4px 12px rgba(0,27,58,0.06); cursor:pointer;" onclick="abrirModalDetalhesOferta('${nomeFamilia.replace(/'/g, "\\'")}')">
-        
-        <!-- TARJA MODERNA EM AZUL MARINHO (#001b3a) E PRETO -->
-        <div style="background: linear-gradient(90deg, #001b3a 0%, #0f172a 100%); color:white; padding:10px 16px; display:flex; justify-content:space-between; align-items:center;">
-          <span style="background:#ef4444; color:white; font-weight:900; padding:2px 10px; border-radius:6px; font-size:0.85rem;">
-            🔥 OFERTA -${desc}% OFF
-          </span>
-          <span style="color:#38bdf8; font-weight:800; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.5px;">
-            MARINE FISHING
-          </span>
-        </div>
-
-        <!-- CORPO DO CARD COM A FOTO PAI E TÍTULO DA FAMÍLIA -->
-        <div style="padding:16px; display:flex; align-items:center; gap:16px;">
-          <div style="width:90px; height:90px; background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-            <img src="${imgPai}" style="max-width:100%; max-height:100%; object-fit:contain;">
-          </div>
-          <div style="flex:1;">
-            <h3 style="margin:0 0 6px 0; color:#001b3a; font-size:1.15rem; font-weight:800;">${nomeFamilia}</h3>
-            <span style="color:#64748b; font-size:0.85rem;">Clique para ver as ${itens.length} opções e adicionar quantidades</span>
-          </div>
-          <button style="background:#001b3a; color:white; border:none; padding:10px 16px; border-radius:8px; font-weight:800; font-size:0.85rem; cursor:pointer;">
-            🛒 Ver Opções
-          </button>
-        </div>
-
-      </div>`;
-  });
-
-  container.innerHTML = html;
 }
 
 function atualizarCarrinho() {
+  carrinho = JSON.parse(localStorage.getItem('carrinho_b2b') || '{}');
   const qtdTotal = Object.values(carrinho).reduce((acc, i) => acc + i.qtd, 0);
   const btn = document.getElementById('btnCarrinho');
   if (qtdTotal > 0) {
