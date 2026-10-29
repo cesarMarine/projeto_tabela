@@ -180,21 +180,36 @@ async function carregarOfertas() {
 }
 
 // RENDERIZAÇÃO AGRUPADA POR FAMÍLIA/SUBGRUPO
+// RENDERIZAÇÃO INTELIGENTE DE OFERTAS
 function renderizarEncateComGrip(lista) {
   const container = document.getElementById('gridOfertas');
   if (!container) return;
 
-  // Agrupa os itens da lista pelo Subgrupo/Família
-  const familias = {};
+  // 1. Agrupa temporariamente todos os produtos por subgrupo
+  const grupos = {};
   lista.forEach(item => {
-    const nomeFam = item.subgrupo || 'Geral';
-    if (!familias[nomeFam]) familias[nomeFam] = [];
-    familias[nomeFam].push(item);
+    const nomeSub = item.subgrupo || item.subgrupo_scraping || 'Geral';
+    if (!grupos[nomeSub]) grupos[nomeSub] = [];
+    grupos[nomeSub].push(item);
+  });
+
+  // 2. Separa o que é Família Real (2+ itens) do que é Produto Individual (1 item)
+  const familiasReais = {};
+  const produtosIndividuais = [];
+
+  Object.keys(grupos).forEach(nomeSub => {
+    const itens = grupos[nomeSub];
+    // Se o grupo é "Individual", "Geral" ou tem APENAS 1 PRODUTO, trata como individual
+    if (nomeSub === 'Individual' || nomeSub === 'Geral' || itens.length === 1) {
+      produtosIndividuais.push(...itens);
+    } else {
+      familiasReais[nomeSub] = itens;
+    }
   });
 
   let html = '';
 
-  // BANNER BLACK NOVEMBER MARINE (Ativo entre 02/11/2026 e 30/11/2026)
+  // BANNER BLACK NOVEMBER MARINE (02/11 a 30/11)
   const hoje = new Date();
   const inicioBlack = new Date('2026-11-02T00:00:00');
   const fimBlack = new Date('2026-11-30T23:59:59');
@@ -207,9 +222,9 @@ function renderizarEncateComGrip(lista) {
       </div>`;
   }
 
-  // CARDS DAS FAMÍLIAS EM OFERTA (1 Único Card por Família)
-  Object.keys(familias).forEach(nomeFamilia => {
-    const itens = familias[nomeFamilia];
+  // 3. EXIBE AS FAMÍLIAS (Apenas grupos com 2 ou mais itens em promoção)
+  Object.keys(familiasReais).forEach(nomeFamilia => {
+    const itens = familiasReais[nomeFamilia];
     const desc = itens[0].desconto_porcentagem || itens[0].desconto || 0;
     const imgPai = itens[0].imagem_oferta || '';
     const marca = itens[0].marca || 'MARINE';
@@ -217,7 +232,7 @@ function renderizarEncateComGrip(lista) {
     html += `
       <div class="card-oferta-pai" style="background:#ffffff; border:1px solid #cbd5e1; border-radius:14px; overflow:hidden; margin-bottom:20px; box-shadow:0 4px 14px rgba(0,27,58,0.08);">
         
-        <!-- TARJA DE DESTAQUE (Preto + Azul Marinho + Branco) -->
+        <!-- TARJA DE DESTAQUE FAMÍLIA -->
         <div style="background: linear-gradient(90deg, #001b3a 0%, #0f172a 100%); color:white; padding:10px 18px; display:flex; justify-content:space-between; align-items:center;">
           <div style="display:flex; align-items:center; gap:8px;">
             <span style="background:#ef4444; color:white; font-weight:900; padding:3px 10px; border-radius:6px; font-size:0.85rem;">
@@ -232,7 +247,6 @@ function renderizarEncateComGrip(lista) {
           </span>
         </div>
 
-        <!-- CORPO DO CARD COM FOTO PAI E BOTAO VER OPCOES -->
         <div style="padding:20px; display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
           <div style="width:100px; height:100px; background:#f8fafc; border-radius:10px; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
             ${imgPai ? `<img src="${imgPai}" style="max-width:100%; max-height:100%; object-fit:contain;">` : '🖼️'}
@@ -240,7 +254,7 @@ function renderizarEncateComGrip(lista) {
           <div style="flex:1; min-width:200px;">
             <h3 style="margin:0 0 6px 0; color:#001b3a; font-size:1.2rem; font-weight:800;">${escapeHtml(nomeFamilia)}</h3>
             <p style="margin:0; color:#64748b; font-size:0.88rem;">
-              Esta família possui <strong>${itens.length} opção(ões)/tamanho(s)</strong> promocional(ais).
+              Esta família possui <strong>${itens.length} opções/tamanhos</strong> promocionais.
             </p>
           </div>
           <button style="background:#001b3a; color:white; border:none; padding:12px 22px; border-radius:10px; font-weight:800; font-size:0.9rem; cursor:pointer; display:inline-flex; align-items:center; gap:8px;" onclick="abrirModalFamiliaOferta('${escapeHtml(nomeFamilia).replace(/'/g, "\\'")}')">
@@ -250,6 +264,55 @@ function renderizarEncateComGrip(lista) {
 
       </div>`;
   });
+
+  // 4. EXIBE OS PRODUTOS INDIVIDUAIS (Produtos únicos, no formato tradicional)
+  if (produtosIndividuais.length > 0) {
+    const acrescimo = clienteLogado?.acrescimo || 0;
+
+    if (Object.keys(familiasReais).length > 0) {
+      html += `<h3 style="color:#001b3a; margin: 28px 0 16px 0; font-size: 1.15rem; font-weight: 800;">📌 Ofertas Individuais</h3>`;
+    }
+
+    html += `<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">`;
+
+    produtosIndividuais.forEach(item => {
+      const precoComAcrescimo = item.preco_base + (item.preco_base * acrescimo / 100);
+      const desc = Number(item.desconto_porcentagem || 0);
+      const precoPromocional = precoComAcrescimo - (precoComAcrescimo * desc / 100);
+      const q = carrinho[item.codigo] ? carrinho[item.codigo].qtd : 0;
+
+      html += `
+        <div style="background:white; border-radius:14px; border:1px solid #cbd5e1; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.05); display:flex; flex-direction:column; position:relative;">
+          
+          <div style="position:absolute; top:10px; left:10px; background:#ef4444; color:white; font-weight:900; font-size:0.8rem; padding:4px 10px; border-radius:6px; z-index:2;">
+            -${desc}% OFF
+          </div>
+
+          <div style="width:100%; aspect-ratio:1; padding:16px; display:flex; align-items:center; justify-content:center; background:#fff;">
+            ${item.imagem_oferta ? `<img src="${item.imagem_oferta}" style="max-width:100%; max-height:100%; object-fit:contain;">` : '🖼️'}
+          </div>
+
+          <div style="padding:16px; background:#fafafa; border-top:1px solid #e2e8f0; flex:1; display:flex; flex-direction:column; justify-content:space-between;">
+            <div>
+              <span style="font-size:0.7rem; font-weight:800; color:#001b3a; background:#e2e8f0; padding:2px 6px; border-radius:4px;">CÓD: ${item.codigo}</span>
+              <h4 style="margin:8px 0; color:#0f172a; font-size:0.95rem; font-weight:800; line-height:1.3;">${escapeHtml(item.descricao_item || item.subgrupo)}</h4>
+            </div>
+
+            <div style="background:#fef2f2; border:1px dashed #fca5a5; padding:8px; border-radius:8px; text-align:center; margin:10px 0;">
+              <span style="font-size:0.75rem; color:#94a3b8; text-decoration:line-through; font-weight:700; display:block;">De: R$ ${fmtMoeda(precoComAcrescimo)}</span>
+              <span style="font-size:1.2rem; color:#ef4444; font-weight:900; display:block;">Por: R$ ${fmtMoeda(precoPromocional)}</span>
+            </div>
+
+            <button style="width:100%; background:#10b981; color:white; border:none; padding:10px; border-radius:8px; font-weight:800; font-size:0.85rem; cursor:pointer;" onclick="adicionarOferta('${item.codigo}', ${desc}, ${item.preco_base}, '${item.imagem_oferta}', '${escapeHtml(item.subgrupo).replace(/'/g, "\\'")}')">
+              🛒 ${q > 0 ? `No Pedido (${q})` : 'Adicionar ao Pedido'}
+            </button>
+          </div>
+
+        </div>`;
+    });
+
+    html += `</div>`;
+  }
 
   container.innerHTML = html;
 }
