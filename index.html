@@ -57,7 +57,7 @@
   .loading { text-align:center; padding:80px 20px; color:var(--cinza-400); }
   
   .familia-bloco { margin-bottom:24px; }
-  .familia-head { display:flex; align-items:baseline; gap:12px; padding-bottom:10px; margin-bottom:12px; border-bottom:2px solid var(--azul-100); }
+  .familia-head { display:flex; align-items:center; gap:12px; padding-bottom:10px; margin-bottom:12px; border-bottom:2px solid var(--azul-100); }
   .familia-head h2 { color:var(--azul-800); font-size:1.2rem; font-weight:800; }
   .familia-head .marca-badge { background:var(--azul-50); color:var(--azul-800); padding:4px 10px; border-radius:20px; font-size:.7rem; font-weight:800; text-transform:uppercase; }
 
@@ -73,31 +73,34 @@
   .btn-detalhes { background:var(--cinza-50); border:1px solid var(--cinza-200); color:var(--azul-800); border-radius:6px; font-size:.65rem; font-weight:800; text-transform:uppercase; letter-spacing:.5px; cursor:pointer; display:inline-flex; align-items:center; gap:4px; padding:6px 10px; margin-bottom:12px; align-self:flex-start; transition: .2s; }
   .btn-detalhes:hover { background:var(--azul-50); border-color:var(--azul-300); }
 
-  /* ESTILOS DE LAYOUT HORIZONTAL PARA MOLINETES / CARRETILHAS */
+  /* ESTILOS REFORMULADOS DOS MOLINETES */
   .molinete-info { display: flex; flex-direction: column; gap: 12px; flex: 1; }
   .container-subdivisoes-horizontal { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
   .subdivisao-bloco-coluna { display: flex; flex-direction: column; gap: 8px; }
   .subdivisao-titulo-badge { background: var(--azul-800); color: white; font-weight: 800; font-size: 0.75rem; padding: 4px 10px; border-radius: 4px; align-self: flex-start; border-left: 3px solid var(--azul-500); text-transform: uppercase; }
   .subdivisao-items-grid { display: flex; flex-wrap: wrap; gap: 10px; }
 
-  .molinete-item-card { background: #ffffff; border: 1px solid var(--cinza-300); border-radius: 8px; padding: 10px; width: 125px; text-align: center; position: relative; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+  .molinete-item-card { background: #ffffff; border: 1px solid var(--cinza-300); border-radius: 8px; padding: 10px; width: 140px; text-align: center; position: relative; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
   .molinete-item-card.tem-qtd { border-color: var(--verde); background-color: #f0fdf4; }
   .molinete-badge { position: absolute; top: -6px; right: -6px; background: var(--verde); color: white; font-size: 0.65rem; font-weight: 900; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-  .molinete-codigo { font-size: 0.8rem; font-weight: 800; color: var(--azul-800); }
-  .molinete-modelo { font-size: 0.68rem; color: var(--cinza-500); font-weight: 700; margin: 2px 0; line-height: 1.1; }
-  .molinete-preco { font-size: 0.85rem; font-weight: 900; color: var(--verde); margin: 4px 0; }
+  
+  /* CÓDIGO PEQUENO E DISCRETO */
+  .molinete-codigo { font-size: 0.65rem; font-weight: 700; color: var(--cinza-400); text-transform: uppercase; }
+  /* NOME DO PRODUTO DESTACADO E MAIOR */
+  .molinete-modelo { font-size: 0.85rem; color: var(--azul-800); font-weight: 800; margin: 3px 0 6px 0; line-height: 1.2; }
+  .molinete-preco { font-size: 0.9rem; font-weight: 900; color: var(--verde); margin: 4px 0; }
 
   .molinete-qtd-ctrl { display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 4px; }
   .molinete-qtd-ctrl button { background: var(--cinza-100); border: 1px solid var(--cinza-300); width: 22px; height: 22px; border-radius: 4px; font-weight: 800; cursor: pointer; color: var(--azul-800); }
   .molinete-qtd-ctrl input { width: 32px; height: 22px; text-align: center; border: 1px solid var(--cinza-300); border-radius: 4px; font-weight: 800; font-size: 0.8rem; color: var(--azul-800); }
 
-  /* BADGE DE OFERTA NO TOPO DO CARD DE FAMÍLIA */
+  /* BADGE DE OFERTA / BLACK NOVEMBER NO TOPO DO CARD DE FAMÍLIA */
   .badge-oferta-banner {
     position: absolute; top: -10px; left: -10px;
-    background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
-    color: white; font-weight: 900; font-size: 0.75rem; text-transform: uppercase;
-    padding: 6px 12px; border-radius: 8px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4);
-    z-index: 5; letter-spacing: 0.5px; border: 2px solid white; display: flex; align-items: center; gap: 4px;
+    background: linear-gradient(135deg, #001f3f 0%, #020617 100%);
+    color: #38bdf8; font-weight: 900; font-size: 0.75rem; text-transform: uppercase;
+    padding: 6px 12px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    z-index: 5; letter-spacing: 0.5px; border: 1px solid #38bdf8; display: flex; align-items: center; gap: 4px;
   }
 
   /* TARJA EM LINHA DE PRODUTO */
@@ -276,6 +279,13 @@ let mapaOfertas = {};
 const fmtMoeda = v => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 const parseAtributos = json => { try { return JSON.parse(json || '{}'); } catch { return {}; } };
+
+// LEITURA INICIAL DO CARRINHO
+try {
+  carrinho = JSON.parse(localStorage.getItem('carrinho_b2b') || '{}');
+} catch(e) {
+  carrinho = {};
+}
 
 function abrirZoomImagem(elemento) {
   const img = elemento.querySelector('img');
@@ -462,7 +472,8 @@ async function finalizarPedido() {
   const itens = Object.keys(carrinho).map(cod => {
     const item = carrinho[cod];
     const calc = calcularValoresProduto(item.precoBase, cod);
-    return { codigo: cod, desc: item.desc, qtd: item.qtd, precoBase: item.precoBase, precoFinal: calc.precoFinal };
+    const precoUnitario = item.preco ? item.preco : calc.precoFinal;
+    return { codigo: cod, desc: item.desc, qtd: item.qtd, precoBase: item.precoBase, precoFinal: precoUnitario };
   });
 
   if (itens.length === 0) { alert('Seu carrinho está vazio.'); return; }
@@ -475,7 +486,7 @@ async function finalizarPedido() {
       body: JSON.stringify({ cnpj_cliente: clienteLogado.cnpj, codigo_representante: clienteLogado.representante, total, itens })
     });
     const j = await r.json();
-    if (j.ok) { alert('✅ Pedido enviado com sucesso!'); carrinho = {}; atualizarCarrinho(); fecharCarrinho(); } 
+    if (j.ok) { alert('✅ Pedido enviado com sucesso!'); carrinho = {}; localStorage.removeItem('carrinho_b2b'); atualizarCarrinho(); fecharCarrinho(); } 
     else { alert('❌ Erro: ' + j.erro); }
   } catch (e) { alert('❌ Erro ao enviar o pedido.'); }
 }
@@ -491,7 +502,7 @@ async function carregar() {
     if (!j.ok) throw new Error('Erro API');
     
     todosItens = j.itens.map(normalizarItem).filter(it => it.grupo.length > 0 && it.estoque > 0);
-    montarChips(); renderizar();
+    montarChips(); renderizar(); atualizarCarrinho();
   } catch (e) { document.getElementById('conteudo').innerHTML = '<div class="loading">Erro ao carregar.</div>'; }
 }
 
@@ -674,15 +685,21 @@ function toggleVariacao(codigo, event) {
   if (painel) painel.classList.toggle('ativo');
 }
 
-/* RENDERIZAÇÃO ATUALIZADA DOS MOLINETES (HORIZONTAL E SEM FOTO PEQUENA) */
+/* RENDERIZAÇÃO DOS MOLINETES (CÓDIGO DISCRETO E NOME DESTACADO) */
 function renderFamiliaMolinete(fam, itens) {
   const primeiroItem = itens[0];
   const imgInicial = primeiroItem?.imagem_url || '';
   let subdivisoes = fam.subdivisoes || [];
   if (subdivisoes.length === 0) subdivisoes = [{ nome: '', itens: fam.itens }];
 
+  const itensComEstoque = itens.filter(it => it.estoque > 0);
+  if (itensComEstoque.length === 0) return '';
+
+  const temOfertaNaFamilia = itensComEstoque.some(it => it.calculoPreco.temOferta);
+  const maiorDesconto = Math.max(...itensComEstoque.map(it => it.calculoPreco.pctDesconto || 0));
+
   const blocosSubdivisoesHtml = subdivisoes.map(sub => {
-    const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
+    const itensDaSub = itensComEstoque.filter(it => sub.itens.includes(it.codigo));
     if (itensDaSub.length === 0) return '';
     itensDaSub.sort((a, b) => a.ordem_excel - b.ordem_excel);
 
@@ -694,8 +711,9 @@ function renderFamiliaMolinete(fam, itens) {
       return `
         <div class="molinete-item-card ${q > 0 ? 'tem-qtd' : ''}" id="mini-${it.codigo}">
           ${q > 0 ? `<span class="molinete-badge">${q}</span>` : ''}
+          
           <div class="molinete-codigo">CÓD: ${escapeHtml(it.codigo)}</div>
-          ${info.modelo ? `<div class="molinete-modelo">${escapeHtml(info.modelo)}</div>` : ''}
+          <div class="molinete-modelo">${escapeHtml(info.modelo || it.subgrupo)}</div>
 
           ${calc.temOferta ? `
             <div class="preco-box-oferta" style="margin: 4px 0;">
@@ -725,9 +743,17 @@ function renderFamiliaMolinete(fam, itens) {
 
   return `
     <div class="familia-bloco">
-      <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
+      <div class="familia-head">
+        <h2>${escapeHtml(fam.nome)}</h2> 
+        <span class="marca-badge">${escapeHtml(itens[0].marca)}</span>
+      </div>
       <div class="molinete-card" id="card-fam-${fam.id}">
-        <div class="familia-side"><div class="familia-foto-principal" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
+        ${temOfertaNaFamilia ? `<div class="badge-oferta-banner">⚡ GRUPO BLACK NOVEMBER -${maiorDesconto}%</div>` : ''}
+        <div class="familia-side">
+          <div class="familia-foto-principal" onclick="abrirZoomImagem(this)">
+            ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
+          </div>
+        </div>
         <div class="molinete-info">
           <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes do produto</button>
           <div class="container-subdivisoes-horizontal">
@@ -1203,7 +1229,7 @@ function renderFamiliaAnzol(fam, itens) {
         <span class="marca-badge">${escapeHtml(itens[0].marca)}</span>
       </div>
       <div class="anzol-card" id="card-fam-${fam.id}">
-        ${temOfertaNaFamilia ? `<div class="badge-oferta-banner">🔥 OFERTA -${maiorDesconto}% OFF</div>` : ''}
+        ${temOfertaNaFamilia ? `<div class="badge-oferta-banner">⚡ GRUPO BLACK NOVEMBER -${maiorDesconto}%</div>` : ''}
         <div class="familia-side">
           <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">
             ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
@@ -1330,25 +1356,53 @@ function fecharModal(ev, force) {
 }
 
 function buscarItem(codigo) { return todosItens.find(i => i.codigo === codigo); }
-function mudarQtd(cod, delta) { const a = carrinho[cod] ? carrinho[cod].qtd : 0; setQtd(cod, a + delta); }
+function mudarQtd(cod, delta) { 
+  const a = carrinho[cod] ? carrinho[cod].qtd : 0; 
+  setQtd(cod, a + delta); 
+}
+
+/* LÓGICA DE ATUALIZAÇÃO DO CARRINHO COM PERSISTÊNCIA NO LOCALSTORAGE */
 function setQtd(cod, valor) {
-  const q = parseInt(valor) || 0; const item = buscarItem(cod);
-  if (q <= 0) delete carrinho[cod];
-  else carrinho[cod] = { qtd: q, precoBase: item ? item.precoBase : 0, desc: item ? item.subgrupo : `Produto ${cod}`, img: item ? item.imagem_url : '' };
+  const q = parseInt(valor) || 0; 
+  const item = buscarItem(cod);
+
+  if (q <= 0) {
+    delete carrinho[cod];
+  } else {
+    carrinho[cod] = { 
+      codigo: cod,
+      qtd: q, 
+      precoBase: item ? item.precoBase : 0, 
+      desc: item ? item.subgrupo : `Produto ${cod}`, 
+      img: item ? item.imagem_url : '' 
+    };
+  }
   
+  localStorage.setItem('carrinho_b2b', JSON.stringify(carrinho));
+
   document.querySelectorAll(`input[onchange*="'${cod}'"]`).forEach(inp => inp.value = q);
   
   const card = document.getElementById(`mini-${cod}`);
   if (card) {
     const badge = card.querySelector('.anzol-badge') || card.querySelector('.isca-badge') || card.querySelector('.molinete-badge');
-    if (q > 0) { card.classList.add('tem-qtd'); if (badge) badge.textContent = q; }
-    else card.classList.remove('tem-qtd');
+    if (q > 0) { 
+      card.classList.add('tem-qtd'); 
+      if (badge) badge.textContent = q; 
+    } else {
+      card.classList.remove('tem-qtd');
+    }
   }
+
   atualizarCarrinho();
 }
 
 function atualizarCarrinho() {
-  carrinho = JSON.parse(localStorage.getItem('carrinho_b2b') || '{}');
+  try {
+    carrinho = JSON.parse(localStorage.getItem('carrinho_b2b') || '{}');
+  } catch(e) {
+    carrinho = {};
+  }
+
   const itens = Object.keys(carrinho); 
   let total = 0, qtdTotal = 0;
   
@@ -1357,7 +1411,8 @@ function atualizarCarrinho() {
     const calc = calcularValoresProduto(i.precoBase, cod);
     const precoUnitario = i.preco ? i.preco : calc.precoFinal;
     const sub = precoUnitario * i.qtd; 
-    total += sub; qtdTotal += i.qtd;
+    total += sub; 
+    qtdTotal += i.qtd;
     
     return `
       <div class="item-carrinho">
@@ -1373,8 +1428,13 @@ function atualizarCarrinho() {
   const btnFab = document.getElementById('btnCarrinho');
   const badgeFab = document.getElementById('topoQtd');
   
-  if (qtdTotal > 0) { btnFab.style.display = 'flex'; badgeFab.textContent = qtdTotal; } 
-  else { btnFab.style.display = 'none'; fecharCarrinho(); }
+  if (qtdTotal > 0) { 
+    btnFab.style.display = 'flex'; 
+    badgeFab.textContent = qtdTotal; 
+  } else { 
+    btnFab.style.display = 'none'; 
+    fecharCarrinho(); 
+  }
 
   document.getElementById('carrinhoTotal').textContent = `R$ ${fmtMoeda(total)}`;
   document.getElementById('listaCarrinho').innerHTML = html || '<div style="text-align:center;color:#94a3b8;padding:20px;">Vazio</div>';
