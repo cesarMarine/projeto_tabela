@@ -402,14 +402,14 @@ async function verificarValidadeTabela() {
 function getIconeUrl(grupo) {
   const g = grupo.toUpperCase().trim();
   if (g.includes('ANZOL')) return BUCKET_ICONIS + 'ANZOL.jpg';
-  if (g.includes('ISCA')) return BUCKET_ICONIS + 'ISCA.jpg';
-  if (g.includes('MOLINETE')) return BUCKET_ICONIS + 'MOLINETE.jpg';
   if (g.includes('CARRETILHA')) return BUCKET_ICONIS + 'CARRETILHA.jpg';
+  if (g.includes('MOLINETE')) return BUCKET_ICONIS + 'MOLINETE.jpg';
+  if (g.includes('ISCA')) return BUCKET_ICONIS + 'ISCA.jpg';  
   if (g.includes('VARA')) return BUCKET_ICONIS + 'VARA.jpg';
   if (g.includes('LINHA')) return BUCKET_ICONIS + 'LINHA.jpg';
   if (g.includes('MOTOR')) return BUCKET_ICONIS + 'MOTOR.jpg';
   if (g.includes('GIRADOR') || g.includes('EMPATE') || g.includes('SNAP')) return BUCKET_ICONIS + 'GIRADORES.jpg';
-  if (g.includes('ACESSORIO') || g.includes('VESTUARIO')) return BUCKET_ICONIS + 'ACESSORIOS.jpg';
+  if (g.includes('ACESSORIO') || g.includes('VESTUARIO')) return BUCKET_ICONIS + 'BONE.jpg';
   return BUCKET_ICONIS + 'ACESSORIOS.jpg';
 }
 
