@@ -225,7 +225,13 @@
 <!-- AVISO DE VALIDADE DA TABELA -->
 <div id="barraAvisoTabela" style="display:none; text-align:center; padding:8px 12px; font-weight:800; font-size:0.8rem; border-bottom:1px solid transparent;"></div>
 
+<!-- CABAÇALHO DE GRUPOS -->
 <div class="chips-wrap"><div class="chips" id="chips"></div></div>
+
+<!-- BARRA SECUNDÁRIA DE MARCAS (Adicionar este trecho) -->
+<div id="barramarcasWrap" style="display:none; background:#f1f5f9; border-bottom:1px solid #e2e8f0; padding:6px 12px; position:sticky; top:105px; z-index:89; overflow-x:auto;">
+  <div id="barramarcas" style="max-width:1600px; margin:0 auto; display:flex; gap:8px; align-items:center;"></div>
+</div>
 
 <main class="conteudo" id="conteudo">
   <div class="loading">Carregando catálogo…</div>
@@ -273,6 +279,7 @@ let todosItens = [], todasFamilias = [], grupoAtual = '__OFERTAS__', buscaAtual 
 let clienteLogado = null;
 let porcentagemAcrescimo = 0;
 let mapaOfertas = {}; 
+let marcaAtual = ''; // Guarda a marca selecionada (vazia = todas as marcas)
 
 const BUCKET_ICONIS = 'https://gpzqzwrqndawhhglycat.supabase.co/storage/v1/object/public/icones_area_trabalho/';
 
@@ -290,6 +297,73 @@ function ativarWhatsAppVendedor() {
     btn.href = link;
     btn.style.display = 'inline-flex';
   }
+}
+
+function trocarGrupo(grupo, btn) {
+  grupoAtual = grupo;
+  marcaAtual = ''; // Reseta o filtro de marca ao mudar de grupo
+  
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('ativo'));
+  btn.classList.add('ativo'); 
+  
+  montarBarraMarcas(); // Atualiza os botões de marcas do grupo selecionado
+  renderizar();
+}
+
+function montarBarraMarcas() {
+  const wrap = document.getElementById('barramarcasWrap');
+  const container = document.getElementById('barramarcas');
+
+  // Se estiver em "Ofertas" ou sem grupo definido, esconde a barra de marcas
+  if (grupoAtual === '__OFERTAS__' || grupoAtual === '__TODOS__') {
+    wrap.style.display = 'none';
+    return;
+  }
+
+  // Pega apenas os produtos do grupo ativo que têm estoque
+  const produtosDoGrupo = todosItens.filter(it => it.grupo === grupoAtual && it.estoque > 0);
+  
+  // Extrai as marcas únicas presentes nesse grupo
+  const marcasSet = new Set();
+  produtosDoGrupo.forEach(it => { if (it.marca) marcasSet.add(it.marca.trim()); });
+  const marcas = Array.from(marcasSet).sort();
+
+  // Se houver menos de 2 marcas, não precisa exibir a barra
+  if (marcas.length <= 1) {
+    wrap.style.display = 'none';
+    return;
+  }
+
+  // Monta o botão "Todas" + botões de cada marca com sua logo
+  let html = `
+    <button onclick="filtrarPorMarca('', this)" 
+            style="padding:4px 10px; border-radius:12px; border:1px solid #cbd5e1; background:${marcaAtual===''?'#003366':'#white'}; color:${marcaAtual===''?'#fff':'#334155'}; font-weight:800; font-size:0.7rem; cursor:pointer; white-space:nowrap;">
+      TODAS AS MARCAS
+    </button>
+  `;
+
+  marcas.forEach(marca => {
+    const logoUrl = getLogoMarcaUrl(marca); // Busca no bucket a imagem da logo
+    const ativo = marcaAtual.toUpperCase() === marca.toUpperCase();
+    const bg = ativo ? '#003366' : '#ffffff';
+    const borderColor = ativo ? '#003366' : '#cbd5e1';
+
+    html += `
+      <button onclick="filtrarPorMarca('${escapeHtml(marca)}', this)" 
+              style="padding:4px 8px; border-radius:12px; border:1px solid ${borderColor}; background:${bg}; cursor:pointer; display:flex; align-items:center; gap:4px; white-space:nowrap;">
+        ${logoUrl ? `<img src="${logoUrl}" style="height:18px; max-width:70px; object-fit:contain;">` : `<span style="font-size:0.7rem; font-weight:800; color:${ativo?'#fff':'#334155'}">${escapeHtml(marca)}</span>`}
+      </button>
+    `;
+  });
+
+  containe.innerHTML = html;
+  wrap.style.display = 'block';
+}
+
+function filtrarPorMarca(marca, btn) {
+  marcaAtual = marca;
+  montarBarraMarcas(); // Recarrega os estilos dos botões de marca
+  renderizar();
 }
 
 function renderizarCardFamiliaOuGrupo(grupoNome, produtosGrupo, ofertasMap) {
@@ -745,14 +819,23 @@ function trocarGrupo(grupo, btn) {
 
 function filtrar() {
   let lista = todosItens;
+
   if (grupoAtual !== '__TODOS__' && grupoAtual !== '__OFERTAS__') {
     lista = lista.filter(it => it.grupo === grupoAtual);
+  }
+
+  // Filtro por Marca (Adicionar este trecho)
+  if (marcaAtual) {
+    lista = lista.filter(it => it.marca.toUpperCase() === marcaAtual.toUpperCase());
   }
 
   if (buscaAtual) {
     const q = buscaAtual.toLowerCase();
     lista = lista.filter(it => it.codigo.includes(q) || it.subgrupo.toLowerCase().includes(q) || it.marca.toLowerCase().includes(q));
   }
+
+  //
+  
   return lista;
 }
 
