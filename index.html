@@ -186,17 +186,17 @@
 
   .zoom-modal-bg { position: fixed; inset: 0; z-index: 10000; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; padding: 16px; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
   .zoom-modal-bg.on { opacity: 1; pointer-events: auto; }
-  .zoom-modal-content { position: relative; max-width: 95vw; max-height: 90vh; display: flex; align-items: center; justify-content: center; }
+.zoom-modal-content { position: relative; max-width: 95vw; max-height: 90vh; display: flex; align-items: center; justify-content: center; }
   .zoom-modal-content img { max-width: 100%; max-height: 80vh; object-fit: contain; border-radius: 8px; background: white; padding: 6px; }
   .zoom-x { position: absolute; top: -12px; right: -12px; background: var(--vermelho); color: white; border: 2px solid white; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 14px; font-weight: bold; }
 </style>
 </head>
+<body>
+
 <!-- BOTÃO FLUTUANTE DISCRETO DO WHATSAPP -->
 <a id="btnWhatsVendedor" href="#" target="_blank" style="display:none; position:fixed; bottom:20px; left:20px; background:#25D366; color:white; padding:10px 16px; border-radius:30px; font-weight:800; font-size:0.8rem; text-decoration:none; box-shadow:0 4px 16px rgba(37,211,102,0.4); z-index:150; align-items:center; gap:8px;">
   <span style="font-size:1.1rem;">💬</span> Falar com <span id="nomeVendedorWhats">Vendedor</span>
 </a>
-<body>
-
 <div id="telaLogin">
   <div class="login-box">
     <h1>Catálogo B2B</h1>
@@ -284,6 +284,23 @@ function ativarWhatsAppVendedor() {
     
     // Mensagem padrão já montada com a identificação do cliente
     const mensagem = encodeURIComponent(`Olá ${nomeVendedor}, sou a empresa ${clienteLogado.nome} (CNPJ: ${clienteLogado.cnpj}) e gostaria de tirar uma dúvida sobre a tabela de preços.`);
+
+    const link = `https://wa.me/55${numWhats}?text=${mensagem}`;
+    
+    const btn = document.getElementById('btnWhatsVendedor');
+    document.getElementById('nomeVendedorWhats').textContent = nomeVendedor;
+    btn.href = link;
+    btn.style.display = 'inline-flex';
+  }
+}
+
+function configurarWhatsAppVendedor() {
+  if (clienteLogado && clienteLogado.vendedor && clienteLogado.vendedor.whatsapp) {
+    const numWhats = clienteLogado.vendedor.whatsapp.replace(/\D/g, '');
+    if (!numWhats) return;
+
+    const nomeVendedor = clienteLogado.vendedor.nome.split(' ')[0];
+    const mensagem = encodeURIComponent(`Olá ${nomeVendedor}, sou da empresa ${clienteLogado.nome} (CNPJ: ${clienteLogado.cnpj}) e gostaria de tirar uma dúvida sobre os produtos.`);
 
     const link = `https://wa.me/55${numWhats}?text=${mensagem}`;
     
@@ -383,6 +400,9 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('infoCliente').style.display = 'flex';
     document.getElementById('nomeCliente').textContent = (clienteLogado.nome || '').split(' ')[0];
     document.getElementById('badgeUf').textContent = clienteLogado.uf;
+
+    // ATIVA O BOTÃO DO WHATSAPP AQUI
+    configurarWhatsAppVendedor();
 
     carregar();
   }
@@ -606,6 +626,7 @@ async function fazerLogin() {
 
     localStorage.setItem('clienteLogadoB2B', JSON.stringify(j.cliente));
     localStorage.setItem('acrescimoB2B', j.regra_acrescimo.porcentagem);
+    configurarWhatsAppVendedor();
 
     document.getElementById('telaLogin').style.display = 'none';
     document.getElementById('infoCliente').style.display = 'flex';
