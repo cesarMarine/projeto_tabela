@@ -1242,42 +1242,35 @@ function renderFamiliaVara(fam, itens) {
       const calc = it.calculoPreco;
       const specs = info.especificacoes || {};
 
-      // Extrai Tamanho e Libragem das especificações do JSON
-      const tamanho = specs['Tamanho (cm)'] || specs['Comprimento'] || specs['TAMANHO'] || '-';
-      const libragem = specs['Resistência da linha'] || specs['Libragem'] || specs['LBS'] || specs['RESISTÊNCIA'] || '-';
+      // Extrai Tamanho e Libragem
+      const tamanho = specs['Tamanho (cm)'] || specs['Comprimento'] || specs['TAMANHO'] || '';
+      const libragem = specs['Resistência da linha'] || specs['Libragem'] || specs['LBS'] || specs['RESISTÊNCIA'] || '';
 
-      // Guarda os dados secundários para o olho 👁️
+      // Monta as especificações completas guardadas no olho 👁️
       const specsGuardadas = Object.entries(specs)
-        .filter(([k]) => !['Tamanho (cm)', 'Comprimento', 'TAMANHO', 'Resistência da linha', 'Libragem', 'LBS', 'RESISTÊNCIA'].includes(k))
         .map(([k, v]) => `<span style="white-space:nowrap;"><strong>${escapeHtml(k)}:</strong> ${escapeHtml(v)}</span>`)
         .join(' • ');
 
       return `
         <tr class="linha-tabela-vara" style="border-bottom:1px solid #e2e8f0;">
-          <!-- MODELO + BOTÃO OLHO -->
-          <td style="font-weight:800; color:var(--azul-800); font-size:0.75rem; padding:6px 4px; white-space:nowrap;">
-            ${escapeHtml(info.modeloJson)}
-            <button type="button" 
-                    onclick="event.stopPropagation(); togglePainelVara('${it.codigo}')" 
-                    title="Ver detalhes" 
-                    style="margin-left:2px; padding:2px 5px; font-size:0.68rem; border-radius:4px; background:#eff6ff; border:1px solid #93c5fd; cursor:pointer; vertical-align:middle;">
-              👁️
-            </button>
+          <!-- COLUNA 1: MODELO + TAMANHO + BOTÃO 👁️ -->
+          <td style="font-weight:800; color:var(--azul-800); font-size:0.75rem; padding:8px 4px; vertical-align:middle;">
+            <div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
+              <span>${escapeHtml(info.modeloJson)}</span>
+              ${tamanho ? `<span style="font-size:0.68rem; color:#64748b; font-weight:700;">(${escapeHtml(tamanho)})</span>` : ''}
+              <button type="button" 
+                      onclick="event.stopPropagation(); togglePainelVara('${it.codigo}')" 
+                      title="Ver libragem e detalhes" 
+                      style="padding:2px 5px; font-size:0.68rem; border-radius:4px; background:#eff6ff; border:1px solid #93c5fd; cursor:pointer;">
+                👁️
+              </button>
+            </div>
+            ${libragem ? `<div style="font-size:0.65rem; color:#2563eb; font-weight:700; margin-top:2px;">${escapeHtml(libragem)}</div>` : ''}
             ${calc.temOferta ? `<span class="tarja-oferta-item">🔥 -${calc.pctDesconto}%</span>` : ''}
           </td>
 
-          <!-- TAMANHO -->
-          <td style="text-align:center; font-size:0.7rem; font-weight:700; color:var(--cinza-700); padding:6px 2px; white-space:nowrap;">
-            ${escapeHtml(tamanho)}
-          </td>
-
-          <!-- LIBRAGEM -->
-          <td style="text-align:center; font-size:0.7rem; font-weight:700; color:#2563eb; padding:6px 2px; white-space:nowrap;">
-            ${escapeHtml(libragem)}
-          </td>
-
-          <!-- PREÇO -->
-          <td style="text-align:center; font-weight:800; color:var(--azul-800); padding:6px 4px; white-space:nowrap;">
+          <!-- COLUNA 2: PREÇO -->
+          <td style="text-align:center; font-weight:800; color:var(--azul-800); padding:8px 2px; vertical-align:middle; white-space:nowrap;">
             ${calc.temOferta ? `
               <div class="preco-box-oferta">
                 <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
@@ -1286,8 +1279,8 @@ function renderFamiliaVara(fam, itens) {
             ` : `R$ ${fmtMoeda(calc.precoFinal)}`}
           </td>
 
-          <!-- QTD -->
-          <td style="text-align:center; padding:6px 2px;" onclick="event.stopPropagation()">
+          <!-- COLUNA 3: CONTROLO QTD -->
+          <td style="text-align:right; padding:8px 2px; vertical-align:middle;" onclick="event.stopPropagation()">
             <div class="qtd-ctrl" style="display:inline-flex;">
               <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
               <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
@@ -1298,7 +1291,7 @@ function renderFamiliaVara(fam, itens) {
 
         <!-- PAINEL OCULTO (EXPANDE NO OLHO 👁️) -->
         <tr id="panel-vara-${it.codigo}" style="display:none; background:#f8fafc;">
-          <td colspan="5" style="padding:8px; font-size:0.68rem; color:#334155; border-bottom:1px solid #cbd5e1; line-height:1.4;">
+          <td colspan="3" style="padding:8px; font-size:0.68rem; color:#334155; border-bottom:1px solid #cbd5e1; line-height:1.4;">
             <div style="background:#fff; border:1px solid #cbd5e1; padding:6px 8px; border-radius:6px;">
               <strong>📌 Cód:</strong> ${it.codigo} ${specsGuardadas ? ' • ' + specsGuardadas : ''}
             </div>
@@ -1309,15 +1302,13 @@ function renderFamiliaVara(fam, itens) {
     return `
       <div class="sub-bloco" style="margin-top: 8px;">
         ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
-        <div style="overflow-x: auto; width: 100%; margin-top: 4px; background: white; border-radius: 8px; border: 1px solid var(--cinza-200); -webkit-overflow-scrolling: touch;">
-          <table style="width: 100%; border-collapse: collapse; min-width: 100%;">
+        <div style="width: 100%; margin-top: 4px; background: white; border-radius: 8px; border: 1px solid var(--cinza-200);">
+          <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
             <thead>
               <tr style="background: var(--cinza-50); border-bottom: 2px solid var(--cinza-200); font-size: 0.62rem; font-weight: 800; color: var(--cinza-500); text-transform: uppercase;">
-                <th style="padding: 6px 4px; text-align: left;">Modelo</th>
-                <th style="padding: 6px 2px; text-align: center;">Tamanho</th>
-                <th style="padding: 6px 2px; text-align: center;">Libragem</th>
-                <th style="padding: 6px 4px; text-align: center;">Preço</th>
-                <th style="padding: 6px 2px; text-align: center;">Qtd</th>
+                <th style="padding: 6px 4px; text-align: left; width: 45%;">Modelo / Tam</th>
+                <th style="padding: 6px 2px; text-align: center; width: 28%;">Preço</th>
+                <th style="padding: 6px 2px; text-align: right; width: 27%;">Qtd</th>
               </tr>
             </thead>
             <tbody>${linhas}</tbody>
