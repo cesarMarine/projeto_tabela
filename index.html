@@ -495,7 +495,7 @@ function getLogoMarcaUrl(marca) {
   if (m.includes('DUEL')) return BUCKET_ICONIS + 'DUEL.jpg';
   if (m.includes('HARDCORE')) return BUCKET_ICONIS + 'HARDCORE.JPG';
   return '';
-
+}
 function renderMarcaBadge(marca) {
   if (!marca) return '';
   const logoUrl = getLogoMarcaUrl(marca);
