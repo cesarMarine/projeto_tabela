@@ -890,23 +890,25 @@ function renderizar() {
       const grupoItem = primeiroItem.grupo.toUpperCase();
       const nomeFam = fam.nome.toUpperCase();
 
-      if (nomeFam.includes('VARA')) tipo = 'vara';
-      else if (nomeFam.includes('LINHA')) tipo = 'linha';
-      else if (
-        grupoItem.includes('ACESSORIO') || grupoItem.includes('VESTUARIO') || 
-        nomeFam.includes('ACESSORIO') || nomeFam.includes('ALICATE') || nomeFam.includes('TESOURA') || 
-        nomeFam.includes('VESTUARIO')
-      ) { tipo = 'grade'; }
-      else if (nomeFam.includes('ISCA') || attrs.includes('CORES') || attrs.includes('COR')) tipo = 'isca';
-      else if (
-        nomeFam.includes('ANZOL') || 
-        nomeFam.includes('GARAT') || grupoItem.includes('GARAT') || // <--- Garatéias usam o mesmo layout dos Anzóis
-        nomeFam.includes('EMPATE') || nomeFam.includes('GIRADOR') || 
-        nomeFam.includes('SNAP') || nomeFam.includes('CABO') || nomeFam.includes('LUVA')
-      ) tipo = 'anzol';
-      else if (nomeFam.includes('MOLINETE')) tipo = 'molinete';
-      else if (nomeFam.includes('CARRETILHA')) tipo = 'equipamento_direto';
-      else if (nomeFam.includes('MOTOR') || grupoItem.includes('MOTOR')) tipo = 'motor';
+// Substitua o trecho de verificação dentro de renderizar():
+if (nomeFam.includes('VARA')) tipo = 'vara';
+else if (nomeFam.includes('LINHA')) tipo = 'linha';
+else if (
+  grupoItem.includes('ACESSORIO') || grupoItem.includes('VESTUARIO') || 
+  nomeFam.includes('ACESSORIO') || nomeFam.includes('ALICATE') || nomeFam.includes('TESOURA') || 
+  nomeFam.includes('VESTUARIO')
+) { tipo = 'grade'; }
+else if (nomeFam.includes('ISCA') || attrs.includes('CORES') || attrs.includes('COR')) tipo = 'isca';
+else if (
+  nomeFam.includes('ANZOL') || 
+  nomeFam.includes('GARAT') || grupoItem.includes('GARAT') || 
+  nomeFam.includes('SABIKI') || grupoItem.includes('SABIKI') || // <--- Garante captura por nome da Família ou Grupo
+  nomeFam.includes('EMPATE') || nomeFam.includes('GIRADOR') || 
+  nomeFam.includes('SNAP') || nomeFam.includes('CABO') || nomeFam.includes('LUVA')
+) tipo = 'anzol';
+else if (nomeFam.includes('MOLINETE')) tipo = 'molinete';
+else if (nomeFam.includes('CARRETILHA')) tipo = 'equipamento_direto';
+else if (nomeFam.includes('MOTOR') || grupoItem.includes('MOTOR')) tipo = 'motor';
       
       if (tipo === 'isca') html += renderFamiliaIsca(fam, filhos);
       else if (tipo === 'molinete') html += renderFamiliaMolinete(fam, filhos);
