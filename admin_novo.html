@@ -529,6 +529,7 @@ document.querySelectorAll('.sidebar button').forEach(b => {
 });
 
 // Carrega as opções de grupos/famílias no <select> de ofertas
+// Carrega os grupos principais (ex: GARATÉIAS, ISCAS 02, ANZOL) no <select> do Admin
 async function carregarGruposParaOferta() {
   const sel = document.getElementById('ofertaSelectGrupo');
   if (!sel) return;
@@ -537,8 +538,10 @@ async function carregarGruposParaOferta() {
     const j = await r.json();
     const produtos = j.itens || j;
     
-    // Extrai subgrupos únicos da tabela
-    const gruposUnicos = [...new Set(produtos.map(p => p.subgrupo || p.subgrupo_scraping).filter(Boolean))].sort();
+    // Extrai os GRUPOS únicos da tabela (grupo_scraping ou grupo)
+    const gruposUnicos = [...new Set(
+      produtos.map(p => p.grupo || p.grupo_scraping).filter(Boolean)
+    )].sort();
     
     sel.innerHTML = '<option value="">-- Selecione o Grupo --</option>' + 
       gruposUnicos.map(g => `<option value="${g.replace(/"/g,'&quot;')}">${g}</option>`).join('');

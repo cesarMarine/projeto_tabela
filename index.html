@@ -467,7 +467,8 @@ async function verificarValidadeTabela() {
 
 function getIconeUrl(grupo) {
   const g = grupo.toUpperCase().trim();
-  
+
+  if (g.includes('GARAT')) return BUCKET_ICONIS + 'GARATEIAS.jpg'; // Captura GARATEIA e GARATÉIAS
   if (g.includes('ANZOL')) return BUCKET_ICONIS + 'ANZOL.jpg';
   if (g.includes('CARRETILHA')) return BUCKET_ICONIS + 'CARRETILHA.jpg';
   if (g.includes('MOLINETE')) return BUCKET_ICONIS + 'MOLINETE.jpg';
