@@ -649,10 +649,14 @@ function analisarAnzol(it) {
   
   if (!numero || numero === 'S/N') {
     const subUpper = (it.subgrupo || '').toUpperCase();
+    
+    // Tratamento específico para SABIKI / Cabos de Aço / Anzóis
     const matchCabo = subUpper.match(/(\d+\s*LBS?|\d+\s*KG|\d+\s*M(?:ETROS)?)/i);
-    if (matchCabo) { numero = matchCabo[1]; } 
-    else {
-      const match = subUpper.match(/(?:Nº?|Nº|NUMERO|TAMANHO)?\s*(\d{1,2}(?:\/\d)?(?:\s*CM|\s*MM)?|\b[PMGG]{1,3}\b)(?:\s*C\/|\s|$)/i);
+    if (matchCabo) { 
+      numero = matchCabo[1]; 
+    } else {
+      // Procura por números de anzol/sabiki (ex: Nº 12, N10, 14, 1/0, etc)
+      const match = subUpper.match(/(?:Nº?|Nº|NUMERO|TAMANHO|SABIKI)?\s*(\d{1,2}(?:\/\d)?(?:\s*CM|\s*MM)?|\b[PMGG]{1,3}\b)(?:\s*C\/|\s|$)/i);
       if (match) numero = match[1]; else numero = it.subgrupo.replace(it.grupo, '').trim() || 'S/N';
     }
   }
