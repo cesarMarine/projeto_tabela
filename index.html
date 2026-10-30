@@ -1231,70 +1231,96 @@ function renderFamiliaVara(fam, itens) {
   const itensComEstoque = itens.filter(it => it.estoque > 0);
   if (itensComEstoque.length === 0) return '';
 
-  window.varasData = window.varasData || {};
-
-  const blocosTabelas = subdivisoes.map((sub, subIdx) => {
+  const blocosTabelas = subdivisoes.map(sub => {
     const itensDaSub = itensComEstoque.filter(it => sub.itens.includes(it.codigo));
     if (itensDaSub.length === 0) return '';
+    itensDaSub.sort((a, b) => a.ordem_excel - b.ordem_excel);
 
-    // Agrupa os itens da subdivisão por Comprimento/Tamanho
-    const tamanhosMap = new Map();
-    itensDaSub.forEach(it => {
+    const linhas = itensDaSub.map(it => {
+      const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
       const info = analisarVara(it);
-      const comp = info.especificacoes['Tamanho (cm)'] || info.especificacoes['Comprimento'] || info.especificacoes['TAMANHO'] || 'Tamanho Único';
-      if (!tamanhosMap.has(comp)) tamanhosMap.set(comp, []);
-      tamanhosMap.get(comp).push(it);
-    });
+      const calc = it.calculoPreco;
+      const specs = info.especificacoes || {};
 
-    const listaTamanhos = Array.from(tamanhosMap.keys());
-    const chaveData = `${fam.id}_${subIdx}`;
-    
-    // Guarda os dados organizados por tamanho para a troca rápida de abas
-    window.varasData[chaveData] = {
-      tamanhosMap,
-      subNome: sub.nome
-    };
+      // Extrai Tamanho e Libragem das especificações do JSON
+      const tamanho = specs['Tamanho (cm)'] || specs['Comprimento'] || specs['TAMANHO'] || '-';
+      const libragem = specs['Resistência da linha'] || specs['Libragem'] || specs['LBS'] || specs['RESISTÊNCIA'] || '-';
 
-    // Cria as abas de Comprimento
-    const tabsCompHtml = listaTamanhos.map((comp, idx) => `
-      <button class="vara-comp-tab ${idx === 0 ? 'ativo' : ''}" 
-              onclick="trocarTamanhoVara('${chaveData}', '${escapeHtml(comp)}', this)"
-              style="padding:6px 12px; border-radius:6px; border:1px solid #cbd5e1; background:${idx===0?'#003366':'#f8fafc'}; color:${idx===0?'#fff':'#003366'}; font-size:0.75rem; font-weight:800; cursor:pointer; white-space:nowrap;">
-        📏 ${escapeHtml(comp)}
-      </button>
-    `).join('');
+      // Guarda os dados secundários para o olho 👁️
+      const specsGuardadas = Object.entries(specs)
+        .filter(([k]) => !['Tamanho (cm)', 'Comprimento', 'TAMANHO', 'Resistência da linha', 'Libragem', 'LBS', 'RESISTÊNCIA'].includes(k))
+        .map(([k, v]) => `<span style="white-space:nowrap;"><strong>${escapeHtml(k)}:</strong> ${escapeHtml(v)}</span>`)
+        .join(' • ');
 
-    // Rendeira os modelos do 1º tamanho ativo por padrão
-    const primeiroTamanho = listaTamanhos[0];
-    const itensDoTamanho = tamanhosMap.get(primeiroTamanho) || [];
-    itensDoTamanho.sort((a, b) => a.ordem_excel - b.ordem_excel);
+      return `
+        <tr class="linha-tabela-vara" style="border-bottom:1px solid #e2e8f0;">
+          <!-- MODELO + BOTÃO OLHO -->
+          <td style="font-weight:800; color:var(--azul-800); font-size:0.75rem; padding:6px 4px; white-space:nowrap;">
+            ${escapeHtml(info.modeloJson)}
+            <button type="button" 
+                    onclick="event.stopPropagation(); togglePainelVara('${it.codigo}')" 
+                    title="Ver detalhes" 
+                    style="margin-left:2px; padding:2px 5px; font-size:0.68rem; border-radius:4px; background:#eff6ff; border:1px solid #93c5fd; cursor:pointer; vertical-align:middle;">
+              👁️
+            </button>
+            ${calc.temOferta ? `<span class="tarja-oferta-item">🔥 -${calc.pctDesconto}%</span>` : ''}
+          </td>
 
-    const linhasHtml = gerarLinhasTabelaVara(itensDoTamanho);
+          <!-- TAMANHO -->
+          <td style="text-align:center; font-size:0.7rem; font-weight:700; color:var(--cinza-700); padding:6px 2px; white-space:nowrap;">
+            ${escapeHtml(tamanho)}
+          </td>
+
+          <!-- LIBRAGEM -->
+          <td style="text-align:center; font-size:0.7rem; font-weight:700; color:#2563eb; padding:6px 2px; white-space:nowrap;">
+            ${escapeHtml(libragem)}
+          </td>
+
+          <!-- PREÇO -->
+          <td style="text-align:center; font-weight:800; color:var(--azul-800); padding:6px 4px; white-space:nowrap;">
+            ${calc.temOferta ? `
+              <div class="preco-box-oferta">
+                <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
+                <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
+              </div>
+            ` : `R$ ${fmtMoeda(calc.precoFinal)}`}
+          </td>
+
+          <!-- QTD -->
+          <td style="text-align:center; padding:6px 2px;" onclick="event.stopPropagation()">
+            <div class="qtd-ctrl" style="display:inline-flex;">
+              <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+              <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+              <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+            </div>
+          </td>
+        </tr>
+
+        <!-- PAINEL OCULTO (EXPANDE NO OLHO 👁️) -->
+        <tr id="panel-vara-${it.codigo}" style="display:none; background:#f8fafc;">
+          <td colspan="5" style="padding:8px; font-size:0.68rem; color:#334155; border-bottom:1px solid #cbd5e1; line-height:1.4;">
+            <div style="background:#fff; border:1px solid #cbd5e1; padding:6px 8px; border-radius:6px;">
+              <strong>📌 Cód:</strong> ${it.codigo} ${specsGuardadas ? ' • ' + specsGuardadas : ''}
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
 
     return `
-      <div class="sub-bloco" style="margin-top: 12px; border-top:1px solid #e2e8f0; padding-top:12px;">
-        ${subdivisoes.length > 1 ? `<div class="sub-grupo-header" style="margin-bottom:8px;">${escapeHtml(sub.nome)}</div>` : ''}
-        
-        <div style="margin-bottom:8px;">
-          <div style="font-size:0.65rem; font-weight:800; color:#64748b; text-transform:uppercase; margin-bottom:4px;">Selecione o Comprimento:</div>
-          <div style="display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; -webkit-overflow-scrolling:touch;">
-            ${tabsCompHtml}
-          </div>
-        </div>
-
-        <div style="overflow-x: auto; width: 100%; margin-top: 6px; background: white; border-radius: 8px; border: 1px solid var(--cinza-200); -webkit-overflow-scrolling: touch;">
+      <div class="sub-bloco" style="margin-top: 8px;">
+        ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
+        <div style="overflow-x: auto; width: 100%; margin-top: 4px; background: white; border-radius: 8px; border: 1px solid var(--cinza-200); -webkit-overflow-scrolling: touch;">
           <table style="width: 100%; border-collapse: collapse; min-width: 100%;">
             <thead>
-              <tr style="background: var(--cinza-50); border-bottom: 2px solid var(--cinza-200); font-size: 0.65rem; font-weight: 800; color: var(--cinza-500); text-transform: uppercase;">
-                <th style="padding: 8px 6px; text-align: left;">Modelo / Especificação</th>
-                <th style="padding: 8px 4px; text-align: center;">Partes</th>
-                <th style="padding: 8px 6px; text-align: center;">Preço</th>
-                <th style="padding: 8px 4px; text-align: center;">Qtd</th>
+              <tr style="background: var(--cinza-50); border-bottom: 2px solid var(--cinza-200); font-size: 0.62rem; font-weight: 800; color: var(--cinza-500); text-transform: uppercase;">
+                <th style="padding: 6px 4px; text-align: left;">Modelo</th>
+                <th style="padding: 6px 2px; text-align: center;">Tamanho</th>
+                <th style="padding: 6px 2px; text-align: center;">Libragem</th>
+                <th style="padding: 6px 4px; text-align: center;">Preço</th>
+                <th style="padding: 6px 2px; text-align: center;">Qtd</th>
               </tr>
             </thead>
-            <tbody id="tbody-vara-${chaveData}">
-              ${linhasHtml}
-            </tbody>
+            <tbody>${linhas}</tbody>
           </table>
         </div>
       </div>`;
@@ -1315,7 +1341,6 @@ function renderFamiliaVara(fam, itens) {
       </div>
     </div>`;
 }
-
 // Gera as linhas compactas para os modelos do tamanho selecionado
 function gerarLinhasTabelaVara(itens) {
   return itens.map(it => {
@@ -1396,11 +1421,7 @@ function trocarTamanhoVara(chaveData, tamanhoNome, btn) {
 function togglePainelVara(codigo) {
   const el = document.getElementById(`panel-vara-${codigo}`);
   if (!el) return;
-  if (el.style.display === 'none' || !el.style.display) {
-    el.style.display = 'table-row';
-  } else {
-    el.style.display = 'none';
-  }
+  el.style.display = (el.style.display === 'none' || !el.style.display) ? 'table-row' : 'none';
 }
 
 function renderFamiliaLinha(fam, itens) {
