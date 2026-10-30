@@ -1228,10 +1228,6 @@ function renderFamiliaVara(fam, itens) {
   let subdivisoes = fam.subdivisoes || [];
   if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Produtos', itens: fam.itens }];
 
-  const colunasSet = new Set();
-  itens.forEach(it => { Object.keys(analisarVara(it).especificacoes).forEach(k => colunasSet.add(k)); });
-  const colunas = Array.from(colunasSet);
-
   const blocosTabelas = subdivisoes.map(sub => {
     const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
     if (itensDaSub.length === 0) return '';
@@ -1241,17 +1237,26 @@ function renderFamiliaVara(fam, itens) {
       const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
       const info = analisarVara(it);
       const calc = it.calculoPreco;
-      const celulasSpecs = colunas.map(c => `<td style="text-align:center; font-size:0.65rem; color:var(--cinza-700); padding:6px;">${escapeHtml(info.especificacoes[c] || '-')}</td>`).join('');
+      
+      // Guarda todas as outras especificações para exibir apenas ao clicar no olho 👁️
+      const specsGuardadas = Object.entries(info.especificacoes)
+        .map(([k, v]) => `<strong>${escapeHtml(k)}:</strong> ${escapeHtml(v)}`)
+        .join(' • ');
 
       return `
-        <tr class="linha-tabela-vara">
-          <td class="l-cod" style="font-family:monospace; font-weight:800; color:var(--azul-800); padding:6px;">${it.codigo}</td>
-          <td style="font-weight:800; color:var(--azul-800); font-size:0.7rem; padding:6px;">
+        <tr class="linha-tabela-vara" style="border-bottom:1px solid var(--cinza-200);">
+          <td style="font-weight:800; color:var(--azul-800); font-size:0.75rem; padding:8px 6px;">
             ${escapeHtml(info.modeloJson)}
+            <button type="button" class="btn-toggle-var" onclick="toggleVariacao('${it.codigo}', event)" title="Ver detalhes completos" style="margin-left:4px; padding:2px 4px; font-size:0.65rem; border-radius:4px; background:var(--azul-50); border:1px solid var(--azul-200); cursor:pointer;">👁️</button>
             ${calc.temOferta ? `<span class="tarja-oferta-item">🔥 -${calc.pctDesconto}%</span>` : ''}
           </td>
-          ${celulasSpecs}
-          <td style="text-align:center; font-weight:800; color:var(--azul-800); padding:6px;">
+          <td style="text-align:center; font-size:0.75rem; color:var(--cinza-700); padding:8px 6px;">
+            ${escapeHtml(info.especificacoes['Partes'] || info.especificacoes['PARTES'] || '1')}
+          </td>
+          <td style="text-align:center; font-size:0.75rem; color:var(--cinza-700); padding:8px 6px;">
+            ${escapeHtml(info.especificacoes['Tamanho (cm)'] || info.especificacoes['Comprimento'] || info.especificacoes['TAMANHO'] || '-')}
+          </td>
+          <td style="text-align:center; font-weight:800; color:var(--azul-800); padding:8px 6px;">
             ${calc.temOferta ? `
               <div class="preco-box-oferta">
                 <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
@@ -1259,12 +1264,17 @@ function renderFamiliaVara(fam, itens) {
               </div>
             ` : `R$ ${fmtMoeda(calc.precoFinal)}`}
           </td>
-          <td style="text-align:center; padding:6px;" onclick="event.stopPropagation()">
+          <td style="text-align:center; padding:8px 6px;" onclick="event.stopPropagation()">
             <div class="qtd-ctrl" style="display:inline-flex;">
               <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
               <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
               <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
             </div>
+          </td>
+        </tr>
+        <tr id="var-panel-${it.codigo}" class="painel-variacao-oculta" style="display:none; background:#f8fafc;">
+          <td colspan="5" style="padding:8px 12px; font-size:0.7rem; color:var(--cinza-700); border-bottom:1px solid var(--cinza-200);">
+            💡 <strong>Cód: ${it.codigo}</strong> • ${specsGuardadas || 'Sem especificações adicionais.'}
           </td>
         </tr>`;
     }).join('');
@@ -1275,10 +1285,12 @@ function renderFamiliaVara(fam, itens) {
         <div style="overflow-x: auto; width: 100%; margin-top: 6px; background: white; border-radius: 6px; border: 1px solid var(--cinza-200); -webkit-overflow-scrolling: touch;">
           <table style="width: 100%; border-collapse: collapse; min-width: max-content;">
             <thead>
-              <tr style="background: var(--cinza-50); border-bottom: 1px solid var(--cinza-200); font-size: 0.6rem; font-weight: 800; color: var(--cinza-500); text-transform: uppercase;">
-                <th style="padding: 6px; text-align: left;">Código</th><th style="padding: 6px; text-align: left;">Modelo</th>
-                ${colunas.map(c => `<th style="padding: 6px; text-align: center;">${escapeHtml(c)}</th>`).join('')}
-                <th style="padding: 6px; text-align: center;">Preço</th><th style="padding: 6px; text-align: center;">Qtd</th>
+              <tr style="background: var(--cinza-50); border-bottom: 2px solid var(--cinza-200); font-size: 0.65rem; font-weight: 800; color: var(--cinza-500); text-transform: uppercase;">
+                <th style="padding: 8px; text-align: left;">Modelo</th>
+                <th style="padding: 8px; text-align: center;">Partes</th>
+                <th style="padding: 8px; text-align: center;">Comprimento</th>
+                <th style="padding: 8px; text-align: center;">Preço</th>
+                <th style="padding: 8px; text-align: center;">Qtd</th>
               </tr>
             </thead>
             <tbody>${linhas}</tbody>
@@ -1296,7 +1308,7 @@ function renderFamiliaVara(fam, itens) {
       <div class="molinete-card" id="card-fam-${fam.id}">
         <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
         <div class="molinete-info" style="overflow: hidden;">
-          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Detalhes</button>
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Detalhes / Ficha Técnica</button>
           ${blocosTabelas}
         </div>
       </div>
