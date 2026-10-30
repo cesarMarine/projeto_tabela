@@ -867,7 +867,8 @@ function renderizar() {
     return; 
   }
   
-  const processados = new Set(); let html = '';
+  const processados = new Set(); 
+  let html = '';
 
   todasFamilias.forEach(fam => {
     const filhos = lista.filter(it => fam.itens.includes(it.codigo));
@@ -894,7 +895,9 @@ function renderizar() {
       ) { tipo = 'grade'; }
       else if (nomeFam.includes('ISCA') || attrs.includes('CORES') || attrs.includes('COR')) tipo = 'isca';
       else if (
-        nomeFam.includes('ANZOL') || nomeFam.includes('EMPATE') || nomeFam.includes('GIRADOR') || 
+        nomeFam.includes('ANZOL') || 
+        nomeFam.includes('GARAT') || grupoItem.includes('GARAT') || // <--- Garatéias usam o mesmo layout dos Anzóis
+        nomeFam.includes('EMPATE') || nomeFam.includes('GIRADOR') || 
         nomeFam.includes('SNAP') || nomeFam.includes('CABO') || nomeFam.includes('LUVA')
       ) tipo = 'anzol';
       else if (nomeFam.includes('MOLINETE')) tipo = 'molinete';
