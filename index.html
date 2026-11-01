@@ -1163,6 +1163,24 @@ function renderFamiliaMotor(fam, itens) {
     </div>`;
 }
 
+function limparNomeVariacao(nomeCompleto, nomeFamilia) {
+  if (!nomeCompleto) return '';
+  let str = nomeCompleto.trim();
+  
+  // Palavras comuns do grupo/família para remover do início do nome do item
+  const termosParaRemover = [
+    'FACA FILLET', 'FACA', 'CAIXA TACKLE BOX', 'CAIXA', 'ALICATE', 
+    'TESOURA', 'MALETA', 'ESTOJO', 'BOLSA'
+  ];
+
+  for (let termo of termosParaRemover) {
+    const regex = new RegExp('^' + termo + '\\s*', 'i');
+    str = str.replace(regex, '');
+  }
+
+  return str.trim() || nomeCompleto;
+}
+
 function linhaMotor(it) {
   const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
   const info = analisarMotor(it);
@@ -1468,7 +1486,7 @@ function renderFamiliaGrade(fam, itens) {
       const temImagem = it.imagem_url && it.imagem_url.trim() !== '';
       const isAtivo = index === 0 ? 'ativa' : '';
       const calc = it.calculoPreco;
-      const nomeLimpo = it.subgrupo || it.descricao_longa || fam.nome;
+     const nomeLimpo = limparNomeVariacao(it.subgrupo || it.descricao_longa, fam.nome);
 
       return `
         <div class="card-solto ${isAtivo}" id="mini-${it.codigo}" 
