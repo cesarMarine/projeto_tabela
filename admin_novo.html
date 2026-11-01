@@ -551,6 +551,20 @@ async function carregarGruposParaOferta() {
   }
 }
 
+async function toggleLancamento(codigoProduto, status) {
+  const prod = todosProdutos.find(p => p.codigo === codigoProduto);
+  if (prod) prod.is_lancamento = status;
+
+  const { error } = await supabase
+    .from('produtos')
+    .update({ is_lancamento: status })
+    .eq('codigo', codigoProduto);
+
+  if (!error) {
+    renderizar(); // Atualiza a interface imediatamente
+  }
+}
+
 // BUSCA AS OFERTAS AGRUPADAS NO ADMIN
 async function carregarOfertasAdmin() {
   const tbody = document.querySelector('#tabOfertas tbody');
