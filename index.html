@@ -1621,6 +1621,7 @@ function renderFamiliaGrade(fam, itens) {
     }
 
     // MODO BONÉS E ACESSÓRIOS DIVERSOS (FOTO INDIVIDUAL + NOME DO MODELO/COR)
+    // MODO BONÉS E ACESSÓRIOS DIVERSOS (FOTO INDIVIDUAL + NOME DO MODELO/COR)
     const cardsHtml = itensDaSub.map((it, index) => {
       const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
       const temImagem = it.imagem_url && it.imagem_url.trim() !== '';
@@ -1641,7 +1642,10 @@ function renderFamiliaGrade(fam, itens) {
           </div>
           
           <div style="flex:1; display:flex; flex-direction:column; justify-content:flex-start;">
-            <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700;">CÓD: ${escapeHtml(it.codigo)}</div>
+            <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700; display:flex; align-items:center; justify-content:center; gap:4px; flex-wrap:wrap;">
+              <span>CÓD: ${escapeHtml(it.codigo)}</span>
+              ${it.is_lancamento ? `<span class="tarja-lancamento-item">✨ NOVIDADE</span>` : ''}
+            </div>
             <div class="nome" style="font-size:0.7rem; font-weight:800; color:var(--azul-800); margin-bottom:4px; line-height:1.2; text-align:left;">
               ${escapeHtml(nomeLimpo)}
             </div>
