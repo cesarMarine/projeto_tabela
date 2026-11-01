@@ -907,25 +907,28 @@ function renderizar() {
       const nomeFam = fam.nome.toUpperCase();
 
 // Substitua o trecho de verificação dentro de renderizar():
+// Substitua o trecho de verificação dentro de renderizar():
 if (nomeFam.includes('VARA')) tipo = 'vara';
 else if (nomeFam.includes('LINHA')) tipo = 'linha';
-else if (
-  grupoItem.includes('ACESSORIO') || grupoItem.includes('VESTUARIO') || 
-  nomeFam.includes('ACESSORIO') || nomeFam.includes('ALICATE') || nomeFam.includes('TESOURA') || 
-  nomeFam.includes('VESTUARIO')
-) { tipo = 'grade'; }
 else if (nomeFam.includes('ISCA') || attrs.includes('CORES') || attrs.includes('COR')) tipo = 'isca';
 else if (
   nomeFam.includes('ANZOL') || 
   nomeFam.includes('GARAT') || grupoItem.includes('GARAT') || 
-  nomeFam.includes('SABIKI') || grupoItem.includes('SABIKI') || // <--- Garante captura por nome da Família ou Grupo
+  nomeFam.includes('SABIKI') || grupoItem.includes('SABIKI') || 
   nomeFam.includes('EMPATE') || nomeFam.includes('GIRADOR') || 
   nomeFam.includes('SNAP') || nomeFam.includes('CABO') || nomeFam.includes('LUVA')
 ) tipo = 'anzol';
 else if (nomeFam.includes('MOLINETE')) tipo = 'molinete';
-else if (nomeFam.includes('CARRETILHA')) tipo = 'equipamento_direto';
+else if (
+  nomeFam.includes('CARRETILHA') || 
+  grupoItem.includes('ACESSORIO') || nomeFam.includes('ACESSORIO') ||
+  nomeFam.includes('ALICATE') || nomeFam.includes('TESOURA') || nomeFam.includes('BOLSA') || 
+  nomeFam.includes('POCHETE') || nomeFam.includes('MOCHILA') || nomeFam.includes('OXIGENADOR') || 
+  nomeFam.includes('FACA') || nomeFam.includes('CORDAO') || nomeFam.includes('CORDÃO') || 
+  nomeFam.includes('CARRETEL') || nomeFam.includes('CAIXA') || nomeFam.includes('CADEIRA')
+) tipo = 'equipamento_direto'; // <--- Envia Carretilhas e todos os Acessórios para o padrão Carretilha!
 else if (nomeFam.includes('MOTOR') || grupoItem.includes('MOTOR')) tipo = 'motor';
-      
+else if (grupoItem.includes('VESTUARIO') || nomeFam.includes('VESTUARIO')) tipo = 'grade'; // <--- Mantém apenas Vestuário na grade
       if (tipo === 'isca') html += renderFamiliaIsca(fam, filhos);
       else if (tipo === 'molinete') html += renderFamiliaMolinete(fam, filhos);
       else if (tipo === 'equipamento_direto') html += renderFamiliaEquipamentoDireto(fam, filhos);
