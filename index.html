@@ -1502,17 +1502,19 @@ function renderFamiliaGrade(fam, itens) {
   const nomeFamUpper = fam.nome.toUpperCase();
   const grupoUpper = (primeiroItem.grupo || '').toUpperCase();
 
-  const isVestuario = nomeFamUpper.includes('CAMISA') || 
-                      nomeFamUpper.includes('VESTUARIO') || 
-                      grupoUpper.includes('VESTUARIO');
+  // APENAS CAMISAS E VESTUÁRIO DE CORPO USAM A GRADE DE TAMANHO (P, M, G, GG)
+  // Bonés, Chapéus e Viseiras ficam no modelo de fotos soltas
+  const isVestuarioCorpo = (nomeFamUpper.includes('CAMISA') || nomeFamUpper.includes('BERMUDA') || nomeFamUpper.includes('CALCA')) &&
+                           !nomeFamUpper.includes('BONE') && !nomeFamUpper.includes('BONÉ') && 
+                           !nomeFamUpper.includes('CHAPEU') && !nomeFamUpper.includes('CHAPÉU');
 
   const blocosTabelas = subdivisoes.map(sub => {
     const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
     if (itensDaSub.length === 0) return '';
     itensDaSub.sort((a, b) => a.ordem_excel - b.ordem_excel);
 
-    // MODO VESTUÁRIO: APENAS CARD COMPACTO COM TAMANHO E QTD (SEM FOTINHAS REPETIDAS)
-    if (isVestuario) {
+    // MODO CAMISAS (P, M, G, GG, XG)
+    if (isVestuarioCorpo) {
       const cardsHtml = itensDaSub.map(it => {
         const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
         const infoVest = analisarVestuario(it);
@@ -1523,7 +1525,6 @@ function renderFamiliaGrade(fam, itens) {
             <span class="anzol-badge">${q}</span>
             <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700;">CÓD: ${escapeHtml(it.codigo)}</div>
             
-            <!-- TAMANHO EM DESTAQUE (EX: G, M, GG) -->
             <div class="anzol-numero" style="font-size:1.2rem; font-weight:900; color:var(--azul-800); margin:4px 0;">
               ${escapeHtml(infoVest.tamanho)}
             </div>
@@ -1555,26 +1556,36 @@ function renderFamiliaGrade(fam, itens) {
         </div>`;
     }
 
-    // MODO DEMAIS ACESSÓRIOS
+    // MODO BONÉS E ACESSÓRIOS COMUM (EXIBE FOTO INDIVIDUAL + NOME DO MODELO/COR)
     const cardsHtml = itensDaSub.map((it, index) => {
       const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
       const temImagem = it.imagem_url && it.imagem_url.trim() !== '';
       const isAtivo = index === 0 ? 'ativa' : '';
       const calc = it.calculoPreco;
       
+      // Limpa a palavra BONÉ repetida para exibir a cor ou modelo limpo
+      const nomeLimpo = it.subgrupo || it.descricao_longa || fam.nome;
+
       return `
         <div class="card-solto ${isAtivo}" id="mini-${it.codigo}" 
              style="position:relative; display:flex; flex-direction:column; justify-content:space-between; padding:8px; height: 100%; cursor:pointer;"
-             onclick="selecionarAcessorio('${fam.id}', '${it.codigo}', '${it.imagem_url}', \`${escapeHtml(it.descricao_longa).replace(/`/g, '')}\`, \`${escapeHtml(it.subgrupo).replace(/`/g, '')}\`)">
+             onclick="selecionarAcessorio('${fam.id}', '${it.codigo}', '${it.imagem_url}', \`${escapeHtml(it.descricao_longa).replace(/`/g, '')}\`, \`${escapeHtml(nomeLimpo).replace(/`/g, '')}\`)">
           
           ${calc.temOferta ? `<div style="position:absolute; top:4px; left:4px; background:#ef4444; color:white; font-size:8px; font-weight:900; padding:2px 4px; border-radius:4px; z-index:3;">-${calc.pctDesconto}%</div>` : ''}
           ${q > 0 ? `<div style="position:absolute; top:4px; right:4px; background:var(--verde); color:white; width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:900; border:2px solid white; z-index:3;">${q}</div>` : ''}
           
-          <div class="img" style="margin-bottom:8px; aspect-ratio:1; background:var(--cinza-50); border-radius:6px; overflow:hidden;">${temImagem ? `<img src="${it.imagem_url}" alt="${escapeHtml(it.subgrupo)}">` : '🖼️'}</div>
-          <div style="flex:1; display:flex; flex-direction:column; justify-content:flex-start;">
-            <div class="nome" style="font-size:0.7rem; font-weight:800; color:var(--azul-800); margin-bottom:6px; line-height:1.2; text-align:left;">${escapeHtml(it.subgrupo)}</div>
+          <div class="img" style="margin-bottom:6px; aspect-ratio:1; background:var(--cinza-50); border-radius:6px; overflow:hidden;">
+            ${temImagem ? `<img src="${it.imagem_url}" alt="${escapeHtml(nomeLimpo)}">` : '🖼️'}
           </div>
-          <div style="display:flex; flex-direction:column; gap:6px; margin-top:6px;">
+          
+          <div style="flex:1; display:flex; flex-direction:column; justify-content:flex-start;">
+            <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700;">CÓD: ${escapeHtml(it.codigo)}</div>
+            <div class="nome" style="font-size:0.7rem; font-weight:800; color:var(--azul-800); margin-bottom:4px; line-height:1.2; text-align:left;">
+              ${escapeHtml(nomeLimpo)}
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:6px; margin-top:4px;">
             ${calc.temOferta ? `
               <div class="preco-box-oferta" style="align-items:flex-start;">
                 <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
