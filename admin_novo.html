@@ -215,21 +215,22 @@
 
         <div style="overflow-x:auto;">
           <table id="tabelaEstoqueAdmin">
-            <thead>
-              <tr>
-                <th>Código</th>
-                <th>Cód. Barras</th>
-                <th>Descrição</th>
-                <th style="text-align:center;">Estoque</th>
-                <th style="text-align:right;">Preço Venda</th>
-                <th style="text-align:right;">Subtotal</th>
-                <th style="text-align:center;">Atualizado Em</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td colspan="7" style="text-align:center; padding:30px; color:#94a3b8;">Carregando estoque...</td></tr>
-            </tbody>
-          </table>
+  <thead>
+    <tr>
+      <th>Código</th>
+      <th>Cód. Barras</th>
+      <th>Descrição</th>
+      <th style="text-align:center;">Estoque</th>
+      <th style="text-align:right;">Preço Venda</th>
+      <th style="text-align:right;">Subtotal</th>
+      <th style="text-align:center;">Lançamento?</th> <!-- 👈 ADICIONADO AQUI -->
+      <th style="text-align:center;">Atualizado Em</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td colspan="8" style="text-align:center; padding:30px; color:#94a3b8;">Carregando estoque...</td></tr>
+  </tbody>
+</table>
         </div>
       </div>
     </section>
@@ -1057,6 +1058,8 @@ function renderizarTabelaEstoque(itens) {
     totalPecas += est;
     valorTotalEstoque += subtotal;
 
+    const dataAtualizado = item.atualizado_em ? new Date(item.atualizado_em).toLocaleString('pt-BR') : '—';
+
     return `
       <tr>
         <td><strong style="color:#38bdf8; font-family:monospace;">${item.codigo}</strong></td>
@@ -1065,13 +1068,17 @@ function renderizarTabelaEstoque(itens) {
         <td style="text-align:center;"><span style="background:#064e3b; color:#6ee7b7; font-weight:800; padding:3px 10px; border-radius:12px; font-size:12px;">${est}</span></td>
         <td style="text-align:right;">R$ ${preco.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
         <td style="text-align:right;"><strong style="color:#10b981;">R$ ${subtotal.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</strong></td>
+        
+        <!-- BOTÃO DE ALTERAR STATUS DE LANÇAMENTO -->
         <td style="text-align:center;">
           <button class="btn-mini" 
-                  style="background:${isLanc ? '#2563eb' : '#334155'}; color:white; border:none; cursor:pointer; font-weight:700;"
+                  style="background:${isLanc ? '#2563eb' : '#334155'}; color:white; border:none; cursor:pointer; font-weight:800; padding:4px 10px; border-radius:6px;"
                   onclick="toggleLancamentoAdmin('${item.codigo}', ${!isLanc})">
             ${isLanc ? '✨ Lançamento' : '⚪ Normal'}
           </button>
         </td>
+
+        <td style="text-align:center; font-size:12px; color:#94a3b8;">${dataAtualizado}</td>
       </tr>
     `;
   }).join('');
@@ -1093,14 +1100,15 @@ async function toggleLancamentoAdmin(codigoProduto, novoStatus) {
     const j = await r.json();
 
     if (j.ok) {
+      // Atualiza o cache local e redesenha a tabela sem recarregar a página
       const prod = listaEstoqueCache.find(p => p.codigo === codigoProduto);
       if (prod) prod.is_lancamento = novoStatus;
       renderizarTabelaEstoque(listaEstoqueCache);
     } else {
-      alert('❌ Erro: ' + j.erro);
+      alert('❌ Erro ao atualizar lançamento: ' + j.erro);
     }
   } catch (e) {
-    alert('❌ Erro de conexão com o servidor.');
+    alert('❌ Erro de comunicação com o servidor.');
   }
 }
 
