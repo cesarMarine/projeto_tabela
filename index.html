@@ -5,6 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Tabela de Preços B2B</title>
 <style>
+
+  .tarja-lancamento-item {
+  background: linear-gradient(135deg, #0284c7, #2563eb);
+  color: #ffffff;
+  font-size: 0.58rem;
+  font-weight: 900;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  text-transform: uppercase;
+  border: 1px solid #60a5fa;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   :root {
     --azul-900:#001f3f; --azul-800:#003366; --azul-700:#004080;
@@ -92,20 +107,7 @@
   
   .btn-detalhes { background:var(--cinza-50); border:1px solid var(--cinza-200); color:var(--azul-800); border-radius:6px; font-size:.65rem; font-weight:800; text-transform:uppercase; cursor:pointer; display:inline-flex; align-items:center; gap:4px; padding:6px 10px; margin-bottom:8px; align-self:flex-start; }
 
-.tarja-lancamento-item {
-  background: linear-gradient(135deg, #0284c7, #2563eb);
-  color: #ffffff;
-  font-size: 0.58rem;
-  font-weight: 900;
-  padding: 2px 6px;
-  border-radius: 4px;
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  text-transform: uppercase;
-  border: 1px solid #60a5fa;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
+
 
   /* BADGES DE OFERTA */
   .badge-oferta-banner {
@@ -1943,7 +1945,11 @@ function renderFamiliaComum(fam, itens) {
       <div class="linha-filho">
         <div class="l-info-main">
           <span class="l-cod">${it.codigo}</span>
-          <span class="l-nome">${escapeHtml(it.subgrupo)} ${calc.temOferta ? `<span class="tarja-oferta-item">🔥 -${calc.pctDesconto}%</span>` : ''}</span>
+          <span class="l-nome">
+            ${escapeHtml(it.subgrupo)} 
+            ${it.is_lancamento ? `<span class="tarja-lancamento-item">✨ NOVIDADE</span>` : ''}
+            ${calc.temOferta ? `<span class="tarja-oferta-item">🔥 -${calc.pctDesconto}%</span>` : ''}
+          </span>
         </div>
         <div class="l-direita-wrap">
           ${calc.temOferta ? `
@@ -1981,6 +1987,13 @@ function cardSoltos(it) {
     <div class="card-solto" style="position:relative;">
       ${calc.temOferta ? `<div style="position:absolute; top:4px; left:4px; background:#ef4444; color:white; font-size:8px; font-weight:800; padding:2px 4px; border-radius:4px;">-${calc.pctDesconto}%</div>` : ''}
       <div class="img" onclick="abrirZoomImagem(this)">${it.imagem_url ? `<img src="${it.imagem_url}">` : '🖼️'}</div>
+      
+      <!-- CÓDIGO + TAG DE LANÇAMENTO -->
+      <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700; display:flex; align-items:center; justify-content:center; gap:4px; flex-wrap:wrap; margin-bottom:2px;">
+        <span>CÓD: ${escapeHtml(it.codigo)}</span>
+        ${it.is_lancamento ? `<span class="tarja-lancamento-item">✨ NOVIDADE</span>` : ''}
+      </div>
+
       <div class="nome">${escapeHtml(it.subgrupo)}</div>
       ${calc.temOferta ? `
         <div class="preco-box-oferta" style="align-items:center;">
