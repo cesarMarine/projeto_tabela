@@ -631,14 +631,22 @@ function normalizarItem(it) {
 /* EXTRAI O TAMANHO DO VESTUÁRIO/ROUPAS DO ATRIBUTO JSON OU SUBGRUPO */
 function analisarVestuario(it) {
   const attrs = it.atributos || {};
-  let tamanho = attrs['Tamanho'] || attrs['TAMANHO'] || attrs['Tamanho (cm)'] || '';
+  let tamanho = '';
   
-  if (!tamanho) {
-    const match = (it.subgrupo || '').match(/\b(PP|P|M|G|GG|XG|XGG|EG|EXG|\d{2})\b/i);
-    if (match) tamanho = match[1].toUpperCase();
+  // 1. Tenta buscar pelas chaves no JSON
+  const chavesTam = ['Tamanho', 'TAMANHO', 'Tamanho (cm)', 'Tam', 'TAM'];
+  for (let k of chavesTam) {
+    if (attrs[k]) { tamanho = String(attrs[k]).toUpperCase(); break; }
   }
   
-  return { tamanho: tamanho || '' };
+  // 2. Se não achou no JSON, extrai do subgrupo/descrição (ex: "P", "M", "G", "GG", "XG", "XXG", "38", "40")
+  if (!tamanho) {
+    const subUpper = (it.subgrupo || it.descricao_longa || '').toUpperCase();
+    const match = subUpper.match(/\b(PP|P|M|G|GG|XG|XGG|EG|EXG|EXGG|38|40|42|44|46|48|50)\b/i);
+    if (match) tamanho = match[1].toUpperCase();
+  }
+
+  return { tamanho: tamanho || 'T.ÚNICO' };
 }
 
 function analisarAnzol(it) {
