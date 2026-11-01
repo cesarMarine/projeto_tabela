@@ -647,7 +647,7 @@ function analisarVestuario(it) {
     }
   }
 
-  // 2. Se não encontrar no JSON, busca via Regex estendida (incluindo 3XL, 2XL, XL, etc)
+  // 2. Se não encontrar no JSON, busca via Regex (incluindo 3XL, 2XL, XL, L, S, etc)
   if (!tamanho) {
     const texto = (it.subgrupo || it.descricao_longa || '').toUpperCase();
     const match = texto.match(/\b(\d?XL|\d?XLL|PP|P|M|G|GG|XG|XXG|XGG|EG|EXG|EXGG|38|40|42|44|46|48|50|XS|S|L)\b/i);
@@ -1498,21 +1498,29 @@ function renderFamiliaGrade(fam, itens) {
   let subdivisoes = fam.subdivisoes || [];
   if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Produtos', itens: fam.itens }];
 
-  const nomeFamUpper = fam.nome.toUpperCase();
-  const grupoUpper = (primeiroItem.grupo || '').toUpperCase();
+  // Identifica se é vestuário de corpo (Camisa, Bermuda, Calça) verificando família e itens
+  const isVestuarioCorpo = itens.some(it => {
+    const sub = (it.subgrupo || '').toUpperCase();
+    const famNome = (fam.nome || '').toUpperCase();
+    const grp = (it.grupo || '').toUpperCase();
+    
+    const ehRoupa = sub.includes('CAMISA') || sub.includes('BERMUDA') || sub.includes('CALCA') ||
+                    famNome.includes('CAMISA') || famNome.includes('BERMUDA') || famNome.includes('CALCA') ||
+                    grp.includes('VESTUARIO');
 
-  // APENAS CAMISAS E VESTUÁRIO DE CORPO USAM A GRADE DE TAMANHO (P, M, G, GG)
-  // Bonés, Chapéus e Viseiras ficam no modelo de fotos soltas
-  const isVestuarioCorpo = (nomeFamUpper.includes('CAMISA') || nomeFamUpper.includes('BERMUDA') || nomeFamUpper.includes('CALCA')) &&
-                           !nomeFamUpper.includes('BONE') && !nomeFamUpper.includes('BONÉ') && 
-                           !nomeFamUpper.includes('CHAPEU') && !nomeFamUpper.includes('CHAPÉU');
+    const ehAcessorioCabeca = sub.includes('BONE') || sub.includes('BONÉ') || 
+                              sub.includes('CHAPEU') || sub.includes('CHAPÉU') || 
+                              sub.includes('VISEIRA') || famNome.includes('BONE') || famNome.includes('BONÉ');
+
+    return ehRoupa && !ehAcessorioCabeca;
+  });
 
   const blocosTabelas = subdivisoes.map(sub => {
     const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
     if (itensDaSub.length === 0) return '';
     itensDaSub.sort((a, b) => a.ordem_excel - b.ordem_excel);
 
-    // MODO CAMISAS (P, M, G, GG, XG)
+    // MODO CAMISAS / BERMUDAS (CARDS COMPACTOS COM DESTAQUE NO TAMANHO: P, M, G, 3XL, ETC)
     if (isVestuarioCorpo) {
       const cardsHtml = itensDaSub.map(it => {
         const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
@@ -1555,14 +1563,12 @@ function renderFamiliaGrade(fam, itens) {
         </div>`;
     }
 
-    // MODO BONÉS E ACESSÓRIOS COMUM (EXIBE FOTO INDIVIDUAL + NOME DO MODELO/COR)
+    // MODO BONÉS E ACESSÓRIOS DIVERSOS (FOTO INDIVIDUAL + NOME DO MODELO/COR)
     const cardsHtml = itensDaSub.map((it, index) => {
       const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
       const temImagem = it.imagem_url && it.imagem_url.trim() !== '';
       const isAtivo = index === 0 ? 'ativa' : '';
       const calc = it.calculoPreco;
-      
-      // Limpa a palavra BONÉ repetida para exibir a cor ou modelo limpo
       const nomeLimpo = it.subgrupo || it.descricao_longa || fam.nome;
 
       return `
