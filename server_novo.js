@@ -406,6 +406,28 @@ app.post('/api/importar/clientes', upload.single('arquivo'), async (req, res) =>
   }
 });
 
+app.post('/api/admin/produtos/lancamento', async (req, res) => {
+  const { codigo, is_lancamento } = req.body;
+
+  if (!codigo) {
+    return res.status(400).json({ ok: false, erro: 'Código do produto é obrigatório.' });
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('itens_sistema')
+      .update({ is_lancamento: is_lancamento })
+      .eq('codigo', codigo);
+
+    if (error) throw error;
+
+    res.json({ ok: true, mensagem: 'Status de lançamento atualizado com sucesso!' });
+  } catch (e) {
+    console.error('Erro ao salvar lançamento:', e);
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
+
 // ==========================================
 // FAMÍLIAS
 // ==========================================
@@ -1153,10 +1175,10 @@ app.post('/api/vendedor/cliente', async (req, res) => {
 // ==========================================
 app.get('/api/admin/produtos-estoque', async (req, res) => {
   try {
-    // Busca na tabela itens_sistema onde estoque seja maior que zero
+    // Adicionado 'is_lancamento' no .select()
     const { data: itens, error } = await supabase
       .from('itens_sistema')
-      .select('id, codigo, cod_barras, descricao, estoque, preco_venda, ativo, atualizado_em')
+      .select('id, codigo, cod_barras, descricao, estoque, preco_venda, ativo, atualizado_em, is_lancamento')
       .gt('estoque', 0)
       .order('descricao', { ascending: true });
 
