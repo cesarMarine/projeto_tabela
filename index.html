@@ -632,14 +632,13 @@ function normalizarItem(it) {
 function analisarVestuario(it) {
   let attrs = it.atributos || {};
   
-  // Se veio em string de atributos_json, garante o parse
   if (typeof attrs === 'string') {
     try { attrs = JSON.parse(attrs); } catch (e) { attrs = {}; }
   }
   
   let tamanho = '';
   
-  // Busca em todas as variações de chave de tamanho possíveis no JSON
+  // 1. Busca primeiro nas chaves de tamanho do JSON
   const chavesTam = ['Tamanho', 'TAMANHO', 'Tamanho (cm)', 'Tam', 'TAM'];
   for (let k of chavesTam) {
     if (attrs[k]) { 
@@ -648,10 +647,10 @@ function analisarVestuario(it) {
     }
   }
 
-  // Se não encontrar no JSON, busca expressão regular no subgrupo/descrição
+  // 2. Se não encontrar no JSON, busca via Regex estendida (incluindo 3XL, 2XL, XL, etc)
   if (!tamanho) {
     const texto = (it.subgrupo || it.descricao_longa || '').toUpperCase();
-    const match = texto.match(/\b(PP|P|M|G|GG|XG|XXG|XGG|EG|EXG|EXGG|38|40|42|44|46|48|50)\b/i);
+    const match = texto.match(/\b(\d?XL|\d?XLL|PP|P|M|G|GG|XG|XXG|XGG|EG|EXG|EXGG|38|40|42|44|46|48|50|XS|S|L)\b/i);
     if (match) tamanho = match[1].toUpperCase();
   }
 
