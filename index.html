@@ -639,7 +639,8 @@ function normalizarItem(it) {
     atributos: parseAtributos(it.atributos_json),
     estoque: Number(it.estoque) || 0,
     ordem_excel: Number(it.ordem_excel) || 999999,
-    ordem_customizada_pos: 999999
+    ordem_customizada_pos: 999999,
+    is_lancamento: Boolean(it.is_lancamento) // <--- Capta a flag de Lançamento
   };
 }
 
@@ -1579,6 +1580,7 @@ function renderFamiliaGrade(fam, itens) {
           <div class="anzol-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" style="min-width:100px; padding:10px 6px;">
             <span class="anzol-badge">${q}</span>
             <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700;">CÓD: ${escapeHtml(it.codigo)}</div>
+            ${it.is_lancamento ? `<span class="tarja-lancamento-item">✨ NOVIDADE</span>` : ''}
             
             <div class="anzol-numero" style="font-size:1.2rem; font-weight:900; color:var(--azul-800); margin:4px 0;">
               ${escapeHtml(infoVest.tamanho)}
@@ -1825,6 +1827,7 @@ function renderFamiliaAnzol(fam, itens) {
         <span class="anzol-badge">${q}</span>
         <div class="anzol-numero">${escapeHtml(info.numero)}</div>
         ${info.qtd ? `<div style="font-size:.6rem; color:var(--cinza-500); font-weight:700; margin-bottom:2px; text-align:center;">${escapeHtml(info.qtd)}</div>` : ''}
+        ${it.is_lancamento ? `<span class="tarja-lancamento-item">✨ NOVIDADE</span>` : ''}
         
         ${calc.temOferta ? `
           <div class="preco-box-oferta">
@@ -1895,6 +1898,7 @@ function trocarTipoAnzol(famId, subIndex) {
         <span class="anzol-badge">${q}</span>
         <div class="anzol-numero">${escapeHtml(info.numero)}</div>
         ${info.qtd ? `<div style="font-size:.6rem; color:var(--cinza-500); font-weight:700; margin-bottom:2px; text-align:center;">${escapeHtml(info.qtd)}</div>` : ''}
+        ${it.is_lancamento ? `<span class="tarja-lancamento-item">✨ NOVIDADE</span>` : ''}
         
         ${calc.temOferta ? `
           <div class="preco-box-oferta">

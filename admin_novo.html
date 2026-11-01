@@ -105,10 +105,48 @@
     <button data-page="acrescimos">💸 Acréscimos por UF</button>
     <button data-page="vendedores">👤 Vendedores</button>
     <button data-page="regras">⚙️ Regras</button>
+    <button data-page="ordem-subgrupos">🔢 Ordens & Destaques</button>
   </aside>
 
   <main class="main">
     <div class="alerta" id="alerta"></div>
+
+    <!-- PÁGINA: ORDENAÇÃO DE SUBGRUPOS -->
+<section class="page" id="page-ordem-subgrupos">
+  <div class="painel">
+    <h2>🔢 Ordenação Prioritária de Subgrupos</h2>
+    <p style="font-size:14px; color:#94a3b8; margin-bottom:16px;">
+      Defina a prioridade de exibição dos subgrupos no catálogo. Digite <strong>0</strong> para colocar no <strong>TOPO ABSOLUTO</strong>, 1, 2, 3 para a sequência desejada, ou deixe em branco/99 para o final.
+    </p>
+
+    <div class="row">
+      <div style="flex:2">
+        <label>Filtrar por Grupo Principal / Subgrupo</label>
+        <input type="text" id="buscaOrdemSub" placeholder="Ex: CAMISA, CADEIRA, ANZOL..." oninput="filtrarTabelaOrdem()">
+      </div>
+      <div style="flex:0 0 auto">
+        <button class="btn-primario" style="background:#10b981;" onclick="salvarTodasOrdens()">💾 Salvar Alterações de Ordem</button>
+      </div>
+    </div>
+
+    <div style="overflow-x:auto; margin-top:16px;">
+      <table id="tabOrdemSubgrupos">
+        <thead>
+          <tr>
+            <th style="width:100px; text-align:center;">Posição (Ordem)</th>
+            <th>Subgrupo / Família</th>
+            <th style="text-align:center;">Total Itens</th>
+            <th style="text-align:center;">Status Especial</th>
+            <th>Ação</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="5" style="text-align:center; padding:20px; color:#94a3b8;">Carregando subgrupos...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
 
     <!-- PÁGINA: IMPORTAR -->
     <section class="page active" id="page-importar">
@@ -508,6 +546,117 @@ let gruposAcrescimoCache = [], ufsAcrescimoCache = [];
 let ofertasCache = [];
 let listaEstoqueCache = [];
 
+let listaSubgruposOrdemCache = [];
+
+// Chama o carregamento ao clicar na aba
+document.querySelectorAll('.sidebar button').forEach(b => {
+  b.addEventListener('click', () => {
+    if (b.dataset.page === 'ordem-subgrupos') carregarOrdemSubgrupos();
+  });
+});
+
+async function carregarOrdemSubgrupos() {
+  const tbody = document.querySelector('#tabOrdemSubgrupos tbody');
+  tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#94a3b8;">Carregando subgrupos...</td></tr>';
+
+  try {
+    const r = await fetch('/api/estoque-subgrupos');
+    const j = await r.json();
+    
+    // Cruza a lista de subgrupos com as ordens salvas
+    const ordemSalva = j.ordemPorSubgrupo || {};
+    const map = {};
+    
+    todosOsProdutos.forEach(i => {
+      if (i.subgrupo_scraping) {
+        map[i.subgrupo_scraping] = (map[i.subgrupo_scraping] || 0) + 1;
+      }
+    });
+
+    listaSubgruposOrdemCache = Object.keys(map).map(nome => ({
+      nome,
+      qtd: map[nome],
+      ordem: ordemSalva[nome] !== undefined ? ordemSalva[nome] : 99
+    })).sort((a, b) => a.ordem - b.ordem || a.nome.localeCompare(b.nome));
+
+    renderTabelaOrdem(listaSubgruposOrdemCache);
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#ef4444;">Erro ao carregar: ${e.message}</td></tr>`;
+  }
+}
+
+function renderTabelaOrdem(itens) {
+  const tbody = document.querySelector('#tabOrdemSubgrupos tbody');
+  if (!itens.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#94a3b8;">Nenhum subgrupo encontrado.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = itens.map(item => `
+    <tr>
+      <td style="text-align:center;">
+        <input type="number" min="0" max="999" value="${item.ordem}" 
+               data-subgrupo="${item.nome.replace(/"/g, '&quot;')}"
+               class="input-ordem-pos"
+               style="width:70px; text-align:center; font-weight:800; color:#38bdf8; background:#0f172a; border:1px solid #334155; border-radius:6px; padding:6px;">
+      </td>
+      <td><strong style="color:#f8fafc; font-size:0.95rem;">${item.nome}</strong></td>
+      <td style="text-align:center;"><span style="background:#1e293b; color:#94a3b8; padding:3px 8px; border-radius:12px; font-weight:700;">${item.qtd}</span></td>
+      <td style="text-align:center;">
+        ${item.ordem === 0 ? '<span style="background:#2563eb; color:white; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:900;">🔥 TOPO (0)</span>' : '—'}
+      </td>
+      <td>
+        <button class="btn-mini btn-primario" style="background:#3b82f6;" onclick="fixarTopo('${item.nome.replace(/'/g, "\\'")}')">Subir pro Topo (0)</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filtrarTabelaOrdem() {
+  const q = document.getElementById('buscaOrdemSub').value.toLowerCase().trim();
+  const filtrados = listaSubgruposOrdemCache.filter(s => s.nome.toLowerCase().includes(q));
+  renderTabelaOrdem(filtrados);
+}
+
+function fixarTopo(nomeSub) {
+  const input = document.querySelector(`input[data-subgrupo="${nomeSub.replace(/"/g, '&quot;')}"]`);
+  if (input) {
+    input.value = 0;
+    input.style.borderColor = '#38bdf8';
+  }
+}
+
+async function salvarTodasOrdens() {
+  const inputs = document.querySelectorAll('.input-ordem-pos');
+  const ordemMapa = {};
+
+  inputs.forEach(inp => {
+    const nome = inp.getAttribute('data-subgrupo');
+    const val = parseInt(inp.value);
+    if (nome) {
+      ordemMapa[nome] = isNaN(val) ? 99 : val;
+    }
+  });
+
+  try {
+    const r = await fetch('/api/salvar-ordem-subgrupos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ordens: ordemMapa })
+    });
+    
+    const j = await r.json();
+    if (j.ok) {
+      alert('✅ Ordem de exibição dos subgrupos salva com sucesso!');
+      carregarOrdemSubgrupos();
+    } else {
+      alert('❌ Erro ao salvar: ' + j.erro);
+    }
+  } catch (e) {
+    alert('❌ Erro de comunicação com o servidor.');
+  }
+}
+
 document.querySelectorAll('.sidebar button').forEach(b => {
   b.onclick = () => {
     document.querySelectorAll('.sidebar button').forEach(x => x.classList.remove('active'));
@@ -889,7 +1038,7 @@ function renderizarTabelaEstoque(itens) {
   const tbody = document.querySelector('#tabelaEstoqueAdmin tbody');
 
   if (!itens || itens.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:#94a3b8;">Nenhum produto encontrado com estoque.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:30px; color:#94a3b8;">Nenhum produto encontrado com estoque.</td></tr>';
     document.getElementById('resumoTotalItens').textContent = '0';
     document.getElementById('resumoTotalPecas').textContent = '0';
     document.getElementById('resumoValorEstoque').textContent = 'R$ 0,00';
@@ -903,11 +1052,10 @@ function renderizarTabelaEstoque(itens) {
     const est = Number(item.estoque) || 0;
     const preco = Number(item.preco_venda) || 0;
     const subtotal = est * preco;
+    const isLanc = Boolean(item.is_lancamento);
 
     totalPecas += est;
     valorTotalEstoque += subtotal;
-
-    const dataAtualizado = item.atualizado_em ? new Date(item.atualizado_em).toLocaleString('pt-BR') : '—';
 
     return `
       <tr>
@@ -917,7 +1065,13 @@ function renderizarTabelaEstoque(itens) {
         <td style="text-align:center;"><span style="background:#064e3b; color:#6ee7b7; font-weight:800; padding:3px 10px; border-radius:12px; font-size:12px;">${est}</span></td>
         <td style="text-align:right;">R$ ${preco.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
         <td style="text-align:right;"><strong style="color:#10b981;">R$ ${subtotal.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</strong></td>
-        <td style="text-align:center; font-size:12px; color:#94a3b8;">${dataAtualizado}</td>
+        <td style="text-align:center;">
+          <button class="btn-mini" 
+                  style="background:${isLanc ? '#2563eb' : '#334155'}; color:white; border:none; cursor:pointer; font-weight:700;"
+                  onclick="toggleLancamentoAdmin('${item.codigo}', ${!isLanc})">
+            ${isLanc ? '✨ Lançamento' : '⚪ Normal'}
+          </button>
+        </td>
       </tr>
     `;
   }).join('');
@@ -927,6 +1081,27 @@ function renderizarTabelaEstoque(itens) {
   document.getElementById('resumoTotalItens').textContent = itens.length;
   document.getElementById('resumoTotalPecas').textContent = totalPecas.toLocaleString('pt-BR');
   document.getElementById('resumoValorEstoque').textContent = `R$ ${valorTotalEstoque.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+}
+
+async function toggleLancamentoAdmin(codigoProduto, novoStatus) {
+  try {
+    const r = await fetch('/api/admin/produtos/lancamento', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ codigo: codigoProduto, is_lancamento: novoStatus })
+    });
+    const j = await r.json();
+
+    if (j.ok) {
+      const prod = listaEstoqueCache.find(p => p.codigo === codigoProduto);
+      if (prod) prod.is_lancamento = novoStatus;
+      renderizarTabelaEstoque(listaEstoqueCache);
+    } else {
+      alert('❌ Erro: ' + j.erro);
+    }
+  } catch (e) {
+    alert('❌ Erro de conexão com o servidor.');
+  }
 }
 
 function filtrarTabelaEstoque() {
