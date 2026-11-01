@@ -707,19 +707,20 @@ function analisarCarretilha(it) {
 }
 
 function analisarMotor(it) {
-  const attrs = it.atributos || {};
-  let modelo = attrs['Modelo'] || attrs['MODELO'] || '';
-  let potencia = attrs['Potência'] || attrs['POTÊNCIA'] || attrs['HP'] || attrs['Libras'] || attrs['LIBRAS'] || '';
-  const tensao = attrs['Tensão'] || attrs['VOLTAGEM'] || attrs['Voltagem'] || '';
-  if (!modelo) { const partes = (it.subgrupo || '').trim().split(/\s+/); modelo = partes.slice(-2).join(' ') || it.subgrupo; }
-  if (!potencia) {
-    const subUpper = (it.subgrupo || '').toUpperCase();
-    const matchHp = subUpper.match(/(\d+(?:\.\d+)?\s*HP|\d+\s*LB|\d+\s*V)/i);
-    if (matchHp) potencia = matchHp[1];
+  let attrs = it.atributos || {};
+  if (typeof attrs === 'string') {
+    try { attrs = JSON.parse(attrs); } catch (e) { attrs = {}; }
   }
-  const partesVar = [];
-  if (tensao) partesVar.push(tensao);
-  return { modelo, tagPotencia: potencia, variacaoExtra: partesVar.join(' • ') };
+
+  let detalhe = attrs['Potência'] || attrs['Libragem'] || attrs['LBS'] || attrs['Modelo'] || '';
+
+  if (!detalhe) {
+    const texto = (it.subgrupo || it.descricao_longa || '').toUpperCase();
+    const match = texto.match(/\b(\d+\s*LBS?|\d+\s*LB|\d+\s*HP)\b/i);
+    if (match) detalhe = match[1];
+  }
+
+  return { variacao: detalhe || it.subgrupo || 'Padrão' };
 }
 
 function analisarVara(it) {
@@ -1160,28 +1161,50 @@ function selecionarEquipamento(famId, codigo, url) {
 function renderFamiliaMotor(fam, itens) {
   const primeiroItem = itens[0];
   const imgInicial = primeiroItem?.imagem_url || '';
-  let subdivisoes = fam.subdivisoes || [];
-  if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Todos', itens: fam.itens }];
+  const descInicial = primeiroItem?.descricao_longa || '';
 
-  const miniaturasHtml = itens.filter(it => it.estoque > 0).map(it => {
-    const info = analisarMotor(it);
-    const labelMini = [info.modelo, info.tagPotencia].filter(Boolean).join(' ');
-    return `
-      <div class="filho-mini" id="mini-${it.codigo}" onclick="selecionarCarretilha('${fam.id}', '${it.codigo}', '${it.imagem_url}')">
-        <img src="${it.imagem_url}" alt="${escapeHtml(labelMini)}">
-        <div class="mini-info"><span class="mini-nome">${escapeHtml(labelMini)}</span></div>
-      </div>`;
-  }).join('');
+  const itensComEstoque = itens.filter(it => it.estoque > 0);
+  if (itensComEstoque.length === 0) return '';
 
-  const blocosTabelas = subdivisoes.map(sub => {
-    const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
-    if (itensDaSub.length === 0) return '';
-    itensDaSub.sort((a, b) => a.ordem_excel - b.ordem_excel);
+  itensComEstoque.sort((a, b) => a.ordem_excel - b.ordem_excel);
+
+  const cardsHtml = itensComEstoque.map(it => {
+    const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+    const calc = it.calculoPreco;
+    const infoMotor = analisarMotor(it);
 
     return `
-      <div class="sub-bloco" style="margin-top: 8px;">
-        ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
-        <div class="lista-filhos" style="margin-top: 4px;">${itensDaSub.map(linhaMotor).join('')}</div>
+      <div class="isca-cor-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" 
+           onclick="selecionarEquipamento('${fam.id}', '${it.codigo}', '${it.imagem_url}')" 
+           style="position:relative; cursor:pointer;">
+        
+        <span class="isca-badge">${q}</span>
+        ${it.imagem_url ? `<img src="${it.imagem_url}" style="height: 65px; object-fit: contain; margin-bottom:4px;">` : ''}
+        
+        <div class="cor-nome" style="font-size: 0.65rem; font-weight: 700; color: var(--cinza-400);">CÓD: ${escapeHtml(it.codigo)}</div>
+        <div style="font-size: .7rem; color: var(--azul-800); font-weight: 800; text-align: center; margin: 2px 0 4px 0; line-height: 1.1;">
+          ${escapeHtml(infoMotor.variacao)}
+        </div>
+        
+        ${calc.temOferta ? `
+          <div style="text-align:center; width:100%; margin-bottom:4px;">
+            <span style="background: linear-gradient(135deg, #001b3a, #0f172a); color: #38bdf8; border: 1px solid #38bdf8; font-size: 0.55rem; font-weight: 900; padding: 2px 4px; border-radius: 4px; display: inline-block; margin-bottom: 2px; text-transform: uppercase;">
+              ⚡ BLACK NOVEMBER -${calc.pctDesconto}%
+            </span>
+            <div class="preco-de" style="font-size:0.68rem; color:#94a3b8; text-decoration:line-through; font-weight:700;">
+              R$ ${fmtMoeda(calc.precoOriginal)}
+            </div>
+            <div class="preco-por" style="color:#ef4444; font-size:0.9rem; font-weight:900;">
+              R$ ${fmtMoeda(calc.precoFinal)}
+            </div>
+          </div>
+        ` : `<div class="cor-preco" style="font-size:0.85rem; font-weight:900; color:var(--verde); margin-bottom:4px;">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+
+        <div class="isca-qtd-ctrl" onclick="event.stopPropagation()">
+          <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+          <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+          <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+        </div>
       </div>`;
   }).join('');
 
@@ -1191,12 +1214,17 @@ function renderFamiliaMotor(fam, itens) {
         <h2>${escapeHtml(fam.nome)}</h2> 
         ${renderMarcaBadge(itens[0].marca)}
       </div>
-      <div class="molinete-card" id="card-fam-${fam.id}">
-        <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
-        <div class="molinete-info">
-          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Detalhes</button>
-          <div class="topo-miniaturas">${miniaturasHtml}</div>
-          ${blocosTabelas}
+      <div class="isca-card" id="card-fam-${fam.id}">
+        <div class="familia-side">
+          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">
+            ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
+          </div>
+        </div>
+        <div class="isca-info">
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(descInicial)}" onclick="abrirModalPorBotao(this)">🔍 Descrição / Ficha Técnica</button>
+          <div class="isca-grade" style="margin-top: 8px;">
+            ${cardsHtml}
+          </div>
         </div>
       </div>
     </div>`;
