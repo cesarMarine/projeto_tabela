@@ -1067,60 +1067,60 @@ function trocarTipoMolinete(famId, subIndex) {
 function renderFamiliaEquipamentoDireto(fam, itens) {
   const primeiroItem = itens[0];
   const imgInicial = primeiroItem?.imagem_url || '';
+  const descInicial = primeiroItem?.descricao_longa || '';
   const isCarretilha = fam.nome.toUpperCase().includes('CARRETILHA');
 
-  const modelosMap = new Map();
-  itens.filter(it => it.estoque > 0).forEach(it => {
-    const info = isCarretilha ? analisarCarretilha(it) : analisarMolinete(it);
-    const modeloNome = info.modelo || it.subgrupo;
-    if (!modelosMap.has(modeloNome)) modelosMap.set(modeloNome, { nome: modeloNome, itens: [] });
-    modelosMap.get(modeloNome).itens.push(it);
-  });
+  const itensComEstoque = itens.filter(it => it.estoque > 0);
+  if (itensComEstoque.length === 0) return '';
 
-  const modelos = Array.from(modelosMap.values());
+  itensComEstoque.sort((a, b) => a.ordem_excel - b.ordem_excel);
 
-  const blocosModelosHtml = modelos.map(mod => {
-    mod.itens.sort((a, b) => a.ordem_excel - b.ordem_excel);
-
-    const cardsHtml = mod.itens.map(it => {
-      const info = isCarretilha ? analisarCarretilha(it) : analisarMolinete(it);
-      const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
-      const calc = it.calculoPreco;
-      const tagDetalhe = isCarretilha ? info.ladoTag : (info.variacao || 'Padrão');
-
-      return `
-        <div class="isca-cor-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" onclick="selecionarEquipamento('${fam.id}', '${it.codigo}', '${it.imagem_url}')" style="position:relative;">
-          <span class="isca-badge">${q}</span>
-          ${it.imagem_url ? `<img src="${it.imagem_url}" style="height: 65px; object-fit: contain;">` : ''}
-          <div class="cor-nome" style="font-size: 0.7rem; font-weight: 800; color: var(--azul-800);">${it.codigo}</div>
-          <div style="font-size: .65rem; color: var(--azul-800); font-weight: 800; text-align: center; margin: 2px 0 4px 0;">${escapeHtml(tagDetalhe)}</div>
-          
-          ${calc.temOferta ? `
-            <div style="text-align:center; width:100%; margin-bottom:4px;">
-              <span style="background: linear-gradient(135deg, #001b3a, #0f172a); color: #38bdf8; border: 1px solid #38bdf8; font-size: 0.55rem; font-weight: 900; padding: 2px 4px; border-radius: 4px; display: inline-block; margin-bottom: 2px; text-transform: uppercase;">
-                ⚡ BLACK NOVEMBER -${calc.pctDesconto}%
-              </span>
-              <div class="preco-de" style="font-size:0.68rem; color:#94a3b8; text-decoration:line-through; font-weight:700;">
-                R$ ${fmtMoeda(calc.precoOriginal)}
-              </div>
-              <div class="preco-por" style="color:#ef4444; font-size:0.9rem; font-weight:900;">
-                R$ ${fmtMoeda(calc.precoFinal)}
-              </div>
-            </div>
-          ` : `<div class="cor-preco" style="font-size:0.85rem; font-weight:900; color:var(--verde); margin-bottom:4px;">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
-
-          <div class="isca-qtd-ctrl" onclick="event.stopPropagation()">
-            <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
-            <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
-            <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
-          </div>
-        </div>`;
-    }).join('');
+  // MONTA OS CARDS LADO A LADO NUMA GRADE REUTILIZÁVEL
+  const cardsHtml = itensComEstoque.map(it => {
+    const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+    const calc = it.calculoPreco;
+    
+    // Se for carretilha/molinete pega a variação/lado, se for acessório pega o modelo/cor
+    let tagDetalhe = 'Padrão';
+    if (isCarretilha) {
+      tagDetalhe = analisarCarretilha(it).ladoTag;
+    } else {
+      const infoMol = analisarMolinete(it);
+      tagDetalhe = infoMol.variacao || it.subgrupo || 'Padrão';
+    }
 
     return `
-      <div class="sub-bloco" style="margin-bottom: 12px;">
-        <div class="sub-grupo-header">${escapeHtml(mod.nome)}</div>
-        <div class="isca-grade">${cardsHtml}</div>
+      <div class="isca-cor-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" 
+           onclick="selecionarEquipamento('${fam.id}', '${it.codigo}', '${it.imagem_url}')" 
+           style="position:relative; cursor:pointer;">
+        
+        <span class="isca-badge">${q}</span>
+        ${it.imagem_url ? `<img src="${it.imagem_url}" style="height: 65px; object-fit: contain; margin-bottom:4px;">` : ''}
+        
+        <div class="cor-nome" style="font-size: 0.65rem; font-weight: 700; color: var(--cinza-400);">CÓD: ${escapeHtml(it.codigo)}</div>
+        <div style="font-size: .7rem; color: var(--azul-800); font-weight: 800; text-align: center; margin: 2px 0 4px 0; line-height: 1.1;">
+          ${escapeHtml(tagDetalhe)}
+        </div>
+        
+        ${calc.temOferta ? `
+          <div style="text-align:center; width:100%; margin-bottom:4px;">
+            <span style="background: linear-gradient(135deg, #001b3a, #0f172a); color: #38bdf8; border: 1px solid #38bdf8; font-size: 0.55rem; font-weight: 900; padding: 2px 4px; border-radius: 4px; display: inline-block; margin-bottom: 2px; text-transform: uppercase;">
+              ⚡ BLACK NOVEMBER -${calc.pctDesconto}%
+            </span>
+            <div class="preco-de" style="font-size:0.68rem; color:#94a3b8; text-decoration:line-through; font-weight:700;">
+              R$ ${fmtMoeda(calc.precoOriginal)}
+            </div>
+            <div class="preco-por" style="color:#ef4444; font-size:0.9rem; font-weight:900;">
+              R$ ${fmtMoeda(calc.precoFinal)}
+            </div>
+          </div>
+        ` : `<div class="cor-preco" style="font-size:0.85rem; font-weight:900; color:var(--verde); margin-bottom:4px;">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+
+        <div class="isca-qtd-ctrl" onclick="event.stopPropagation()">
+          <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+          <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+          <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+        </div>
       </div>`;
   }).join('');
 
@@ -1137,8 +1137,10 @@ function renderFamiliaEquipamentoDireto(fam, itens) {
           </div>
         </div>
         <div class="isca-info">
-          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Descrição / Ficha</button>
-          <div style="margin-top: 6px;">${blocosModelosHtml}</div>
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(descInicial)}" onclick="abrirModalPorBotao(this)">🔍 Descrição / Ficha</button>
+          <div class="isca-grade" style="margin-top: 8px;">
+            ${cardsHtml}
+          </div>
         </div>
       </div>
     </div>`;
