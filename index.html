@@ -5,24 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Tabela de Preços B2B</title>
 <style>
+  /* BADGE DE LANÇAMENTO FLUTUANTE NA FOTO PRINCIPAL */
+  .tarja-lancamento-foto {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+    color: #ffffff;
+    font-size: 0.65rem;
+    font-weight: 900;
+    padding: 3px 8px;
+    border-radius: 6px;
+    z-index: 10;
+    border: 1px solid #60a5fa;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
 
- /* BADGE DE LANÇAMENTO FLUTUANTE NA FOTO PRINCIPAL */
-.tarja-lancamento-foto {
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
-  color: #ffffff;
-  font-size: 0.65rem;
-  font-weight: 900;
-  padding: 3px 8px;
-  border-radius: 6px;
-  z-index: 10;
-  border: 1px solid #60a5fa;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   :root {
     --azul-900:#001f3f; --azul-800:#003366; --azul-700:#004080;
@@ -105,12 +105,10 @@
   }
 
   .familia-side { display:flex; flex-direction:column; gap:8px; position:relative; }
-  .familia-foto-principal { background:var(--cinza-50); border:1px solid var(--cinza-100); border-radius:10px; padding:8px; aspect-ratio:1; display:flex; align-items:center; justify-content:center; cursor:pointer; max-width: 220px; margin: 0 auto; width:100%; }
+  .familia-foto-principal { background:var(--cinza-50); border:1px solid var(--cinza-100); border-radius:10px; padding:8px; aspect-ratio:1; display:flex; align-items:center; justify-content:center; cursor:pointer; max-width: 220px; margin: 0 auto; width:100%; position:relative; }
   .familia-foto-principal img { max-width:100%; max-height:100%; object-fit:contain; }
   
   .btn-detalhes { background:var(--cinza-50); border:1px solid var(--cinza-200); color:var(--azul-800); border-radius:6px; font-size:.65rem; font-weight:800; text-transform:uppercase; cursor:pointer; display:inline-flex; align-items:center; gap:4px; padding:6px 10px; margin-bottom:8px; align-self:flex-start; }
-
-
 
   /* BADGES DE OFERTA */
   .badge-oferta-banner {
@@ -178,7 +176,7 @@
   .qtd-ctrl input { width:26px; height:24px; text-align:center; border:none; font-weight:800; color:var(--azul-800); font-size:.75rem; }
 
   .grade-soltos { display:grid; grid-template-columns:repeat(auto-fill, minmax(130px, 1fr)); gap:10px; }
-  .card-solto { background:white; border:1px solid var(--cinza-200); border-radius:8px; padding:8px; text-align:center; }
+  .card-solto { background:white; border:1px solid var(--cinza-200); border-radius:8px; padding:8px; text-align:center; position:relative; }
   .card-solto .img { width:100%; aspect-ratio:1; background:var(--cinza-50); display:flex; align-items:center; justify-content:center; border-radius:6px; margin-bottom:6px; overflow:hidden; }
   .card-solto .img img { width:100%; height:100%; object-fit:contain; }
   .card-solto .nome { font-size:.7rem; font-weight:700; color:var(--azul-800); margin-bottom:4px; line-height:1.2; }
@@ -248,7 +246,7 @@
 <!-- CABAÇALHO DE GRUPOS -->
 <div class="chips-wrap"><div class="chips" id="chips"></div></div>
 
-<!-- BARRA SECUNDÁRIA DE MARCAS (Adicionar este trecho) -->
+<!-- BARRA SECUNDÁRIA DE MARCAS -->
 <div id="barramarcasWrap" style="display:none; background:#f1f5f9; border-bottom:1px solid #e2e8f0; padding:6px 12px; position:sticky; top:105px; z-index:89; overflow-x:auto;">
   <div id="barramarcas" style="max-width:1600px; margin:0 auto; display:flex; gap:8px; align-items:center;"></div>
 </div>
@@ -299,7 +297,7 @@ let todosItens = [], todasFamilias = [], grupoAtual = '__OFERTAS__', buscaAtual 
 let clienteLogado = null;
 let porcentagemAcrescimo = 0;
 let mapaOfertas = {}; 
-let marcaAtual = ''; // Guarda a marca selecionada (vazia = todas as marcas)
+let marcaAtual = '';
 
 const BUCKET_ICONIS = 'https://gpzqzwrqndawhhglycat.supabase.co/storage/v1/object/public/icones_area_trabalho/';
 
@@ -307,11 +305,8 @@ function ativarWhatsAppVendedor() {
   if (clienteLogado && clienteLogado.vendedor && clienteLogado.vendedor.whatsapp) {
     const numWhats = clienteLogado.vendedor.whatsapp.replace(/\D/g, '');
     const nomeVendedor = clienteLogado.vendedor.nome.split(' ')[0];
-    
     const mensagem = encodeURIComponent(`Olá ${nomeVendedor}, sou a empresa ${clienteLogado.nome} (CNPJ: ${clienteLogado.cnpj}) e gostaria de tirar uma dúvida sobre a tabela de preços.`);
-
     const link = `https://wa.me/55${numWhats}?text=${mensagem}`;
-    
     const btn = document.getElementById('btnWhatsVendedor');
     document.getElementById('nomeVendedorWhats').textContent = nomeVendedor;
     btn.href = link;
@@ -319,29 +314,22 @@ function ativarWhatsAppVendedor() {
   }
 }
 
-
-
 function montarBarraMarcas() {
   const wrap = document.getElementById('barramarcasWrap');
   const container = document.getElementById('barramarcas');
 
   if (!container || !wrap) return;
 
-  // Se estiver em "Ofertas" ou "Todos", esconde a barra
   if (grupoAtual === '__OFERTAS__' || grupoAtual === '__TODOS__') {
     wrap.style.display = 'none';
     return;
   }
 
-  // Pega os produtos do grupo ativo que têm estoque
   const produtosDoGrupo = todosItens.filter(it => it.grupo === grupoAtual && it.estoque > 0);
-  
-  // Extrai as marcas únicas do grupo
   const marcasSet = new Set();
   produtosDoGrupo.forEach(it => { if (it.marca) marcasSet.add(it.marca.trim()); });
   const marcas = Array.from(marcasSet).sort();
 
-  // Se houver menos de 2 marcas, não exibe a barra
   if (marcas.length <= 1) {
     wrap.style.display = 'none';
     return;
@@ -374,61 +362,8 @@ function montarBarraMarcas() {
 
 function filtrarPorMarca(marca, btn) {
   marcaAtual = marca;
-  montarBarraMarcas(); // Recarrega os estilos dos botões de marca
+  montarBarraMarcas();
   renderizar();
-}
-
-function renderizarCardFamiliaOuGrupo(grupoNome, produtosGrupo, ofertasMap) {
-  const produtosComDesconto = produtosGrupo.filter(p => ofertasMap[p.codigo]);
-  const todosPossuemDesconto = produtosComDesconto.length === produtosGrupo.length && produtosGrupo.length > 0;
-
-  let porcentagemGrupo = null;
-  if (todosPossuemDesconto) {
-    const descPrimeiro = ofertasMap[produtosGrupo[0].codigo].desconto_porcentagem;
-    const todosIguais = produtosGrupo.every(p => ofertasMap[p.codigo].desconto_porcentagem === descPrimeiro);
-    if (todosIguais) porcentagemGrupo = descPrimeiro;
-  }
-
-  let htmlBadgeGrupo = '';
-  if (porcentagemGrupo) {
-    htmlBadgeGrupo = `
-      <div style="background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; padding: 6px 12px; border-radius: 6px; font-weight: 800; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);">
-        🔥 OFERTA DO GRUPO: ${porcentagemGrupo}% OFF
-      </div>`;
-  }
-
-  const htmlProdutos = produtosGrupo.map(p => {
-    const oferta = ofertasMap[p.codigo];
-    const precoOriginal = p.preco_tabela;
-    
-    let precoFinal = precoOriginal;
-    let htmlPreco = `<span style="font-size:1rem; font-weight:bold; color:#10b981;">R$ ${precoOriginal.toFixed(2)}</span>`;
-
-    if (oferta && oferta.desconto_porcentagem > 0) {
-      precoFinal = precoOriginal * (1 - (oferta.desconto_porcentagem / 100));
-      htmlPreco = `
-        <div style="display:flex; flex-direction:column;">
-          <span style="font-size:0.75rem; color:#94a3b8; text-decoration:line-through;">De R$ ${precoOriginal.toFixed(2)}</span>
-          <span style="font-size:1rem; font-weight:bold; color:#ef4444;">Por R$ ${precoFinal.toFixed(2)} <small style="font-size:0.7rem; background:#fee2e2; color:#dc2626; padding:1px 4px; border-radius:3px;">-${oferta.desconto_porcentagem}%</small></span>
-        </div>`;
-    }
-
-    return `
-      <div class="item-produto-linha" style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #334155;">
-        <div>
-          <div style="font-weight:600; font-size:0.85rem;">${p.descricao || p.nome}</div>
-          <small style="color:#64748b;">Cód: ${p.codigo}</small>
-        </div>
-        <div>${htmlPreco}</div>
-      </div>`;
-  }).join('');
-
-  return `
-    <div class="card-grupo" style="background:#1e293b; border-radius:12px; padding:16px; margin-bottom:16px; border:1px solid #334155;">
-      ${htmlBadgeGrupo}
-      <h3 style="margin-top:0; color:#f8fafc;">${grupoNome}</h3>
-      <div class="lista-produtos">${htmlProdutos}</div>
-    </div>`;
 }
 
 function configurarWhatsAppVendedor() {
@@ -438,9 +373,7 @@ function configurarWhatsAppVendedor() {
 
     const nomeVendedor = clienteLogado.vendedor.nome.split(' ')[0];
     const mensagem = encodeURIComponent(`Olá ${nomeVendedor}, sou da empresa ${clienteLogado.nome} (CNPJ: ${clienteLogado.cnpj}) e gostaria de tirar uma dúvida sobre os produtos.`);
-
     const link = `https://wa.me/55${numWhats}?text=${mensagem}`;
-    
     const btn = document.getElementById('btnWhatsVendedor');
     document.getElementById('nomeVendedorWhats').textContent = nomeVendedor;
     btn.href = link;
@@ -488,21 +421,16 @@ async function verificarValidadeTabela() {
 function getIconeUrl(grupo) {
   const g = grupo.toUpperCase().trim();
   if (g.includes('CARRETILHA')) return BUCKET_ICONIS + 'CARRETILHA.jpg'; 
-  
-   
   if (g.includes('MOLINETE')) return BUCKET_ICONIS + 'MOLINETE.jpg';
   if (g.includes('ISCA')) return BUCKET_ICONIS + 'ISCA.jpg';  
   if (g.includes('VARA')) return BUCKET_ICONIS + 'VARA.jpg';
   if (g.includes('LINHA')) return BUCKET_ICONIS + 'LINHA.jpg';
   if (g.includes('MOTOR')) return BUCKET_ICONIS + 'MOTOR.jpg';
-   if (g.includes('ANZOL')) return BUCKET_ICONIS + 'ANZOL.jpg';
-   if (g.includes('GARAT')) return BUCKET_ICONIS + 'GARATEIAS.jpg'; // Captura GARATEIA e GARATÉIAS
+  if (g.includes('ANZOL')) return BUCKET_ICONIS + 'ANZOL.jpg';
+  if (g.includes('GARAT')) return BUCKET_ICONIS + 'GARATEIAS.jpg';
   if (g.includes('GIRADOR') || g.includes('EMPATE') || g.includes('SNAP')) return BUCKET_ICONIS + 'GIRADORES.jpg';
-  
-  // SEPARADOS:
   if (g.includes('VESTUARIO')) return BUCKET_ICONIS + 'VESTUARIO.jpg';
   if (g.includes('ACESSORIO')) return BUCKET_ICONIS + 'ACESSORIOS.jpg';
-  
   return BUCKET_ICONIS + 'ACESSORIOS.jpg';
 }
 
@@ -518,6 +446,7 @@ function getLogoMarcaUrl(marca) {
   if (m.includes('HARDCORE')) return BUCKET_ICONIS + 'HARDCORE.JPG';
   return '';
 }
+
 function renderMarcaBadge(marca) {
   if (!marca) return '';
   const logoUrl = getLogoMarcaUrl(marca);
@@ -533,7 +462,6 @@ const parseAtributos = json => { try { return JSON.parse(json || '{}'); } catch 
 
 window.addEventListener('DOMContentLoaded', () => {
   verificarValidadeTabela();
-
   const cliSalvo = localStorage.getItem('clienteLogadoB2B');
   const acrescimoSalvo = localStorage.getItem('acrescimoB2B');
 
@@ -547,7 +475,6 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('badgeUf').textContent = clienteLogado.uf;
 
     configurarWhatsAppVendedor();
-
     carregar();
   }
 });
@@ -560,7 +487,6 @@ function sairCliente() {
 
 async function abrirMeusPedidos() {
   if (!clienteLogado) return;
-  
   document.getElementById('modalTitulo').textContent = '📋 Histórico de Pedidos / Orçamentos';
   document.getElementById('modalBody').innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">Buscando seus pedidos...</p>';
   document.getElementById('modalBg').classList.add('on');
@@ -645,30 +571,22 @@ function normalizarItem(it) {
     estoque: Number(it.estoque) || 0,
     ordem_excel: Number(it.ordem_excel) || 999999,
     ordem_customizada_pos: 999999,
-    is_lancamento: Boolean(it.is_lancamento) // 👈 Garante a leitura da flag
+    is_lancamento: Boolean(it.is_lancamento)
   };
 }
 
-/* EXTRAI O TAMANHO DO VESTUÁRIO/ROUPAS DO ATRIBUTO JSON OU SUBGRUPO */
 function analisarVestuario(it) {
   let attrs = it.atributos || {};
-  
   if (typeof attrs === 'string') {
     try { attrs = JSON.parse(attrs); } catch (e) { attrs = {}; }
   }
   
   let tamanho = '';
-  
-  // 1. Busca primeiro nas chaves de tamanho do JSON
   const chavesTam = ['Tamanho', 'TAMANHO', 'Tamanho (cm)', 'Tam', 'TAM'];
   for (let k of chavesTam) {
-    if (attrs[k]) { 
-      tamanho = String(attrs[k]).toUpperCase().trim(); 
-      break; 
-    }
+    if (attrs[k]) { tamanho = String(attrs[k]).toUpperCase().trim(); break; }
   }
 
-  // 2. Se não encontrar no JSON, busca via Regex (incluindo 3XL, 2XL, XL, L, S, etc)
   if (!tamanho) {
     const texto = (it.subgrupo || it.descricao_longa || '').toUpperCase();
     const match = texto.match(/\b(\d?XL|\d?XLL|PP|P|M|G|GG|XG|XXG|XGG|EG|EXG|EXGG|38|40|42|44|46|48|50|XS|S|L)\b/i);
@@ -686,13 +604,10 @@ function analisarAnzol(it) {
   
   if (!numero || numero === 'S/N') {
     const subUpper = (it.subgrupo || '').toUpperCase();
-    
-    // Tratamento específico para SABIKI / Cabos de Aço / Anzóis
     const matchCabo = subUpper.match(/(\d+\s*LBS?|\d+\s*KG|\d+\s*M(?:ETROS)?)/i);
     if (matchCabo) { 
       numero = matchCabo[1]; 
     } else {
-      // Procura por números de anzol/sabiki (ex: Nº 12, N10, 14, 1/0, etc)
       const match = subUpper.match(/(?:Nº?|Nº|NUMERO|TAMANHO|SABIKI)?\s*(\d{1,2}(?:\/\d)?(?:\s*CM|\s*MM)?|\b[PMGG]{1,3}\b)(?:\s*C\/|\s|$)/i);
       if (match) numero = match[1]; else numero = it.subgrupo.replace(it.grupo, '').trim() || 'S/N';
     }
@@ -734,7 +649,6 @@ function analisarMotor(it) {
   }
 
   let detalhe = attrs['Potência'] || attrs['Libragem'] || attrs['LBS'] || attrs['Modelo'] || '';
-
   if (!detalhe) {
     const texto = (it.subgrupo || it.descricao_longa || '').toUpperCase();
     const match = texto.match(/\b(\d+\s*LBS?|\d+\s*LB|\d+\s*HP)\b/i);
@@ -843,7 +757,7 @@ async function carregar() {
     
     todosItens = j.itens.map(normalizarItem).filter(it => it.grupo.length > 0 && it.estoque > 0);
     montarChips(); 
-    montarBarraMarcas(); // Chamada adicionada aqui
+    montarBarraMarcas();
     renderizar();
   } catch (e) { document.getElementById('conteudo').innerHTML = '<div class="loading">Erro ao carregar.</div>'; }
 }
@@ -864,34 +778,25 @@ function montarChips() {
 
 function trocarGrupo(grupo, btn) {
   grupoAtual = grupo;
-  marcaAtual = ''; // Reseta o filtro de marca ao mudar de grupo
-  
+  marcaAtual = '';
   document.querySelectorAll('.chip').forEach(c => c.classList.remove('ativo'));
   btn.classList.add('ativo'); 
-  
-  montarBarraMarcas(); // Atualiza a barra de marcas
+  montarBarraMarcas();
   renderizar();
 }
 
 function filtrar() {
   let lista = todosItens;
-
   if (grupoAtual !== '__TODOS__' && grupoAtual !== '__OFERTAS__') {
     lista = lista.filter(it => it.grupo === grupoAtual);
   }
-
-  // Filtro por Marca (Adicionar este trecho)
   if (marcaAtual) {
     lista = lista.filter(it => it.marca.toUpperCase() === marcaAtual.toUpperCase());
   }
-
   if (buscaAtual) {
     const q = buscaAtual.toLowerCase();
     lista = lista.filter(it => it.codigo.includes(q) || it.subgrupo.toLowerCase().includes(q) || it.marca.toLowerCase().includes(q));
   }
-
-  
-  
   return lista;
 }
 
@@ -928,29 +833,28 @@ function renderizar() {
       const grupoItem = primeiroItem.grupo.toUpperCase();
       const nomeFam = fam.nome.toUpperCase();
 
-// Substitua o trecho de verificação dentro de renderizar():
-// Substitua o trecho de verificação dentro de renderizar():
-if (nomeFam.includes('VARA')) tipo = 'vara';
-else if (nomeFam.includes('LINHA')) tipo = 'linha';
-else if (nomeFam.includes('ISCA') || attrs.includes('CORES') || attrs.includes('COR')) tipo = 'isca';
-else if (
-  nomeFam.includes('ANZOL') || 
-  nomeFam.includes('GARAT') || grupoItem.includes('GARAT') || 
-  nomeFam.includes('SABIKI') || grupoItem.includes('SABIKI') || 
-  nomeFam.includes('EMPATE') || nomeFam.includes('GIRADOR') || 
-  nomeFam.includes('SNAP') || nomeFam.includes('CABO') || nomeFam.includes('LUVA')
-) tipo = 'anzol';
-else if (nomeFam.includes('MOLINETE')) tipo = 'molinete';
-else if (
-  nomeFam.includes('CARRETILHA') || 
-  grupoItem.includes('ACESSORIO') || nomeFam.includes('ACESSORIO') ||
-  nomeFam.includes('ALICATE') || nomeFam.includes('TESOURA') || nomeFam.includes('BOLSA') || 
-  nomeFam.includes('POCHETE') || nomeFam.includes('MOCHILA') || nomeFam.includes('OXIGENADOR') || 
-  nomeFam.includes('FACA') || nomeFam.includes('CORDAO') || nomeFam.includes('CORDÃO') || 
-  nomeFam.includes('CARRETEL') || nomeFam.includes('CAIXA') || nomeFam.includes('CADEIRA')
-) tipo = 'equipamento_direto'; // <--- Envia Carretilhas e todos os Acessórios para o padrão Carretilha!
-else if (nomeFam.includes('MOTOR') || grupoItem.includes('MOTOR')) tipo = 'motor';
-else if (grupoItem.includes('VESTUARIO') || nomeFam.includes('VESTUARIO')) tipo = 'grade'; // <--- Mantém apenas Vestuário na grade
+      if (nomeFam.includes('VARA')) tipo = 'vara';
+      else if (nomeFam.includes('LINHA')) tipo = 'linha';
+      else if (nomeFam.includes('ISCA') || attrs.includes('CORES') || attrs.includes('COR')) tipo = 'isca';
+      else if (
+        nomeFam.includes('ANZOL') || 
+        nomeFam.includes('GARAT') || grupoItem.includes('GARAT') || 
+        nomeFam.includes('SABIKI') || grupoItem.includes('SABIKI') || 
+        nomeFam.includes('EMPATE') || nomeFam.includes('GIRADOR') || 
+        nomeFam.includes('SNAP') || nomeFam.includes('CABO') || nomeFam.includes('LUVA')
+      ) tipo = 'anzol';
+      else if (nomeFam.includes('MOLINETE')) tipo = 'molinete';
+      else if (
+        nomeFam.includes('CARRETILHA') || 
+        grupoItem.includes('ACESSORIO') || nomeFam.includes('ACESSORIO') ||
+        nomeFam.includes('ALICATE') || nomeFam.includes('TESOURA') || nomeFam.includes('BOLSA') || 
+        nomeFam.includes('POCHETE') || nomeFam.includes('MOCHILA') || nomeFam.includes('OXIGENADOR') || 
+        nomeFam.includes('FACA') || nomeFam.includes('CORDAO') || nomeFam.includes('CORDÃO') || 
+        nomeFam.includes('CARRETEL') || nomeFam.includes('CAIXA') || nomeFam.includes('CADEIRA')
+      ) tipo = 'equipamento_direto';
+      else if (nomeFam.includes('MOTOR') || grupoItem.includes('MOTOR')) tipo = 'motor';
+      else if (grupoItem.includes('VESTUARIO') || nomeFam.includes('VESTUARIO')) tipo = 'grade';
+
       if (tipo === 'isca') html += renderFamiliaIsca(fam, filhos);
       else if (tipo === 'molinete') html += renderFamiliaMolinete(fam, filhos);
       else if (tipo === 'equipamento_direto') html += renderFamiliaEquipamentoDireto(fam, filhos);
@@ -972,16 +876,15 @@ else if (grupoItem.includes('VESTUARIO') || nomeFam.includes('VESTUARIO')) tipo 
   cont.innerHTML = html;
 }
 
-/* RENDERIZAÇÃO DOS MOLINETES NO MESMO PADRÃO DE ABAS E CARDS COMPACTOS DOS ANZÓIS */
 function renderFamiliaMolinete(fam, itens) {
   const primeiroItem = itens[0];
   const imgInicial = primeiroItem?.imagem_url || '';
+  const itensComEstoque = itens.filter(it => it.estoque > 0);
+  if (itensComEstoque.length === 0) return '';
+
   const temLancamentoNaFamilia = itensComEstoque.some(it => it.is_lancamento);
   let subdivisoes = fam.subdivisoes || [];
   if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Todos', itens: fam.itens }];
-
-  const itensComEstoque = itens.filter(it => it.estoque > 0);
-  if (itensComEstoque.length === 0) return '';
 
   const temOfertaNaFamilia = itensComEstoque.some(it => it.calculoPreco.temOferta);
   const maiorDesconto = Math.max(...itensComEstoque.map(it => it.calculoPreco.pctDesconto || 0));
@@ -1036,14 +939,11 @@ function renderFamiliaMolinete(fam, itens) {
       </div>
       <div class="molinete-card" id="card-fam-${fam.id}">
         <div class="familia-side">
-          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">
+          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)" style="position:relative;">
+            ${temLancamentoNaFamilia ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
             ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
           </div>
-          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)" style="position:relative;">
-  ${temLancamentoNaFamilia ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
-  ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
-</div>
-          </div>
+        </div>
         <div class="molinete-info">
           <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Descrição</button>
           ${subdivisoes.length > 1 ? `<div class="molinete-tabs">${tabsHtml}</div>` : ''}
@@ -1093,7 +993,6 @@ function trocarTipoMolinete(famId, subIndex) {
 
 function renderFamiliaEquipamentoDireto(fam, itens) {
   const primeiroItem = itens[0];
-  const temLancamentoNaFamilia = itensComEstoque.some(it => it.is_lancamento);
   const imgInicial = primeiroItem?.imagem_url || '';
   const descInicial = primeiroItem?.descricao_longa || '';
   const isCarretilha = fam.nome.toUpperCase().includes('CARRETILHA');
@@ -1101,10 +1000,8 @@ function renderFamiliaEquipamentoDireto(fam, itens) {
   const itensComEstoque = itens.filter(it => it.estoque > 0);
   if (itensComEstoque.length === 0) return '';
 
+  const temLancamentoNaFamilia = itensComEstoque.some(it => it.is_lancamento);
   itensComEstoque.sort((a, b) => a.ordem_excel - b.ordem_excel);
-
-  // 👈 Verifica se algum produto da família é novidade
-
 
   const cardsHtml = itensComEstoque.map(it => {
     const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
@@ -1126,7 +1023,6 @@ function renderFamiliaEquipamentoDireto(fam, itens) {
         <span class="isca-badge">${q}</span>
         ${it.imagem_url ? `<img src="${it.imagem_url}" style="height: 65px; object-fit: contain; margin-bottom:4px;">` : ''}
         
-        <!-- CÓDIGO LIMPO SEM A TAG AQUI -->
         <div class="cor-nome" style="font-size: 0.65rem; font-weight: 700; color: var(--cinza-400);">
           CÓD: ${escapeHtml(it.codigo)}
         </div>
@@ -1165,15 +1061,10 @@ function renderFamiliaEquipamentoDireto(fam, itens) {
       </div>
       <div class="isca-card" id="card-fam-${fam.id}">
         <div class="familia-side">
-          <!-- 👈 TAG APLICADA NA IMAGEM PRINCIPAL -->
           <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)" style="position:relative;">
             ${temLancamentoNaFamilia ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
             ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
           </div>
-          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)" style="position:relative;">
-  ${temLancamentoNaFamilia ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
-  ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
-</div>
         </div>
         <div class="isca-info">
           <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(descInicial)}" onclick="abrirModalPorBotao(this)">🔍 Descrição / Ficha</button>
@@ -1192,7 +1083,9 @@ function selecionarEquipamento(famId, codigo, url) {
   const targetMini = document.getElementById(`mini-${codigo}`);
   if (targetMini) targetMini.classList.add('ativa');
   if (url && url.trim() !== '') {
-    document.getElementById(`foto-pai-${famId}`).innerHTML = `<img src="${url}">`;
+    const fotoPai = document.getElementById(`foto-pai-${famId}`);
+    const badgeNovidade = fotoPai.querySelector('.tarja-lancamento-foto');
+    fotoPai.innerHTML = `${badgeNovidade ? badgeNovidade.outerHTML : ''}<img src="${url}">`;
   }
 }
 
@@ -1204,6 +1097,7 @@ function renderFamiliaMotor(fam, itens) {
   const itensComEstoque = itens.filter(it => it.estoque > 0);
   if (itensComEstoque.length === 0) return '';
 
+  const temLancamentoNaFamilia = itensComEstoque.some(it => it.is_lancamento);
   itensComEstoque.sort((a, b) => a.ordem_excel - b.ordem_excel);
 
   const cardsHtml = itensComEstoque.map(it => {
@@ -1254,7 +1148,8 @@ function renderFamiliaMotor(fam, itens) {
       </div>
       <div class="isca-card" id="card-fam-${fam.id}">
         <div class="familia-side">
-          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">
+          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)" style="position:relative;">
+            ${temLancamentoNaFamilia ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
             ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
           </div>
         </div>
@@ -1312,12 +1207,12 @@ function toggleVariacao(codigo, event) {
 function renderFamiliaVara(fam, itens) {
   const primeiroItem = itens[0];
   const imgInicial = primeiroItem?.imagem_url || '';
+  const itensComEstoque = itens.filter(it => it.estoque > 0);
+  if (itensComEstoque.length === 0) return '';
+
   const temLancamentoNaFamilia = itensComEstoque.some(it => it.is_lancamento);
   let subdivisoes = fam.subdivisoes || [];
   if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Produtos', itens: fam.itens }];
-
-  const itensComEstoque = itens.filter(it => it.estoque > 0);
-  if (itensComEstoque.length === 0) return '';
 
   const blocosTabelas = subdivisoes.map(sub => {
     const itensDaSub = itensComEstoque.filter(it => sub.itens.includes(it.codigo));
@@ -1330,18 +1225,15 @@ function renderFamiliaVara(fam, itens) {
       const calc = it.calculoPreco;
       const specs = info.especificacoes || {};
 
-      // Extrai Tamanho e Libragem
       const tamanho = specs['Tamanho (cm)'] || specs['Comprimento'] || specs['TAMANHO'] || '';
       const libragem = specs['Resistência da linha'] || specs['Libragem'] || specs['LBS'] || specs['RESISTÊNCIA'] || '';
 
-      // Monta as especificações completas guardadas no olho 👁️
       const specsGuardadas = Object.entries(specs)
         .map(([k, v]) => `<span style="white-space:nowrap;"><strong>${escapeHtml(k)}:</strong> ${escapeHtml(v)}</span>`)
         .join(' • ');
 
       return `
         <tr class="linha-tabela-vara" style="border-bottom:1px solid #e2e8f0;">
-          <!-- COLUNA 1: MODELO + TAMANHO + BOTÃO 👁️ -->
           <td style="font-weight:800; color:var(--azul-800); font-size:0.75rem; padding:8px 4px; vertical-align:middle;">
             <div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
               <span>${escapeHtml(info.modeloJson)}</span>
@@ -1356,8 +1248,6 @@ function renderFamiliaVara(fam, itens) {
             ${libragem ? `<div style="font-size:0.65rem; color:#2563eb; font-weight:700; margin-top:2px;">${escapeHtml(libragem)}</div>` : ''}
             ${calc.temOferta ? `<span class="tarja-oferta-item">🔥 -${calc.pctDesconto}%</span>` : ''}
           </td>
-
-          <!-- COLUNA 2: PREÇO -->
           <td style="text-align:center; font-weight:800; color:var(--azul-800); padding:8px 2px; vertical-align:middle; white-space:nowrap;">
             ${calc.temOferta ? `
               <div class="preco-box-oferta">
@@ -1366,8 +1256,6 @@ function renderFamiliaVara(fam, itens) {
               </div>
             ` : `R$ ${fmtMoeda(calc.precoFinal)}`}
           </td>
-
-          <!-- COLUNA 3: CONTROLO QTD -->
           <td style="text-align:right; padding:8px 2px; vertical-align:middle;" onclick="event.stopPropagation()">
             <div class="qtd-ctrl" style="display:inline-flex;">
               <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
@@ -1376,8 +1264,6 @@ function renderFamiliaVara(fam, itens) {
             </div>
           </td>
         </tr>
-
-        <!-- PAINEL OCULTO (EXPANDE NO OLHO 👁️) -->
         <tr id="panel-vara-${it.codigo}" style="display:none; background:#f8fafc;">
           <td colspan="3" style="padding:8px; font-size:0.68rem; color:#334155; border-bottom:1px solid #cbd5e1; line-height:1.4;">
             <div style="background:#fff; border:1px solid #cbd5e1; padding:6px 8px; border-radius:6px;">
@@ -1412,89 +1298,18 @@ function renderFamiliaVara(fam, itens) {
         ${renderMarcaBadge(itens[0].marca)}
       </div>
       <div class="molinete-card" id="card-fam-${fam.id}">
-        <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
+        <div class="familia-side">
+          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)" style="position:relative;">
+            ${temLancamentoNaFamilia ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
+            ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
+          </div>
+        </div>
         <div class="molinete-info" style="overflow: hidden;">
           <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Detalhes / Ficha Técnica</button>
           ${blocosTabelas}
         </div>
       </div>
     </div>`;
-}
-// Gera as linhas compactas para os modelos do tamanho selecionado
-function gerarLinhasTabelaVara(itens) {
-  return itens.map(it => {
-    const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
-    const info = analisarVara(it);
-    const calc = it.calculoPreco;
-    
-    // Guarda as outras especificações (Potência, Ação, Libragem, Peso)
-    const specsGuardadas = Object.entries(info.especificacoes)
-      .filter(([k]) => !['Tamanho (cm)', 'Comprimento', 'TAMANHO', 'Partes', 'PARTES'].includes(k))
-      .map(([k, v]) => `<span style="white-space:nowrap;"><strong>${escapeHtml(k)}:</strong> ${escapeHtml(v)}</span>`)
-      .join(' • ');
-
-    return `
-      <tr class="linha-tabela-vara" style="border-bottom:1px solid #e2e8f0;">
-        <td style="font-weight:800; color:var(--azul-800); font-size:0.75rem; padding:8px 6px;">
-          ${escapeHtml(info.modeloJson)}
-          <button type="button" 
-                  onclick="event.stopPropagation(); togglePainelVara('${it.codigo}')" 
-                  title="Ver detalhes" 
-                  style="margin-left:4px; padding:2px 5px; font-size:0.68rem; border-radius:4px; background:#eff6ff; border:1px solid #93c5fd; cursor:pointer; vertical-align:middle;">
-            👁️
-          </button>
-          ${calc.temOferta ? `<span class="tarja-oferta-item">🔥 -${calc.pctDesconto}%</span>` : ''}
-        </td>
-        <td style="text-align:center; font-size:0.75rem; color:var(--cinza-700); padding:8px 4px; white-space:nowrap;">
-          ${escapeHtml(info.especificacoes['Partes'] || info.especificacoes['PARTES'] || '1')}
-        </td>
-        <td style="text-align:center; font-weight:800; color:var(--azul-800); padding:8px 6px; white-space:nowrap;">
-          ${calc.temOferta ? `
-            <div class="preco-box-oferta">
-              <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
-              <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
-            </div>
-          ` : `R$ ${fmtMoeda(calc.precoFinal)}`}
-        </td>
-        <td style="text-align:center; padding:8px 4px;" onclick="event.stopPropagation()">
-          <div class="qtd-ctrl" style="display:inline-flex;">
-            <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
-            <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
-            <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
-          </div>
-        </td>
-      </tr>
-      <tr id="panel-vara-${it.codigo}" style="display:none; background:#f8fafc;">
-        <td colspan="4" style="padding:8px; font-size:0.68rem; color:#334155; border-bottom:1px solid #cbd5e1; line-height:1.4;">
-          <div style="background:#fff; border:1px solid #cbd5e1; padding:6px 8px; border-radius:6px;">
-            <strong>📌 Cód:</strong> ${it.codigo} ${specsGuardadas ? ' • ' + specsGuardadas : ''}
-          </div>
-        </td>
-      </tr>`;
-  }).join('');
-}
-
-// Alterna instantaneamente os modelos exibidos na tabela ao clicar no tamanho
-function trocarTamanhoVara(chaveData, tamanhoNome, btn) {
-  const data = window.varasData[chaveData];
-  if (!data) return;
-
-  // Atualiza visualmente o estilo da aba selecionada
-  const containerTabs = btn.parentElement;
-  containerTabs.querySelectorAll('.vara-comp-tab').forEach(b => {
-    b.style.background = '#f8fafc';
-    b.style.color = '#003366';
-  });
-  btn.style.background = '#003366';
-  btn.style.color = '#ffffff';
-
-  const itensDoTamanho = data.tamanhosMap.get(tamanhoNome) || [];
-  itensDoTamanho.sort((a, b) => a.ordem_excel - b.ordem_excel);
-
-  const tbody = document.getElementById(`tbody-vara-${chaveData}`);
-  if (tbody) {
-    tbody.innerHTML = gerarLinhasTabelaVara(itensDoTamanho);
-  }
 }
 
 function togglePainelVara(codigo) {
@@ -1505,13 +1320,16 @@ function togglePainelVara(codigo) {
 
 function renderFamiliaLinha(fam, itens) {
   const primeiroItem = itens[0];
-  const temLancamentoNaFamilia = itensComEstoque.some(it => it.is_lancamento);
   const imgInicial = primeiroItem?.imagem_url || '';
+  const itensComEstoque = itens.filter(it => it.estoque > 0);
+  if (itensComEstoque.length === 0) return '';
+
+  const temLancamentoNaFamilia = itensComEstoque.some(it => it.is_lancamento);
   let subdivisoes = fam.subdivisoes || [];
   if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Produtos', itens: fam.itens }];
 
   const blocosTabelas = subdivisoes.map(sub => {
-    const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
+    const itensDaSub = itensComEstoque.filter(it => sub.itens.includes(it.codigo));
     if (itensDaSub.length === 0) return '';
     itensDaSub.sort((a, b) => a.ordem_excel - b.ordem_excel);
 
@@ -1555,7 +1373,12 @@ function renderFamiliaLinha(fam, itens) {
         ${renderMarcaBadge(itens[0].marca)}
       </div>
       <div class="molinete-card" id="card-fam-${fam.id}">
-        <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
+        <div class="familia-side">
+          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)" style="position:relative;">
+            ${temLancamentoNaFamilia ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
+            ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
+          </div>
+        </div>
         <div class="molinete-info" style="overflow: hidden;">
           <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Detalhes</button>
           ${blocosTabelas}
@@ -1566,13 +1389,15 @@ function renderFamiliaLinha(fam, itens) {
 
 function renderFamiliaGrade(fam, itens) {
   const primeiroItem = itens[0];
-  const temLancamentoNaFamilia = itensComEstoque.some(it => it.is_lancamento);
   const imgInicial = primeiroItem?.imagem_url || '';
   const descInicial = primeiroItem?.descricao_longa || '';
+  const itensComEstoque = itens.filter(it => it.estoque > 0);
+  if (itensComEstoque.length === 0) return '';
+
+  const temLancamentoNaFamilia = itensComEstoque.some(it => it.is_lancamento);
   let subdivisoes = fam.subdivisoes || [];
   if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Produtos', itens: fam.itens }];
 
-  // Identifica se é vestuário de corpo (Camisa, Bermuda, Calça) verificando família e itens
   const isVestuarioCorpo = itens.some(it => {
     const sub = (it.subgrupo || '').toUpperCase();
     const famNome = (fam.nome || '').toUpperCase();
@@ -1590,12 +1415,10 @@ function renderFamiliaGrade(fam, itens) {
   });
 
   const blocosTabelas = subdivisoes.map(sub => {
-    const itensDaSub = itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
+    const itensDaSub = itensComEstoque.filter(it => sub.itens.includes(it.codigo));
     if (itensDaSub.length === 0) return '';
     itensDaSub.sort((a, b) => a.ordem_excel - b.ordem_excel);
 
-    // MODO CAMISAS / BERMUDAS (CARDS COMPACTOS COM DESTAQUE NO TAMANHO: P, M, G, 3XL, ETC)
-// MODO CAMISAS / BERMUDAS (CARDS COMPACTOS COM DESTAQUE NO TAMANHO: P, M, G, 3XL, ETC)
     if (isVestuarioCorpo) {
       const cardsHtml = itensDaSub.map(it => {
         const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
@@ -1607,7 +1430,6 @@ function renderFamiliaGrade(fam, itens) {
             <span class="anzol-badge">${q}</span>
             <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700; display:flex; align-items:center; justify-content:center; gap:4px; flex-wrap:wrap;">
               <span>CÓD: ${escapeHtml(it.codigo)}</span>
-             
             </div>
             
             <div class="anzol-numero" style="font-size:1.2rem; font-weight:900; color:var(--azul-800); margin:4px 0;">
@@ -1641,8 +1463,6 @@ function renderFamiliaGrade(fam, itens) {
         </div>`;
     }
 
-    // MODO BONÉS E ACESSÓRIOS DIVERSOS (FOTO INDIVIDUAL + NOME DO MODELO/COR)
-    // MODO BONÉS E ACESSÓRIOS DIVERSOS (FOTO INDIVIDUAL + NOME DO MODELO/COR)
     const cardsHtml = itensDaSub.map((it, index) => {
       const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
       const temImagem = it.imagem_url && it.imagem_url.trim() !== '';
@@ -1665,7 +1485,6 @@ function renderFamiliaGrade(fam, itens) {
           <div style="flex:1; display:flex; flex-direction:column; justify-content:flex-start;">
             <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700; display:flex; align-items:center; justify-content:center; gap:4px; flex-wrap:wrap;">
               <span>CÓD: ${escapeHtml(it.codigo)}</span>
-             
             </div>
             <div class="nome" style="font-size:0.7rem; font-weight:800; color:var(--azul-800); margin-bottom:4px; line-height:1.2; text-align:left;">
               ${escapeHtml(nomeLimpo)}
@@ -1704,13 +1523,17 @@ function renderFamiliaGrade(fam, itens) {
       </div>
       <div class="molinete-card" id="card-fam-${fam.id}">
         <div class="familia-side">
-          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div>
+          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)" style="position:relative;">
+            ${temLancamentoNaFamilia ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
+            ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
+          </div>
           <button class="btn-detalhes" id="btn-detalhes-${fam.id}" data-titulo="${escapeHtml(primeiroItem.subgrupo || fam.nome)}" data-desc="${escapeHtml(descInicial)}" onclick="abrirModalPorBotao(this)" style="justify-content:center; width:100%;">🔍 Detalhes</button>
         </div>
         <div class="molinete-info" style="overflow: hidden;">${blocosTabelas}</div>
       </div>
     </div>`;
 }
+
 function selecionarAcessorio(famId, codigo, url, descricao, nome) {
   const cardFam = document.getElementById(`card-fam-${famId}`);
   if (cardFam) {
@@ -1718,7 +1541,8 @@ function selecionarAcessorio(famId, codigo, url, descricao, nome) {
     const cardAtivo = document.getElementById(`mini-${codigo}`);
     if (cardAtivo) cardAtivo.style.borderColor = 'var(--azul-800)';
     const fotoPai = document.getElementById(`foto-pai-${famId}`);
-    if (fotoPai) fotoPai.innerHTML = url && url.trim() !== '' ? `<img src="${url}">` : '🖼️';
+    const badgeNovidade = fotoPai.querySelector('.tarja-lancamento-foto');
+    fotoPai.innerHTML = `${badgeNovidade ? badgeNovidade.outerHTML : ''}<img src="${url}">`;
     const btnDetalhes = document.getElementById(`btn-detalhes-${famId}`);
     if (btnDetalhes) { btnDetalhes.setAttribute('data-titulo', nome); btnDetalhes.setAttribute('data-desc', descricao); }
   }
@@ -1727,9 +1551,13 @@ function selecionarAcessorio(famId, codigo, url, descricao, nome) {
 function renderFamiliaIsca(fam, itens) {
   const primeiroItem = itens[0];
   const imgInicial = primeiroItem?.imagem_url || '';
+  const itensComEstoque = itens.filter(it => it.estoque > 0);
+  if (itensComEstoque.length === 0) return '';
+
+  const temLancamentoNaFamilia = itensComEstoque.some(it => it.is_lancamento);
   const modelosMap = new Map();
   
-  itens.filter(it => it.estoque > 0).forEach(it => {
+  itensComEstoque.forEach(it => {
     const info = analisarIsca(it);
     const chave = info.modelo || it.subgrupo; 
     if (!modelosMap.has(chave)) modelosMap.set(chave, { nome: chave, itens: [] });
@@ -1777,7 +1605,12 @@ function renderFamiliaIsca(fam, itens) {
         ${renderMarcaBadge(itens[0].marca)}
       </div>
       <div class="isca-card" id="card-fam-${fam.id}">
-        <div class="familia-side"><div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
+        <div class="familia-side">
+          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)" style="position:relative;">
+            ${temLancamentoNaFamilia ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
+            ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
+          </div>
+        </div>
         <div class="isca-info">
           <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Descrição</button>
           <div class="isca-modelos-tabs">${tabsHtml}</div>
@@ -1830,18 +1663,20 @@ function selecionarIsca(famId, codigo, url) {
   card.querySelectorAll('.isca-cor-card').forEach(m => m.classList.remove('ativa'));
   const targetMini = document.getElementById(`mini-${codigo}`);
   if (targetMini) targetMini.classList.add('ativa');
-  document.getElementById(`foto-pai-${famId}`).innerHTML = `<img src="${url}">`;
+  const fotoPai = document.getElementById(`foto-pai-${famId}`);
+  const badgeNovidade = fotoPai.querySelector('.tarja-lancamento-foto');
+  fotoPai.innerHTML = `${badgeNovidade ? badgeNovidade.outerHTML : ''}<img src="${url}">`;
 }
 
 function renderFamiliaAnzol(fam, itens) {
   const primeiroItem = itens[0];
-  const temLancamentoNaFamilia = itensComEstoque.some(it => it.is_lancamento);
   const imgInicial = primeiroItem?.imagem_url || '';
-  let subdivisoes = fam.subdivisoes || [];
-  if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Todos', itens: fam.itens }];
-  
   const itensComEstoque = itens.filter(it => it.estoque > 0);
   if (itensComEstoque.length === 0) return '';
+
+  const temLancamentoNaFamilia = itensComEstoque.some(it => it.is_lancamento);
+  let subdivisoes = fam.subdivisoes || [];
+  if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Todos', itens: fam.itens }];
   
   const temOfertaNaFamilia = itensComEstoque.some(it => it.calculoPreco.temOferta);
   const maiorDesconto = Math.max(...itensComEstoque.map(it => it.calculoPreco.pctDesconto || 0));
@@ -1860,7 +1695,6 @@ function renderFamiliaAnzol(fam, itens) {
         <span class="anzol-badge">${q}</span>
         <div class="anzol-numero">${escapeHtml(info.numero)}</div>
         ${info.qtd ? `<div style="font-size:.6rem; color:var(--cinza-500); font-weight:700; margin-bottom:2px; text-align:center;">${escapeHtml(info.qtd)}</div>` : ''}
-        
         
         ${calc.temOferta ? `
           <div class="preco-box-oferta">
@@ -1897,7 +1731,8 @@ function renderFamiliaAnzol(fam, itens) {
       </div>
       <div class="anzol-card" id="card-fam-${fam.id}">
         <div class="familia-side">
-          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)">
+          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)" style="position:relative;">
+            ${temLancamentoNaFamilia ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
             ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
           </div>
         </div>
@@ -1931,7 +1766,6 @@ function trocarTipoAnzol(famId, subIndex) {
         <span class="anzol-badge">${q}</span>
         <div class="anzol-numero">${escapeHtml(info.numero)}</div>
         ${info.qtd ? `<div style="font-size:.6rem; color:var(--cinza-500); font-weight:700; margin-bottom:2px; text-align:center;">${escapeHtml(info.qtd)}</div>` : ''}
-       
         
         ${calc.temOferta ? `
           <div class="preco-box-oferta">
@@ -1952,10 +1786,10 @@ function trocarTipoAnzol(famId, subIndex) {
 function renderFamiliaComum(fam, itens) {
   const primeiroItem = itens[0];
   const imgInicial = primeiroItem?.imagem_url || '';
-  const temLancamentoNaFamilia = itensComEstoque.some(it => it.is_lancamento);
   const itensComEstoque = itens.filter(it => it.estoque > 0);
   if (itensComEstoque.length === 0) return '';
 
+  const temLancamentoNaFamilia = itensComEstoque.some(it => it.is_lancamento);
   itensComEstoque.sort((a, b) => a.ordem_excel - b.ordem_excel);
   
   const linhasHtml = itensComEstoque.map(it => {
@@ -1968,7 +1802,6 @@ function renderFamiliaComum(fam, itens) {
           <span class="l-cod">${it.codigo}</span>
           <span class="l-nome">
             ${escapeHtml(it.subgrupo)} 
-            
             ${calc.temOferta ? `<span class="tarja-oferta-item">🔥 -${calc.pctDesconto}%</span>` : ''}
           </span>
         </div>
@@ -1993,14 +1826,15 @@ function renderFamiliaComum(fam, itens) {
         ${renderMarcaBadge(itens[0].marca)}
       </div>
       <div class="familia-card" id="card-fam-${fam.id}">
-        <div class="familia-side"><div class="familia-foto-principal" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
+        <div class="familia-side">
+          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)" style="position:relative;">
+            ${temLancamentoNaFamilia ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
+            ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
+          </div>
+        </div>
         <div class="familia-info">
           <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Detalhes</button>
           <div class="lista-filhos">${linhasHtml}</div>
-          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)" style="position:relative;">
-  ${temLancamentoNaFamilia ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
-  ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
-</div>
         </div>
       </div>
     </div>`;
@@ -2008,16 +1842,14 @@ function renderFamiliaComum(fam, itens) {
 
 function cardSoltos(it) {
   const calc = it.calculoPreco;
-  const temLancamentoNaFamilia = itensComEstoque.some(it => it.is_lancamento);
   return `
     <div class="card-solto" style="position:relative;">
-      ${calc.temOferta ? `<div style="position:absolute; top:4px; left:4px; background:#ef4444; color:white; font-size:8px; font-weight:800; padding:2px 4px; border-radius:4px;">-${calc.pctDesconto}%</div>` : ''}
+      ${it.is_lancamento ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
+      ${calc.temOferta ? `<div style="position:absolute; top:4px; right:4px; background:#ef4444; color:white; font-size:8px; font-weight:800; padding:2px 4px; border-radius:4px;">-${calc.pctDesconto}%</div>` : ''}
       <div class="img" onclick="abrirZoomImagem(this)">${it.imagem_url ? `<img src="${it.imagem_url}">` : '🖼️'}</div>
       
-      <!-- CÓDIGO + TAG DE LANÇAMENTO -->
-      <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700; display:flex; align-items:center; justify-content:center; gap:4px; flex-wrap:wrap; margin-bottom:2px;">
-        <span>CÓD: ${escapeHtml(it.codigo)}</span>
-        
+      <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700; margin-bottom:2px;">
+        CÓD: ${escapeHtml(it.codigo)}
       </div>
 
       <div class="nome">${escapeHtml(it.subgrupo)}</div>
@@ -2028,82 +1860,6 @@ function cardSoltos(it) {
         </div>
       ` : `<div class="preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
     </div>`;
-}
-
-function abrirModalFamiliaOferta(nomeSubgrupo) {
-  const itensFam = todasAsOfertasCache.filter(i => (i.subgrupo || i.subgrupo_scraping || i.descricao) === nomeSubgrupo);
-  if (!itensFam.length) return;
-
-  let modalHtml = `
-    <div id="modalOfertaBg" class="modal-bg on" style="position:fixed; inset:0; background:rgba(0,27,58,0.85); display:flex; align-items:center; justify-content:center; padding:16px; z-index:9999;">
-      <div style="background:#ffffff; width:100%; max-width:700px; border-radius:16px; overflow:hidden; box-shadow:0 20px 50px rgba(0,0,0,0.4);">
-        
-        <div style="background:#001b3a; color:white; padding:16px 20px; display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <span style="color:#38bdf8; font-size:0.75rem; font-weight:800; text-transform:uppercase;">SELECIONE O TAMANHO / OPÇÃO</span>
-            <h3 style="margin:2px 0 0 0; font-size:1.1rem; color:#white;">${nomeSubgrupo}</h3>
-          </div>
-          <button onclick="document.getElementById('modalOfertaBg').remove()" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">✕</button>
-        </div>
-
-        <div style="max-height:400px; overflow-y:auto; padding:16px;">
-          ${itensFam.map(item => {
-            const precoBase = Number(item.preco_venda || item.precoBase || 0);
-            const desc = Number(item.desconto_porcentagem || item.desconto || 0);
-            const precoFinal = precoBase * (1 - (desc / 100));
-
-            return `
-              <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #e2e8f0; gap:12px;">
-                <div>
-                  <strong style="color:#001b3a; font-size:0.95rem;">Cód: ${item.codigo}</strong>
-                  <div style="color:#64748b; font-size:0.85rem;">${item.descricao_sistema || item.nome || ''}</div>
-                </div>
-
-                <div style="text-align:right;">
-                  <div style="text-decoration:line-through; color:#94a3b8; font-size:0.75rem;">De R$ ${precoBase.toFixed(2)}</div>
-                  <strong style="color:#ef4444; font-size:1.05rem;">Por R$ ${precoFinal.toFixed(2)}</strong>
-                </div>
-
-                <button style="background:#10b981; color:white; border:none; padding:8px 14px; border-radius:6px; font-weight:800; cursor:pointer; font-size:0.85rem;" onclick="adicionarOferta('${item.codigo}', ${desc}, ${precoBase}, '${item.imagem_url||''}', '${item.subgrupo||''}')">
-                  + Adicionar
-                </button>
-              </div>`;
-          }).join('')}
-        </div>
-
-      </div>
-    </div>`;
-
-  document.body.insertAdjacentHTML('beforeend', modalHtml);
-}
-
-function obterHtmlPrecoEBadge(item, mapaOfertas, acrescimoUF = 0) {
-  const codStr = String(item.codigo);
-  const temOferta = mapaOfertas instanceof Map ? mapaOfertas.has(codStr) : Boolean(mapaOfertas[codStr]);
-  const pctDesconto = mapaOfertas instanceof Map ? (mapaOfertas.get(codStr)?.desconto_porcentagem || 0) : Number(mapaOfertas[codStr] || 0);
-
-  const precoBase = Number(item.preco_venda || item.precoBase || item.preco_tabela || 0);
-  const precoComUF = precoBase + (precoBase * acrescimoUF / 100);
-
-  if (temOferta && pctDesconto > 0) {
-    const precoPromocional = precoComUF - (precoComUF * (pctDesconto / 100));
-
-    return `
-      <div style="text-align:center; width:100%;">
-        <span style="background: linear-gradient(135deg, #001b3a, #0f172a); color: #38bdf8; border: 1px solid #38bdf8; font-size: 0.58rem; font-weight: 900; padding: 2px 5px; border-radius: 4px; display: inline-block; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.3px;">
-          ⚡ BLACK NOVEMBER -${pctDesconto}%
-        </span>
-        <div style="font-size: 0.7rem; color: #94a3b8; text-decoration: line-through; font-weight: 700; line-height:1.1;">
-          R$ ${fmtMoeda(precoComUF)}
-        </div>
-        <strong style="color: #ef4444; font-size: 0.9rem; font-weight: 900; line-height:1.1; display:block;">
-          R$ ${fmtMoeda(precoPromocional)}
-        </strong>
-      </div>
-    `;
-  }
-
-  return `<div style="font-size: 0.85rem; font-weight: 900; color: var(--verde); text-align:center;">R$ ${fmtMoeda(precoComUF)}</div>`;
 }
 
 function abrirModalDescricao(titulo, texto) {
