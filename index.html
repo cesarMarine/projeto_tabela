@@ -640,7 +640,7 @@ function normalizarItem(it) {
     estoque: Number(it.estoque) || 0,
     ordem_excel: Number(it.ordem_excel) || 999999,
     ordem_customizada_pos: 999999,
-    is_lancamento: Boolean(it.is_lancamento) // <--- Capta a flag de Lançamento
+    is_lancamento: Boolean(it.is_lancamento) // 👈 Garante a leitura da flag
   };
 }
 
@@ -1139,6 +1139,13 @@ function renderFamiliaEquipamentoDireto(fam, itens) {
           <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
         </div>
       </div>`;
+
+        <div class="cor-nome" style="font-size: 0.65rem; font-weight: 700; color: var(--cinza-400); display:flex; align-items:center; justify-content:center; gap:4px; flex-wrap:wrap;">
+  <span>CÓD: ${escapeHtml(it.codigo)}</span>
+  ${it.is_lancamento ? `<span class="tarja-lancamento-item">✨ NOVIDADE</span>` : ''}
+</div>
+
+
   }).join('');
 
   return `
@@ -1611,6 +1618,11 @@ function renderFamiliaGrade(fam, itens) {
           <div class="isca-titulo-cores" style="margin-top:4px;">TAMANHOS DISPONÍVEIS</div>
           <div class="anzol-grade" style="margin-top: 6px;">${cardsHtml}</div>
         </div>`;
+
+        <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700; display:flex; align-items:center; justify-content:center; gap:4px; flex-wrap:wrap;">
+  <span>CÓD: ${escapeHtml(it.codigo)}</span>
+  ${it.is_lancamento ? `<span class="tarja-lancamento-item">✨ NOVIDADE</span>` : ''}
+</div>
     }
 
     // MODO BONÉS E ACESSÓRIOS DIVERSOS (FOTO INDIVIDUAL + NOME DO MODELO/COR)

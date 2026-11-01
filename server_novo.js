@@ -340,7 +340,8 @@ app.get('/api/catalogo', async (req, res) => {
         descricao_longa: scr.descricao_longa || '',
         imagem_url: scr.imagem_url || '',
         url_origem: scr.url_origem || '',
-        atributos_json: scr.atributos_json || '{}'
+        atributos_json: scr.atributos_json || '{}',
+        is_lancamento: Boolean(s.is_lancamento) // 👈 ADICIONADO AQUI!
       };
     });
 
