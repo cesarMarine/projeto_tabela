@@ -576,61 +576,30 @@ function normalizarItem(it) {
 }
 
 function formatarNomeCard(item, nomeFamilia) {
-  let sub = (item.subgrupo || '').trim();
-  let descCompleta = (item.descricao_longa || item.descricao || '').trim();
-  const famNome = (nomeFamilia || '').toUpperCase().trim();
-  const attrs = item.atributos || {};
+  let nome = (item.subgrupo || item.descricao || '').trim();
+  const famNome = (nomeFamilia || '').trim();
 
-  // 1. Tenta extrair a dimensão do produto (ex: 34.5X23X5cm, 35.5 x 22 x 5 cm, 20x15cm, etc)
-  const regexMedida = /(\d+[\.,]?\d*\s*[xX]\s*\d+[\.,]?\d*(?:\s*[xX]\s*\d+[\.,]?\d*)?\s*(?:cm|mm|m)?)/i;
-  let matchMedida = descCompleta.match(regexMedida) || sub.match(regexMedida);
-  let dimensao = matchMedida ? matchMedida[1].trim() : '';
-
-  // Lista das famílias de Caixas informadas
-  const ehCaixaAlvo = famNome.includes('MULTICASE') || 
-                      famNome.includes('ISCA MS') || 
-                      famNome.includes('SHALLOW') || 
-                      famNome.includes('TACKLE BOX') || 
-                      famNome.includes('WATER RESISTANT') ||
-                      famNome.includes('CAIXA');
-
-  if (ehCaixaAlvo) {
-    // Busca o modelo no JSON de atributos ou tenta achar códigos como ZMC345, MSB355, MS250, MTB-200
-    let modelo = attrs['Modelo'] || attrs['MODELO'] || '';
-    
-    if (!modelo) {
-      const matchModelo = descCompleta.match(/\b([A-Z0-9-]{2,12})\b/i);
-      if (matchModelo && !matchModelo[1].toUpperCase().includes('CAIXA')) {
-        modelo = matchModelo[1].toUpperCase();
-      }
-    }
-
-    // Se a medida não estiver no texto curto, tenta combinar Modelo + Dimensão
-    if (dimensao) {
-      // Se já tiver modelo (ex: ZMC345), junta com a dimensão: "ZMC345 - 34.5X23X5cm"
-      if (modelo && !dimensao.toUpperCase().includes(modelo)) {
-        return `${modelo} • ${dimensao}`;
-      }
-      return dimensao;
-    }
+  // Se o subgrupo for exatamente igual ao nome da família, procura tamanho/modelo nos atributos
+  if (!nome || nome.toUpperCase() === famNome.toUpperCase()) {
+    const attrs = item.atributos || {};
+    const mod = attrs['Modelo'] || attrs['MODELO'] || attrs['Tamanho'] || attrs['TAMANHO'] || '';
+    if (mod) return String(mod).trim();
   }
 
-  // 2. Fallback padrão para outros produtos e bolsas
-  let nome = sub || descCompleta;
-
-  // Se o nome for genérico ou apenas uma letra, recupera do modelo JSON ou descrição
-  if (nome.length <= 3 || ['KNIFE', 'CAIXA', 'FACA', 'C', 'S'].includes(nome.toUpperCase())) {
-    return (attrs['Modelo'] || attrs['MODELO'] || descCompleta || item.codigo).trim();
+  // Tenta extrair o modelo/código (ex: ZMC345, MS250, MFK6T) ou medidas (ex: 34.5X23X5cm, 6'')
+  const matchModeloMedida = nome.match(/([A-Z0-9-]{3,10}\b.*|\d+[\.,]?\d*\s*[xX]\s*\d+.*|\d+['"])/i);
+  if (matchModeloMedida && matchModeloMedida[0].length < nome.length) {
+    return matchModeloMedida[0].trim();
   }
 
-  // Remove prefixos repetitivos
-  const prefixosLimpos = ['CAIXA POCKET BOX', 'CAIXA MULTICASE', 'FACA FILLET KNIFE'];
-  for (let pref of prefixosLimpos) {
-    if (nome.toUpperCase().startsWith(pref)) {
-      const resto = nome.slice(pref.length).trim();
-      if (resto.length > 1) return resto;
-    }
+  // Se o nome começar exatamente com a frase da família (ex: "CAIXA POCKET BOX MS-100"), remove o prefixo
+  if (famNome && nome.toUpperCase().startsWith(famNome.toUpperCase())) {
+    const resto = nome.slice(famNome.length).trim();
+    if (resto) return resto;
   }
+
+  // Limpeza de palavras genéricas do início caso ainda sobrem
+  nome = nome.replace(/^(CAIXA|FACA|ALICATE|CORDÃO|CORDAO|TESOURA|MOCHILA|BOLSA|POCHETE|OXIGENADOR)\s+/i, '').trim();
 
   return nome || item.codigo;
 }
