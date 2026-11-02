@@ -143,7 +143,7 @@
   .isca-modelo-btn.ativo, .anzol-tab.ativo, .molinete-tab.ativo { background:var(--azul-800); color:white; border-color:var(--azul-800); }
   .isca-titulo-cores { font-size:.7rem; font-weight:800; color:var(--cinza-500); text-transform:uppercase; margin-bottom:8px; }
   
-  .isca-grade, .anzol-grade, .molinete-grade { display:grid; grid-template-columns:repeat(auto-fill, minmax(110px, 1fr)); gap:8px; }
+  .isca-grade, .anzol-grade, .molinete-grade { display:grid; grid-template-columns:repeat(auto-fill, minmax(130px, 1fr)); gap:8px; }
   .isca-cor-card, .anzol-numero-card, .molinete-numero-card { background:white; border:1px solid var(--cinza-200); border-radius:8px; padding:6px; display:flex; flex-direction:column; align-items:center; position:relative; }
   .isca-cor-card.ativa, .anzol-numero-card.ativa, .molinete-numero-card.ativa { border-color:var(--azul-800); }
   .isca-cor-card img { width:100%; aspect-ratio:1; object-fit:contain; margin-bottom:2px; }
@@ -179,7 +179,7 @@
   .card-solto { background:white; border:1px solid var(--cinza-200); border-radius:8px; padding:8px; text-align:center; position:relative; }
   .card-solto .img { width:100%; aspect-ratio:1; background:var(--cinza-50); display:flex; align-items:center; justify-content:center; border-radius:6px; margin-bottom:6px; overflow:hidden; }
   .card-solto .img img { width:100%; height:100%; object-fit:contain; }
-  .card-solto .nome { font-size:.7rem; font-weight:700; color:var(--azul-800); margin-bottom:4px; line-height:1.2; }
+  .card-solto .nome { font-size:.7rem; font-weight:700; color:var(--azul-800); margin-bottom:4px; line-height:1.2; word-break:break-word; }
   .card-solto .preco { font-size:.8rem; font-weight:800; color:var(--verde); }
 
   /* CARRINHO FLUTUANTE */
@@ -844,16 +844,16 @@ function renderizar() {
         nomeFam.includes('SNAP') || nomeFam.includes('CABO') || nomeFam.includes('LUVA')
       ) tipo = 'anzol';
       else if (nomeFam.includes('MOLINETE')) tipo = 'molinete';
+      else if (nomeFam.includes('CARRETILHA')) tipo = 'equipamento_direto';
+      else if (nomeFam.includes('MOTOR') || grupoItem.includes('MOTOR')) tipo = 'motor';
       else if (
-        nomeFam.includes('CARRETILHA') || 
+        grupoItem.includes('VESTUARIO') || nomeFam.includes('VESTUARIO') ||
         grupoItem.includes('ACESSORIO') || nomeFam.includes('ACESSORIO') ||
         nomeFam.includes('ALICATE') || nomeFam.includes('TESOURA') || nomeFam.includes('BOLSA') || 
         nomeFam.includes('POCHETE') || nomeFam.includes('MOCHILA') || nomeFam.includes('OXIGENADOR') || 
         nomeFam.includes('FACA') || nomeFam.includes('CORDAO') || nomeFam.includes('CORDÃO') || 
         nomeFam.includes('CARRETEL') || nomeFam.includes('CAIXA') || nomeFam.includes('CADEIRA')
-      ) tipo = 'equipamento_direto';
-      else if (nomeFam.includes('MOTOR') || grupoItem.includes('MOTOR')) tipo = 'motor';
-      else if (grupoItem.includes('VESTUARIO') || nomeFam.includes('VESTUARIO')) tipo = 'grade';
+      ) tipo = 'grade';
 
       if (tipo === 'isca') html += renderFamiliaIsca(fam, filhos);
       else if (tipo === 'molinete') html += renderFamiliaMolinete(fam, filhos);
@@ -1007,13 +1007,7 @@ function renderFamiliaEquipamentoDireto(fam, itens) {
     const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
     const calc = it.calculoPreco;
     
-    let tagDetalhe = 'Padrão';
-    if (isCarretilha) {
-      tagDetalhe = analisarCarretilha(it).ladoTag;
-    } else {
-      const infoMol = analisarMolinete(it);
-      tagDetalhe = infoMol.variacao || it.subgrupo || 'Padrão';
-    }
+    let tagDetalhe = isCarretilha ? analisarCarretilha(it).ladoTag : (it.subgrupo || it.descricao_longa || 'Padrão');
 
     return `
       <div class="isca-cor-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" 
@@ -1161,31 +1155,6 @@ function renderFamiliaMotor(fam, itens) {
         </div>
       </div>
     </div>`;
-}
-
-function limparNomeVariacao(nomeCompleto, nomeFamilia) {
-  if (!nomeCompleto) return '';
-  let str = nomeCompleto.trim();
-  
-  // 1. Remove o nome exato da família do início da string (ex: "CAIXA POCKET BOX ")
-  if (nomeFamilia) {
-    const regexFam = new RegExp('^' + nomeFamilia.trim() + '\\s*', 'i');
-    str = str.replace(regexFam, '');
-  }
-
-  // 2. Remove termos e prefixos redundantes adicionais
-  const termosParaRemover = [
-    'FACA FILLET', 'FACA', 'CAIXA TACKLE BOX', 'CAIXA POCKET BOX', 'CAIXA', 
-    'ALICATE', 'TESOURA', 'MALETA', 'ESTOJO', 'BOLSA'
-  ];
-
-  for (let termo of termosParaRemover) {
-    const regex = new RegExp('^' + termo + '\\s*', 'i');
-    str = str.replace(regex, '');
-  }
-
-  // Retorna o código do modelo/medidas limpo, ou o nome completo se tudo tiver sido removido
-  return str.trim() || nomeCompleto;
 }
 
 function linhaMotor(it) {
@@ -1445,53 +1414,41 @@ function renderFamiliaGrade(fam, itens) {
     itensDaSub.sort((a, b) => a.ordem_excel - b.ordem_excel);
 
     if (isVestuarioCorpo) {
-  const cardsHtml = itensDaSub.map((it, index) => {
-  const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
-  const temImagem = it.imagem_url && it.imagem_url.trim() !== '';
-  const isAtivo = index === 0 ? 'ativa' : '';
-  const calc = it.calculoPreco;
-  
-  // USA A DESCRIÇÃO COMPLETA DO BANCO DE DADOS (descricao_longa) OU O SUBGRUPO COMPLETO
-  const nomeCompleto = it.descricao_longa || it.subgrupo || fam.nome;
+      const cardsHtml = itensDaSub.map(it => {
+        const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+        const infoVest = analisarVestuario(it);
+        const calc = it.calculoPreco;
 
-  return `
-    <div class="card-solto ${isAtivo}" id="mini-${it.codigo}" 
-         style="position:relative; display:flex; flex-direction:column; justify-content:space-between; padding:8px; height: 100%; cursor:pointer;"
-         onclick="selecionarAcessorio('${fam.id}', '${it.codigo}', '${it.imagem_url}', \`${escapeHtml(it.descricao_longa).replace(/`/g, '')}\`, \`${escapeHtml(nomeCompleto).replace(/`/g, '')}\`)">
-      
-      ${calc.temOferta ? `<div style="position:absolute; top:4px; left:4px; background:#ef4444; color:white; font-size:8px; font-weight:900; padding:2px 4px; border-radius:4px; z-index:3;">-${calc.pctDesconto}%</div>` : ''}
-      ${q > 0 ? `<div style="position:absolute; top:4px; right:4px; background:var(--verde); color:white; width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:900; border:2px solid white; z-index:3;">${q}</div>` : ''}
-      
-      <div class="img" style="margin-bottom:6px; aspect-ratio:1; background:var(--cinza-50); border-radius:6px; overflow:hidden;">
-        ${temImagem ? `<img src="${it.imagem_url}" alt="${escapeHtml(nomeCompleto)}">` : '🖼️'}
-      </div>
-      
-      <div style="flex:1; display:flex; flex-direction:column; justify-content:flex-start;">
-        <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700; display:flex; align-items:center; justify-content:center; gap:4px; flex-wrap:wrap;">
-          <span>CÓD: ${escapeHtml(it.codigo)}</span>
-        </div>
-        <!-- EXIBE O NOME COMPLETO COM DETALHES E MEDIDAS -->
-        <div class="nome" style="font-size:0.75rem; font-weight:800; color:var(--azul-800); margin-bottom:4px; line-height:1.2; text-align:left;">
-          ${escapeHtml(nomeCompleto)}
-        </div>
-      </div>
+        return `
+          <div class="anzol-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" style="min-width:100px; padding:10px 6px;">
+            <span class="anzol-badge">${q}</span>
+            <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700; display:flex; align-items:center; justify-content:center; gap:4px; flex-wrap:wrap;">
+              <span>CÓD: ${escapeHtml(it.codigo)}</span>
+            </div>
+            
+            <div class="anzol-numero" style="font-size:1.2rem; font-weight:900; color:var(--azul-800); margin:4px 0;">
+              ${escapeHtml(infoVest.tamanho)}
+            </div>
+            
+            ${calc.temOferta ? `
+              <div class="preco-box-oferta">
+                <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
+                <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
+              </div>
+            ` : `
+              <div class="anzol-preco" style="font-size:0.85rem; font-weight:800; color:var(--verde); margin-bottom:4px;">
+                R$ ${fmtMoeda(calc.precoFinal)}
+              </div>
+            `}
 
-      <div style="display:flex; flex-direction:column; gap:6px; margin-top:4px;">
-        ${calc.temOferta ? `
-          <div class="preco-box-oferta" style="align-items:flex-start;">
-            <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
-            <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
-          </div>
-        ` : `<div class="preco" style="font-size:.8rem; font-weight:900; color:var(--verde); text-align:left;">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
-        
-        <div class="qtd-ctrl" style="display:flex; width:100%; justify-content:space-between;" onclick="event.stopPropagation()">
-          <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
-          <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)" style="flex:1;">
-          <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
-        </div>
-      </div>
-    </div>`;
-}).join('');
+            <div class="anzol-qtd-ctrl" onclick="event.stopPropagation()">
+              <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+              <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+              <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+            </div>
+          </div>`;
+      }).join('');
+
       return `
         <div class="sub-bloco" style="margin-top: 10px;">
           ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
@@ -1505,18 +1462,20 @@ function renderFamiliaGrade(fam, itens) {
       const temImagem = it.imagem_url && it.imagem_url.trim() !== '';
       const isAtivo = index === 0 ? 'ativa' : '';
       const calc = it.calculoPreco;
-     const nomeLimpo = it.descricao_longa || it.subgrupo || fam.nome;
+
+      // EXIBE A DESCRIÇÃO COMPLETA DO BANCO (ex: "CAIXA POCKET BOX MPB133 13.2x9.7x3.4cm")
+      const nomeCompleto = it.subgrupo || it.descricao_longa || fam.nome;
 
       return `
         <div class="card-solto ${isAtivo}" id="mini-${it.codigo}" 
              style="position:relative; display:flex; flex-direction:column; justify-content:space-between; padding:8px; height: 100%; cursor:pointer;"
-             onclick="selecionarAcessorio('${fam.id}', '${it.codigo}', '${it.imagem_url}', \`${escapeHtml(it.descricao_longa).replace(/`/g, '')}\`, \`${escapeHtml(nomeLimpo).replace(/`/g, '')}\`)">
+             onclick="selecionarAcessorio('${fam.id}', '${it.codigo}', '${it.imagem_url}', \`${escapeHtml(it.descricao_longa).replace(/`/g, '')}\`, \`${escapeHtml(nomeCompleto).replace(/`/g, '')}\`)">
           
           ${calc.temOferta ? `<div style="position:absolute; top:4px; left:4px; background:#ef4444; color:white; font-size:8px; font-weight:900; padding:2px 4px; border-radius:4px; z-index:3;">-${calc.pctDesconto}%</div>` : ''}
           ${q > 0 ? `<div style="position:absolute; top:4px; right:4px; background:var(--verde); color:white; width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:900; border:2px solid white; z-index:3;">${q}</div>` : ''}
           
           <div class="img" style="margin-bottom:6px; aspect-ratio:1; background:var(--cinza-50); border-radius:6px; overflow:hidden;">
-            ${temImagem ? `<img src="${it.imagem_url}" alt="${escapeHtml(nomeLimpo)}">` : '🖼️'}
+            ${temImagem ? `<img src="${it.imagem_url}" alt="${escapeHtml(nomeCompleto)}">` : '🖼️'}
           </div>
           
           <div style="flex:1; display:flex; flex-direction:column; justify-content:flex-start;">
@@ -1524,7 +1483,7 @@ function renderFamiliaGrade(fam, itens) {
               <span>CÓD: ${escapeHtml(it.codigo)}</span>
             </div>
             <div class="nome" style="font-size:0.7rem; font-weight:800; color:var(--azul-800); margin-bottom:4px; line-height:1.2; text-align:left;">
-              ${escapeHtml(nomeLimpo)}
+              ${escapeHtml(nomeCompleto)}
             </div>
           </div>
 
