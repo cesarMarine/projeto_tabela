@@ -581,93 +581,84 @@ function formatarNomeCard(item, nomeFamilia) {
   const attrs = item.atributos || {};
   const descCompleta = (item.descricao_longa || item.descricao || '').trim();
 
-  // 1. Tenta buscar a dimensão diretamente do JSON atributos_json (chave exata: "Dimensões(cm)")
-  let dimensaoJson = attrs['Dimensões(cm)'] || attrs['Dimensões'] || attrs['Dimensoes'] || attrs['Dimensão'] || attrs['Dimensao'] || '';
+  // Atributos lidos do JSON
+  const modeloAttr = attrs['Modelo'] || attrs['MODELO'] || '';
+  const tamanhoAttr = attrs['Tamanho'] || attrs['TAMANHO'] || '';
 
-  // Se não achou na chave do JSON, tenta extrair da descrição por regex (ex: 35.5x22x8 cm)
-  if (!dimensaoJson) {
-    const matchMedida = descCompleta.match(/(\d+[\.,]?\d*\s*[xX]\s*\d+[\.,]?\d*(?:\s*[xX]\s*\d+[\.,]?\d*)?\s*(?:cm|mm)?)/i);
-    if (matchMedida) dimensaoJson = matchMedida[1].trim();
-  }
-
-  // 2. Lista exata das famílias de Caixas informadas
+  // 1. DIMENSÕES PARA CAIXAS ALVO (Multicase, Isca MS, Tackle Box, Double Layer, Water Resistant)
   const ehCaixaAlvo = famUpper.includes('MULTICASE') || 
                       famUpper.includes('ISCA MS') || 
-                      famUpper.includes('TACKLE BOX DOUBLE LAYER') ||
                       famUpper.includes('TACKLE BOX') || 
-                      famUpper.includes('WATER RESISTANT');
-                      famUpper.includes('CAIXA POCKET BOX');
-                      famUpper.includes('CAIXA PARA ISCA MS');
-                      famUpper.includes('CAIXA SHALLOW BOX TOURNAMENT MSB355');
-                       famUpper.includes('CAIXA WATER RESISTANT');
-
-
-
+                      famUpper.includes('WATER RESISTANT') ||
+                      famUpper.includes('SHALLOW');
 
   if (ehCaixaAlvo) {
-    // Busca o Modelo (ex: "MWR358-2 - 2 divisórias", "ZMC345", "MS250", etc)
-    let modelo = attrs['Modelo'] || attrs['MODELO'] || '';
+    let dimensaoJson = attrs['Dimensões(cm)'] || attrs['Dimensões'] || attrs['Dimensoes'] || attrs['Dimensão'] || attrs['Dimensao'] || '';
+    if (!dimensaoJson) {
+      const matchMedida = descCompleta.match(/(\d+[\.,]?\d*\s*[xX]\s*\d+[\.,]?\d*(?:\s*[xX]\s*\d+[\.,]?\d*)?\s*(?:cm|mm)?)/i);
+      if (matchMedida) dimensaoJson = matchMedida[1].trim();
+    }
 
-    // Se achou a dimensão no JSON
     if (dimensaoJson) {
-      // Se tiver modelo limpo (ex: "MWR358-2" ou "ZMC345"), combina Modelo + Dimensão
-      if (modelo) {
-        // Limpa complementos longos do modelo se necessário
-        const modeloLimpo = modelo.split('-')[0].trim(); 
+      if (modeloAttr) {
+        const modeloLimpo = modeloAttr.split('-')[0].trim();
         return `${modeloLimpo} • ${dimensaoJson}`;
       }
-      // Se não tiver modelo separado, exibe a dimensão exata do JSON
       return dimensaoJson;
     }
   }
 
-  // 3. REGRAS PRESERVADAS PARA OS DEMAIS PRODUTOS (Bolsas, Facas, Alicates, etc.)
-  const modeloAttr = attrs['Modelo'] || attrs['MODELO'] || attrs['Tamanho'] || attrs['TAMANHO'];
+  // 2. CARRETEL (Ex: SURF HSC 8000)
+  if (famUpper.includes('CARRETEL')) {
+    if (modeloAttr) return modeloAttr.trim();
+  }
 
-  // Preserva Bolsa Pescador (ex: M-BP25 C/ CAIXA)
-  if (famUpper.includes('BOLSA') || famUpper.includes('PESCADOR')) {
-    if (sub.length <= 2 || sub.toUpperCase() === 'C' || sub.toUpperCase() === 'S') {
-      if (modeloAttr) return String(modeloAttr).trim();
-      return (item.subgrupo || item.descricao || item.codigo).trim();
+  // 3. MOCHILA E BOLSA FRONTIER / PESCADOR
+  if (famUpper.includes('MOCHILA') || famUpper.includes('BOLSA')) {
+    if (modeloAttr) {
+      let txt = modeloAttr.trim();
+      if (sub.toUpperCase().includes('C/CAIXA') || sub.toUpperCase().includes('COM CAIXA')) {
+        if (!txt.toUpperCase().includes('C/CAIXA')) txt += ' C/CAIXA';
+      } else if (sub.toUpperCase().includes('S/CAIXA') || sub.toUpperCase().includes('SEM CAIXA')) {
+        if (!txt.toUpperCase().includes('S/CAIXA')) txt += ' S/CAIXA';
+      }
+      return txt;
     }
   }
 
-  // Preserva Fallback de nomes genéricos (evita "KNIFE", "CAIXA", "C", "S")
-  if (['KNIFE', 'CAIXA', 'FACA', 'C', 'S', 'BOLSAS'].includes(sub.toUpperCase())) {
-    return (item.subgrupo || item.descricao || item.codigo).trim();
+  // 4. CORDÃO DE ÓCULOS (Ex: SSB PRETO)
+  if (famUpper.includes('CORDÃO') || famUpper.includes('CORDAO') || famUpper.includes('ÓCULOS') || famUpper.includes('OCULOS')) {
+    if (modeloAttr && modeloAttr.toUpperCase() !== 'ÚNICO' && modeloAttr.toUpperCase() !== 'UNICO') {
+      return modeloAttr.trim();
+    }
+    // Se o subgrupo tiver variação de cor/código no final
+    const matchCor = sub.match(/(SSB\s+[A-Z]+|[A-Z0-9-]+\s*(?:PRETO|AZUL|VERMELHO|VERDE|AMARELO))/i);
+    if (matchCor) return matchCor[1].toUpperCase();
   }
 
-  // Remove prefixos repetitivos apenas se sobrou modelo depois
-  const prefixosLimpos = ['CAIXA POCKET BOX', 'CAIXA MULTICASE', 'FACA FILLET KNIFE'];
-  for (let pref of prefixosLimpos) {
-    if (sub.toUpperCase().startsWith(pref)) {
-      const resto = sub.slice(pref.length).trim();
-      if (resto.length > 1) return resto;
+  // 5. FACA FILLET / FACAS (Ex: FILLET MFK6T ou 6" / 15cm)
+  if (famUpper.includes('FACA') || famUpper.includes('FILLET') || famUpper.includes('KNIFE')) {
+    if (modeloAttr) return modeloAttr.trim();
+    if (tamanhoAttr) return tamanhoAttr.trim();
+    
+    // Tenta extrair código de modelo ou tamanho (ex: MFK6T, 6", 15cm)
+    const matchFaca = descCompleta.match(/\b([A-Z0-9-]{3,10}|\d+["']|\d+\s*cm)\b/i);
+    if (matchFaca && !matchFaca[1].toUpperCase().includes('FACA')) {
+      return matchFaca[1].toUpperCase();
     }
+  }
+
+  // 6. TRATAMENTO PADRÃO DE SEGURANÇA PARA NOMES GENÉRICOS (evita "KNIFE", "CAIXA", "C", "S")
+  if (['KNIFE', 'CAIXA', 'FACA', 'C', 'S', 'BOLSAS', 'CORDÃO', 'CORDAO'].includes(sub.toUpperCase())) {
+    return (modeloAttr || sub || item.codigo).trim();
+  }
+
+  // Se nada capturou especificamente, tenta usar o modeloAttr ou subgrupo limpo
+  if (modeloAttr && sub.toUpperCase() === famUpper) {
+    return modeloAttr.trim();
   }
 
   return sub || item.codigo;
-}
-
-function analisarVestuario(it) {
-  let attrs = it.atributos || {};
-  if (typeof attrs === 'string') {
-    try { attrs = JSON.parse(attrs); } catch (e) { attrs = {}; }
-  }
-  
-  let tamanho = '';
-  const chavesTam = ['Tamanho', 'TAMANHO', 'Tamanho (cm)', 'Tam', 'TAM'];
-  for (let k of chavesTam) {
-    if (attrs[k]) { tamanho = String(attrs[k]).toUpperCase().trim(); break; }
-  }
-
-  if (!tamanho) {
-    const texto = (it.subgrupo || it.descricao_longa || '').toUpperCase();
-    const match = texto.match(/\b(\d?XL|\d?XLL|PP|P|M|G|GG|XG|XXG|XGG|EG|EXG|EXGG|38|40|42|44|46|48|50|XS|S|L)\b/i);
-    if (match) tamanho = match[1].toUpperCase();
-  }
-
-  return { tamanho: tamanho || 'U' };
 }
 
 function analisarAnzol(it) {
