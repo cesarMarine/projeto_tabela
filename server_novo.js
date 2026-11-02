@@ -351,6 +351,19 @@ app.get('/api/catalogo', async (req, res) => {
   }
 });
 
+app.put('/api/familias/:id/ordem', async (req, res) => {
+  const { id } = req.params;
+  const { ordem } = req.body;
+
+  const { error } = await supabase
+    .from('familias')
+    .update({ ordem: Number(ordem) })
+    .eq('id', id);
+
+  if (error) return res.json({ ok: false, erro: error.message });
+  return res.json({ ok: true });
+});
+
 // ==========================================
 // CLIENTES (importar)
 // ==========================================

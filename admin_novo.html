@@ -1223,28 +1223,136 @@ async function deletarFamilia(id) {
 
 async function carregarFamiliasCriadas() {
   const d = document.getElementById('lista-familias-criadas');
-  const r = await fetch('/api/familias'); const j = await r.json();
-  if(!j.ok || !j.familias.length) { d.innerHTML = '<span style="color:#64748b">Nenhuma.</span>'; familiasCache = []; return; }
+  const r = await fetch('/api/familias'); 
+  const j = await r.json();
+  
+  if (!j.ok || !j.familias || !j.familias.length) { 
+    d.innerHTML = '<span style="color:#64748b">Nenhuma família cadastrada.</span>'; 
+    familiasCache = []; 
+    return; 
+  }
   
   familiasCache = j.familias;
-  d.innerHTML = j.familias.map(f => {
-    const estoqueFam = window.estoquePorFamilia[f.id] || 0;
-    return `
-    <div class="card-familia-criada">
-      <div class="card-familia-head">
-        <strong>${f.nome}</strong>
-        <div style="display:flex; align-items:center; gap:16px;">
-          <span style="font-size:13px; color:#10b981; font-weight:800;">Estoque total: ${estoqueFam}</span>
-          <div>
-            <button class="btn-add-sub" onclick="abrirModalSub(${f.id})">+ Subdivisão</button>
-            <button class="btn-reord" onclick="ordenarTamanhosAnzol(${f.id})" title="Ordenar tamanhos de anzol">📏 Ordenar Tamanhos</button>
-            <button class="btn-del" onclick="deletarFamilia(${f.id})">Excluir</button>
+
+  // 1. Agrupa as famílias por GRUPO PRINCIPAL
+  const gruposMap = {};
+
+  j.familias.forEach(fam => {
+    // Procura o grupo principal através dos itens vinculados à família
+    let grupoNome = 'OUTROS';
+    if (fam.itens && fam.itens.length) {
+      const primeiroItem = todosOsProdutos.find(p => fam.itens.includes(p.codigo));
+      if (primeiroItem && (primeiroItem.grupo_scraping || primeiroItem.grupo)) {
+        grupoNome = (primeiroItem.grupo_scraping || primeiroItem.grupo).toUpperCase().trim();
+      }
+    } else if (fam.grupo) {
+      grupoNome = fam.grupo.toUpperCase().trim();
+    }
+
+    if (!gruposMap[grupoNome]) gruposMap[grupoNome] = [];
+    gruposMap[grupoNome].push(fam);
+  });
+
+  // 2. Renderiza os blocos separados por Grupo
+  let html = '';
+
+  Object.keys(gruposMap).sort().forEach(grupo => {
+    const familiasDoGrupo = gruposMap[grupo];
+
+    // Ordena as famílias do grupo atual pela ordem configurada (ou 999 se não tiver)
+    familiasDoGrupo.sort((a, b) => (Number(a.ordem) || 999) - (Number(b.ordem) || 999));
+
+    html += `
+      <div class="bloco-grupo-familias" style="margin-bottom: 24px; background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 16px;">
+        <div style="background: #1e293b; color: #38bdf8; border: 1px solid #334155; padding: 10px 16px; border-radius: 8px; font-size: 1rem; font-weight: 800; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+          <span>📂 GRUPO: ${escapeHtml(grupo)}</span>
+          <span style="font-size: 0.75rem; background: #0f172a; color: #94a3b8; padding: 4px 10px; border-radius: 12px;">${familiasDoGrupo.length} família(s)</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+    `;
+
+    familiasDoGrupo.forEach(f => {
+      const estoqueFam = window.estoquePorFamilia[f.id] || 0;
+      const ordemAtual = f.ordem !== undefined && f.ordem !== null ? f.ordem : 999;
+
+      html += `
+        <div class="card-familia-criada" style="margin-bottom: 0;">
+          <div class="card-familia-head">
+            <div style="display:flex; align-items:center; gap:12px; flex:1;">
+              <strong>${escapeHtml(f.nome)}</strong>
+              <span style="font-size:12px; color:#94a3b8;">(${f.itens ? f.itens.length : 0} itens)</span>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+              <!-- Campo de definição da Ordem da Família -->
+              <div style="display:flex; align-items:center; gap:6px; background:#1e293b; padding:4px 8px; border-radius:6px; border:1px solid #475569;">
+                <label style="font-size:11px; font-weight:800; color:#94a3b8; margin:0;">ORDEM:</label>
+                <input type="number" 
+                       id="input-ordem-fam-${f.id}" 
+                       value="${ordemAtual}" 
+                       min="1" 
+                       style="width:55px; padding:4px; text-align:center; font-weight:800; color:#38bdf8; background:#0f172a; border:1px solid #334155; border-radius:4px; font-size:13px;">
+                <button class="btn-mini btn-primario" 
+                        style="background:#10b981; padding:4px 8px;" 
+                        onclick="salvarOrdemFamilia(${f.id})">💾 Salvar</button>
+              </div>
+
+              <span style="font-size:13px; color:#10b981; font-weight:800;">Estoque total: ${estoqueFam}</span>
+              
+              <div>
+                <button class="btn-add-sub" onclick="abrirModalSub(${f.id})">+ Subdivisão</button>
+                <button class="btn-reord" onclick="ordenarTamanhosAnzol(${f.id})" title="Ordenar tamanhos de anzol">📏 Ordenar Tamanhos</button>
+                <button class="btn-del" onclick="deletarFamilia(${f.id})">Excluir</button>
+              </div>
+            </div>
           </div>
+          ${f.subdivisoes && f.subdivisoes.length 
+            ? f.subdivisoes.map(s => `<div class="sub-item"><strong>${escapeHtml(s.nome)}</strong><span>${s.itens.length} produtos</span></div>`).join('') 
+            : '<div style="font-size:12px;color:#64748b">Sem subdivisões.</div>'}
+        </div>`;
+    });
+
+    html += `
         </div>
       </div>
-      ${f.subdivisoes.length ? f.subdivisoes.map(s=>`<div class="sub-item"><strong>${s.nome}</strong><span>${s.itens.length} produtos</span></div>`).join('') : '<div style="font-size:12px;color:#64748b">Sem subdivisões.</div>'}
-    </div>`;
-  }).join('');
+    `;
+  });
+
+  d.innerHTML = html;
+}
+
+async function salvarOrdemFamilia(famId) {
+  const input = document.getElementById(`input-ordem-fam-${famId}`);
+  if (!input) return;
+
+  const novaOrdem = parseInt(input.value) || 999;
+  const fam = familiasCache.find(f => f.id === famId);
+  if (!fam) return;
+
+  try {
+    const r = await fetch('/api/familias/' + famId, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nome: fam.nome,
+        itens: fam.itens,
+        subdivisoes: fam.subdivisoes || [],
+        ordem_customizada: fam.ordem_customizada || [],
+        ordem: novaOrdem
+      })
+    });
+
+    if (r.ok) {
+      alert('✅ Ordem da família atualizada com sucesso!');
+      await carregarFamiliasCriadas();
+    } else {
+      const res = await r.json();
+      alert('❌ Erro ao salvar ordem: ' + (res.erro || 'Erro no servidor'));
+    }
+  } catch (err) {
+    alert('❌ Erro de conexão com o servidor.');
+  }
 }
 
 function ordenarTamanhosAnzol(famId) {
