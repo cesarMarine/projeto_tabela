@@ -934,8 +934,39 @@ function renderizar() {
   const processados = new Set(); 
   let html = '';
 
-  todasFamilias.forEach(fam => {
-    const filhos = lista.filter(it => fam.itens.includes(it.codigo));
+  // 1. CLONA E GARANTE O PARSE DE CADA FAMÍLIA (Resolve o sumiço dos produtos)
+  let familiasOrdenadas = todasFamilias.map(f => {
+    let itensArray = f.itens || f.subgrupos || [];
+    if (typeof itensArray === 'string') {
+      try { itensArray = JSON.parse(itensArray); } catch (e) { itensArray = []; }
+    }
+
+    let subdivisoesArray = f.subdivisoes || [];
+    if (typeof subdivisoesArray === 'string') {
+      try { subdivisoesArray = JSON.parse(subdivisoesArray); } catch (e) { subdivisoesArray = []; }
+    }
+
+    return {
+      ...f,
+      itens: itensArray,
+      subdivisoes: subdivisoesArray
+    };
+  });
+
+  // 2. ORDENA AS FAMÍLIAS DO GRUPO (Respeita a coluna 'ordem')
+  familiasOrdenadas.sort((a, b) => {
+    const ordemA = a.ordem !== undefined && a.ordem !== null ? Number(a.ordem) : 9999;
+    const ordemB = b.ordem !== undefined && b.ordem !== null ? Number(b.ordem) : 9999;
+
+    if (ordemA !== ordemB) return ordemA - ordemB;
+    return (a.nome || '').localeCompare(b.nome || '');
+  });
+
+  // 3. RENDERIZA AS FAMÍLIAS E SEUS PRODUTOS
+  familiasOrdenadas.forEach(fam => {
+    // Agora fam.itens é um Array real (ex: ["9021"]), garantindo que acha o produto 9021!
+    const filhos = lista.filter(it => fam.itens.includes(String(it.codigo)));
+
     if (filhos.length > 0) {
       if (fam.ordem_customizada && fam.ordem_customizada.length > 0) {
         filhos.forEach(f => {
@@ -946,14 +977,13 @@ function renderizar() {
 
       let tipo = 'comum';
       const primeiroItem = filhos[0];
-      const attrs = Object.keys(primeiroItem.atributos).map(k => k.toUpperCase());
-      const grupoItem = primeiroItem.grupo.toUpperCase();
-      const nomeFam = fam.nome.toUpperCase();
+      const attrs = Object.keys(primeiroItem.atributos || {}).map(k => k.toUpperCase());
+      const grupoItem = (primeiroItem.grupo || '').toUpperCase();
+      const nomeFam = (fam.nome || '').toUpperCase();
 
-// Define a regra de exibição com base nos dados reais do produto
       if (nomeFam.includes('VARA')) tipo = 'vara';
       else if (nomeFam.includes('LINHA')) tipo = 'linha';
-      else if (fam.subdivisoes && fam.subdivisoes.length > 0 && (nomeFam.includes('ISCA') || attrs.includes('CORES') || attrs.includes('COR'))) tipo = 'isca';
+      else if (nomeFam.includes('ISCA') || attrs.includes('CORES') || attrs.includes('COR')) tipo = 'isca';
       else if (
         nomeFam.includes('ANZOL') || 
         nomeFam.includes('GARAT') || grupoItem.includes('GARAT') || 
@@ -964,7 +994,15 @@ function renderizar() {
       else if (nomeFam.includes('MOLINETE')) tipo = 'molinete';
       else if (nomeFam.includes('CARRETILHA')) tipo = 'equipamento_direto';
       else if (nomeFam.includes('MOTOR') || grupoItem.includes('MOTOR')) tipo = 'motor';
-      else tipo = 'grade'; // Todos os acessórios, facas, bolsas e caixas soltas entram aqui perfeitamente
+      else if (
+        grupoItem.includes('VESTUARIO') || nomeFam.includes('VESTUARIO') ||
+        grupoItem.includes('ACESSORIO') || nomeFam.includes('ACESSORIO') ||
+        nomeFam.includes('ALICATE') || nomeFam.includes('TESOURA') || nomeFam.includes('BOLSA') || 
+        nomeFam.includes('POCHETE') || nomeFam.includes('MOCHILA') || nomeFam.includes('OXIGENADOR') || 
+        nomeFam.includes('FACA') || nomeFam.includes('CORDAO') || nomeFam.includes('CORDÃO') || 
+        nomeFam.includes('CARRETEL') || nomeFam.includes('CAIXA') || nomeFam.includes('CADEIRA') ||
+        nomeFam.includes('PONTEIRA') || nomeFam.includes('SUPORTE') || nomeFam.includes('ENROLADOR')
+      ) tipo = 'grade';
 
       if (tipo === 'isca') html += renderFamiliaIsca(fam, filhos);
       else if (tipo === 'molinete') html += renderFamiliaMolinete(fam, filhos);
