@@ -575,6 +575,33 @@ function normalizarItem(it) {
   };
 }
 
+function formatarNomeCard(item, nomeFamilia) {
+  // Pega o nome do subgrupo ou descrição (evitando o texto comercial gigante)
+  let nome = item.subgrupo || item.descricao || nomeFamilia || '';
+  
+  if (nome.length > 70 && item.subgrupo) {
+    nome = item.subgrupo;
+  }
+
+  // Remove prefixos redundantes das categorias (CAIXA, FACA, ALICATE, CORDÃO, ETC.)
+  const termosRemover = [
+    'CAIXA POCKET BOX', 'CAIXA MULTICASE', 'CAIXA TACKLE BOX', 'CAIXA',
+    'FACA FILLET', 'FACA', 'ALICATE DE', 'ALICATE', 'TESOURA', 'CORDÃO DE',
+    'CORDÃO', 'CORDAO', 'CARRETEL', 'MOCHILA', 'BOLSA', 'POCHETE', 'OXIGENADOR',
+    'PONTEIRA', 'SUPORTE', 'ENROLADOR', 'CADEIRA'
+  ];
+
+  for (let termo of termosRemover) {
+    const regex = new RegExp('^' + termo + '\\s*', 'i');
+    if (regex.test(nome)) {
+      nome = nome.replace(regex, '');
+      break; 
+    }
+  }
+
+  return nome.trim() || item.subgrupo || nomeFamilia;
+}
+
 function analisarVestuario(it) {
   let attrs = it.atributos || {};
   if (typeof attrs === 'string') {
@@ -852,7 +879,8 @@ function renderizar() {
         nomeFam.includes('ALICATE') || nomeFam.includes('TESOURA') || nomeFam.includes('BOLSA') || 
         nomeFam.includes('POCHETE') || nomeFam.includes('MOCHILA') || nomeFam.includes('OXIGENADOR') || 
         nomeFam.includes('FACA') || nomeFam.includes('CORDAO') || nomeFam.includes('CORDÃO') || 
-        nomeFam.includes('CARRETEL') || nomeFam.includes('CAIXA') || nomeFam.includes('CADEIRA')
+        nomeFam.includes('CARRETEL') || nomeFam.includes('CAIXA') || nomeFam.includes('CADEIRA') ||
+        nomeFam.includes('PONTEIRA') || nomeFam.includes('SUPORTE') || nomeFam.includes('ENROLADOR')
       ) tipo = 'grade';
 
       if (tipo === 'isca') html += renderFamiliaIsca(fam, filhos);
@@ -1007,7 +1035,7 @@ function renderFamiliaEquipamentoDireto(fam, itens) {
     const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
     const calc = it.calculoPreco;
     
-    let tagDetalhe = isCarretilha ? analisarCarretilha(it).ladoTag : (it.subgrupo || it.descricao_longa || 'Padrão');
+    let tagDetalhe = isCarretilha ? analisarCarretilha(it).ladoTag : formatarNomeCard(it, fam.nome);
 
     return `
       <div class="isca-cor-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" 
@@ -1414,13 +1442,56 @@ function renderFamiliaGrade(fam, itens) {
     itensDaSub.sort((a, b) => a.ordem_excel - b.ordem_excel);
 
     if (isVestuarioCorpo) {
-      const cardsHtml = itensDaSub.map((it, index) => {
+      const cardsHtml = itensDaSub.map(it => {
+        const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+        const infoVest = analisarVestuario(it);
+        const calc = it.calculoPreco;
+
+        return `
+          <div class="anzol-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" style="min-width:100px; padding:10px 6px;">
+            <span class="anzol-badge">${q}</span>
+            <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700; display:flex; align-items:center; justify-content:center; gap:4px; flex-wrap:wrap;">
+              <span>CÓD: ${escapeHtml(it.codigo)}</span>
+            </div>
+            
+            <div class="anzol-numero" style="font-size:1.2rem; font-weight:900; color:var(--azul-800); margin:4px 0;">
+              ${escapeHtml(infoVest.tamanho)}
+            </div>
+            
+            ${calc.temOferta ? `
+              <div class="preco-box-oferta">
+                <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
+                <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
+              </div>
+            ` : `
+              <div class="anzol-preco" style="font-size:0.85rem; font-weight:800; color:var(--verde); margin-bottom:4px;">
+                R$ ${fmtMoeda(calc.precoFinal)}
+              </div>
+            `}
+
+            <div class="anzol-qtd-ctrl" onclick="event.stopPropagation()">
+              <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+              <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+              <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+            </div>
+          </div>`;
+      }).join('');
+
+      return `
+        <div class="sub-bloco" style="margin-top: 10px;">
+          ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
+          <div class="isca-titulo-cores" style="margin-top:4px;">TAMANHOS DISPONÍVEIS</div>
+          <div class="anzol-grade" style="margin-top: 6px;">${cardsHtml}</div>
+        </div>`;
+    }
+
+    const cardsHtml = itensDaSub.map((it, index) => {
       const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
       const temImagem = it.imagem_url && it.imagem_url.trim() !== '';
       const isAtivo = index === 0 ? 'ativa' : '';
       const calc = it.calculoPreco;
 
-      // REMOVE A PALAVRA "CAIXA" E MOSTRA O MODELO + MEDIDAS (ex: "MULTICASE ZMC345 34.5X23X5cm")
+      // FORMATA O NOME REMOVENDO TERMOS REDUNDANTES (ex: "MULTICASE ZMC345 34.5X23X5cm")
       const nomeLimpo = formatarNomeCard(it, fam.nome);
 
       return `
@@ -1452,61 +1523,7 @@ function renderFamiliaGrade(fam, itens) {
               </div>
             ` : `<div class="preco" style="font-size:.8rem; font-weight:900; color:var(--verde); text-align:center;">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
             
-            <div class="qtd-ctrl" style="display:flex; width:100%; justify-space-between;" onclick="event.stopPropagation()">
-              <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
-              <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)" style="flex:1;">
-              <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
-            </div>
-          </div>
-        </div>`;
-    }).join('');
-      return `
-        <div class="sub-bloco" style="margin-top: 10px;">
-          ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
-          <div class="isca-titulo-cores" style="margin-top:4px;">TAMANHOS DISPONÍVEIS</div>
-          <div class="anzol-grade" style="margin-top: 6px;">${cardsHtml}</div>
-        </div>`;
-    }
-
-    const cardsHtml = itensDaSub.map((it, index) => {
-      const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
-      const temImagem = it.imagem_url && it.imagem_url.trim() !== '';
-      const isAtivo = index === 0 ? 'ativa' : '';
-      const calc = it.calculoPreco;
-
-      // FORÇA O USO DA DESCRIÇÃO COMPLETA QUE CONTÉM O MODELO E MEDIDAS (ex: "CAIXA MULTICASE ZMC345 34.5X23X5cm")
-      const nomeCompleto = it.descricao_longa || it.descricao || it.subgrupo || fam.nome;
-
-      return `
-        <div class="card-solto ${isAtivo}" id="mini-${it.codigo}" 
-             style="position:relative; display:flex; flex-direction:column; justify-content:space-between; padding:8px; height: 100%; cursor:pointer;"
-             onclick="selecionarAcessorio('${fam.id}', '${it.codigo}', '${it.imagem_url}', \`${escapeHtml(nomeCompleto).replace(/`/g, '')}\`, \`${escapeHtml(nomeCompleto).replace(/`/g, '')}\`)">
-          
-          ${calc.temOferta ? `<div style="position:absolute; top:4px; left:4px; background:#ef4444; color:white; font-size:8px; font-weight:900; padding:2px 4px; border-radius:4px; z-index:3;">-${calc.pctDesconto}%</div>` : ''}
-          ${q > 0 ? `<div style="position:absolute; top:4px; right:4px; background:var(--verde); color:white; width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:900; border:2px solid white; z-index:3;">${q}</div>` : ''}
-          
-          <div class="img" style="margin-bottom:6px; aspect-ratio:1; background:var(--cinza-50); border-radius:6px; overflow:hidden;">
-            ${temImagem ? `<img src="${it.imagem_url}" alt="${escapeHtml(nomeCompleto)}">` : '🖼️'}
-          </div>
-          
-          <div style="flex:1; display:flex; flex-direction:column; justify-content:flex-start;">
-            <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700; display:flex; align-items:center; justify-content:center; gap:4px; flex-wrap:wrap;">
-              <span>CÓD: ${escapeHtml(it.codigo)}</span>
-            </div>
-            <div class="nome" style="font-size:0.7rem; font-weight:800; color:var(--azul-800); margin-bottom:4px; line-height:1.2; text-align:center;">
-              ${escapeHtml(nomeCompleto)}
-            </div>
-          </div>
-
-          <div style="display:flex; flex-direction:column; gap:6px; margin-top:4px;">
-            ${calc.temOferta ? `
-              <div class="preco-box-oferta" style="align-items:center;">
-                <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
-                <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
-              </div>
-            ` : `<div class="preco" style="font-size:.8rem; font-weight:900; color:var(--verde); text-align:center;">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
-            
-            <div class="qtd-ctrl" style="display:flex; width:100%; justify-space-between;" onclick="event.stopPropagation()">
+            <div class="qtd-ctrl" style="display:flex; width:100%; justify-content:space-between;" onclick="event.stopPropagation()">
               <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
               <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)" style="flex:1;">
               <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
@@ -1539,21 +1556,6 @@ function renderFamiliaGrade(fam, itens) {
         <div class="molinete-info" style="overflow: hidden;">${blocosTabelas}</div>
       </div>
     </div>`;
-}
-
-function formatarNomeCard(item, nomeFamilia) {
-  // Pega o nome vindo de 'subgrupo' ou 'descricao', evitando o texto gigante da 'descricao_longa'
-  let nome = item.subgrupo || item.descricao || nomeFamilia || '';
-  
-  // Se por acaso vier o texto gigante por engano, corta se for muito longo
-  if (nome.length > 80 && item.subgrupo) {
-    nome = item.subgrupo;
-  }
-
-  // Remove a palavra "CAIXA" ou "CAIXA " do início (com suporte a maiúsculas/minúsculas)
-  nome = nome.replace(/^CAIXA\s+/i, '').trim();
-
-  return nome;
 }
 
 function selecionarAcessorio(famId, codigo, url, descricao, nome) {
