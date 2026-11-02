@@ -1167,10 +1167,16 @@ function limparNomeVariacao(nomeCompleto, nomeFamilia) {
   if (!nomeCompleto) return '';
   let str = nomeCompleto.trim();
   
-  // Palavras comuns do grupo/família para remover do início do nome do item
+  // 1. Remove o nome exato da família do início da string (ex: "CAIXA POCKET BOX ")
+  if (nomeFamilia) {
+    const regexFam = new RegExp('^' + nomeFamilia.trim() + '\\s*', 'i');
+    str = str.replace(regexFam, '');
+  }
+
+  // 2. Remove termos e prefixos redundantes adicionais
   const termosParaRemover = [
-    'FACA FILLET', 'FACA', 'CAIXA TACKLE BOX', 'CAIXA', 'ALICATE', 
-    'TESOURA', 'MALETA', 'ESTOJO', 'BOLSA'
+    'FACA FILLET', 'FACA', 'CAIXA TACKLE BOX', 'CAIXA POCKET BOX', 'CAIXA', 
+    'ALICATE', 'TESOURA', 'MALETA', 'ESTOJO', 'BOLSA'
   ];
 
   for (let termo of termosParaRemover) {
@@ -1178,6 +1184,7 @@ function limparNomeVariacao(nomeCompleto, nomeFamilia) {
     str = str.replace(regex, '');
   }
 
+  // Retorna o código do modelo/medidas limpo, ou o nome completo se tudo tiver sido removido
   return str.trim() || nomeCompleto;
 }
 
