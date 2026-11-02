@@ -1414,41 +1414,52 @@ function renderFamiliaGrade(fam, itens) {
     itensDaSub.sort((a, b) => a.ordem_excel - b.ordem_excel);
 
     if (isVestuarioCorpo) {
-      const cardsHtml = itensDaSub.map(it => {
-        const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
-        const infoVest = analisarVestuario(it);
-        const calc = it.calculoPreco;
+      const cardsHtml = itensDaSub.map((it, index) => {
+      const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+      const temImagem = it.imagem_url && it.imagem_url.trim() !== '';
+      const isAtivo = index === 0 ? 'ativa' : '';
+      const calc = it.calculoPreco;
 
-        return `
-          <div class="anzol-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" style="min-width:100px; padding:10px 6px;">
-            <span class="anzol-badge">${q}</span>
+      // REMOVE A PALAVRA "CAIXA" E MOSTRA O MODELO + MEDIDAS (ex: "MULTICASE ZMC345 34.5X23X5cm")
+      const nomeLimpo = formatarNomeCard(it, fam.nome);
+
+      return `
+        <div class="card-solto ${isAtivo}" id="mini-${it.codigo}" 
+             style="position:relative; display:flex; flex-direction:column; justify-content:space-between; padding:8px; height: 100%; cursor:pointer;"
+             onclick="selecionarAcessorio('${fam.id}', '${it.codigo}', '${it.imagem_url}', \`${escapeHtml(it.descricao_longa || '').replace(/`/g, '')}\`, \`${escapeHtml(nomeLimpo).replace(/`/g, '')}\`)">
+          
+          ${calc.temOferta ? `<div style="position:absolute; top:4px; left:4px; background:#ef4444; color:white; font-size:8px; font-weight:900; padding:2px 4px; border-radius:4px; z-index:3;">-${calc.pctDesconto}%</div>` : ''}
+          ${q > 0 ? `<div style="position:absolute; top:4px; right:4px; background:var(--verde); color:white; width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:900; border:2px solid white; z-index:3;">${q}</div>` : ''}
+          
+          <div class="img" style="margin-bottom:6px; aspect-ratio:1; background:var(--cinza-50); border-radius:6px; overflow:hidden;">
+            ${temImagem ? `<img src="${it.imagem_url}" alt="${escapeHtml(nomeLimpo)}">` : '🖼️'}
+          </div>
+          
+          <div style="flex:1; display:flex; flex-direction:column; justify-content:flex-start;">
             <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700; display:flex; align-items:center; justify-content:center; gap:4px; flex-wrap:wrap;">
               <span>CÓD: ${escapeHtml(it.codigo)}</span>
             </div>
-            
-            <div class="anzol-numero" style="font-size:1.2rem; font-weight:900; color:var(--azul-800); margin:4px 0;">
-              ${escapeHtml(infoVest.tamanho)}
+            <div class="nome" style="font-size:0.7rem; font-weight:800; color:var(--azul-800); margin-bottom:4px; line-height:1.2; text-align:center;">
+              ${escapeHtml(nomeLimpo)}
             </div>
-            
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:6px; margin-top:4px;">
             ${calc.temOferta ? `
-              <div class="preco-box-oferta">
+              <div class="preco-box-oferta" style="align-items:center;">
                 <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
                 <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
               </div>
-            ` : `
-              <div class="anzol-preco" style="font-size:0.85rem; font-weight:800; color:var(--verde); margin-bottom:4px;">
-                R$ ${fmtMoeda(calc.precoFinal)}
-              </div>
-            `}
-
-            <div class="anzol-qtd-ctrl" onclick="event.stopPropagation()">
+            ` : `<div class="preco" style="font-size:.8rem; font-weight:900; color:var(--verde); text-align:center;">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+            
+            <div class="qtd-ctrl" style="display:flex; width:100%; justify-space-between;" onclick="event.stopPropagation()">
               <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
-              <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+              <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)" style="flex:1;">
               <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
             </div>
-          </div>`;
-      }).join('');
-
+          </div>
+        </div>`;
+    }).join('');
       return `
         <div class="sub-bloco" style="margin-top: 10px;">
           ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
@@ -1528,6 +1539,21 @@ function renderFamiliaGrade(fam, itens) {
         <div class="molinete-info" style="overflow: hidden;">${blocosTabelas}</div>
       </div>
     </div>`;
+}
+
+function formatarNomeCard(item, nomeFamilia) {
+  // Pega o nome vindo de 'subgrupo' ou 'descricao', evitando o texto gigante da 'descricao_longa'
+  let nome = item.subgrupo || item.descricao || nomeFamilia || '';
+  
+  // Se por acaso vier o texto gigante por engano, corta se for muito longo
+  if (nome.length > 80 && item.subgrupo) {
+    nome = item.subgrupo;
+  }
+
+  // Remove a palavra "CAIXA" ou "CAIXA " do início (com suporte a maiúsculas/minúsculas)
+  nome = nome.replace(/^CAIXA\s+/i, '').trim();
+
+  return nome;
 }
 
 function selecionarAcessorio(famId, codigo, url, descricao, nome) {
