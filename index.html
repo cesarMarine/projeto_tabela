@@ -934,29 +934,35 @@ function renderizar() {
   const processados = new Set(); 
   let html = '';
 
-  // 1. CLONA E GARANTE O PARSE DE CADA FAMÍLIA (Resolve o sumiço dos produtos)
+  // 1. NORMALIZAÇÃO DE SEGURANÇA E PARSE DO JSON DO BANCO
   let familiasOrdenadas = todasFamilias.map(f => {
-    let itensArray = f.itens || f.subgrupos || [];
-    if (typeof itensArray === 'string') {
-      try { itensArray = JSON.parse(itensArray); } catch (e) { itensArray = []; }
+    // Tenta 'subgrupos' primeiro (como vem do Supabase) e depois 'itens'
+    let rawItens = f.subgrupos || f.itens || [];
+    if (typeof rawItens === 'string') {
+      try { rawItens = JSON.parse(rawItens); } catch (e) { rawItens = []; }
     }
+    if (!Array.isArray(rawItens)) rawItens = [];
 
-    let subdivisoesArray = f.subdivisoes || [];
-    if (typeof subdivisoesArray === 'string') {
-      try { subdivisoesArray = JSON.parse(subdivisoesArray); } catch (e) { subdivisoesArray = []; }
+    // Normaliza todos os códigos para String sem espaços
+    const codigosLimpos = rawItens.map(c => String(c).trim());
+
+    let rawSubs = f.subdivisoes || [];
+    if (typeof rawSubs === 'string') {
+      try { rawSubs = JSON.parse(rawSubs); } catch (e) { rawSubs = []; }
     }
+    if (!Array.isArray(rawSubs)) rawSubs = [];
 
     return {
       ...f,
-      itens: itensArray,
-      subdivisoes: subdivisoesArray
+      itens: codigosLimpos,
+      subdivisoes: rawSubs
     };
   });
 
-  // 2. ORDENA AS FAMÍLIAS DO GRUPO (Respeita a coluna 'ordem')
+  // 2. ORDENA AS FAMÍLIAS (Respeita o campo 'ordem')
   familiasOrdenadas.sort((a, b) => {
-    const ordemA = a.ordem !== undefined && a.ordem !== null ? Number(a.ordem) : 9999;
-    const ordemB = b.ordem !== undefined && b.ordem !== null ? Number(b.ordem) : 9999;
+    const ordemA = a.ordem !== undefined && a.ordem !== null && a.ordem !== '' ? Number(a.ordem) : 9999;
+    const ordemB = b.ordem !== undefined && b.ordem !== null && b.ordem !== '' ? Number(b.ordem) : 9999;
 
     if (ordemA !== ordemB) return ordemA - ordemB;
     return (a.nome || '').localeCompare(b.nome || '');
@@ -964,8 +970,8 @@ function renderizar() {
 
   // 3. RENDERIZA AS FAMÍLIAS E SEUS PRODUTOS
   familiasOrdenadas.forEach(fam => {
-    // Agora fam.itens é um Array real (ex: ["9021"]), garantindo que acha o produto 9021!
-    const filhos = lista.filter(it => fam.itens.includes(String(it.codigo)));
+    // Comparação precisa normalizando o código do produto
+    const filhos = lista.filter(it => fam.itens.includes(String(it.codigo).trim()));
 
     if (filhos.length > 0) {
       if (fam.ordem_customizada && fam.ordem_customizada.length > 0) {
