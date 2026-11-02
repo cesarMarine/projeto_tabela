@@ -559,8 +559,8 @@ function calcularValoresProduto(precoBase, codItem) {
 function normalizarItem(it) {
   return {
     codigo: String(it.codigo ?? ''),
-    subgrupo: (it.subgrupo_scraping || '').trim(), 
-    descricao_longa: it.descricao_longa || '', 
+    subgrupo: (it.subgrupo_scraping || it.descricao || '').trim(), 
+    descricao_longa: it.descricao || it.descricao_longa || '', 
     imagem_url: it.imagem_url || '',
     precoBase: Number(it.preco_venda) || 0,
     get calculoPreco() { return calcularValoresProduto(this.precoBase, this.codigo); },
@@ -1445,14 +1445,14 @@ function renderFamiliaGrade(fam, itens) {
     itensDaSub.sort((a, b) => a.ordem_excel - b.ordem_excel);
 
     if (isVestuarioCorpo) {
-      const cardsHtml = itensDaSub.map((it, index) => {
+  const cardsHtml = itensDaSub.map((it, index) => {
   const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
   const temImagem = it.imagem_url && it.imagem_url.trim() !== '';
   const isAtivo = index === 0 ? 'ativa' : '';
   const calc = it.calculoPreco;
   
-  // NOME COMPLETO EXATO (ex: "CAIXA POCKET BOX MPB133 13.2x9.7x3.4cm")
-  const nomeCompleto = it.subgrupo || it.descricao_longa || fam.nome;
+  // USA A DESCRIÇÃO COMPLETA DO BANCO DE DADOS (descricao_longa) OU O SUBGRUPO COMPLETO
+  const nomeCompleto = it.descricao_longa || it.subgrupo || fam.nome;
 
   return `
     <div class="card-solto ${isAtivo}" id="mini-${it.codigo}" 
@@ -1470,7 +1470,8 @@ function renderFamiliaGrade(fam, itens) {
         <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700; display:flex; align-items:center; justify-content:center; gap:4px; flex-wrap:wrap;">
           <span>CÓD: ${escapeHtml(it.codigo)}</span>
         </div>
-        <div class="nome" style="font-size:0.7rem; font-weight:800; color:var(--azul-800); margin-bottom:4px; line-height:1.2; text-align:left;">
+        <!-- EXIBE O NOME COMPLETO COM DETALHES E MEDIDAS -->
+        <div class="nome" style="font-size:0.75rem; font-weight:800; color:var(--azul-800); margin-bottom:4px; line-height:1.2; text-align:left;">
           ${escapeHtml(nomeCompleto)}
         </div>
       </div>
@@ -1483,7 +1484,7 @@ function renderFamiliaGrade(fam, itens) {
           </div>
         ` : `<div class="preco" style="font-size:.8rem; font-weight:900; color:var(--verde); text-align:left;">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
         
-        <div class="qtd-ctrl" style="display:flex; width:100%; justify-space-between;" onclick="event.stopPropagation()">
+        <div class="qtd-ctrl" style="display:flex; width:100%; justify-content:space-between;" onclick="event.stopPropagation()">
           <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
           <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)" style="flex:1;">
           <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
