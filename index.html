@@ -579,12 +579,50 @@ function formatarNomeCard(item, nomeFamilia) {
   let nome = (item.subgrupo || item.descricao || '').trim();
   const famNome = (nomeFamilia || '').trim();
   const attrs = item.atributos || {};
+  const descCompleta = (item.descricao_longa || item.descricao || item.subgrupo || '').trim();
 
   // 1. Tenta pegar primeiro se houver Modelo nos atributos JSON (ex: TB-100, M-BP25, etc)
   const modeloAttr = attrs['Modelo'] || attrs['MODELO'] || attrs['Tamanho'] || attrs['TAMANHO'];
   
+  // -----------------------------------------------------------------------
+  // EXTRAÇÃO DE DIMENSÕES PARA CAIXAS ESPECÍFICAS (Multicase, Isca MS, Shallow Box, Tackle Box, Water Resistant)
+  // -----------------------------------------------------------------------
+  const famUpper = famNome.toUpperCase();
+  const ehCaixaAlvoMedida = famUpper.includes('MULTICASE') || 
+                            famUpper.includes('ISCA MS') || 
+                            famUpper.includes('SHALLOW') || 
+                            famUpper.includes('TACKLE BOX') || 
+                            famUpper.includes('WATER RESISTANT');
+
+  if (ehCaixaAlvoMedida) {
+    // Procura por dimensões/medidas (ex: 34.5X23X5cm, 35.5 x 22 x 5 cm, etc)
+    const regexMedida = /(\d+[\.,]?\d*\s*[xX]\s*\d+[\.,]?\d*(?:\s*[xX]\s*\d+[\.,]?\d*)?\s*(?:cm|mm)?)/i;
+    const matchMedida = descCompleta.match(regexMedida);
+    
+    if (matchMedida) {
+      const dimensao = matchMedida[1].trim();
+      
+      // Tenta capturar o modelo do código/atributos ou texto (ex: ZMC345, MSB355, MS250, MTB-200, JIG)
+      let modelo = modeloAttr || '';
+      if (!modelo) {
+        const matchModeloText = descCompleta.match(/\b([A-Z0-9-]{2,12})\b/i);
+        if (matchModeloText && !matchModeloText[1].toUpperCase().includes('CAIXA')) {
+          modelo = matchModeloText[1].toUpperCase();
+        }
+      }
+
+      // Se tiver o modelo separado da medida, combina ambos (ex: "ZMC345 • 34.5X23X5cm")
+      if (modelo && !dimensao.toUpperCase().includes(modelo.toUpperCase())) {
+        return `${modelo} • ${dimensao}`;
+      }
+
+      // Se o próprio nome limpo já tiver a medida, retorna a medida/nome
+      return dimensao;
+    }
+  }
+
   // 2. Se a família for "BOLSA PESCADOR" ou similar, preserva a especificação (ex: "M-BP25 COM CAIXA" ou "M-BP25")
-  if (famNome.toUpperCase().includes('BOLSA') || famNome.toUpperCase().includes('PESCADOR')) {
+  if (famUpper.includes('BOLSA') || famUpper.includes('PESCADOR')) {
     // Se o nome virou apenas uma letra como "C" ou "S", recupera o modelo do atributo ou subgrupo completo
     if (nome.length <= 2 || nome.toUpperCase() === 'C' || nome.toUpperCase() === 'S') {
       if (modeloAttr) return String(modeloAttr).trim();
@@ -593,7 +631,7 @@ function formatarNomeCard(item, nomeFamilia) {
   }
 
   // 3. Se for Caixa Tackle Box ou caixas com subdivisões (JIG, MTB, etc)
-  if (famNome.toUpperCase().includes('TACKLE') || famNome.toUpperCase().includes('CAIXA')) {
+  if (famUpper.includes('TACKLE') || famUpper.includes('CAIXA')) {
     // Tenta encontrar o código do modelo (ex: TB-100, MTB-200, JIG-10, etc) ou medidas (ex: 20X15X5cm)
     const matchModelo = nome.match(/\b([A-Z0-9-]{2,12}(?:\s*C\/|\s*S\/|\s*BOX|\s*JIG|\s*MTB)?|\d+[\.,]?\d*\s*[xX]\s*\d+.*)\b/i);
     
@@ -608,7 +646,7 @@ function formatarNomeCard(item, nomeFamilia) {
   }
 
   // 4. Se o nome do item for exatamente igual ao nome da família, procura fallback nos atributos
-  if (!nome || nome.toUpperCase() === famNome.toUpperCase()) {
+  if (!nome || nome.toUpperCase() === famUpper) {
     if (modeloAttr) return String(modeloAttr).trim();
   }
 
