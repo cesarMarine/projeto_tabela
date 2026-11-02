@@ -662,10 +662,12 @@ function formatarNomeCard(item, nomeFamilia) {
 }
 
 function analisarAnzol(it) {
-  const attrs = it.atributos || {};
+  let attrs = it.atributos || {};
+  if (typeof attrs === 'string') {
+    try { attrs = JSON.parse(attrs); } catch (e) { attrs = {}; }
+  }
+
   let numero = '';
-  
-  // 1. Busca o Tamanho/Número do Anzol/Garatéia/Girador
   const chavesNum = ['Tamanho', 'TAMANHO', 'Número', 'NÚMERO', 'Numero', 'Resistência (lb)', 'Resistencia', 'Libragem', 'Bitola', 'Modelo', 'MODELO'];
   for (let k of chavesNum) { 
     if (attrs[k]) { 
@@ -674,7 +676,6 @@ function analisarAnzol(it) {
     } 
   }
   
-  // Se não achou no JSON, extrai do subgrupo por Regex
   if (!numero || numero === 'S/N') {
     const subUpper = (it.subgrupo || '').toUpperCase();
     const matchCabo = subUpper.match(/(\d+\s*LBS?|\d+\s*KG|\d+\s*M(?:ETROS)?)/i);
@@ -687,29 +688,19 @@ function analisarAnzol(it) {
     }
   }
 
-  // 2. BUSCA DIRETA DA QUANTIDADE NO JSON (Quantidade, Qtd, Embalagem, etc.)
-  let qtd = '';
-  const chavesQtd = ['Quantidade', 'QUANTIDADE', 'Qtd', 'QTD', 'Qtd. Embalagem', 'Qtd Embalagem', 'Embalagem', 'EMBALAGEM'];
-  for (let k of chavesQtd) { 
-    if (attrs[k]) { 
-      qtd = String(attrs[k]).trim(); 
-      break; 
-    } 
-  }
+  // Busca a Quantidade nas chaves exatas do JSON
+  let qtd = attrs['Quantidade'] || attrs['QUANTIDADE'] || attrs['Qtd'] || attrs['QTD'] || attrs['Qtd. Embalagem'] || attrs['Qtd Embalagem'] || attrs['Embalagem'] || '';
 
-  // Se não achou no JSON, procura na descrição por formatos como "C/ 100", "CX C/ 50", "100 UN"
   if (!qtd) {
     const desc = (it.descricao_longa || it.descricao || it.subgrupo || '').toUpperCase();
     const matchQtdText = desc.match(/(?:C\/|CX\s*C\/|EMB\s*C\/|\bQTD:?\s*)(\d+)/i);
-    if (matchQtdText) {
-      qtd = matchQtdText[1];
-    }
+    if (matchQtdText) qtd = matchQtdText[1];
   }
 
-  // Formata o texto de exibição (ex: "C/ 100" ou "100 un")
   let qtdFormatada = '';
   if (qtd) {
-    qtdFormatada = qtd.toUpperCase().includes('C/') || qtd.toUpperCase().includes('UN') ? qtd : `C/ ${qtd}`;
+    const qStr = String(qtd).trim();
+    qtdFormatada = qStr.toUpperCase().includes('C/') || qStr.toUpperCase().includes('UN') ? qStr : `C/ ${qStr}`;
   }
 
   return { numero, qtd: qtdFormatada };
@@ -861,11 +852,41 @@ async function carregar() {
 function montarChips() {
   const contagem = {};
   todosItens.forEach(it => { contagem[it.grupo] = (contagem[it.grupo] || 0) + 1; });
-  const grupos = Object.keys(contagem).sort((a, b) => contagem[b] - contagem[a]);
-  
+  const todosGrupos = Object.keys(contagem);
+
+  // Ordem de prioridade padrão dos grupos para o topo
+  const prioridadeGrupos = [
+    'ISCA',
+    'MOLINETE',
+    'CARRETILHA',
+    'VARA',
+    'LINHA',
+    'ANZOL',
+    'ALICATES',
+    'VESTUARIO',
+    'ACESSORIOS',
+    'GARATEIAS',
+    'GIRADORES'
+  ];
+
+  // Ordena os grupos
+  todosGrupos.sort((a, b) => {
+    const gA = a.toUpperCase().trim();
+    const gB = b.toUpperCase().trim();
+    
+    const idxA = prioridadeGrupos.findIndex(p => gA.includes(p));
+    const idxB = prioridadeGrupos.findIndex(p => gB.includes(p));
+
+    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+    if (idxA !== -1) return -1;
+    if (idxB !== -1) return 1;
+    
+    return contagem[b] - contagem[a]; // Se nenhum estiver na lista, ordena por quantidade
+  });
+
   document.getElementById('chips').innerHTML = `
     <button class="chip chip-oferta ativo" onclick="trocarGrupo('__OFERTAS__', this)" title="Ofertas">🔥</button>
-    ${grupos.map(g => {
+    ${todosGrupos.map(g => {
       const iconeUrl = getIconeUrl(g);
       return `<button class="chip" onclick="trocarGrupo('${g}', this)" title="${g}"><img src="${iconeUrl}" class="chip-img" alt="${g}" onerror="this.onerror=null; this.src='${BUCKET_ICONIS}ACESSORIOS.jpg';"></button>`;
     }).join('')}
