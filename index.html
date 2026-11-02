@@ -1445,41 +1445,52 @@ function renderFamiliaGrade(fam, itens) {
     itensDaSub.sort((a, b) => a.ordem_excel - b.ordem_excel);
 
     if (isVestuarioCorpo) {
-      const cardsHtml = itensDaSub.map(it => {
-        const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
-        const infoVest = analisarVestuario(it);
-        const calc = it.calculoPreco;
+      const cardsHtml = itensDaSub.map((it, index) => {
+  const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+  const temImagem = it.imagem_url && it.imagem_url.trim() !== '';
+  const isAtivo = index === 0 ? 'ativa' : '';
+  const calc = it.calculoPreco;
+  
+  // NOME COMPLETO EXATO (ex: "CAIXA POCKET BOX MPB133 13.2x9.7x3.4cm")
+  const nomeCompleto = it.subgrupo || it.descricao_longa || fam.nome;
 
-        return `
-          <div class="anzol-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" style="min-width:100px; padding:10px 6px;">
-            <span class="anzol-badge">${q}</span>
-            <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700; display:flex; align-items:center; justify-content:center; gap:4px; flex-wrap:wrap;">
-              <span>CÓD: ${escapeHtml(it.codigo)}</span>
-            </div>
-            
-            <div class="anzol-numero" style="font-size:1.2rem; font-weight:900; color:var(--azul-800); margin:4px 0;">
-              ${escapeHtml(infoVest.tamanho)}
-            </div>
-            
-            ${calc.temOferta ? `
-              <div class="preco-box-oferta">
-                <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
-                <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
-              </div>
-            ` : `
-              <div class="anzol-preco" style="font-size:0.85rem; font-weight:800; color:var(--verde); margin-bottom:4px;">
-                R$ ${fmtMoeda(calc.precoFinal)}
-              </div>
-            `}
+  return `
+    <div class="card-solto ${isAtivo}" id="mini-${it.codigo}" 
+         style="position:relative; display:flex; flex-direction:column; justify-content:space-between; padding:8px; height: 100%; cursor:pointer;"
+         onclick="selecionarAcessorio('${fam.id}', '${it.codigo}', '${it.imagem_url}', \`${escapeHtml(it.descricao_longa).replace(/`/g, '')}\`, \`${escapeHtml(nomeCompleto).replace(/`/g, '')}\`)">
+      
+      ${calc.temOferta ? `<div style="position:absolute; top:4px; left:4px; background:#ef4444; color:white; font-size:8px; font-weight:900; padding:2px 4px; border-radius:4px; z-index:3;">-${calc.pctDesconto}%</div>` : ''}
+      ${q > 0 ? `<div style="position:absolute; top:4px; right:4px; background:var(--verde); color:white; width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:900; border:2px solid white; z-index:3;">${q}</div>` : ''}
+      
+      <div class="img" style="margin-bottom:6px; aspect-ratio:1; background:var(--cinza-50); border-radius:6px; overflow:hidden;">
+        ${temImagem ? `<img src="${it.imagem_url}" alt="${escapeHtml(nomeCompleto)}">` : '🖼️'}
+      </div>
+      
+      <div style="flex:1; display:flex; flex-direction:column; justify-content:flex-start;">
+        <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700; display:flex; align-items:center; justify-content:center; gap:4px; flex-wrap:wrap;">
+          <span>CÓD: ${escapeHtml(it.codigo)}</span>
+        </div>
+        <div class="nome" style="font-size:0.7rem; font-weight:800; color:var(--azul-800); margin-bottom:4px; line-height:1.2; text-align:left;">
+          ${escapeHtml(nomeCompleto)}
+        </div>
+      </div>
 
-            <div class="anzol-qtd-ctrl" onclick="event.stopPropagation()">
-              <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
-              <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
-              <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
-            </div>
-          </div>`;
-      }).join('');
-
+      <div style="display:flex; flex-direction:column; gap:6px; margin-top:4px;">
+        ${calc.temOferta ? `
+          <div class="preco-box-oferta" style="align-items:flex-start;">
+            <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
+            <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
+          </div>
+        ` : `<div class="preco" style="font-size:.8rem; font-weight:900; color:var(--verde); text-align:left;">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+        
+        <div class="qtd-ctrl" style="display:flex; width:100%; justify-space-between;" onclick="event.stopPropagation()">
+          <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+          <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)" style="flex:1;">
+          <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+        </div>
+      </div>
+    </div>`;
+}).join('');
       return `
         <div class="sub-bloco" style="margin-top: 10px;">
           ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
@@ -1493,7 +1504,7 @@ function renderFamiliaGrade(fam, itens) {
       const temImagem = it.imagem_url && it.imagem_url.trim() !== '';
       const isAtivo = index === 0 ? 'ativa' : '';
       const calc = it.calculoPreco;
-     const nomeLimpo = limparNomeVariacao(it.subgrupo || it.descricao_longa, fam.nome);
+     const nomeLimpo = it.descricao_longa || it.subgrupo || fam.nome;
 
       return `
         <div class="card-solto ${isAtivo}" id="mini-${it.codigo}" 
