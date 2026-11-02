@@ -664,9 +664,17 @@ function formatarNomeCard(item, nomeFamilia) {
 function analisarAnzol(it) {
   const attrs = it.atributos || {};
   let numero = '';
-  const chavesNum = ['Resistência (lb)', 'Resistencia', 'Libragem', 'Tamanho (cm)', 'Tamanho', 'TAMANHO', 'Numero', 'NÚMERO', 'Número', 'Bitola', 'Modelo', 'MODELO'];
-  for (let k of chavesNum) { if (attrs[k]) { numero = String(attrs[k]); break; } }
   
+  // 1. Busca o Tamanho/Número do Anzol/Garatéia/Girador
+  const chavesNum = ['Tamanho', 'TAMANHO', 'Número', 'NÚMERO', 'Numero', 'Resistência (lb)', 'Resistencia', 'Libragem', 'Bitola', 'Modelo', 'MODELO'];
+  for (let k of chavesNum) { 
+    if (attrs[k]) { 
+      numero = String(attrs[k]).trim(); 
+      break; 
+    } 
+  }
+  
+  // Se não achou no JSON, extrai do subgrupo por Regex
   if (!numero || numero === 'S/N') {
     const subUpper = (it.subgrupo || '').toUpperCase();
     const matchCabo = subUpper.match(/(\d+\s*LBS?|\d+\s*KG|\d+\s*M(?:ETROS)?)/i);
@@ -674,14 +682,37 @@ function analisarAnzol(it) {
       numero = matchCabo[1]; 
     } else {
       const match = subUpper.match(/(?:Nº?|Nº|NUMERO|TAMANHO|SABIKI)?\s*(\d{1,2}(?:\/\d)?(?:\s*CM|\s*MM)?|\b[PMGG]{1,3}\b)(?:\s*C\/|\s|$)/i);
-      if (match) numero = match[1]; else numero = it.subgrupo.replace(it.grupo, '').trim() || 'S/N';
+      if (match) numero = match[1]; 
+      else numero = (it.subgrupo || '').replace(it.grupo || '', '').trim() || 'S/N';
     }
   }
 
+  // 2. BUSCA DIRETA DA QUANTIDADE NO JSON (Quantidade, Qtd, Embalagem, etc.)
   let qtd = '';
-  const chavesQtd = ['Comprimento (m)', 'Comprimento', 'Quantidade', 'QUANTIDADE', 'Qtd', 'QTD', 'Qtd. Embalagem', 'Qtd Embalagem'];
-  for (let k of chavesQtd) { if (attrs[k]) { qtd = String(attrs[k]); break; } }
-  return { numero, qtd };
+  const chavesQtd = ['Quantidade', 'QUANTIDADE', 'Qtd', 'QTD', 'Qtd. Embalagem', 'Qtd Embalagem', 'Embalagem', 'EMBALAGEM'];
+  for (let k of chavesQtd) { 
+    if (attrs[k]) { 
+      qtd = String(attrs[k]).trim(); 
+      break; 
+    } 
+  }
+
+  // Se não achou no JSON, procura na descrição por formatos como "C/ 100", "CX C/ 50", "100 UN"
+  if (!qtd) {
+    const desc = (it.descricao_longa || it.descricao || it.subgrupo || '').toUpperCase();
+    const matchQtdText = desc.match(/(?:C\/|CX\s*C\/|EMB\s*C\/|\bQTD:?\s*)(\d+)/i);
+    if (matchQtdText) {
+      qtd = matchQtdText[1];
+    }
+  }
+
+  // Formata o texto de exibição (ex: "C/ 100" ou "100 un")
+  let qtdFormatada = '';
+  if (qtd) {
+    qtdFormatada = qtd.toUpperCase().includes('C/') || qtd.toUpperCase().includes('UN') ? qtd : `C/ ${qtd}`;
+  }
+
+  return { numero, qtd: qtdFormatada };
 }
 
 function analisarMolinete(it) {
