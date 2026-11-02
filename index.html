@@ -576,30 +576,32 @@ function normalizarItem(it) {
 }
 
 function formatarNomeCard(item, nomeFamilia) {
-  // Pega o nome do subgrupo ou descrição (evitando o texto comercial gigante)
-  let nome = item.subgrupo || item.descricao || nomeFamilia || '';
-  
-  if (nome.length > 70 && item.subgrupo) {
-    nome = item.subgrupo;
+  let nome = (item.subgrupo || item.descricao || '').trim();
+  const famNome = (nomeFamilia || '').trim();
+
+  // Se o subgrupo for exatamente igual ao nome da família, procura tamanho/modelo nos atributos
+  if (!nome || nome.toUpperCase() === famNome.toUpperCase()) {
+    const attrs = item.atributos || {};
+    const mod = attrs['Modelo'] || attrs['MODELO'] || attrs['Tamanho'] || attrs['TAMANHO'] || '';
+    if (mod) return String(mod).trim();
   }
 
-  // Remove prefixos redundantes das categorias (CAIXA, FACA, ALICATE, CORDÃO, ETC.)
-  const termosRemover = [
-    'CAIXA POCKET BOX', 'CAIXA MULTICASE', 'CAIXA TACKLE BOX', 'CAIXA',
-    'FACA FILLET', 'FACA', 'ALICATE DE', 'ALICATE', 'TESOURA', 'CORDÃO DE',
-    'CORDÃO', 'CORDAO', 'CARRETEL', 'MOCHILA', 'BOLSA', 'POCHETE', 'OXIGENADOR',
-    'PONTEIRA', 'SUPORTE', 'ENROLADOR', 'CADEIRA'
-  ];
-
-  for (let termo of termosRemover) {
-    const regex = new RegExp('^' + termo + '\\s*', 'i');
-    if (regex.test(nome)) {
-      nome = nome.replace(regex, '');
-      break; 
-    }
+  // Tenta extrair o modelo/código (ex: ZMC345, MS250, MFK6T) ou medidas (ex: 34.5X23X5cm, 6'')
+  const matchModeloMedida = nome.match(/([A-Z0-9-]{3,10}\b.*|\d+[\.,]?\d*\s*[xX]\s*\d+.*|\d+['"])/i);
+  if (matchModeloMedida && matchModeloMedida[0].length < nome.length) {
+    return matchModeloMedida[0].trim();
   }
 
-  return nome.trim() || item.subgrupo || nomeFamilia;
+  // Se o nome começar exatamente com a frase da família (ex: "CAIXA POCKET BOX MS-100"), remove o prefixo
+  if (famNome && nome.toUpperCase().startsWith(famNome.toUpperCase())) {
+    const resto = nome.slice(famNome.length).trim();
+    if (resto) return resto;
+  }
+
+  // Limpeza de palavras genéricas do início caso ainda sobrem
+  nome = nome.replace(/^(CAIXA|FACA|ALICATE|CORDÃO|CORDAO|TESOURA|MOCHILA|BOLSA|POCHETE|OXIGENADOR)\s+/i, '').trim();
+
+  return nome || item.codigo;
 }
 
 function analisarVestuario(it) {
@@ -860,9 +862,10 @@ function renderizar() {
       const grupoItem = primeiroItem.grupo.toUpperCase();
       const nomeFam = fam.nome.toUpperCase();
 
+// Define a regra de exibição com base nos dados reais do produto
       if (nomeFam.includes('VARA')) tipo = 'vara';
       else if (nomeFam.includes('LINHA')) tipo = 'linha';
-      else if (nomeFam.includes('ISCA') || attrs.includes('CORES') || attrs.includes('COR')) tipo = 'isca';
+      else if (fam.subdivisoes && fam.subdivisoes.length > 0 && (nomeFam.includes('ISCA') || attrs.includes('CORES') || attrs.includes('COR'))) tipo = 'isca';
       else if (
         nomeFam.includes('ANZOL') || 
         nomeFam.includes('GARAT') || grupoItem.includes('GARAT') || 
@@ -873,15 +876,7 @@ function renderizar() {
       else if (nomeFam.includes('MOLINETE')) tipo = 'molinete';
       else if (nomeFam.includes('CARRETILHA')) tipo = 'equipamento_direto';
       else if (nomeFam.includes('MOTOR') || grupoItem.includes('MOTOR')) tipo = 'motor';
-      else if (
-        grupoItem.includes('VESTUARIO') || nomeFam.includes('VESTUARIO') ||
-        grupoItem.includes('ACESSORIO') || nomeFam.includes('ACESSORIO') ||
-        nomeFam.includes('ALICATE') || nomeFam.includes('TESOURA') || nomeFam.includes('BOLSA') || 
-        nomeFam.includes('POCHETE') || nomeFam.includes('MOCHILA') || nomeFam.includes('OXIGENADOR') || 
-        nomeFam.includes('FACA') || nomeFam.includes('CORDAO') || nomeFam.includes('CORDÃO') || 
-        nomeFam.includes('CARRETEL') || nomeFam.includes('CAIXA') || nomeFam.includes('CADEIRA') ||
-        nomeFam.includes('PONTEIRA') || nomeFam.includes('SUPORTE') || nomeFam.includes('ENROLADOR')
-      ) tipo = 'grade';
+      else tipo = 'grade'; // Todos os acessórios, facas, bolsas e caixas soltas entram aqui perfeitamente
 
       if (tipo === 'isca') html += renderFamiliaIsca(fam, filhos);
       else if (tipo === 'molinete') html += renderFamiliaMolinete(fam, filhos);
