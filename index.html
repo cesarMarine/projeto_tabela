@@ -892,6 +892,9 @@ function analisarCarretilha(it) {
   const attrs = it.atributos || {};
   let modelo = attrs['Modelo'] || attrs['MODELO'] || '';
   let ladoManivela = attrs['Lado Manivela'] || attrs['LADO MANIVELA'] || '';
+  const relacao = attrs['Relação de recolhimento'] || '';
+  const capacidade = attrs['Capacidade de linha (mm-m)'] || '';
+  const velMax = attrs['Velocidade Máxima'] || '';
 
   const subUpper = (it.subgrupo || '').toUpperCase();
 
@@ -904,17 +907,23 @@ function analisarCarretilha(it) {
     }
   }
 
-  // 2. Extrai a numeração do modelo (ex: 11000, 6000, 5000) do nome
+  // 2. Extrai o modelo/tamanho (ex: 11000, 6000, 5000) do subgrupo se não estiver nos atributos
   if (!modelo) {
     const matchNum = subUpper.match(/\b(\d{3,5}(?:\s*[A-Z]+)?)\b/);
     if (matchNum) {
       modelo = matchNum[1];
     } else {
-      modelo = it.subgrupo;
+      const partes = (it.subgrupo || '').trim().split(/\s+/);
+      modelo = partes.slice(-2).join(' ') || it.subgrupo;
     }
   }
 
-  return { modelo, ladoTag: ladoManivela };
+  const partesVar = [];
+  if (relacao) partesVar.push(relacao);
+  if (capacidade) partesVar.push(capacidade);
+  if (velMax) partesVar.push(velMax);
+
+  return { modelo, ladoTag: ladoManivela, variacaoExtra: partesVar.join(' • ') };
 }
 
 function analisarMotor(it) {
@@ -1950,6 +1959,51 @@ window.addEventListener('message', function(event) {
     atualizarCarrinho(); // Função que atualiza o total e o badge do carrinho principal
   }
 });
+
+function linhaCarretilha(it) {
+  const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+  const info = analisarCarretilha(it);
+  const calc = it.calculoPreco;
+  const temVariacaoExtra = Boolean(info.variacaoExtra && info.variacaoExtra.trim() !== '');
+
+  // AVISO DE LOTE MÍNIMO 10
+  const PRODUTOS_LOTE_10 = ['8982', '8981', '8980', '5250', '5247'];
+  const badgeLote = PRODUTOS_LOTE_10.includes(String(it.codigo))
+    ? `<span style="background:#f59e0b; color:white; font-size:0.65rem; font-weight:800; padding:2px 6px; border-radius:4px; margin-left:6px;">📦 Mín. 10 un.</span>`
+    : '';
+
+  return `
+    <div class="linha-filho-container">
+      <div class="linha-filho">
+        <div class="l-info-main">
+          <span class="l-cod">${it.codigo}</span>
+          <span class="l-nome" style="font-weight: 800; color: var(--azul-800); margin-right: 6px;">
+            ${escapeHtml(info.modelo)}
+          </span>
+          ${info.ladoTag ? `<span class="tag-lado">${escapeHtml(info.ladoTag)}</span>` : ''}
+          ${badgeLote}
+          ${calc.temOferta ? `<span class="tarja-oferta-item">🔥 -${calc.pctDesconto}%</span>` : ''}
+        </div>
+        <div class="l-direita-wrap">
+          ${temVariacaoExtra ? `<button type="button" class="btn-toggle-var" onclick="toggleVariacao('${it.codigo}', event)">👁️</button>` : ''}
+          ${calc.temOferta ? `
+            <div class="preco-box-oferta">
+              <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
+              <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
+            </div>
+          ` : `<div class="l-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+        </div>
+        <div class="l-qtd" onclick="event.stopPropagation()">
+          <div class="qtd-ctrl">
+            <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+            <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+            <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+          </div>
+        </div>
+      </div>
+      ${temVariacaoExtra ? `<div class="painel-variacao-oculta" id="var-panel-${it.codigo}"><strong>Ficha Técnica:</strong> ${escapeHtml(info.variacaoExtra)}</div>` : ''}
+    </div>`;
+}
 
 function selecionarAcessorio(famId, codigo, url, descricao, nome) {
   const cardFam = document.getElementById(`card-fam-${famId}`);
