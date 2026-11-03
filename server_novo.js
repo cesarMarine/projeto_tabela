@@ -814,36 +814,31 @@ app.get('/api/admin/ofertas-agrupadas', async (req, res) => {
 });
 
 // 2. DELETE: Remove todas as ofertas pertencentes a um determinado Grupo/Subgrupo
+// ROTA PARA REMOVER OFERTAS POR GRUPO / FAMÍLIA OU INDIVIDUAL
 app.delete('/api/ofertas/grupo/:nomeGrupo', async (req, res) => {
-  const { nomeGrupo } = req.params;
-
   try {
-    const { data: produtos, error: errProd } = await supabase
-      .from('scraping_produtos')
-      .select('codigo')
-      .eq('subgrupo', nomeGrupo);
+    const { nomeGrupo } = req.params;
+    const grupoDecodificado = decodeURIComponent(nomeGrupo);
 
-    if (errProd) throw errProd;
+    let query = supabase.from('ofertas').delete();
 
-    if (!produtos || produtos.length === 0) {
-      return res.status(404).json({ ok: false, erro: "Nenhum produto encontrado para este grupo." });
+    if (grupoDecodificado === 'Individual') {
+      // Se for "Individual", remove ofertas que não possuem subgrupo definido ou são 'Individual'
+      query = query.or('subgrupo.eq.Individual,subgrupo.is.null');
+    } else {
+      // Remove pelo nome exato do subgrupo
+      query = query.eq('subgrupo', grupoDecodificado);
     }
 
-    const codigos = produtos.map(p => String(p.codigo));
+    const { error } = await query;
+    if (error) throw error;
 
-    const { error: errDel } = await supabase
-      .from('ofertas')
-      .delete()
-      .in('codigo', codigos);
-
-    if (errDel) throw errDel;
-
-    res.json({ ok: true, mensagem: `Ofertas do grupo "${nomeGrupo}" removidas com sucesso!` });
+    res.json({ ok: true, mensagem: `Ofertas do grupo "${grupoDecodificado}" removidas com sucesso!` });
   } catch (e) {
+    console.error("Erro ao remover grupo de ofertas:", e);
     res.status(500).json({ ok: false, erro: e.message });
   }
 });
-
 
 // POST: Importar Ofertas em Lote via Excel
 app.post('/api/ofertas/lote', async (req, res) => {
