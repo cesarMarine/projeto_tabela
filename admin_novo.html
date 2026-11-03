@@ -1255,19 +1255,23 @@ async function carregarFamiliasCriadas() {
     const gruposMap = {};
 
     j.familias.forEach(fam => {
-      let grupoNome = 'OUTROS';
-      if (fam.itens && fam.itens.length) {
-        const primeiroItem = (todosOsProdutos || []).find(p => fam.itens.includes(p.codigo));
-        if (primeiroItem && (primeiroItem.grupo_scraping || primeiroItem.grupo)) {
-          grupoNome = (primeiroItem.grupo_scraping || primeiroItem.grupo).toUpperCase().trim();
-        }
-      } else if (fam.grupo) {
-        grupoNome = fam.grupo.toUpperCase().trim();
-      }
+  // Usa o parse seguro para desatar o nó dos aspas duplas do banco
+  const itensArray = parseSeguroJSON(fam.subgrupos || fam.itens);
+  fam.itens = itensArray;
 
-      if (!gruposMap[grupoNome]) gruposMap[grupoNome] = [];
-      gruposMap[grupoNome].push(fam);
-    });
+  let grupoNome = 'OUTROS';
+  if (fam.itens && fam.itens.length) {
+    const primeiroItem = (todosOsProdutos || []).find(p => fam.itens.includes(String(p.codigo).trim()));
+    if (primeiroItem && (primeiroItem.grupo_scraping || primeiroItem.grupo)) {
+      grupoNome = (primeiroItem.grupo_scraping || primeiroItem.grupo).toUpperCase().trim();
+    }
+  } else if (fam.grupo) {
+    grupoNome = fam.grupo.toUpperCase().trim();
+  }
+
+  if (!gruposMap[grupoNome]) gruposMap[grupoNome] = [];
+  gruposMap[grupoNome].push(fam);
+});
 
     // 2. Renderiza os blocos separados por Grupo
     let html = '';
@@ -1287,6 +1291,24 @@ async function carregarFamiliasCriadas() {
 
           <div style="display: flex; flex-direction: column; gap: 12px;">
       `;
+
+      // Função auxiliar de parse ultra seguro (trata string simples e string dupla)
+function parseSeguroJSON(dado) {
+  if (!dado) return [];
+  if (Array.isArray(dado)) return dado;
+  
+  let resultado = dado;
+  // Se for string, faz parse
+  if (typeof resultado === 'string') {
+    try { resultado = JSON.parse(resultado); } catch (e) {}
+  }
+  // Se ainda continuar sendo string após o 1º parse (JSON duplo), faz o 2º parse
+  if (typeof resultado === 'string') {
+    try { resultado = JSON.parse(resultado); } catch (e) {}
+  }
+  
+  return Array.isArray(resultado) ? resultado : [];
+}
 
       familiasDoGrupo.forEach(f => {
         const estoqueFam = (window.estoquePorFamilia && window.estoquePorFamilia[f.id]) || 0;

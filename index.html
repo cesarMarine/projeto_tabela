@@ -935,24 +935,21 @@ function renderizar() {
   let html = '';
 
   // 1. NORMALIZAÇÃO DE SEGURANÇA E PARSE DO JSON DO BANCO
-  let familiasOrdenadas = todasFamilias.map(f => {
-    // Tenta 'subgrupos' primeiro (como vem do Supabase) e depois 'itens'
-    let rawItens = f.subgrupos || f.itens || [];
-    if (typeof rawItens === 'string') {
-      try { rawItens = JSON.parse(rawItens); } catch (e) { rawItens = []; }
-    }
-    if (!Array.isArray(rawItens)) rawItens = [];
+let familiasOrdenadas = todasFamilias.map(f => {
+  let rawItens = f.subgrupos || f.itens || [];
+  
+  // Trata JSON duplo (ex: "\"[\\\"10076\\\"]\"")
+  if (typeof rawItens === 'string') {
+    try { rawItens = JSON.parse(rawItens); } catch (e) {}
+  }
+  if (typeof rawItens === 'string') {
+    try { rawItens = JSON.parse(rawItens); } catch (e) {}
+  }
+  if (!Array.isArray(rawItens)) rawItens = [];
 
-    // Normaliza todos os códigos para String sem espaços
-    const codigosLimpos = rawItens.map(c => String(c).trim());
+  const codigosLimpos = rawItens.map(c => String(c).trim());
 
-    let rawSubs = f.subdivisoes || [];
-    if (typeof rawSubs === 'string') {
-      try { rawSubs = JSON.parse(rawSubs); } catch (e) { rawSubs = []; }
-    }
-    if (!Array.isArray(rawSubs)) rawSubs = [];
-
-    return {
+  return {
       ...f,
       itens: codigosLimpos,
       subdivisoes: rawSubs
