@@ -313,8 +313,25 @@ let clienteLogado = null;
 let porcentagemAcrescimo = 0;
 let mapaOfertas = {}; 
 let marcaAtual = '';
+const PRODUTOS_LOTE_10 = ['5795', '5796'];
 
 const BUCKET_ICONIS = 'https://gpzqzwrqndawhhglycat.supabase.co/storage/v1/object/public/icones_area_trabalho/';
+
+
+function calcularQtdComLote(codigoProduto, quantidadeInserida) {
+  const qtd = parseInt(quantidadeInserida, 10) || 0;
+  if (qtd <= 0) return 0;
+
+  // Se o produto estiver na lista dos 5 modelos
+  if (PRODUTOS_LOTE_10.includes(String(codigoProduto))) {
+    // Se a pessoa digitou 1 até 10, vira 10. Se digitou 12, arredonda para 20 (próximo múltiplo)
+    const resto = qtd % 10;
+    if (resto === 0) return qtd;
+    return Math.ceil(qtd / 10) * 10;
+  }
+
+  return qtd; // Produtos normais seguem com a quantidade digitada
+}
 
 function ativarWhatsAppVendedor() {
   if (clienteLogado && clienteLogado.vendedor && clienteLogado.vendedor.whatsapp) {
@@ -2167,30 +2184,32 @@ function renderFamiliaComum(fam, itens) {
   const itensComEstoque = itens.filter(it => it.estoque > 0);
   if (itensComEstoque.length === 0) return '';
 
-  const temLancamentoNaFamilia = itensComEstoque.some(it => it.is_lancamento);
   itensComEstoque.sort((a, b) => a.ordem_excel - b.ordem_excel);
   
   const linhasHtml = itensComEstoque.map(it => {
     const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
     const calc = it.calculoPreco;
 
+    // 📌 BADGE DE LOTE DE 10 UNIDADES
+    const badgeLote = PRODUTOS_LOTE_10.includes(String(it.codigo))
+      ? `<span style="background:#f59e0b; color:white; font-size:0.65rem; font-weight:800; padding:2px 6px; border-radius:4px; margin-left:6px; white-space:nowrap;">📦 Mín. 10 un.</span>`
+      : '';
+
     return `
       <div class="linha-filho">
-        <div class="l-info-main">
-          <span class="l-cod">${it.codigo}</span>
-          <span class="l-nome">
-            ${escapeHtml(it.subgrupo)} 
-            ${calc.temOferta ? `<span class="tarja-oferta-item">🔥 -${calc.pctDesconto}%</span>` : ''}
-          </span>
+        <div class="l-cod">${it.codigo}</div>
+        <div class="l-nome">
+          ${escapeHtml(it.subgrupo)}
+          ${badgeLote}
+          ${calc.temOferta ? `<span class="tarja-oferta-item">🔥 -${calc.pctDesconto}%</span>` : ''}
         </div>
-        <div class="l-direita-wrap">
-          ${calc.temOferta ? `
-            <div class="preco-box-oferta">
-              <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
-              <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
-            </div>
-          ` : `<div class="l-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
-        </div>
+        <div class="l-var-col"></div>
+        ${calc.temOferta ? `
+          <div class="preco-box-oferta">
+            <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
+            <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
+          </div>
+        ` : `<div class="l-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
         <div class="l-qtd" onclick="event.stopPropagation()">
           <div class="qtd-ctrl"><button onclick="mudarQtd('${it.codigo}', -1)">−</button><input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)"><button onclick="mudarQtd('${it.codigo}', 1)">+</button></div>
         </div>
@@ -2199,19 +2218,11 @@ function renderFamiliaComum(fam, itens) {
 
   return `
     <div class="familia-bloco">
-      <div class="familia-head">
-        <h2>${escapeHtml(fam.nome)}</h2> 
-        ${renderMarcaBadge(itens[0].marca)}
-      </div>
+      <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
       <div class="familia-card" id="card-fam-${fam.id}">
-        <div class="familia-side">
-          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)" style="position:relative;">
-            ${temLancamentoNaFamilia ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
-            ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
-          </div>
-        </div>
+        <div class="familia-side"><div class="familia-foto-principal" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
         <div class="familia-info">
-          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Detalhes</button>
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes</button>
           <div class="lista-filhos">${linhasHtml}</div>
         </div>
       </div>
@@ -2253,20 +2264,56 @@ function fecharModal(ev, force) {
 }
 
 function buscarItem(codigo) { return todosItens.find(i => i.codigo === codigo); }
-function mudarQtd(cod, delta) { const a = carrinho[cod] ? carrinho[cod].qtd : 0; setQtd(cod, a + delta); }
+function mudarQtd(cod, delta) { 
+  const a = carrinho[cod] ? carrinho[cod].qtd : 0;
+  
+  // Se for um produto de lote 10, o botão + ou - avança de 10 em 10
+  if (PRODUTOS_LOTE_10.includes(String(cod))) {
+    const passo = delta > 0 ? 10 : -10;
+    setQtd(cod, a + passo);
+  } else {
+    setQtd(cod, a + delta);
+  }
+}
 function setQtd(cod, valor) {
-  const q = parseInt(valor) || 0; const item = buscarItem(cod);
-  if (q <= 0) delete carrinho[cod];
-  else carrinho[cod] = { qtd: q, precoBase: item.precoBase, desc: item.subgrupo, img: item.imagem_url };
-  
+  let q = parseInt(valor) || 0; 
+  const item = buscarItem(cod);
+
+  // REGRA DO LOTE DE 10 UNIDADES
+  if (q > 0 && PRODUTOS_LOTE_10.includes(String(cod))) {
+    // Arredonda para o múltiplo de 10 mais próximo para cima (ex: 1->10, 12->20)
+    const resto = q % 10;
+    if (resto !== 0) {
+      q = Math.ceil(q / 10) * 10;
+    }
+  }
+
+  if (q <= 0) {
+    delete carrinho[cod];
+  } else {
+    carrinho[cod] = { 
+      qtd: q, 
+      precoBase: item.precoBase, 
+      desc: item.subgrupo, 
+      img: item.imagem_url 
+    };
+  }
+
+  // Atualiza os inputs na tela
   document.querySelectorAll(`input[onchange*="'${cod}'"]`).forEach(inp => inp.value = q);
-  
+
+  // Destaque visual do card
   const card = document.getElementById(`mini-${cod}`);
   if (card) {
-    const badge = card.querySelector('.anzol-badge') || card.querySelector('.isca-badge') || card.querySelector('.molinete-badge');
-    if (q > 0) { card.classList.add('tem-qtd'); if (badge) badge.textContent = q; }
-    else card.classList.remove('tem-qtd');
+    const badge = card.querySelector('.anzol-badge') || card.querySelector('.isca-badge');
+    if (q > 0) { 
+      card.classList.add('tem-qtd'); 
+      if (badge) badge.textContent = q; 
+    } else {
+      card.classList.remove('tem-qtd');
+    }
   }
+
   atualizarCarrinho();
 }
 
