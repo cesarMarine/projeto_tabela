@@ -109,7 +109,8 @@ app.post('/api/importar/sistema', upload.single('arquivo'), async (req, res) => 
 // ==========================================
 app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) => {
   try {
-    if (!req.file) return res.status(400).json({ erro: 'Nenhum arquivo.' });
+    if (!req.file) return res.status(400).json({ erro: 'Nenhum arquivo enviado.' });
+    
     const dados = JSON.parse(req.file.buffer.toString('utf8'));
     const lista = Array.isArray(dados) ? dados : (dados.produtos || []);
 
@@ -119,41 +120,61 @@ app.post('/api/importar/scraping', upload.single('arquivo'), async (req, res) =>
     for (const p of lista) {
       const variacoes = (p.variacoes && p.variacoes.length > 0) ? p.variacoes : [p];
 
+      // Tenta inferir o grupo caso 'p.grupo' venha vazio no JSON
+      let grupoDetectado = (p.grupo || '').trim();
+      let subgrupoDetectado = (p.subgrupo || p.categoria || '').trim();
+
+      if (!grupoDetectado) {
+        const descUpper = (p.descricao_longa || p.titulo || p.nome || '').toUpperCase();
+        if (descUpper.includes('ALICATE')) grupoDetectado = 'ALICATES';
+        else if (descUpper.includes('CAMISA') || descUpper.includes('VESTUARIO') || descUpper.includes('BONÉ')) grupoDetectado = 'VESTUARIO E ACESSORIOS';
+        else if (descUpper.includes('ANZOL')) grupoDetectado = 'ANZOIS';
+        else if (descUpper.includes('ISCA')) grupoDetectado = 'ISCAS ARTIFICIAIS';
+      }
+
       for (const v of variacoes) {
         const codVar = limpaZero(v.codigo || p.codigo);
         if (!codVar) continue;
 
         const { imagem, codigo, cod_barras, ...atributos } = v;
 
-        mapaLote.set(codVar, {
+        const payload = {
           site: p.site || 'marine',
-          grupo: p.grupo || '',
-          subgrupo: p.subgrupo || '',
           marca: p.marca || '',
-          descricao_longa: p.descricao_longa || '',
+          descricao_longa: p.descricao_longa || p.nome || '',
           url_origem: p.url_origem || '',
           codigo: codVar,
-          cod_barras: soDigitos(cod_barras || p.cod_barras),
+          cod_barras: typeof soDigitos === 'function' ? soDigitos(cod_barras || p.cod_barras) : String(cod_barras || p.cod_barras || '').replace(/\D/g, ''),
           imagem_url: imagem || p.imagem_url || '',
           atributos_json: JSON.stringify(atributos || {}),
           data_scraping: new Date().toISOString()
-        });
+        };
+
+        // APENAS ATUALIZA GRUPO/SUBGRUPO SE ELES VIEREM PREENCHIDOS
+        // (Evita sobrescrever categorias existentes no banco com valores vazios)
+        if (grupoDetectado) payload.grupo = grupoDetectado;
+        if (subgrupoDetectado) payload.subgrupo = subgrupoDetectado;
+
+        mapaLote.set(codVar, payload);
       }
     }
 
     const batch = Array.from(mapaLote.values());
 
     if (batch.length > 0) {
-      const { error } = await supabase.from('scraping_produtos').upsert(batch, { onConflict: 'codigo' });
+      const { error } = await supabase
+        .from('scraping_produtos')
+        .upsert(batch, { onConflict: 'codigo' });
+        
       if (error) throw new Error(error.message);
     }
 
     res.json({ ok: true, inseridos: batch.length });
   } catch (e) { 
+    console.error('Erro na importação do scraping:', e);
     res.status(500).json({ erro: e.message }); 
   }
 });
-
 // ==========================================
 // STATUS
 // ==========================================
