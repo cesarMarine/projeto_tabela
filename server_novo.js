@@ -816,36 +816,37 @@ app.get('/api/admin/ofertas-agrupadas', async (req, res) => {
 // 2. DELETE: Remove todas as ofertas pertencentes a um determinado Grupo/Subgrupo
 // ROTA PARA REMOVER OFERTAS POR GRUPO / FAMÍLIA OU INDIVIDUAL
 // ROTA PARA REMOVER OFERTAS POR GRUPO / FAMÍLIA / DESCONTO
+// ROTA PARA REMOVER OFERTAS POR GRUPO / INDIVIDUAL
 app.delete('/api/ofertas/grupo/:nomeGrupo', async (req, res) => {
   try {
     const { nomeGrupo } = req.params;
-    const { desconto } = req.query; // Pega o desconto opcional via Query String (?desconto=10)
+    const { desconto } = req.query;
     const grupoDecodificado = decodeURIComponent(nomeGrupo);
 
     let query = supabase.from('ofertas').delete();
 
-    // Se o grupo for "Individual" ou nulo
     if (grupoDecodificado === 'Individual') {
-      query = query.or('subgrupo.eq.Individual,subgrupo.is.null,subgrupo.eq.');
+      // Se for Individual, remove filtrando pela porcentagem de desconto informada
+      if (desconto) {
+        query = query.eq('desconto_porcentagem', Number(desconto));
+      } else {
+        // Se não passou desconto, limpa todas as ofertas sem grupo
+        query = query.or('grupo.is.null,grupo.eq.Individual,grupo.eq.');
+      }
     } else {
-      query = query.eq('subgrupo', grupoDecodificado);
-    }
-
-    // Se passou a porcentagem de desconto específica, filtra por ela também
-    if (desconto) {
-      query = query.eq('desconto_porcentagem', Number(desconto));
+      // Tenta filtrar pela coluna 'grupo' ou 'nome_grupo' (se existir)
+      query = query.eq('grupo', grupoDecodificado);
     }
 
     const { error } = await query;
     if (error) throw error;
 
-    res.json({ ok: true, mensagem: `Ofertas removidas com sucesso!` });
+    res.json({ ok: true, mensagem: `Oferta(s) removida(s) com sucesso!` });
   } catch (e) {
     console.error("ERRO AO DELETAR OFERTAS:", e.message);
     res.status(500).json({ ok: false, erro: e.message });
   }
 });
-
 // POST: Importar Ofertas em Lote via Excel
 app.post('/api/ofertas/lote', async (req, res) => {
   const { ofertas } = req.body;
