@@ -905,7 +905,21 @@ function trocarGrupo(grupo, btn) {
 function filtrar() {
   let lista = todosItens;
   if (grupoAtual !== '__TODOS__' && grupoAtual !== '__OFERTAS__') {
-    lista = lista.filter(it => it.grupo === grupoAtual);
+    const grupoSelUpper = grupoAtual.toUpperCase().trim();
+
+    lista = lista.filter(it => {
+      const grupoItemUpper = (it.grupo || '').toUpperCase().trim();
+
+      // Trata Vestuário e Acessórios mesmo que haja pequenas variações de nome no banco
+      if (grupoSelUpper.includes('VESTUAR')) {
+        return grupoItemUpper.includes('VESTUAR');
+      }
+      if (grupoSelUpper.includes('ACESSORIO')) {
+        return grupoItemUpper.includes('ACESSORIO');
+      }
+
+      return grupoItemUpper === grupoSelUpper;
+    });
   }
   if (marcaAtual) {
     lista = lista.filter(it => it.marca.toUpperCase() === marcaAtual.toUpperCase());
