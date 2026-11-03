@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🖤 Black November | Ofertas Exclusivas</title>
+<title>🔥 Ofertas Imbatíveis da Semana</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   :root {
@@ -84,213 +84,6 @@
   /* CARRINHO FLUTUANTE */
   .fab-carrinho { position:fixed; bottom:24px; right:24px; background:var(--azul-800); color:white; width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; box-shadow:0 4px 16px rgba(0,51,102,0.4); cursor:pointer; z-index:150; }
   .fab-qtd { position:absolute; top:-5px; right:-5px; background:var(--vermelho-600); color:white; font-size:12px; font-weight:900; min-width:22px; height:22px; border-radius:11px; display:flex; align-items:center; justify-content:center; border:2px solid white; }
-
-  /* ===== BLACK NOVEMBER: IDENTIDADE VISUAL PREMIUM ===== */
-  :root {
-    --vermelho-900:#7f1d1d;
-    --vermelho-600:#dc2626;
-    --vermelho-500:#ef4444;
-    --amarelo-400:#f5c451;
-    --amarelo-500:#d9a72e;
-    --azul-900:#111827;
-    --azul-800:#171717;
-    --cinza-50:#fafafa;
-    --cinza-100:#f3f4f6;
-    --cinza-200:#e5e7eb;
-    --cinza-700:#374151;
-    --verde:#12965f;
-    --verde-hover:#087a4b;
-  }
-
-  body {
-    background:
-      radial-gradient(ellipse at 50% -15%, rgba(245,196,81,.12), transparent 42%),
-      #f1f2f4;
-    color:#171717;
-  }
-
-  .hero-ofertas {
-    isolation:isolate;
-    overflow:hidden;
-    padding:clamp(34px,5vw,62px) 20px 38px;
-    background:
-      radial-gradient(circle at 15% 20%, rgba(245,196,81,.16), transparent 24%),
-      radial-gradient(circle at 88% 80%, rgba(220,38,38,.18), transparent 26%),
-      linear-gradient(135deg,#050505 0%,#171717 52%,#090909 100%);
-    border-bottom:4px solid #f5c451;
-    box-shadow:0 12px 35px rgba(0,0,0,.24);
-  }
-  .hero-ofertas::before,
-  .hero-ofertas::after {
-    content:"";
-    position:absolute;
-    z-index:-1;
-    width:240px;height:240px;
-    border:1px solid rgba(245,196,81,.18);
-    border-radius:50%;
-    pointer-events:none;
-  }
-  .hero-ofertas::before { top:-155px;left:-75px; }
-  .hero-ofertas::after { bottom:-185px;right:-55px;width:300px;height:300px; }
-  .hero-ofertas h1 {
-    color:#fff;
-    font-size:clamp(2.25rem,6vw,4.5rem);
-    font-weight:1000;
-    letter-spacing:-2px;
-    line-height:1;
-    text-shadow:0 5px 24px rgba(0,0,0,.65);
-    margin-bottom:14px;
-  }
-  .hero-ofertas p {
-    color:#e5e5e5;
-    font-size:clamp(.92rem,2vw,1.08rem);
-    line-height:1.55;
-  }
-  .badge-semana {
-    margin-top:18px;
-    padding:8px 18px;
-    border:1px solid #ffe09a;
-    border-radius:999px;
-    color:#171717;
-    background:linear-gradient(135deg,#ffe7a3,#d9a72e);
-    box-shadow:0 5px 18px rgba(245,196,81,.22);
-    font-size:.72rem;
-    letter-spacing:.7px;
-  }
-
-  .bar-cliente {
-    max-width:1300px;
-    padding:13px 20px;
-    border:1px solid #e5e5e5;
-    border-top:0;
-    box-shadow:0 8px 22px rgba(0,0,0,.045);
-  }
-  .btn-voltar-cat {
-    background:#171717;
-    border:1px solid #c99a2e;
-    color:#f8d985;
-    transition:transform .2s,background .2s;
-  }
-  .btn-voltar-cat:hover { background:#303030;transform:translateY(-1px); }
-
-  .encarte-container { margin-top:30px; }
-  .grade-ofertas { gap:22px; }
-
-  .card-oferta {
-    border:1px solid #e3d6b7;
-    border-radius:18px;
-    background:#fff;
-    box-shadow:0 8px 26px rgba(0,0,0,.075);
-    transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease;
-  }
-  .card-oferta:hover {
-    transform:translateY(-6px);
-    border-color:#d6aa42;
-    box-shadow:0 18px 38px rgba(0,0,0,.14);
-  }
-  .selo-desconto {
-    top:13px;left:13px;
-    padding:8px 12px;
-    color:#171717;
-    background:linear-gradient(135deg,#ffe7a3,#d6a32d 75%);
-    border:2px solid #fff;
-    border-radius:9px;
-    box-shadow:0 5px 15px rgba(0,0,0,.22);
-    font-size:1rem;
-    letter-spacing:.2px;
-  }
-  .img-box {
-    aspect-ratio:1/1;
-    padding:20px;
-    background:linear-gradient(145deg,#fff,#f7f7f7);
-  }
-  .img-box img {
-    transition:transform .3s ease;
-  }
-  .card-oferta:hover .img-box img { transform:scale(1.045); }
-
-  .corpo-oferta {
-    padding:17px;
-    background:#fff;
-    border-top:1px solid #eee8dc;
-  }
-  .marca-tag {
-    color:#7b5a16;
-    background:#fbf2dc;
-    border:1px solid #efdfb8;
-    letter-spacing:.55px;
-  }
-  .titulo-prod {
-    min-height:2.5em;
-    color:#171717;
-    font-size:1rem;
-  }
-  .bloco-preco-balcao {
-    padding:13px 10px;
-    background:linear-gradient(145deg,#fffaf0,#fff4dc);
-    border:1px solid #e8cf91;
-    border-radius:12px;
-  }
-  .txt-de { color:#858585;font-size:.82rem; }
-  .txt-por {
-    margin-top:3px;
-    color:#b42318;
-    font-size:1.55rem;
-    letter-spacing:-.4px;
-  }
-  .btn-add-oferta {
-    padding:13px;
-    border-radius:10px;
-    background:linear-gradient(135deg,#159b63,#087849);
-    box-shadow:0 5px 13px rgba(8,120,73,.18);
-    font-weight:900;
-  }
-  .btn-add-oferta:hover {
-    background:linear-gradient(135deg,#087849,#06613b);
-    transform:translateY(-1px);
-  }
-
-  .box-login {
-    border:1px solid #e7d29c;
-    box-shadow:0 22px 70px rgba(0,0,0,.35);
-  }
-  .box-login h2 { color:#171717 !important; }
-  .box-login button {
-    background:linear-gradient(135deg,#171717,#333) !important;
-    border:1px solid #d6aa42 !important;
-  }
-  .fab-carrinho {
-    background:linear-gradient(135deg,#171717,#303030);
-    border:2px solid #d6aa42;
-    box-shadow:0 8px 24px rgba(0,0,0,.28);
-  }
-  .fab-qtd {
-    color:#171717;
-    background:#f5c451;
-    border-color:#171717;
-  }
-
-  @media (max-width:600px) {
-    .hero-ofertas { padding:34px 16px 30px; }
-    .hero-ofertas h1 { letter-spacing:-1.3px; }
-    .bar-cliente { margin:0 10px;padding:10px 12px;gap:10px; }
-    .btn-voltar-cat { font-size:.72rem;padding:8px 10px; }
-    #cliInfo { font-size:.72rem !important;text-align:right; }
-    .encarte-container { padding:0 12px;margin-top:20px; }
-    .grade-ofertas { grid-template-columns:repeat(2,minmax(0,1fr));gap:12px; }
-    .card-oferta { border-radius:13px; }
-    .img-box { padding:12px; }
-    .corpo-oferta { padding:11px; }
-    .titulo-prod { font-size:.84rem;margin-bottom:9px; }
-    .bloco-preco-balcao { padding:9px 6px;margin-bottom:9px; }
-    .txt-por { font-size:1.18rem; }
-    .btn-add-oferta { padding:10px 6px;font-size:.75rem; }
-    .selo-desconto { top:8px;left:8px;padding:5px 8px;font-size:.78rem; }
-  }
-  @media (max-width:360px) {
-    .grade-ofertas { grid-template-columns:1fr; }
-  }
-
 </style>
 </head>
 <body>
@@ -305,9 +98,9 @@
 </div>
 
 <header class="hero-ofertas">
-  <h1>🖤 BLACK <span style="color:#f5c451">NOVEMBER</span></h1>
-  <p>O mês inteiro de ofertas imperdíveis. Aproveite condições especiais e garanta seus produtos!</p>
-  <span class="badge-semana">O MÊS INTEIRO DE OFERTAS • EXCLUSIVO CNPJ</span>
+  <h1>🔥 ENCARTE DE OFERTAS</h1>
+  <p>Preços e condições especiais válidas enquanto durarem os estoques!</p>
+  <span class="badge-semana">OFERTAS DA SEMANA</span>
 </header>
 
 <div class="bar-cliente">
