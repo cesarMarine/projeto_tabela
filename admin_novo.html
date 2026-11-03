@@ -1143,34 +1143,52 @@ function filtrarTabelaEstoque() {
 
 async function carregarDados() {
   try {
-    const rf = await fetch('/api/familias'); const jf = await rf.json();
+    const rf = await fetch('/api/familias'); 
+    const jf = await rf.json();
     const codigosOcupados = new Set();
-    if (jf.ok) jf.familias.forEach(f => f.itens.forEach(c => codigosOcupados.add(c)));
 
-    const r = await fetch('/api/catalogo'); const j = await r.json();
-    todosOsProdutos = j.itens;
+    if (jf.ok && jf.familias) {
+      jf.familias.forEach(f => {
+        // Trata os itens/subgrupos de forma segura
+        const itensDaFamilia = parseSeguroJSON(f.subgrupos || f.itens);
+        itensDaFamilia.forEach(c => codigosOcupados.add(String(c).trim()));
+      });
+    }
 
-    const re = await fetch('/api/estoque-subgrupos'); const je = await re.json();
+    const r = await fetch('/api/catalogo'); 
+    const j = await r.json();
+    todosOsProdutos = j.itens || [];
+
+    const re = await fetch('/api/estoque-subgrupos'); 
+    const je = await re.json();
     window.estoquePorSub = je.estoquePorSub || {};
     window.estoquePorFamilia = je.estoquePorFamilia || {};
     window.ordemPorSub = je.ordemPorSubgrupo || {};
 
     const map = {};
-    j.itens.forEach(i => { if(i.subgrupo_scraping) map[i.subgrupo_scraping] = (map[i.subgrupo_scraping]||0)+1; });
+    todosOsProdutos.forEach(i => { 
+      if (i.subgrupo_scraping) map[i.subgrupo_scraping] = (map[i.subgrupo_scraping] || 0) + 1; 
+    });
     
     const temOrdemExcel = Object.keys(window.ordemPorSub).length > 0;
     todosSubgrupos = Object.keys(map).sort((a, b) => {
       if (temOrdemExcel) {
-        const oa = window.ordemPorSub[a] ?? 999999; const ob = window.ordemPorSub[b] ?? 999999;
+        const oa = window.ordemPorSub[a] ?? 999999; 
+        const ob = window.ordemPorSub[b] ?? 999999;
         if (oa !== ob) return oa - ob;
       }
       return a.localeCompare(b);
-    }).map(s => ({ nome: s, qtd: map[s], ocupado: j.itens.filter(i => i.subgrupo_scraping === s).every(i => codigosOcupados.has(i.codigo)) }))
-      .filter(s => !s.ocupado);
+    }).map(s => ({ 
+      nome: s, 
+      qtd: map[s], 
+      ocupado: todosOsProdutos.filter(i => i.subgrupo_scraping === s).every(i => codigosOcupados.has(String(i.codigo).trim())) 
+    })).filter(s => !s.ocupado);
       
     filtrarListaSubgrupos(); 
     await carregarFamiliasCriadas();
-  } catch(e) { console.error(e); }
+  } catch(e) { 
+    console.error("Erro em carregarDados:", e); 
+  }
 }
 
 function filtrarListaSubgrupos() {
