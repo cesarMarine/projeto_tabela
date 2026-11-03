@@ -1031,6 +1031,24 @@ app.post('/api/pedidos', async (req, res) => {
   }
 });
 
+// DELETAR RASCUNHO/PEDIDO
+app.delete('/api/pedidos/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Remove primeiro os itens por conta da integridade/referência
+    await supabase.from('pedidos02_itens').delete().eq('pedido_id', id);
+    
+    // Remove o cabeçalho do pedido
+    const { error } = await supabase.from('pedidos02').delete().eq('id', id);
+    if (error) throw error;
+
+    res.json({ ok: true, mensagem: 'Rascunho excluído com sucesso!' });
+  } catch (e) {
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
+
 app.get('/api/vendedor/:codigo/pedidos', async (req, res) => {
   try {
     const { data: pedidos, error } = await supabase.from('pedidos02').select('*').eq('codigo_representante', req.params.codigo).order('id', { ascending: false });
@@ -1263,15 +1281,14 @@ app.get('/api/admin/produtos-estoque', async (req, res) => {
 // ==========================================
 // ROTA: PEDIDOS DO CLIENTE (Corrigida)
 // ==========================================
-// 1. ROTA PARA LISTAR OS PEDIDOS/RASCUNHOS DO CLIENTE
 app.get('/api/cliente/:cnpj/pedidos', async (req, res) => {
   try {
     const { cnpj } = req.params;
     const { data: pedidos, error } = await supabase
-      .from('pedidos')
-      .select('*, itens:pedidos_itens(*)')
+      .from('pedidos02')
+      .select('*, itens:pedidos02_itens(*)')
       .eq('cnpj_cliente', cnpj)
-      .order('data_criacao', { ascending: false });
+      .order('id', { ascending: false });
 
     if (error) throw error;
     res.json({ ok: true, pedidos: pedidos || [] });
@@ -1281,6 +1298,7 @@ app.get('/api/cliente/:cnpj/pedidos', async (req, res) => {
 });
 
 // 2. ROTA PARA CRIAR OU ATUALIZAR PEDIDO (RASCUNHO OU ENVIADO)
+// 2. SALVAR RASCUNHO OU FINALIZAR PEDIDO
 app.post('/api/pedidos', async (req, res) => {
   try {
     const { id, cnpj_cliente, codigo_representante, status = 'ENVIADO', total, itens } = req.body;
@@ -1288,21 +1306,27 @@ app.post('/api/pedidos', async (req, res) => {
     let pedidoId = id;
 
     if (pedidoId) {
-      // Atualizar pedido existente (ex: Rascunho)
+      // Atualiza o rascunho / pedido existente
       const { error: errUpdate } = await supabase
-        .from('pedidos')
-        .update({ total, status, data_atualizacao: new Date().toISOString() })
+        .from('pedidos02')
+        .update({ total, status })
         .eq('id', pedidoId);
 
       if (errUpdate) throw errUpdate;
 
-      // Limpa os itens antigos para re-inserir os atualizados
-      await supabase.from('pedidos_itens').delete().eq('pedido_id', pedidoId);
+      // Substitui os itens antigos pelos novos do carrinho
+      await supabase.from('pedidos02_itens').delete().eq('pedido_id', pedidoId);
     } else {
-      // Inserir novo pedido
+      // Cria um novo pedido
       const { data: novoPed, error: errInsert } = await supabase
-        .from('pedidos')
-        .insert([{ cnpj_cliente, codigo_representante, status, total }])
+        .from('pedidos02')
+        .insert([{ 
+          cnpj_cliente, 
+          codigo_representante, 
+          status, 
+          total,
+          data_criacao: new Date().toISOString()
+        }])
         .select()
         .single();
 
@@ -1310,20 +1334,20 @@ app.post('/api/pedidos', async (req, res) => {
       pedidoId = novoPed.id;
     }
 
-    // Inserir os itens do pedido
+    // Grava os itens vinculados ao ID do pedido
     const itensFormatados = itens.map(it => ({
       pedido_id: pedidoId,
-      codigo_produto: it.codigo,
+      codigo_produto: String(it.codigo),
       descricao: it.desc,
-      quantidade: it.qtd,
-      preco_unitario: it.precoBase,
-      preco_final: it.precoFinal
+      quantidade: Number(it.qtd),
+      preco_base: Number(it.precoBase),
+      preco_final: Number(it.precoFinal)
     }));
 
-    const { error: errItens } = await supabase.from('pedidos_itens').insert(itensFormatados);
+    const { error: errItens } = await supabase.from('pedidos02_itens').insert(itensFormatados);
     if (errItens) throw errItens;
 
-    res.json({ ok: true, id: pedidoId, mensagem: 'Pedido salvo com sucesso!' });
+    res.json({ ok: true, id: pedidoId, mensagem: 'Gravado com sucesso!' });
   } catch (e) {
     res.status(500).json({ ok: false, erro: e.message });
   }

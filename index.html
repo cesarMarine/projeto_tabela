@@ -504,6 +504,7 @@ function sairCliente() {
 let pedidoEmEdicaoId = null;
 
 // ABRIR MEUS PEDIDOS / HISTÓRICO / RASCUNHOS
+// ABRIR MEUS PEDIDOS / HISTÓRICO / RASCUNHOS
 async function abrirMeusPedidos() {
   if (!clienteLogado) return;
   document.getElementById('modalTitulo').textContent = '📋 Meus Pedidos e Rascunhos';
@@ -515,15 +516,17 @@ async function abrirMeusPedidos() {
     const j = await r.json();
 
     if (!j.ok || !j.pedidos.length) {
-      document.getElementById('modalBody').innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">Você ainda não possui nenhum pedido registrado.</p>';
+      document.getElementById('modalBody').innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">Você ainda não possui nenhum pedido ou rascunho registrado.</p>';
       return;
     }
 
     const html = j.pedidos.map(p => {
-      const dataStr = new Date(p.data_criacao || p.created_at).toLocaleString('pt-BR');
-      const isRascunho = p.status === 'RASCUNHO';
+      const dataStr = new Date(p.data_criacao).toLocaleString('pt-BR');
+      const statusUpper = (p.status || '').toUpperCase();
+      const isRascunho = statusUpper === 'RASCUNHO';
+
       const badgeStatus = isRascunho 
-        ? '<span style="background:#fef3c7; color:#d97706; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:800;">📝 RASCUNHO</span>'
+        ? '<span style="background:#fef3c7; color:#d97706; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:800;">📝 RASCUNHO EM ABERTO</span>'
         : '<span style="background:#d1fae5; color:#059669; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:800;">✅ ENVIADO</span>';
 
       const itensTable = (p.itens || []).map(it => `
@@ -534,7 +537,6 @@ async function abrirMeusPedidos() {
         </tr>
       `).join('');
 
-      // Serializa os itens para poder carregar no carrinho ao clicar em Editar
       const jsonItens = escapeHtml(JSON.stringify(p.itens || []));
 
       return `
@@ -551,20 +553,24 @@ async function abrirMeusPedidos() {
             <tbody>${itensTable}</tbody>
           </table>
 
-          <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed #cbd5e1; padding-top:6px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed #cbd5e1; padding-top:6px; flex-wrap:wrap; gap:6px;">
             <div style="font-weight:900; color:#10b981; font-size:0.9rem;">
               Total: R$ ${fmtMoeda(p.total)}
             </div>
             <div style="display:flex; gap:6px;">
               ${isRascunho ? `
+                <button onclick="deletarRascunho(${p.id})" 
+                        style="background:#ef4444; color:white; border:none; padding:6px 10px; border-radius:6px; font-size:0.75rem; font-weight:800; cursor:pointer;">
+                  🗑️ Excluir
+                </button>
                 <button onclick="carregarPedidoParaEdicao(${p.id}, '${jsonItens}')" 
-                        style="background:#2563eb; color:white; border:none; padding:4px 10px; border-radius:6px; font-size:0.75rem; font-weight:800; cursor:pointer;">
-                  ✏️ Editar / Continuar
+                        style="background:#2563eb; color:white; border:none; padding:6px 10px; border-radius:6px; font-size:0.75rem; font-weight:800; cursor:pointer;">
+                  ✏️ Continuar Pedido
                 </button>
               ` : `
-                <button onclick="carregarPedidoParaEdicao(${p.id}, '${jsonItens}')" 
-                        style="background:#003366; color:white; border:none; padding:4px 10px; border-radius:6px; font-size:0.75rem; font-weight:800; cursor:pointer;">
-                  📋 Reorganizar / Reutilizar
+                <button onclick="carregarPedidoParaEdicao(null, '${jsonItens}')" 
+                        style="background:#003366; color:white; border:none; padding:6px 10px; border-radius:6px; font-size:0.75rem; font-weight:800; cursor:pointer;">
+                  📋 Reutilizar Itens
                 </button>
               `}
             </div>
@@ -576,6 +582,30 @@ async function abrirMeusPedidos() {
     document.getElementById('modalBody').innerHTML = html;
   } catch (e) {
     document.getElementById('modalBody').innerHTML = '<p style="text-align:center; color:#ef4444; padding:20px;">Erro ao carregar os pedidos.</p>';
+  }
+}
+
+// DELETAR RASCUNHO
+async function deletarRascunho(idPedido) {
+  if (!confirm(`Tem certeza que deseja excluir o rascunho #${idPedido}?`)) return;
+
+  try {
+    const r = await fetch(`/api/pedidos/${idPedido}`, { method: 'DELETE' });
+    const j = await r.json();
+
+    if (j.ok) {
+      if (pedidoEmEdicaoId === idPedido) {
+        carrinho = {};
+        pedidoEmEdicaoId = null;
+        atualizarCarrinho();
+      }
+      alert('🗑️ Rascunho excluído!');
+      abrirMeusPedidos(); // Recarrega o modal
+    } else {
+      alert('❌ Erro ao excluir: ' + j.erro);
+    }
+  } catch (e) {
+    alert('❌ Erro de conexão ao excluir rascunho.');
   }
 }
 
@@ -947,8 +977,25 @@ async function finalizarPedido() {
   });
 
   if (itens.length === 0) { alert('Seu carrinho está vazio.'); return; }
+
+  // VERIFICA SE EXISTE RASCUNHO EM ABERTO ANTES DE ENVIAR (SE NÃO ESTIVER EDITANDO O PRÓPRIO RASCUNHO)
+  if (!pedidoEmEdicaoId) {
+    try {
+      const r = await fetch(`/api/cliente/${encodeURIComponent(clienteLogado.cnpj)}/pedidos`);
+      const j = await r.json();
+      const rascunhoExistente = j.pedidos?.find(p => (p.status || '').toUpperCase() === 'RASCUNHO');
+
+      if (rascunhoExistente) {
+        alert(`⚠️ Você já possui o Rascunho #${rascunhoExistente.id} em aberto! Clique no botão "📋 Pedidos" no topo para editá-lo ou excluí-lo antes de enviar um novo.`);
+        return;
+      }
+    } catch (e) {
+      console.error("Erro ao validar rascunhos em aberto", e);
+    }
+  }
+
   const total = itens.reduce((acc, it) => acc + (it.precoFinal * it.qtd), 0);
-  if (!confirm(`Deseja enviar este pedido no valor de R$ ${fmtMoeda(total)}?`)) return;
+  if (!confirm(`Deseja finalizar e enviar este pedido no valor de R$ ${fmtMoeda(total)}?`)) return;
 
   try {
     const r = await fetch('/api/pedidos', {
@@ -967,8 +1014,6 @@ async function finalizarPedido() {
 
     if (j.ok) {
       alert('✅ Pedido enviado com sucesso!');
-      
-      // ESVAZIA 100% O CARRINHO E LIMPA VARIÁVEIS
       carrinho = {};
       pedidoEmEdicaoId = null;
       localStorage.removeItem('carrinho_b2b');
