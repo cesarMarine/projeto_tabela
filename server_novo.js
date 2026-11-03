@@ -473,24 +473,36 @@ app.post('/api/familias', async (req, res) => {
   } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
-app.put('/api/familias/:id', async (req, res) => {
+aapp.put('/api/familias/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    // 1. Adicionado 'ordem' e 'subgrupos' na desestruturação do req.body
     const { nome, itens, subgrupos, subdivisoes, ordem_customizada, ordem } = req.body;
     
-    // 2. Trata os itens/subgrupos para não salvar array vazio se vier como 'subgrupos'
-    const listaSubgrupos = subgrupos || itens || [];
+    // Pega a lista enviada
+    let listaSubgrupos = subgrupos || itens || [];
+    
+    // Se por acaso já vier como String JSON, faz parse antes para não sanitizar 2x
+    if (typeof listaSubgrupos === 'string') {
+      try { listaSubgrupos = JSON.parse(listaSubgrupos); } catch(e) {}
+    }
 
-    // 3. Atualiza no Supabase incluindo a coluna 'ordem'
+    let listaSubs = subdivisoes || [];
+    if (typeof listaSubs === 'string') {
+      try { listaSubs = JSON.parse(listaSubs); } catch(e) {}
+    }
+
+    let listaOrdemCust = ordem_customizada || [];
+    if (typeof listaOrdemCust === 'string') {
+      try { listaOrdemCust = JSON.parse(listaOrdemCust); } catch(e) {}
+    }
+
     const payload = {
       nome, 
-      subgrupos: JSON.stringify(listaSubgrupos), 
-      subdivisoes: JSON.stringify(subdivisoes || []),
-      ordem_customizada: JSON.stringify(ordem_customizada || [])
+      subgrupos: listaSubgrupos, // 👈 Envia o array direto (sem JSON.stringify duplo)
+      subdivisoes: listaSubs,
+      ordem_customizada: listaOrdemCust
     };
 
-    // Só atualiza a coluna 'ordem' se ela tiver sido enviada na requisição
     if (ordem !== undefined && ordem !== null) {
       payload.ordem = Number(ordem);
     }
@@ -500,9 +512,7 @@ app.put('/api/familias/:id', async (req, res) => {
       .update(payload)
       .eq('id', id);
 
-    if (error) {
-      return res.status(400).json({ ok: false, erro: error.message });
-    }
+    if (error) return res.status(400).json({ ok: false, erro: error.message });
 
     res.json({ ok: true });
   } catch (e) { 
