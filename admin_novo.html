@@ -1594,7 +1594,7 @@ async function carregarVendedores() {
         <td>${v.whatsapp ? `<span style="color:#38bdf8; font-weight:bold;">${v.whatsapp}</span>` : '<span style="color:#94a3b8;">—</span>'}</td>
         <td><button class="btn-primario btn-mini" onclick="editarSenhaVendedor(${v.vendedor_id}, '${v.nome}', ${v.senha ? 'true' : 'false'})">${v.senha ? '🔑 Alterar' : '➕ Definir'}</button></td>
       </tr>`).join('');
-  } catch (e) { tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:red;">Erro: ${e.message}</div>`; }
+  } catch (e) { tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:red;">Erro: ${e.message}</td></tr>`; }
 }
 
 async function editarSenhaVendedor(id, nome, temSenha) {
