@@ -273,6 +273,21 @@
     </div>
     <button class="btn-finalizar" onclick="finalizarPedido()">Finalizar Pedido</button>
   </div>
+  <div class="painel-foot">
+  <div class="total-linha">
+    <span>Total:</span>
+    <span id="carrinhoTotal">R$ 0,00</span>
+  </div>
+  <div style="display:flex; gap:8px;">
+    <button type="button" onclick="salvarRascunho()" 
+            style="flex:1; background:#003366; color:white; border:none; padding:10px; border-radius:8px; font-weight:800; font-size:0.85rem; cursor:pointer;">
+      💾 Salvar Rascunho
+    </button>
+    <button type="button" class="btn-finalizar" onclick="finalizarPedido()" style="flex:1.5;">
+      🚀 Enviar Pedido
+    </button>
+  </div>
+</div>
 </div>
 
 <div class="modal-bg" id="modalBg" onclick="fecharModal(event)">
@@ -485,9 +500,13 @@ function sairCliente() {
   window.location.reload();
 }
 
+// VARIÁVEL PARA CONTROLAR SE ESTAMOS EDITANDO UM PEDIDO EXISTENTE
+let pedidoEmEdicaoId = null;
+
+// ABRIR MEUS PEDIDOS / HISTÓRICO / RASCUNHOS
 async function abrirMeusPedidos() {
   if (!clienteLogado) return;
-  document.getElementById('modalTitulo').textContent = '📋 Histórico de Pedidos / Orçamentos';
+  document.getElementById('modalTitulo').textContent = '📋 Meus Pedidos e Rascunhos';
   document.getElementById('modalBody').innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">Buscando seus pedidos...</p>';
   document.getElementById('modalBg').classList.add('on');
 
@@ -496,31 +515,59 @@ async function abrirMeusPedidos() {
     const j = await r.json();
 
     if (!j.ok || !j.pedidos.length) {
-      document.getElementById('modalBody').innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">Você ainda não enviou nenhum pedido.</p>';
+      document.getElementById('modalBody').innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">Você ainda não possui nenhum pedido registrado.</p>';
       return;
     }
 
     const html = j.pedidos.map(p => {
-      const dataStr = new Date(p.data_criacao).toLocaleString('pt-BR');
+      const dataStr = new Date(p.data_criacao || p.created_at).toLocaleString('pt-BR');
+      const isRascunho = p.status === 'RASCUNHO';
+      const badgeStatus = isRascunho 
+        ? '<span style="background:#fef3c7; color:#d97706; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:800;">📝 RASCUNHO</span>'
+        : '<span style="background:#d1fae5; color:#059669; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:800;">✅ ENVIADO</span>';
+
       const itensTable = (p.itens || []).map(it => `
         <tr>
-          <td style="padding:6px 0; font-size:0.75rem;"><strong>${it.codigo_produto}</strong> - ${escapeHtml(it.descricao)}</td>
-          <td style="padding:6px; font-size:0.75rem; text-align:center;">${it.quantidade}</td>
-          <td style="padding:6px 0; font-size:0.75rem; text-align:right;">R$ ${fmtMoeda(it.preco_final)}</td>
+          <td style="padding:4px 0; font-size:0.75rem;"><strong>${it.codigo_produto}</strong> - ${escapeHtml(it.descricao)}</td>
+          <td style="padding:4px; font-size:0.75rem; text-align:center;">${it.quantidade}</td>
+          <td style="padding:4px 0; font-size:0.75rem; text-align:right;">R$ ${fmtMoeda(it.preco_final)}</td>
         </tr>
       `).join('');
 
+      // Serializa os itens para poder carregar no carrinho ao clicar em Editar
+      const jsonItens = escapeHtml(JSON.stringify(p.itens || []));
+
       return `
-        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px; margin-bottom:10px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">
-            <strong style="color:#003366; font-size:0.85rem;">Pedido #${p.id}</strong>
-            <span style="font-size:0.7rem; color:#64748b;">${dataStr}</span>
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px; margin-bottom:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid #cbd5e1; padding-bottom:6px;">
+            <div>
+              <strong style="color:#003366; font-size:0.85rem;">Pedido #${p.id}</strong>
+              <div style="font-size:0.68rem; color:#64748b;">${dataStr}</div>
+            </div>
+            <div>${badgeStatus}</div>
           </div>
-          <table style="width:100%; border-collapse:collapse; margin-bottom:6px;">
+
+          <table style="width:100%; border-collapse:collapse; margin-bottom:8px;">
             <tbody>${itensTable}</tbody>
           </table>
-          <div style="text-align:right; font-weight:900; color:#10b981; font-size:0.9rem;">
-            Total: R$ ${fmtMoeda(p.total)}
+
+          <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed #cbd5e1; padding-top:6px;">
+            <div style="font-weight:900; color:#10b981; font-size:0.9rem;">
+              Total: R$ ${fmtMoeda(p.total)}
+            </div>
+            <div style="display:flex; gap:6px;">
+              ${isRascunho ? `
+                <button onclick="carregarPedidoParaEdicao(${p.id}, '${jsonItens}')" 
+                        style="background:#2563eb; color:white; border:none; padding:4px 10px; border-radius:6px; font-size:0.75rem; font-weight:800; cursor:pointer;">
+                  ✏️ Editar / Continuar
+                </button>
+              ` : `
+                <button onclick="carregarPedidoParaEdicao(${p.id}, '${jsonItens}')" 
+                        style="background:#003366; color:white; border:none; padding:4px 10px; border-radius:6px; font-size:0.75rem; font-weight:800; cursor:pointer;">
+                  📋 Reorganizar / Reutilizar
+                </button>
+              `}
+            </div>
           </div>
         </div>
       `;
@@ -528,7 +575,70 @@ async function abrirMeusPedidos() {
 
     document.getElementById('modalBody').innerHTML = html;
   } catch (e) {
-    document.getElementById('modalBody').innerHTML = '<p style="text-align:center; color:#ef4444; padding:20px;">Erro ao carregar pedidos.</p>';
+    document.getElementById('modalBody').innerHTML = '<p style="text-align:center; color:#ef4444; padding:20px;">Erro ao carregar os pedidos.</p>';
+  }
+}
+
+// CARREGAR UM PEDIDO DE VOLTA NO CARRINHO PARA EDIÇÃO
+function carregarPedidoParaEdicao(idPedido, jsonItensStr) {
+  try {
+    const itens = JSON.parse(jsonItensStr);
+    carrinho = {};
+    pedidoEmEdicaoId = idPedido;
+
+    itens.forEach(it => {
+      const prodEncontrado = todosItens.find(i => i.codigo === String(it.codigo_produto));
+      carrinho[it.codigo_produto] = {
+        qtd: it.quantidade,
+        precoBase: it.preco_unitario || (prodEncontrado ? prodEncontrado.precoBase : 0),
+        desc: it.descricao,
+        img: prodEncontrado ? prodEncontrado.imagem_url : ''
+      };
+    });
+
+    atualizarCarrinho();
+    fecharModal(null, true);
+    toggleCarrinho(); // Abre o carrinho na tela
+    alert(`Pedido #${idPedido} carregado no carrinho! Você já pode alterar as quantidades.`);
+  } catch (e) {
+    alert('Erro ao carregar o pedido para edição.');
+  }
+}
+
+// SALVAR APENAS COMO RASCUNHO (GRAVAR NO BANCO SEM FINALIZAR)
+async function salvarRascunho() {
+  const itens = Object.keys(carrinho).map(cod => {
+    const item = carrinho[cod];
+    const calc = calcularValoresProduto(item.precoBase, cod);
+    return { codigo: cod, desc: item.desc, qtd: item.qtd, precoBase: item.precoBase, precoFinal: calc.precoFinal };
+  });
+
+  if (itens.length === 0) { alert('Seu carrinho está vazio.'); return; }
+  const total = itens.reduce((acc, it) => acc + (it.precoFinal * it.qtd), 0);
+
+  try {
+    const r = await fetch('/api/pedidos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: pedidoEmEdicaoId,
+        cnpj_cliente: clienteLogado.cnpj,
+        codigo_representante: clienteLogado.representante,
+        status: 'RASCUNHO',
+        total,
+        itens
+      })
+    });
+    const j = await r.json();
+
+    if (j.ok) {
+      pedidoEmEdicaoId = j.id; // Guarda o ID gerado
+      alert('💾 Rascunho salvo no banco com sucesso!');
+    } else {
+      alert('❌ Erro ao salvar rascunho: ' + j.erro);
+    }
+  } catch (e) {
+    alert('❌ Erro de conexão ao salvar rascunho.');
   }
 }
 
@@ -828,6 +938,7 @@ async function fazerLogin() {
   } catch (e) { erro.textContent = 'Erro de conexão.'; erro.style.display = 'block'; }
 }
 
+// FINALIZAR E ENVIAR PEDIDO (ESVAZIA O CARRINHO)
 async function finalizarPedido() {
   const itens = Object.keys(carrinho).map(cod => {
     const item = carrinho[cod];
@@ -841,13 +952,34 @@ async function finalizarPedido() {
 
   try {
     const r = await fetch('/api/pedidos', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cnpj_cliente: clienteLogado.cnpj, codigo_representante: clienteLogado.representante, total, itens })
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: pedidoEmEdicaoId,
+        cnpj_cliente: clienteLogado.cnpj,
+        codigo_representante: clienteLogado.representante,
+        status: 'ENVIADO',
+        total,
+        itens
+      })
     });
     const j = await r.json();
-    if (j.ok) { alert('✅ Pedido enviado com sucesso!'); carrinho = {}; atualizarCarrinho(); fecharCarrinho(); } 
-    else { alert('❌ Erro: ' + j.erro); }
-  } catch (e) { alert('❌ Erro ao enviar o pedido.'); }
+
+    if (j.ok) {
+      alert('✅ Pedido enviado com sucesso!');
+      
+      // ESVAZIA 100% O CARRINHO E LIMPA VARIÁVEIS
+      carrinho = {};
+      pedidoEmEdicaoId = null;
+      localStorage.removeItem('carrinho_b2b');
+      atualizarCarrinho();
+      fecharCarrinho();
+    } else {
+      alert('❌ Erro ao enviar o pedido: ' + j.erro);
+    }
+  } catch (e) {
+    alert('❌ Erro ao enviar o pedido.');
+  }
 }
 
 async function carregar() {

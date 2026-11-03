@@ -1263,29 +1263,68 @@ app.get('/api/admin/produtos-estoque', async (req, res) => {
 // ==========================================
 // ROTA: PEDIDOS DO CLIENTE (Corrigida)
 // ==========================================
+// 1. ROTA PARA LISTAR OS PEDIDOS/RASCUNHOS DO CLIENTE
 app.get('/api/cliente/:cnpj/pedidos', async (req, res) => {
   try {
-    const cnpjRaw = req.params.cnpj.trim();
-    const cnpjLimpo = cnpjRaw.replace(/\D/g, '');
-
-    // Formata o CNPJ para tentar as duas variações no banco
-    let cnpjFormatado = cnpjLimpo;
-    if (cnpjLimpo.length === 14) {
-      cnpjFormatado = cnpjLimpo.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
-    }
-
-    // Busca pedidos onde o cnpj_cliente seja igual ao CNPJ limpo ou formatado
+    const { cnpj } = req.params;
     const { data: pedidos, error } = await supabase
       .from('pedidos')
-      .select('*, itens:pedido_itens(*)')
-      .or(`cnpj_cliente.eq.${cnpjLimpo},cnpj_cliente.eq.${cnpjFormatado}`)
+      .select('*, itens:pedidos_itens(*)')
+      .eq('cnpj_cliente', cnpj)
       .order('data_criacao', { ascending: false });
 
     if (error) throw error;
-
     res.json({ ok: true, pedidos: pedidos || [] });
   } catch (e) {
-    console.error('Erro ao buscar pedidos do cliente:', e);
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
+
+// 2. ROTA PARA CRIAR OU ATUALIZAR PEDIDO (RASCUNHO OU ENVIADO)
+app.post('/api/pedidos', async (req, res) => {
+  try {
+    const { id, cnpj_cliente, codigo_representante, status = 'ENVIADO', total, itens } = req.body;
+
+    let pedidoId = id;
+
+    if (pedidoId) {
+      // Atualizar pedido existente (ex: Rascunho)
+      const { error: errUpdate } = await supabase
+        .from('pedidos')
+        .update({ total, status, data_atualizacao: new Date().toISOString() })
+        .eq('id', pedidoId);
+
+      if (errUpdate) throw errUpdate;
+
+      // Limpa os itens antigos para re-inserir os atualizados
+      await supabase.from('pedidos_itens').delete().eq('pedido_id', pedidoId);
+    } else {
+      // Inserir novo pedido
+      const { data: novoPed, error: errInsert } = await supabase
+        .from('pedidos')
+        .insert([{ cnpj_cliente, codigo_representante, status, total }])
+        .select()
+        .single();
+
+      if (errInsert) throw errInsert;
+      pedidoId = novoPed.id;
+    }
+
+    // Inserir os itens do pedido
+    const itensFormatados = itens.map(it => ({
+      pedido_id: pedidoId,
+      codigo_produto: it.codigo,
+      descricao: it.desc,
+      quantidade: it.qtd,
+      preco_unitario: it.precoBase,
+      preco_final: it.precoFinal
+    }));
+
+    const { error: errItens } = await supabase.from('pedidos_itens').insert(itensFormatados);
+    if (errItens) throw errItens;
+
+    res.json({ ok: true, id: pedidoId, mensagem: 'Pedido salvo com sucesso!' });
+  } catch (e) {
     res.status(500).json({ ok: false, erro: e.message });
   }
 });
