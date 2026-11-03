@@ -473,7 +473,7 @@ app.post('/api/familias', async (req, res) => {
   } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
-aapp.put('/api/familias/:id', async (req, res) => {
+app.put('/api/familias/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { nome, itens, subgrupos, subdivisoes, ordem_customizada, ordem } = req.body;
