@@ -661,6 +661,24 @@ function formatarNomeCard(item, nomeFamilia) {
   return sub || item.codigo;
 }
 
+function analisarVestuario(it) {
+  let attrs = it.atributos || {};
+  if (typeof attrs === 'string') {
+    try { attrs = JSON.parse(attrs); } catch (e) { attrs = {}; }
+  }
+
+  let tam = attrs['Tamanho'] || attrs['TAMANHO'] || attrs['Size'] || '';
+
+  if (!tam) {
+    const desc = (it.subgrupo || it.descricao_longa || it.codigo || '').toUpperCase();
+    const matchTam = desc.match(/\b(XXG|3XL|2XL|XG|XL|GG|G|M|P|S|L)\b/);
+    if (matchTam) tam = matchTam[1];
+    else tam = it.subgrupo || 'ÚNICO';
+  }
+
+  return { tamanho: tam };
+}
+
 function analisarAnzol(it) {
   let attrs = it.atributos || {};
   if (typeof attrs === 'string') {
@@ -911,20 +929,23 @@ function filtrar() {
     lista = lista.filter(it => {
       const grupoItemUpper = (it.grupo || '').toUpperCase().trim();
 
-      // Normaliza qualquer variação de Vestuário (VESTUARIO, VESTUARIO E ACESSORIOS, VESTUÁRIO)
+      // Reconhece VESTUARIO, VESTUÁRIO e VESTUARIO E ACESSORIOS
       if (grupoSelUpper.includes('VESTUAR')) {
         return grupoItemUpper.includes('VESTUAR');
       }
-      if (grupoSelUpper.includes('ACESSORIO')) {
-        return grupoItemUpper.includes('ACESSORIO');
-      }
+      
+      // Reconhece CARRETILHAS 02, MOLINETES, LINHAS (com ou sem plural/número)
+      if (grupoSelUpper.includes('CARRETILHA')) return grupoItemUpper.includes('CARRETILHA');
+      if (grupoSelUpper.includes('MOLINETE')) return grupoItemUpper.includes('MOLINETE');
+      if (grupoSelUpper.includes('LINHA')) return grupoItemUpper.includes('LINHA');
+      if (grupoSelUpper.includes('ISCA')) return grupoItemUpper.includes('ISCA');
 
       return grupoItemUpper === grupoSelUpper;
     });
   }
 
   if (marcaAtual) {
-    lista = lista.filter(it => it.marca.toUpperCase() === marcaAtual.toUpperCase());
+    lista = lista.filter(it => (it.marca || '').toUpperCase().trim() === marcaAtual.toUpperCase().trim());
   }
 
   if (buscaAtual) {
