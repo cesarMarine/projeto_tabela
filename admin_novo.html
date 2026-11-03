@@ -1355,22 +1355,23 @@ async function salvarOrdemFamilia(famId) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         nome: fam.nome,
-        itens: fam.itens,
+        subgrupos: fam.subgrupos || fam.itens || [],
+        itens: fam.subgrupos || fam.itens || [],
         subdivisoes: fam.subdivisoes || [],
         ordem_customizada: fam.ordem_customizada || [],
-        ordem: novaOrdem
+        ordem: novaOrdem // 👈 Envia o novo número digitado
       })
     });
 
-    if (r.ok) {
-      alert('✅ Ordem da família atualizada com sucesso!');
-      await carregarFamiliasCriadas();
+    const res = await r.json();
+    if (r.ok && res.ok) {
+      alert('✅ Ordem salva com sucesso no banco!');
+      await carregarDados(); // Recarrega os dados do Admin
     } else {
-      const res = await r.json();
-      alert('❌ Erro ao salvar ordem: ' + (res.erro || 'Erro no servidor'));
+      alert('❌ Erro no servidor: ' + (res.erro || 'Não foi possível gravar no banco'));
     }
   } catch (err) {
-    alert('❌ Erro de conexão com o servidor.');
+    alert('❌ Erro de conexão ao salvar a ordem.');
   }
 }
 
