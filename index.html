@@ -413,6 +413,88 @@
   .black-vazio {
     text-align: center; padding: 60px 20px; color: #94a3b8; font-weight: 700;
   }
+
+  /* ===== ITEM DO CARRINHO — NOVO LAYOUT ===== */
+.item-carrinho {
+  display: grid;
+  grid-template-columns: 42px 1fr auto;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px;
+  background: var(--cinza-50);
+  border-radius: 8px;
+  font-size: .75rem;
+  border: 1px solid transparent;
+}
+.item-carrinho.item-com-oferta {
+  background: linear-gradient(135deg, #fff7ed, #fef2f2);
+  border: 1px solid #fca5a5;
+  box-shadow: 0 2px 8px rgba(239,68,68,0.08);
+}
+.item-img-wrap {
+  width: 42px; height: 42px;
+  background: white; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; border: 1px solid var(--cinza-200);
+}
+.item-img-wrap img { width: 100%; height: 100%; object-fit: contain; }
+
+.item-dados { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.item-titulo {
+  font-size: .78rem; font-weight: 800; color: var(--azul-800);
+  line-height: 1.2; word-break: break-word;
+}
+.item-valores { display: flex; flex-direction: column; gap: 1px; }
+.item-linha-valor { font-size: .7rem; color: var(--cinza-500); font-weight: 600; }
+.item-linha-valor strong { color: var(--azul-800); font-weight: 900; }
+.item-linha-total { font-size: .72rem; color: var(--cinza-700); }
+.item-linha-total strong { color: var(--verde); font-weight: 900; font-size: .82rem; }
+
+.val-unit { color: var(--azul-800); font-weight: 800; }
+.val-de {
+  text-decoration: line-through; color: #94a3b8;
+  font-weight: 700; font-size: .68rem; margin-right: 3px;
+}
+.val-unit-oferta { color: #dc2626; font-weight: 900; }
+
+.item-selo-economia {
+  display: inline-block;
+  margin-top: 3px;
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  color: white;
+  font-size: .62rem;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 12px;
+  align-self: flex-start;
+  box-shadow: 0 2px 6px rgba(22,163,74,0.25);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.item-remover {
+  background: none; border: none;
+  color: var(--vermelho); font-weight: 900;
+  font-size: 1rem; cursor: pointer;
+  padding: 2px 6px; align-self: flex-start;
+  border-radius: 4px;
+  transition: 0.15s;
+}
+.item-remover:hover { background: #fee2e2; }
+
+/* Bloco de economia total acima do Total */
+.rodape-economia {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border: 1px dashed #f59e0b;
+  color: #92400e;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: .75rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 10px;
+}
+.rodape-economia strong { color: #b45309; font-weight: 900; font-size: .85rem; }
 </style>
 </head>
 <body>
@@ -2474,21 +2556,50 @@ function setQtd(cod, valor) {
 function atualizarCarrinho() {
   const itens = Object.keys(carrinho); 
   let total = 0, qtdTotal = 0;
+  let economiaTotal = 0; // NOVO: acumula quanto o cliente está economizando
   
   const html = itens.map(cod => {
     const i = carrinho[cod];
     const calc = calcularValoresProduto(i.precoBase, cod);
-    const sub = calc.precoFinal * i.qtd; 
-    total += sub; qtdTotal += i.qtd;
+    
+    const subUnitario = calc.precoFinal;
+    const subTotal = subUnitario * i.qtd;
+    
+    // Economia = (preço original - preço final) * qtd
+    const economiaItem = calc.temOferta ? (calc.precoOriginal - calc.precoFinal) * i.qtd : 0;
+    economiaTotal += economiaItem;
+
+    total += subTotal; 
+    qtdTotal += i.qtd;
     
     return `
-      <div class="item-carrinho">
-        ${i.img ? `<img src="${i.img}">` : '<div style="width:30px;text-align:center;font-size:16px;">🖼️</div>'}
-        <div class="dados">
-          <span class="titulo" style="font-weight:bold; color:var(--azul-800);">${escapeHtml(i.desc)}</span>
-          <span class="preco" style="display:block; color:var(--verde); font-weight:bold;">${i.qtd}x R$ ${fmtMoeda(sub)}</span>
+      <div class="item-carrinho ${calc.temOferta ? 'item-com-oferta' : ''}">
+        
+        <div class="item-img-wrap">
+          ${i.img ? `<img src="${i.img}">` : '<span style="font-size:16px;">🖼️</span>'}
         </div>
-        <div class="acoes"><button onclick="setQtd('${cod}', 0)" style="background:none; border:none; color:var(--vermelho); font-weight:bold; cursor:pointer;">✕</button></div>
+
+        <div class="item-dados">
+          <span class="item-titulo">${escapeHtml(i.desc)}</span>
+          
+          <div class="item-valores">
+            <span class="item-linha-valor">
+              <strong>${i.qtd}</strong> un × 
+              ${calc.temOferta 
+                ? `<span class="val-de">R$ ${fmtMoeda(calc.precoOriginal)}</span> <span class="val-unit-oferta">R$ ${fmtMoeda(subUnitario)}</span>` 
+                : `<span class="val-unit">R$ ${fmtMoeda(subUnitario)}</span>`}
+            </span>
+            <span class="item-linha-total">Total: <strong>R$ ${fmtMoeda(subTotal)}</strong></span>
+          </div>
+
+          ${calc.temOferta ? `
+            <div class="item-selo-economia">
+              🔥 Você economiza R$ ${fmtMoeda(economiaItem)}
+            </div>
+          ` : ''}
+        </div>
+
+        <button class="item-remover" onclick="setQtd('${cod}', 0)" title="Remover">✕</button>
       </div>`;
   }).join('');
 
@@ -2498,8 +2609,24 @@ function atualizarCarrinho() {
   if (qtdTotal > 0) { btnFab.style.display = 'flex'; badgeFab.textContent = qtdTotal; } 
   else { btnFab.style.display = 'none'; fecharCarrinho(); }
 
+  // Bloco de economia total acima do Total (só aparece se houver economia)
+  const rodapeEconomia = economiaTotal > 0 
+    ? `<div class="rodape-economia">🎉 Você está economizando <strong>R$ ${fmtMoeda(economiaTotal)}</strong> nesta compra!</div>` 
+    : '';
+
+  // Atualiza apenas o texto do total e a lista (o rodapé fica num div separado)
   document.getElementById('carrinhoTotal').textContent = `R$ ${fmtMoeda(total)}`;
   document.getElementById('listaCarrinho').innerHTML = html || '<div style="text-align:center;color:#94a3b8;padding:20px;">Vazio</div>';
+
+  // Atualiza (ou cria) o bloco de economia dentro do .painel-foot
+  let rodapeEcoEl = document.getElementById('rodapeEconomiaCarrinho');
+  if (!rodapeEcoEl) {
+    rodapeEcoEl = document.createElement('div');
+    rodapeEcoEl.id = 'rodapeEconomiaCarrinho';
+    const foot = document.querySelector('#painelCarrinho .painel-foot');
+    if (foot) foot.insertBefore(rodapeEcoEl, foot.firstChild);
+  }
+  rodapeEcoEl.innerHTML = rodapeEconomia;
 }
 
 function toggleCarrinho() { document.getElementById('painelCarrinho').classList.toggle('on'); }
