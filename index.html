@@ -1929,6 +1929,15 @@ function renderFamiliaGrade(fam, itens) {
     </div>`;
 }
 
+// ESCUTA MENSAGENS VINDAS DO IFRAME DE OFERTAS
+window.addEventListener('message', function(event) {
+  if (event.data && event.data.tipo === 'ATUALIZAR_CARRINHO') {
+    // Sincroniza o carrinho da memória com o localStorage
+    carrinho = JSON.parse(localStorage.getItem('carrinho_b2b') || '{}');
+    atualizarCarrinho(); // Função que atualiza o total e o badge do carrinho principal
+  }
+});
+
 function selecionarAcessorio(famId, codigo, url, descricao, nome) {
   const cardFam = document.getElementById(`card-fam-${famId}`);
   if (cardFam) {
@@ -2061,6 +2070,32 @@ function selecionarIsca(famId, codigo, url) {
   const fotoPai = document.getElementById(`foto-pai-${famId}`);
   const badgeNovidade = fotoPai.querySelector('.tarja-lancamento-foto');
   fotoPai.innerHTML = `${badgeNovidade ? badgeNovidade.outerHTML : ''}<img src="${url}">`;
+}
+
+function adicionarOferta(cod, desc, precoBase, img, nome) {
+  const acrescimo = clienteLogado?.acrescimo || 0;
+  const precoComAcrescimo = precoBase + (precoBase * acrescimo / 100);
+  const precoComDesconto = precoComAcrescimo - (precoComAcrescimo * (desc / 100));
+
+  carrinho = JSON.parse(localStorage.getItem('carrinho_b2b') || '{}');
+  const qtdAtual = carrinho[cod] ? carrinho[cod].qtd : 0;
+
+  carrinho[cod] = {
+    codigo: cod,
+    desc: nome || `Produto ${cod}`,
+    qtd: qtdAtual + 1,
+    precoBase: precoBase,
+    desconto: desc,
+    preco: precoComDesconto,
+    img: img || ''
+  };
+
+  localStorage.setItem('carrinho_b2b', JSON.stringify(carrinho));
+
+  // Notifica a página principal (index.html) para atualizar o carrinho dela
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ tipo: 'ATUALIZAR_CARRINHO' }, '*');
+  }
 }
 
 function renderFamiliaAnzol(fam, itens) {
