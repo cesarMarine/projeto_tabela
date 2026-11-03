@@ -769,14 +769,18 @@ async function carregarOfertasAdmin() {
   }
 }
 
-async function removerOfertaGrupo(nomeGrupo) {
-  if (!confirm(`Deseja remover todas as ofertas do grupo "${nomeGrupo}"?`)) return;
+async function removerOfertaGrupo(nomeGrupo, pctDesconto) {
+  if (!confirm(`Deseja remover as ofertas do grupo "${nomeGrupo}"${pctDesconto ? ` (-${pctDesconto}%)` : ''}?`)) return;
 
   try {
-    const r = await fetch('/api/ofertas/grupo/' + encodeURIComponent(nomeGrupo), { method: 'DELETE' });
+    // Monta a URL passando o desconto via query string (caso exista)
+    const url = `/api/ofertas/grupo/${encodeURIComponent(nomeGrupo)}${pctDesconto ? '?desconto=' + pctDesconto : ''}`;
+    
+    const r = await fetch(url, { method: 'DELETE' });
     const j = await r.json();
+
     if (j.ok) {
-      alert('✅ Ofertas do grupo removidas!');
+      alert('✅ Ofertas do grupo removidas com sucesso!');
       carregarOfertasAdmin();
     } else {
       alert('❌ Erro: ' + j.erro);

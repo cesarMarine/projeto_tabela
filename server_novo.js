@@ -815,27 +815,33 @@ app.get('/api/admin/ofertas-agrupadas', async (req, res) => {
 
 // 2. DELETE: Remove todas as ofertas pertencentes a um determinado Grupo/Subgrupo
 // ROTA PARA REMOVER OFERTAS POR GRUPO / FAMÍLIA OU INDIVIDUAL
+// ROTA PARA REMOVER OFERTAS POR GRUPO / FAMÍLIA / DESCONTO
 app.delete('/api/ofertas/grupo/:nomeGrupo', async (req, res) => {
   try {
     const { nomeGrupo } = req.params;
+    const { desconto } = req.query; // Pega o desconto opcional via Query String (?desconto=10)
     const grupoDecodificado = decodeURIComponent(nomeGrupo);
 
     let query = supabase.from('ofertas').delete();
 
+    // Se o grupo for "Individual" ou nulo
     if (grupoDecodificado === 'Individual') {
-      // Se for "Individual", remove ofertas que não possuem subgrupo definido ou são 'Individual'
-      query = query.or('subgrupo.eq.Individual,subgrupo.is.null');
+      query = query.or('subgrupo.eq.Individual,subgrupo.is.null,subgrupo.eq.');
     } else {
-      // Remove pelo nome exato do subgrupo
       query = query.eq('subgrupo', grupoDecodificado);
+    }
+
+    // Se passou a porcentagem de desconto específica, filtra por ela também
+    if (desconto) {
+      query = query.eq('desconto_porcentagem', Number(desconto));
     }
 
     const { error } = await query;
     if (error) throw error;
 
-    res.json({ ok: true, mensagem: `Ofertas do grupo "${grupoDecodificado}" removidas com sucesso!` });
+    res.json({ ok: true, mensagem: `Ofertas removidas com sucesso!` });
   } catch (e) {
-    console.error("Erro ao remover grupo de ofertas:", e);
+    console.error("ERRO AO DELETAR OFERTAS:", e.message);
     res.status(500).json({ ok: false, erro: e.message });
   }
 });
