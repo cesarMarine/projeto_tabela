@@ -281,7 +281,7 @@ function abrirModalFamiliaOferta(nomeSubgrupo) {
 
   let modalHtml = `
     <div id="modalOfertaBg" style="position:fixed; inset:0; background:rgba(0,27,58,0.85); display:flex; align-items:center; justify-content:center; padding:16px; z-index:9999;">
-      <div style="background:#ffffff; width:100%; max-width:650px; border-radius:12px; overflow:hidden; box-shadow:0 20px 50px rgba(0,0,0,0.4);">
+      <div style="background:#ffffff; width:100%; max-width:680px; border-radius:12px; overflow:hidden; box-shadow:0 20px 50px rgba(0,0,0,0.4);">
         
         <div style="background:#001b3a; color:white; padding:12px 16px; display:flex; justify-content:space-between; align-items:center;">
           <div>
@@ -291,27 +291,42 @@ function abrirModalFamiliaOferta(nomeSubgrupo) {
           <button onclick="document.getElementById('modalOfertaBg').remove()" style="background:none; border:none; color:white; font-size:1.4rem; cursor:pointer;">✕</button>
         </div>
 
-        <div style="max-height:380px; overflow-y:auto; padding:12px;">
+        <div style="max-height:420px; overflow-y:auto; padding:12px;">
           ${itensFam.map(item => {
             const precoComAcrescimo = item.preco_base + (item.preco_base * acrescimo / 100);
             const desc = Number(item.desconto_porcentagem || 0);
             const precoFinal = precoComAcrescimo - (precoComAcrescimo * desc / 100);
             const q = carrinho[item.codigo] ? carrinho[item.codigo].qtd : 0;
+            const imgItem = item.imagem_oferta || item.imagem_url || '';
 
             return `
-              <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #e2e8f0; gap:10px;">
-                <div>
-                  <strong style="color:#001b3a; font-size:0.85rem;">Cód: ${item.codigo}</strong>
-                  <div style="color:#64748b; font-size:0.75rem;">${escapeHtml(item.descricao_item || item.subgrupo)}</div>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #e2e8f0; gap:12px;">
+                
+                <!-- FOTINHA DA ISCA / VARIADORES -->
+                <div style="width:48px; height:48px; min-width:48px; background:#f8fafc; border-radius:8px; border:1px solid #cbd5e1; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                  ${imgItem ? `<img src="${imgItem}" style="width:100%; height:100%; object-fit:contain;" alt="${item.codigo}">` : '<span style="font-size:18px;">🖼️</span>'}
                 </div>
 
-                <div style="text-align:right;">
-                  <div style="text-decoration:line-through; color:#94a3b8; font-size:0.65rem;">De: R$ ${fmtMoeda(precoComAcrescimo)}</div>
-                  <strong style="color:#ef4444; font-size:0.95rem;">Por: R$ ${fmtMoeda(precoFinal)}</strong>
+                <!-- DESCRIÇÃO DO ITEM -->
+                <div style="flex:1;">
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <strong style="color:#001b3a; font-size:0.8rem;">Cód: ${item.codigo}</strong>
+                    ${desc > 0 ? `<span style="background:#ef4444; color:white; font-size:0.6rem; font-weight:900; padding:1px 4px; border-radius:3px;">-${desc}%</span>` : ''}
+                  </div>
+                  <div style="color:#475569; font-size:0.75rem; font-weight:600; margin-top:2px; line-height:1.2;">
+                    ${escapeHtml(item.descricao_item || item.subgrupo)}
+                  </div>
                 </div>
 
-                <button style="background:#10b981; color:white; border:none; padding:6px 12px; border-radius:6px; font-weight:800; cursor:pointer; font-size:0.75rem;" onclick="adicionarOferta('${item.codigo}', ${desc}, ${item.preco_base}, '${item.imagem_oferta}', '${escapeHtml(item.subgrupo).replace(/'/g, "\\'")}')">
-                  🛒 ${q > 0 ? `(${q})` : '+ Adicionar'}
+                <!-- PREÇO -->
+                <div style="text-align:right; white-space:nowrap;">
+                  <div style="text-decoration:line-through; color:#94a3b8; font-size:0.65rem; font-weight:700;">De: R$ ${fmtMoeda(precoComAcrescimo)}</div>
+                  <strong style="color:#ef4444; font-size:0.9rem; font-weight:900;">Por: R$ ${fmtMoeda(precoFinal)}</strong>
+                </div>
+
+                <!-- BOTÃO DE ADICIONAR -->
+                <button style="background:${q > 0 ? '#059669' : '#10b981'}; color:white; border:none; padding:8px 12px; border-radius:6px; font-weight:800; cursor:pointer; font-size:0.75rem; white-space:nowrap;" onclick="adicionarOferta('${item.codigo}', ${desc}, ${item.preco_base}, '${imgItem}', '${escapeHtml(item.descricao_item || item.subgrupo).replace(/'/g, "\\'")}')">
+                  🛒 ${q > 0 ? `No Pedido (${q})` : '+ Adicionar'}
                 </button>
               </div>`;
           }).join('')}
