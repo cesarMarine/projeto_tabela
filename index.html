@@ -267,13 +267,6 @@
   </div>
   <div class="painel-lista" id="listaCarrinho"></div>
   <div class="painel-foot">
-    <div class="total-linha">
-      <span>Total:</span>
-      <span id="carrinhoTotal">R$ 0,00</span>
-    </div>
-    <button class="btn-finalizar" onclick="finalizarPedido()">Finalizar Pedido</button>
-  </div>
-  <div class="painel-foot">
   <div class="total-linha">
     <span>Total:</span>
     <span id="carrinhoTotal">R$ 0,00</span>
@@ -322,15 +315,13 @@ function calcularQtdComLote(codigoProduto, quantidadeInserida) {
   const qtd = parseInt(quantidadeInserida, 10) || 0;
   if (qtd <= 0) return 0;
 
-  // Se o produto estiver na lista dos 5 modelos
   if (PRODUTOS_LOTE_10.includes(String(codigoProduto))) {
-    // Se a pessoa digitou 1 até 10, vira 10. Se digitou 12, arredonda para 20 (próximo múltiplo)
     const resto = qtd % 10;
     if (resto === 0) return qtd;
     return Math.ceil(qtd / 10) * 10;
   }
 
-  return qtd; // Produtos normais seguem com a quantidade digitada
+  return qtd;
 }
 
 function ativarWhatsAppVendedor() {
@@ -517,11 +508,8 @@ function sairCliente() {
   window.location.reload();
 }
 
-// VARIÁVEL PARA CONTROLAR SE ESTAMOS EDITANDO UM PEDIDO EXISTENTE
 let pedidoEmEdicaoId = null;
 
-// ABRIR MEUS PEDIDOS / HISTÓRICO / RASCUNHOS
-// ABRIR MEUS PEDIDOS / HISTÓRICO / RASCUNHOS
 async function abrirMeusPedidos() {
   if (!clienteLogado) return;
   document.getElementById('modalTitulo').textContent = '📋 Meus Pedidos e Rascunhos';
@@ -602,7 +590,6 @@ async function abrirMeusPedidos() {
   }
 }
 
-// DELETAR RASCUNHO
 async function deletarRascunho(idPedido) {
   if (!confirm(`Tem certeza que deseja excluir o rascunho #${idPedido}?`)) return;
 
@@ -617,7 +604,7 @@ async function deletarRascunho(idPedido) {
         atualizarCarrinho();
       }
       alert('🗑️ Rascunho excluído!');
-      abrirMeusPedidos(); // Recarrega o modal
+      abrirMeusPedidos();
     } else {
       alert('❌ Erro ao excluir: ' + j.erro);
     }
@@ -626,7 +613,6 @@ async function deletarRascunho(idPedido) {
   }
 }
 
-// CARREGAR UM PEDIDO DE VOLTA NO CARRINHO PARA EDIÇÃO
 function carregarPedidoParaEdicao(idPedido, jsonItensStr) {
   try {
     const itens = JSON.parse(jsonItensStr);
@@ -645,14 +631,13 @@ function carregarPedidoParaEdicao(idPedido, jsonItensStr) {
 
     atualizarCarrinho();
     fecharModal(null, true);
-    toggleCarrinho(); // Abre o carrinho na tela
+    toggleCarrinho();
     alert(`Pedido #${idPedido} carregado no carrinho! Você já pode alterar as quantidades.`);
   } catch (e) {
     alert('Erro ao carregar o pedido para edição.');
   }
 }
 
-// SALVAR APENAS COMO RASCUNHO (GRAVAR NO BANCO SEM FINALIZAR)
 async function salvarRascunho() {
   const itens = Object.keys(carrinho).map(cod => {
     const item = carrinho[cod];
@@ -679,7 +664,7 @@ async function salvarRascunho() {
     const j = await r.json();
 
     if (j.ok) {
-      pedidoEmEdicaoId = j.id; // Guarda o ID gerado
+      pedidoEmEdicaoId = j.id;
       alert('💾 Rascunho salvo no banco com sucesso!');
     } else {
       alert('❌ Erro ao salvar rascunho: ' + j.erro);
@@ -738,11 +723,9 @@ function formatarNomeCard(item, nomeFamilia) {
   const attrs = item.atributos || {};
   const descCompleta = (item.descricao_longa || item.descricao || '').trim();
 
-  // Atributos lidos do JSON
   const modeloAttr = attrs['Modelo'] || attrs['MODELO'] || '';
   const tamanhoAttr = attrs['Tamanho'] || attrs['TAMANHO'] || '';
 
-  // 1. DIMENSÕES PARA CAIXAS ALVO (Multicase, Isca MS, Tackle Box, Double Layer, Water Resistant)
   const ehCaixaAlvo = famUpper.includes('MULTICASE') || 
                       famUpper.includes('ISCA MS') || 
                       famUpper.includes('TACKLE BOX') || 
@@ -765,12 +748,10 @@ function formatarNomeCard(item, nomeFamilia) {
     }
   }
 
-  // 2. CARRETEL (Ex: SURF HSC 8000)
   if (famUpper.includes('CARRETEL')) {
     if (modeloAttr) return modeloAttr.trim();
   }
 
-  // 3. MOCHILA E BOLSA FRONTIER / PESCADOR
   if (famUpper.includes('MOCHILA') || famUpper.includes('BOLSA')) {
     if (modeloAttr) {
       let txt = modeloAttr.trim();
@@ -783,34 +764,28 @@ function formatarNomeCard(item, nomeFamilia) {
     }
   }
 
-  // 4. CORDÃO DE ÓCULOS (Ex: SSB PRETO)
   if (famUpper.includes('CORDÃO') || famUpper.includes('CORDAO') || famUpper.includes('ÓCULOS') || famUpper.includes('OCULOS')) {
     if (modeloAttr && modeloAttr.toUpperCase() !== 'ÚNICO' && modeloAttr.toUpperCase() !== 'UNICO') {
       return modeloAttr.trim();
     }
-    // Se o subgrupo tiver variação de cor/código no final
     const matchCor = sub.match(/(SSB\s+[A-Z]+|[A-Z0-9-]+\s*(?:PRETO|AZUL|VERMELHO|VERDE|AMARELO))/i);
     if (matchCor) return matchCor[1].toUpperCase();
   }
 
-  // 5. FACA FILLET / FACAS (Ex: FILLET MFK6T ou 6" / 15cm)
   if (famUpper.includes('FACA') || famUpper.includes('FILLET') || famUpper.includes('KNIFE')) {
     if (modeloAttr) return modeloAttr.trim();
     if (tamanhoAttr) return tamanhoAttr.trim();
     
-    // Tenta extrair código de modelo ou tamanho (ex: MFK6T, 6", 15cm)
     const matchFaca = descCompleta.match(/\b([A-Z0-9-]{3,10}|\d+["']|\d+\s*cm)\b/i);
     if (matchFaca && !matchFaca[1].toUpperCase().includes('FACA')) {
       return matchFaca[1].toUpperCase();
     }
   }
 
-  // 6. TRATAMENTO PADRÃO DE SEGURANÇA PARA NOMES GENÉRICOS (evita "KNIFE", "CAIXA", "C", "S")
   if (['KNIFE', 'CAIXA', 'FACA', 'C', 'S', 'BOLSAS', 'CORDÃO', 'CORDAO'].includes(sub.toUpperCase())) {
     return (modeloAttr || sub || item.codigo).trim();
   }
 
-  // Se nada capturou especificamente, tenta usar o modeloAttr ou subgrupo limpo
   if (modeloAttr && sub.toUpperCase() === famUpper) {
     return modeloAttr.trim();
   }
@@ -863,7 +838,6 @@ function analisarAnzol(it) {
     }
   }
 
-  // Busca a Quantidade nas chaves exatas do JSON
   let qtd = attrs['Quantidade'] || attrs['QUANTIDADE'] || attrs['Qtd'] || attrs['QTD'] || attrs['Qtd. Embalagem'] || attrs['Qtd Embalagem'] || attrs['Embalagem'] || '';
 
   if (!qtd) {
@@ -898,7 +872,6 @@ function analisarCarretilha(it) {
 
   const subUpper = (it.subgrupo || '').toUpperCase();
 
-  // 1. Identifica Lado da Manivela se não estiver nos atributos
   if (!ladoManivela) {
     if (subUpper.includes('ESQ') || subUpper.includes('LEFT') || subUpper.includes('ESQUERDA')) {
       ladoManivela = 'Esquerda';
@@ -907,13 +880,13 @@ function analisarCarretilha(it) {
     }
   }
 
-  // 2. Extrai o modelo/tamanho (ex: 11000, 6000, 5000) do subgrupo se não estiver nos atributos
   if (!modelo) {
     const matchNum = subUpper.match(/\b(\d{3,5}(?:\s*[A-Z]+)?)\b/);
     if (matchNum) {
       modelo = matchNum[1];
     } else {
-      const partes = (it.subgrupo || '').trim().split(/\s+/);
+      const semLado = subUpper.replace(/\b(ESQ|ESQUERDA|DIR|DIREITA|LEFT|RIGHT)\b/g, '').trim();
+      const partes = semLado.split(/\s+/).filter(Boolean);
       modelo = partes.slice(-2).join(' ') || it.subgrupo;
     }
   }
@@ -1007,7 +980,6 @@ async function fazerLogin() {
   } catch (e) { erro.textContent = 'Erro de conexão.'; erro.style.display = 'block'; }
 }
 
-// FINALIZAR E ENVIAR PEDIDO (ESVAZIA O CARRINHO)
 async function finalizarPedido() {
   const itens = Object.keys(carrinho).map(cod => {
     const item = carrinho[cod];
@@ -1017,7 +989,6 @@ async function finalizarPedido() {
 
   if (itens.length === 0) { alert('Seu carrinho está vazio.'); return; }
 
-  // VERIFICA SE EXISTE RASCUNHO EM ABERTO ANTES DE ENVIAR (SE NÃO ESTIVER EDITANDO O PRÓPRIO RASCUNHO)
   if (!pedidoEmEdicaoId) {
     try {
       const r = await fetch(`/api/cliente/${encodeURIComponent(clienteLogado.cnpj)}/pedidos`);
@@ -1088,7 +1059,6 @@ function montarChips() {
   todosItens.forEach(it => { contagem[it.grupo] = (contagem[it.grupo] || 0) + 1; });
   const todosGrupos = Object.keys(contagem);
 
-  // Ordem de prioridade padrão dos grupos para o topo
   const prioridadeGrupos = [
     'MOLINETE',
     'CARRETILHA',
@@ -1103,7 +1073,6 @@ function montarChips() {
     'GIRADORES'
   ];
 
-  // Ordena os grupos
   todosGrupos.sort((a, b) => {
     const gA = a.toUpperCase().trim();
     const gB = b.toUpperCase().trim();
@@ -1115,7 +1084,7 @@ function montarChips() {
     if (idxA !== -1) return -1;
     if (idxB !== -1) return 1;
     
-    return contagem[b] - contagem[a]; // Se nenhum estiver na lista, ordena por quantidade
+    return contagem[b] - contagem[a];
   });
 
   document.getElementById('chips').innerHTML = `
@@ -1145,12 +1114,10 @@ function filtrar() {
     lista = lista.filter(it => {
       const grupoItemUpper = (it.grupo || '').toUpperCase().trim();
 
-      // Reconhece VESTUARIO, VESTUÁRIO e VESTUARIO E ACESSORIOS
       if (grupoSelUpper.includes('VESTUAR')) {
         return grupoItemUpper.includes('VESTUAR');
       }
       
-      // Reconhece CARRETILHAS 02, MOLINETES, LINHAS (com ou sem plural/número)
       if (grupoSelUpper.includes('CARRETILHA')) return grupoItemUpper.includes('CARRETILHA');
       if (grupoSelUpper.includes('MOLINETE')) return grupoItemUpper.includes('MOLINETE');
       if (grupoSelUpper.includes('LINHA')) return grupoItemUpper.includes('LINHA');
@@ -1193,11 +1160,9 @@ function renderizar() {
   const processados = new Set(); 
   let html = '';
 
-// 1. NORMALIZAÇÃO DE SEGURANÇA E PARSE DO JSON DO BANCO
   let familiasOrdenadas = todasFamilias.map(f => {
     let rawItens = f.subgrupos || f.itens || [];
     
-    // Trata JSON duplo para itens/subgrupos
     if (typeof rawItens === 'string') {
       try { rawItens = JSON.parse(rawItens); } catch (e) {}
     }
@@ -1208,7 +1173,6 @@ function renderizar() {
 
     const codigosLimpos = rawItens.map(c => String(c).trim());
 
-    // 👈 DECLARAÇÃO DA VARIÁVEL rawSubs (Evita o erro "rawSubs is not defined")
     let rawSubs = f.subdivisoes || [];
     if (typeof rawSubs === 'string') {
       try { rawSubs = JSON.parse(rawSubs); } catch (e) {}
@@ -1225,7 +1189,6 @@ function renderizar() {
     };
   });
 
-  // 2. ORDENA AS FAMÍLIAS (Respeita o campo 'ordem')
   familiasOrdenadas.sort((a, b) => {
     const ordemA = a.ordem !== undefined && a.ordem !== null && a.ordem !== '' ? Number(a.ordem) : 9999;
     const ordemB = b.ordem !== undefined && b.ordem !== null && b.ordem !== '' ? Number(b.ordem) : 9999;
@@ -1234,9 +1197,7 @@ function renderizar() {
     return (a.nome || '').localeCompare(b.nome || '');
   });
 
-  // 3. RENDERIZA AS FAMÍLIAS E SEUS PRODUTOS
   familiasOrdenadas.forEach(fam => {
-    // Comparação precisa normalizando o código do produto
     const filhos = lista.filter(it => fam.itens.includes(String(it.codigo).trim()));
 
     if (filhos.length > 0) {
@@ -1264,7 +1225,7 @@ function renderizar() {
         nomeFam.includes('SNAP') || nomeFam.includes('CABO') || nomeFam.includes('LUVA')
       ) tipo = 'anzol';
       else if (nomeFam.includes('MOLINETE')) tipo = 'molinete';
-      else if (nomeFam.includes('CARRETILHA')) tipo = 'equipamento_direto';
+      else if (nomeFam.includes('CARRETILHA')) tipo = 'carretilha';
       else if (nomeFam.includes('MOTOR') || grupoItem.includes('MOTOR')) tipo = 'motor';
       else if (
         grupoItem.includes('VESTUARIO') || nomeFam.includes('VESTUARIO') ||
@@ -1278,7 +1239,7 @@ function renderizar() {
 
       if (tipo === 'isca') html += renderFamiliaIsca(fam, filhos);
       else if (tipo === 'molinete') html += renderFamiliaMolinete(fam, filhos);
-      else if (tipo === 'equipamento_direto') html += renderFamiliaEquipamentoDireto(fam, filhos);
+      else if (tipo === 'carretilha') html += renderFamiliaCarretilha(fam, filhos);
       else if (tipo === 'anzol') html += renderFamiliaAnzol(fam, filhos);
       else if (tipo === 'motor') html += renderFamiliaMotor(fam, filhos);
       else if (tipo === 'vara') html += renderFamiliaVara(fam, filhos);
@@ -1297,6 +1258,114 @@ function renderizar() {
   cont.innerHTML = html;
 }
 
+/* ============================================================
+   RENDER DE CARRETILHA — MESMO PADRÃO DO MOLINETE
+   ============================================================ */
+function renderFamiliaCarretilha(fam, itens) {
+  const primeiroItem = itens[0];
+  const imgInicial = primeiroItem?.imagem_url || '';
+  const itensComEstoque = itens.filter(it => it.estoque > 0);
+  if (itensComEstoque.length === 0) return '';
+
+  const temLancamentoNaFamilia = itensComEstoque.some(it => it.is_lancamento);
+  let subdivisoes = fam.subdivisoes || [];
+  if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Todos', itens: fam.itens }];
+
+  const temOfertaNaFamilia = itensComEstoque.some(it => it.calculoPreco.temOferta);
+  const maiorDesconto = Math.max(...itensComEstoque.map(it => it.calculoPreco.pctDesconto || 0));
+
+  const tabsHtml = subdivisoes.map((sub, idx) => 
+    `<button class="molinete-tab ${idx===0?'ativo':''}" onclick="trocarTipoCarretilha('${fam.id}', ${idx})">${escapeHtml(sub.nome)}</button>`
+  ).join('');
+
+  const itensIniciais = itensComEstoque.filter(it => subdivisoes[0].itens.includes(it.codigo));
+  itensIniciais.sort((a, b) => a.ordem_excel - b.ordem_excel);
+
+  const cardsHtml = itensIniciais.map(it => montarCardCarretilha(it)).join('');
+
+  window.carretilhaData = window.carretilhaData || {};
+  window.carretilhaData[fam.id] = { subdivisoes, itens: itensComEstoque };
+
+  return `
+    <div class="familia-bloco">
+      <div class="familia-head">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <h2>${escapeHtml(fam.nome)}</h2>
+          ${temOfertaNaFamilia ? `
+            <span style="background: linear-gradient(135deg, #001b3a, #020617); border: 1px solid #38bdf8; color: #38bdf8; font-size: 0.65rem; font-weight: 900; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">
+              ⚡ GRUPO BLACK NOVEMBER -${maiorDesconto}%
+            </span>
+          ` : ''}
+        </div>
+        ${renderMarcaBadge(itens[0].marca)}
+      </div>
+      <div class="molinete-card" id="card-fam-${fam.id}">
+        <div class="familia-side">
+          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)" style="position:relative;">
+            ${temLancamentoNaFamilia ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
+            ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
+          </div>
+        </div>
+        <div class="molinete-info">
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Descrição</button>
+          ${subdivisoes.length > 1 ? `<div class="molinete-tabs">${tabsHtml}</div>` : ''}
+          <div class="isca-titulo-cores">OPÇÕES / MODELOS</div>
+          <div class="molinete-grade" id="grade-carretilhas-${fam.id}">${cardsHtml}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function montarCardCarretilha(it) {
+  const info = analisarCarretilha(it);
+  const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+  const calc = it.calculoPreco;
+
+  const badgeLote = PRODUTOS_LOTE_10.includes(String(it.codigo))
+    ? `<span style="background:#f59e0b; color:white; font-size:0.55rem; font-weight:800; padding:1px 4px; border-radius:4px; margin-top:2px;">📦 Mín. 10</span>`
+    : '';
+
+  return `
+    <div class="molinete-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}">
+      <span class="molinete-badge">${q}</span>
+      <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700;">CÓD: ${escapeHtml(it.codigo)}</div>
+      <div class="molinete-numero">${escapeHtml(info.modelo || it.subgrupo)}</div>
+      ${info.ladoTag ? `<div style="font-size:0.6rem; color:var(--azul-800); font-weight:800;">${escapeHtml(info.ladoTag)}</div>` : ''}
+      ${info.variacaoExtra ? `<div style="font-size:0.55rem; color:var(--cinza-500); font-weight:600; text-align:center; line-height:1.1; margin-bottom:2px;">${escapeHtml(info.variacaoExtra)}</div>` : ''}
+      ${badgeLote}
+      
+      ${calc.temOferta ? `
+        <div class="preco-box-oferta">
+          <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
+          <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
+        </div>
+      ` : `<div class="molinete-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+
+      <div class="molinete-qtd-ctrl" onclick="event.stopPropagation()">
+        <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+        <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+        <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+      </div>
+    </div>`;
+}
+
+function trocarTipoCarretilha(famId, subIndex) {
+  const data = window.carretilhaData[famId];
+  const sub = data.subdivisoes[subIndex];
+  const card = document.getElementById(`card-fam-${famId}`);
+  card.querySelectorAll('.molinete-tab').forEach(b => b.classList.remove('ativo'));
+  card.querySelectorAll('.molinete-tab')[subIndex].classList.add('ativo');
+
+  const itensFiltrados = data.itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
+  itensFiltrados.sort((a, b) => a.ordem_excel - b.ordem_excel);
+
+  document.getElementById(`grade-carretilhas-${famId}`).innerHTML = 
+    itensFiltrados.map(it => montarCardCarretilha(it)).join('');
+}
+
+/* ============================================================
+   MOLINETE
+   ============================================================ */
 function renderFamiliaMolinete(fam, itens) {
   const primeiroItem = itens[0];
   const imgInicial = primeiroItem?.imagem_url || '';
@@ -1884,7 +1953,6 @@ function renderFamiliaGrade(fam, itens) {
       const isAtivo = index === 0 ? 'ativa' : '';
       const calc = it.calculoPreco;
 
-      // FORMATA O NOME REMOVENDO TERMOS REDUNDANTES (ex: "MULTICASE ZMC345 34.5X23X5cm")
       const nomeLimpo = formatarNomeCard(it, fam.nome);
 
       return `
@@ -1951,12 +2019,10 @@ function renderFamiliaGrade(fam, itens) {
     </div>`;
 }
 
-// ESCUTA MENSAGENS VINDAS DO IFRAME DE OFERTAS
 window.addEventListener('message', function(event) {
   if (event.data && event.data.tipo === 'ATUALIZAR_CARRINHO') {
-    // Sincroniza o carrinho da memória com o localStorage
     carrinho = JSON.parse(localStorage.getItem('carrinho_b2b') || '{}');
-    atualizarCarrinho(); // Função que atualiza o total e o badge do carrinho principal
+    atualizarCarrinho();
   }
 });
 
@@ -1966,8 +2032,6 @@ function linhaCarretilha(it) {
   const calc = it.calculoPreco;
   const temVariacaoExtra = Boolean(info.variacaoExtra && info.variacaoExtra.trim() !== '');
 
-  // AVISO DE LOTE MÍNIMO 10
-  const PRODUTOS_LOTE_10 = ['8982', '8981', '8980', '5250', '5247'];
   const badgeLote = PRODUTOS_LOTE_10.includes(String(it.codigo))
     ? `<span style="background:#f59e0b; color:white; font-size:0.65rem; font-weight:800; padding:2px 6px; border-radius:4px; margin-left:6px;">📦 Mín. 10 un.</span>`
     : '';
@@ -2159,7 +2223,6 @@ function adicionarOferta(cod, desc, precoBase, img, nome) {
 
   localStorage.setItem('carrinho_b2b', JSON.stringify(carrinho));
 
-  // Notifica a página principal (index.html) para atualizar o carrinho dela
   if (window.parent && window.parent !== window) {
     window.parent.postMessage({ tipo: 'ATUALIZAR_CARRINHO' }, '*');
   }
@@ -2292,7 +2355,6 @@ function renderFamiliaComum(fam, itens) {
     const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
     const calc = it.calculoPreco;
 
-    // Se a família for de Carretilha ou Molinete, extrai Modelo e Lado
     const isCarretilha = fam.nome.toUpperCase().includes('CARRETILHA') || fam.nome.toUpperCase().includes('MOLINETE');
     let nomeExibicao = escapeHtml(it.subgrupo);
 
@@ -2304,7 +2366,6 @@ function renderFamiliaComum(fam, itens) {
       }
     }
 
-    // Badge de lote de 10 unidades
     const badgeLote = PRODUTOS_LOTE_10.includes(String(it.codigo))
       ? `<span style="background:#f59e0b; color:white; font-size:0.65rem; font-weight:800; padding:2px 6px; border-radius:4px; margin-left:6px;">📦 Mín. 10 un.</span>`
       : '';
@@ -2381,7 +2442,6 @@ function buscarItem(codigo) { return todosItens.find(i => i.codigo === codigo); 
 function mudarQtd(cod, delta) { 
   const a = carrinho[cod] ? carrinho[cod].qtd : 0;
   
-  // Se for um produto de lote 10, o botão + ou - avança de 10 em 10
   if (PRODUTOS_LOTE_10.includes(String(cod))) {
     const passo = delta > 0 ? 10 : -10;
     setQtd(cod, a + passo);
@@ -2393,9 +2453,7 @@ function setQtd(cod, valor) {
   let q = parseInt(valor) || 0; 
   const item = buscarItem(cod);
 
-  // REGRA DO LOTE DE 10 UNIDADES
   if (q > 0 && PRODUTOS_LOTE_10.includes(String(cod))) {
-    // Arredonda para o múltiplo de 10 mais próximo para cima (ex: 1->10, 12->20)
     const resto = q % 10;
     if (resto !== 0) {
       q = Math.ceil(q / 10) * 10;
@@ -2413,13 +2471,11 @@ function setQtd(cod, valor) {
     };
   }
 
-  // Atualiza os inputs na tela
   document.querySelectorAll(`input[onchange*="'${cod}'"]`).forEach(inp => inp.value = q);
 
-  // Destaque visual do card
   const card = document.getElementById(`mini-${cod}`);
   if (card) {
-    const badge = card.querySelector('.anzol-badge') || card.querySelector('.isca-badge');
+    const badge = card.querySelector('.anzol-badge') || card.querySelector('.isca-badge') || card.querySelector('.molinete-badge');
     if (q > 0) { 
       card.classList.add('tem-qtd'); 
       if (badge) badge.textContent = q; 
