@@ -565,7 +565,7 @@ function normalizarItem(it) {
     precoBase: Number(it.preco_venda) || 0,
     get calculoPreco() { return calcularValoresProduto(this.precoBase, this.codigo); },
     get preco() { return this.calculoPreco.precoFinal; },
-    grupo: (it.grupo_scraping || '').trim(),
+    grupo: (it.grupo_scraping || it.grupo || '').trim(),
     marca: (it.marca || '').trim(),
     atributos: parseAtributos(it.atributos_json),
     estoque: Number(it.estoque) || 0,
@@ -904,13 +904,14 @@ function trocarGrupo(grupo, btn) {
 
 function filtrar() {
   let lista = todosItens;
+  
   if (grupoAtual !== '__TODOS__' && grupoAtual !== '__OFERTAS__') {
     const grupoSelUpper = grupoAtual.toUpperCase().trim();
 
     lista = lista.filter(it => {
       const grupoItemUpper = (it.grupo || '').toUpperCase().trim();
 
-      // Trata Vestuário e Acessórios mesmo que haja pequenas variações de nome no banco
+      // Normaliza qualquer variação de Vestuário (VESTUARIO, VESTUARIO E ACESSORIOS, VESTUÁRIO)
       if (grupoSelUpper.includes('VESTUAR')) {
         return grupoItemUpper.includes('VESTUAR');
       }
@@ -921,13 +922,20 @@ function filtrar() {
       return grupoItemUpper === grupoSelUpper;
     });
   }
+
   if (marcaAtual) {
     lista = lista.filter(it => it.marca.toUpperCase() === marcaAtual.toUpperCase());
   }
+
   if (buscaAtual) {
     const q = buscaAtual.toLowerCase();
-    lista = lista.filter(it => it.codigo.includes(q) || it.subgrupo.toLowerCase().includes(q) || it.marca.toLowerCase().includes(q));
+    lista = lista.filter(it => 
+      it.codigo.includes(q) || 
+      it.subgrupo.toLowerCase().includes(q) || 
+      it.marca.toLowerCase().includes(q)
+    );
   }
+
   return lista;
 }
 
