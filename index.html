@@ -934,22 +934,32 @@ function renderizar() {
   const processados = new Set(); 
   let html = '';
 
-  // 1. NORMALIZAÇÃO DE SEGURANÇA E PARSE DO JSON DO BANCO
-let familiasOrdenadas = todasFamilias.map(f => {
-  let rawItens = f.subgrupos || f.itens || [];
-  
-  // Trata JSON duplo (ex: "\"[\\\"10076\\\"]\"")
-  if (typeof rawItens === 'string') {
-    try { rawItens = JSON.parse(rawItens); } catch (e) {}
-  }
-  if (typeof rawItens === 'string') {
-    try { rawItens = JSON.parse(rawItens); } catch (e) {}
-  }
-  if (!Array.isArray(rawItens)) rawItens = [];
+// 1. NORMALIZAÇÃO DE SEGURANÇA E PARSE DO JSON DO BANCO
+  let familiasOrdenadas = todasFamilias.map(f => {
+    let rawItens = f.subgrupos || f.itens || [];
+    
+    // Trata JSON duplo para itens/subgrupos
+    if (typeof rawItens === 'string') {
+      try { rawItens = JSON.parse(rawItens); } catch (e) {}
+    }
+    if (typeof rawItens === 'string') {
+      try { rawItens = JSON.parse(rawItens); } catch (e) {}
+    }
+    if (!Array.isArray(rawItens)) rawItens = [];
 
-  const codigosLimpos = rawItens.map(c => String(c).trim());
+    const codigosLimpos = rawItens.map(c => String(c).trim());
 
-  return {
+    // 👈 DECLARAÇÃO DA VARIÁVEL rawSubs (Evita o erro "rawSubs is not defined")
+    let rawSubs = f.subdivisoes || [];
+    if (typeof rawSubs === 'string') {
+      try { rawSubs = JSON.parse(rawSubs); } catch (e) {}
+    }
+    if (typeof rawSubs === 'string') {
+      try { rawSubs = JSON.parse(rawSubs); } catch (e) {}
+    }
+    if (!Array.isArray(rawSubs)) rawSubs = [];
+
+    return {
       ...f,
       itens: codigosLimpos,
       subdivisoes: rawSubs
