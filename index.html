@@ -812,14 +812,15 @@ const fmtMoeda = v => (Number(v) || 0).toLocaleString('pt-BR', { minimumFraction
 const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 const parseAtributos = json => { try { return JSON.parse(json || '{}'); } catch { return {}; } };
 
-window.addEventListener('DOMContentLoaded', () => {
+wwindow.addEventListener('DOMContentLoaded', () => {
   verificarValidadeTabela();
   const cliSalvo = localStorage.getItem('clienteLogadoB2B');
   const acrescimoSalvo = localStorage.getItem('acrescimoB2B');
 
   if (cliSalvo) {
     clienteLogado = JSON.parse(cliSalvo);
-    porcentagemAcrescimo = parseFloat(acrescimoSalvo) || 0;
+    // Garante leitura decimal correta do acréscimo salvo
+    porcentagemAcrescimo = parseFloat(acrescimoSalvo) || parseFloat(clienteLogado.acrescimo) || 0;
 
     document.getElementById('telaLogin').style.display = 'none';
     document.getElementById('infoCliente').style.display = 'flex';
@@ -982,15 +983,20 @@ function fecharZoomModal() {
 }
 
 function calcularValoresProduto(precoBase, codItem) {
-  const precoBaseComAcrescimo = precoBase + ((precoBase * porcentagemAcrescimo) / 100);
+  // Pega a taxa de acréscimo ativa
+  const taxaUf = porcentagemAcrescimo || parseFloat(clienteLogado?.acrescimo) || 0;
+  
+  // Aplica a porcentagem da UF sobre o preço base
+  const precoBaseComAcrescimo = precoBase + ((precoBase * taxaUf) / 100);
+  
   if (mapaOfertas[codItem]) {
     const pctDesconto = mapaOfertas[codItem];
     const precoFinal = precoBaseComAcrescimo - (precoBaseComAcrescimo * pctDesconto / 100);
     return { temOferta: true, pctDesconto: pctDesconto, precoOriginal: precoBaseComAcrescimo, precoFinal: precoFinal };
   }
+
   return { temOferta: false, pctDesconto: 0, precoOriginal: precoBaseComAcrescimo, precoFinal: precoBaseComAcrescimo };
 }
-
 function normalizarItem(it) {
   return {
     codigo: String(it.codigo ?? ''),
@@ -1189,6 +1195,7 @@ async function fazerLogin() {
   const cnpjInput = document.getElementById('inputCnpj');
   const cnpj = cnpjInput.value.replace(/\D/g, '');
   const erro = document.getElementById('loginErro');
+  
   if (cnpj.length < 11) { erro.textContent = 'Digite um CNPJ válido.'; erro.style.display = 'block'; return; }
 
   try {
@@ -1197,15 +1204,24 @@ async function fazerLogin() {
     if (!j.ok) { erro.textContent = j.erro || 'Erro ao validar CNPJ.'; erro.style.display = 'block'; return; }
 
     clienteLogado = j.cliente;
-    porcentagemAcrescimo = j.regra_acrescimo.porcentagem;
+    
+    // Captura a porcentagem de forma segura tratando todas as chaves possíveis do banco
+    porcentagemAcrescimo = parseFloat(
+      j.regra_acrescimo?.porcentagem ?? 
+      j.regra_acrescimo?.acrescimo ?? 
+      j.cliente?.acrescimo ?? 
+      0
+    ) || 0;
+
     localStorage.setItem('clienteLogadoB2B', JSON.stringify(j.cliente));
-    localStorage.setItem('acrescimoB2B', j.regra_acrescimo.porcentagem);
+    localStorage.setItem('acrescimoB2B', porcentagemAcrescimo);
     configurarWhatsAppVendedor();
 
     document.getElementById('telaLogin').style.display = 'none';
     document.getElementById('infoCliente').style.display = 'flex';
     document.getElementById('nomeCliente').textContent = (clienteLogado.nome || '').split(' ')[0];
     document.getElementById('badgeUf').textContent = clienteLogado.uf;
+
     carregar();
   } catch (e) { erro.textContent = 'Erro de conexão.'; erro.style.display = 'block'; }
 }
