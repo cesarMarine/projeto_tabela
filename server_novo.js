@@ -685,6 +685,31 @@ app.get('/api/login/:cnpj', async (req, res) => {
       if (vendedor) vendedorInfo = vendedor;
     }
 
+    // 3. BUSCA A REGRA DE ACRÉSCIMO BASEADA NA UF DO CLIENTE
+    let acrescimoFinal = 0; // Padrão se não achar grupo
+    
+    if (cliente.uf) {
+      // Procura qual grupo está atrelado à UF do cliente (ex: SP, PR, etc)
+      const { data: ufConfig } = await supabase
+        .from('acrescimos_ufs')
+        .select('grupo_id')
+        .eq('uf', cliente.uf.toUpperCase())
+        .single();
+
+      // Se achou o grupo da UF, busca a porcentagem desse grupo
+      if (ufConfig && ufConfig.grupo_id) {
+        const { data: grupoInfo } = await supabase
+          .from('grupos_acrescimo')
+          .select('acrescimo')
+          .eq('id', ufConfig.grupo_id)
+          .single();
+
+        if (grupoInfo && grupoInfo.acrescimo) {
+          acrescimoFinal = Number(grupoInfo.acrescimo);
+        }
+      }
+    }
+
     // Retorna a regra de acréscimo + dados do cliente e do vendedor
     res.json({
       ok: true,
@@ -693,9 +718,9 @@ app.get('/api/login/:cnpj', async (req, res) => {
         nome: cliente.nome_fantasia || cliente.razao_social,
         uf: cliente.uf,
         representante: cliente.codigo_representante,
-        vendedor: vendedorInfo // Contém { nome, whatsapp }
+        vendedor: vendedorInfo
       },
-      regra_acrescimo: { porcentagem: 0 } // Sua regra atual de UF
+      regra_acrescimo: { porcentagem: acrescimoFinal } // <-- Agora vai com o valor correto!
     });
 
   } catch (e) {
