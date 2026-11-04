@@ -817,10 +817,9 @@ wwindow.addEventListener('DOMContentLoaded', () => {
   const cliSalvo = localStorage.getItem('clienteLogadoB2B');
   const acrescimoSalvo = localStorage.getItem('acrescimoB2B');
 
-  if (cliSalvo) {
-    clienteLogado = JSON.parse(cliSalvo);
-    // Garante leitura decimal correta do acréscimo salvo
-    porcentagemAcrescimo = parseFloat(acrescimoSalvo) || parseFloat(clienteLogado.acrescimo) || 0;
+if (cliSalvo) {
+  clienteLogado = JSON.parse(cliSalvo);
+  porcentagemAcrescimo = parseFloat(acrescimoSalvo) || parseFloat(clienteLogado.acrescimo) || 0;
 
     document.getElementById('telaLogin').style.display = 'none';
     document.getElementById('infoCliente').style.display = 'flex';
@@ -1206,12 +1205,16 @@ async function fazerLogin() {
     clienteLogado = j.cliente;
     
     // Captura a porcentagem de forma segura tratando todas as chaves possíveis do banco
-    porcentagemAcrescimo = parseFloat(
-      j.regra_acrescimo?.porcentagem ?? 
-      j.regra_acrescimo?.acrescimo ?? 
-      j.cliente?.acrescimo ?? 
-      0
-    ) || 0;
+// Substitua:
+// porcentagemAcrescimo = j.regra_acrescimo.porcentagem;
+
+// Por isto:
+porcentagemAcrescimo = parseFloat(
+  j.regra_acrescimo?.porcentagem ?? 
+  j.regra_acrescimo?.acrescimo ?? 
+  j.cliente?.acrescimo ?? 
+  0
+) || 0;
 
     localStorage.setItem('clienteLogadoB2B', JSON.stringify(j.cliente));
     localStorage.setItem('acrescimoB2B', porcentagemAcrescimo);
