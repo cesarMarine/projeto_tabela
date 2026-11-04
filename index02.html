@@ -1,0 +1,2858 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Tabela de Preços B2B</title>
+<style>
+  /* BADGE DE LANÇAMENTO FLUTUANTE NA FOTO PRINCIPAL */
+  .tarja-lancamento-foto {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+    color: #ffffff;
+    font-size: 0.65rem;
+    font-weight: 900;
+    padding: 3px 8px;
+    border-radius: 6px;
+    z-index: 10;
+    border: 1px solid #60a5fa;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  :root {
+    --azul-900:#001f3f; --azul-800:#003366; --azul-700:#004080;
+    --azul-500:#2563eb; --azul-100:#dbeafe; --azul-50:#eff6ff;
+    --branco:#ffffff; --cinza-50:#f8fafc; --cinza-100:#f1f5f9;
+    --cinza-200:#e2e8f0; --cinza-300:#cbd5e1; --cinza-400:#94a3b8;
+    --cinza-500:#64748b; --cinza-700:#334155; --texto:#1a2a3a;
+    --verde:#10b981; --verde-hover:#059669;
+    --vermelho:#ef4444; --vermelho-suave:#fee2e2;
+    --preto-black:#0a0a0a; --dourado-black:#facc15;
+  }
+  body { font-family:'Inter','Segoe UI',system-ui,sans-serif; background:var(--cinza-50); color:var(--texto); -webkit-font-smoothing:antialiased; min-height:100vh; padding-bottom: 90px; }
+  button { font-family:inherit; cursor:pointer; }
+
+  /* LOGIN */
+  #telaLogin { position:fixed; inset:0; z-index:9999; background:linear-gradient(135deg, #001f3f 0%, #003366 100%); display:flex; align-items:center; justify-content:center; padding:20px; }
+  .login-box { background:white; border-radius:16px; padding:30px 20px; width:100%; max-width:400px; box-shadow:0 20px 60px rgba(0,0,0,0.4); text-align:center; }
+  .login-box h1 { color:var(--azul-800); font-size:1.4rem; font-weight:800; margin-bottom:8px; }
+  .login-box p { color:var(--cinza-500); font-size:.85rem; margin-bottom:20px; }
+  .login-box input { width:100%; padding:14px 16px; border:2px solid var(--cinza-200); border-radius:10px; font-size:1rem; text-align:center; font-weight:700; letter-spacing:1px; margin-bottom:16px; }
+  .login-box input:focus { outline:none; border-color:var(--azul-500); }
+  .login-box button { width:100%; padding:14px; background:var(--azul-800); color:white; border:none; border-radius:10px; font-size:1rem; font-weight:800; transition:.2s; }
+  .login-box button:hover { background:var(--azul-700); }
+  .login-erro { color:var(--vermelho); font-size:.85rem; font-weight:700; margin-bottom:12px; display:none; }
+
+  /* TOPO LIMPO */
+  .topo { background:linear-gradient(135deg, #001f3f 0%, #003366 100%); color:white; position:sticky; top:0; z-index:100; box-shadow:0 4px 24px rgba(0,51,102,.25); }
+  .topo-inner { max-width:1600px; margin:0 auto; padding:8px 12px; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+  
+  .info-cliente { display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.12); padding:4px 10px; border-radius:20px; font-size:.75rem; font-weight:700; white-space:nowrap; }
+  .info-cliente span.uf { background:var(--verde); color:white; padding:2px 6px; border-radius:4px; font-size:0.65rem; }
+  .btn-topo-acao { background:#2563eb; color:white; border:none; padding:4px 8px; border-radius:10px; font-weight:800; font-size:0.7rem; cursor:pointer; display:inline-flex; align-items:center; gap:3px; }
+  .btn-topo-sair { background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:10px; font-weight:800; font-size:0.7rem; cursor:pointer; }
+
+  .busca-wrap { flex:1; }
+  .busca-wrap input { width:100%; padding:9px 14px; border:none; border-radius:10px; font-family:inherit; font-size:.85rem; background:rgba(255,255,255,.18); color:white; }
+  .busca-wrap input::placeholder { color:rgba(255,255,255,.7); }
+  .busca-wrap input:focus { outline:none; background:rgba(255,255,255,.28); }
+
+  /* BOTÕES DE GRUPO PREENCHIDOS */
+  .chips-wrap { background:white; border-bottom:1px solid var(--cinza-200); position:sticky; top:49px; z-index:90; padding:8px 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .chips { max-width:1600px; margin:0 auto; display:flex; gap:10px; align-items:center; flex-wrap: nowrap; }
+  
+  .chip { 
+    width: 48px; height: 48px; 
+    border-radius: 12px; background: var(--cinza-100); 
+    border: 2px solid var(--cinza-200); cursor: pointer; 
+    transition: .15s; display: flex; align-items: center; justify-content: center; 
+    padding: 3px; flex-shrink: 0; overflow: hidden;
+  }
+  .chip:hover { transform: translateY(-2px); border-color: var(--azul-500); }
+  .chip.ativo { background: var(--azul-800); border-color: var(--azul-800); box-shadow: 0 4px 12px rgba(0,31,63,0.3); }
+  
+  .chip.chip-oferta { 
+    background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+    border-color: #facc15; font-size: 1.4rem; color: #facc15;
+    position: relative;
+  }
+  .chip.chip-oferta::after {
+    content: 'BLACK';
+    position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%);
+    font-size: 0.4rem; font-weight: 900; color: #facc15; letter-spacing: 0.5px;
+  }
+  .chip.chip-oferta.ativo { 
+    background: linear-gradient(135deg, #7f1d1d 0%, #b91c1c 100%);
+    border-color: #facc15;
+    box-shadow: 0 0 0 3px rgba(250,204,21,0.3), 0 4px 12px rgba(127,29,29,0.5);
+  }
+  
+  .chip-img { width: 100%; height: 100%; object-fit: contain; border-radius: 8px; }
+
+  /* LOGOMARCAS */
+  .marca-logo-img { height: 26px; max-width: 110px; object-fit: contain; vertical-align: middle; }
+  
+  /* CONTEÚDO */
+  .conteudo { padding:0; max-width:1600px; margin:0 auto; }
+  .loading { text-align:center; padding:60px 20px; color:var(--cinza-400); }
+  
+  .familia-bloco { margin: 12px; }
+  .familia-head { display:flex; align-items:center; justify-content:space-between; gap:8px; padding-bottom:6px; margin-bottom:8px; border-bottom:2px solid var(--azul-100); flex-wrap:wrap; }
+  .familia-head h2 { color:var(--azul-800); font-size:1.05rem; font-weight:800; }
+  .familia-head .marca-badge { background:var(--azul-50); color:var(--azul-800); padding:3px 8px; border-radius:12px; font-size:.65rem; font-weight:800; text-transform:uppercase; }
+
+  .sub-grupo-header { background: var(--azul-50); color: var(--azul-800); padding: 6px 10px; border-radius: 6px; border-left: 4px solid var(--azul-500); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 6px; display:inline-block; }
+  
+  /* CARDS E GRADES */
+  .familia-card, .isca-card, .anzol-card, .molinete-card { 
+    display:grid; grid-template-columns: 1fr; gap:12px; background:white; 
+    border:1px solid var(--cinza-200); border-radius:12px; padding:12px; 
+    box-shadow:0 2px 8px rgba(0,0,0,.03); position:relative; 
+  }
+  @media(min-width: 768px) {
+    .familia-card, .isca-card, .anzol-card, .molinete-card { grid-template-columns: 180px 1fr; gap:16px; padding:16px; }
+  }
+
+  .familia-side { display:flex; flex-direction:column; gap:8px; position:relative; }
+  .familia-foto-principal { background:var(--cinza-50); border:1px solid var(--cinza-100); border-radius:10px; padding:8px; aspect-ratio:1; display:flex; align-items:center; justify-content:center; cursor:pointer; max-width: 220px; margin: 0 auto; width:100%; position:relative; }
+  .familia-foto-principal img { max-width:100%; max-height:100%; object-fit:contain; }
+  
+  .btn-detalhes { background:var(--cinza-50); border:1px solid var(--cinza-200); color:var(--azul-800); border-radius:6px; font-size:.65rem; font-weight:800; text-transform:uppercase; cursor:pointer; display:inline-flex; align-items:center; gap:4px; padding:6px 10px; margin-bottom:8px; align-self:flex-start; }
+
+  /* BADGES DE OFERTA */
+  .badge-oferta-banner {
+    position: absolute; top: -8px; left: -8px;
+    background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+    color: white; font-weight: 900; font-size: 0.65rem; text-transform: uppercase;
+    padding: 4px 8px; border-radius: 6px; z-index: 5; border: 1px solid white;
+  }
+  .tarja-oferta-item {
+    display: inline-flex; align-items: center; gap: 2px;
+    background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+    color: white; font-size: 0.6rem; font-weight: 900;
+    padding: 2px 6px; border-radius: 4px; text-transform: uppercase; white-space: nowrap; margin-left: 4px;
+  }
+  
+  .preco-box-oferta { display: flex; flex-direction: column; align-items: flex-end; justify-content: center; }
+  .preco-de { text-decoration: line-through; color: #94a3b8; font-size: 0.7rem; font-weight: 700; line-height: 1; }
+  .preco-por { color: #ef4444; font-size: 0.9rem; font-weight: 900; line-height: 1; }
+
+  /* MINIATURAS E GRADES */
+  .topo-miniaturas { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--cinza-100); }
+  .filho-mini { min-width: 65px; width: 65px; background:white; border:2px solid var(--cinza-200); border-radius:6px; padding:3px; cursor:pointer; text-align:center; }
+  .filho-mini img { width:100%; aspect-ratio:1; object-fit:contain; }
+  .mini-nome { font-size:.5rem; font-weight:800; color:var(--azul-800); text-transform:uppercase; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .filho-mini.ativa { border-color:var(--azul-800); background:var(--azul-50); }
+
+  .isca-modelos-tabs, .anzol-tabs, .molinete-tabs { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; padding-bottom:6px; border-bottom:1px solid var(--cinza-200); }
+  .isca-modelo-btn, .anzol-tab, .molinete-tab { padding:5px 10px; border-radius:6px; border:1px solid var(--cinza-200); background:var(--cinza-50); color:var(--azul-800); font-size:.75rem; font-weight:800; cursor:pointer; white-space:nowrap; }
+  .isca-modelo-btn.ativo, .anzol-tab.ativo, .molinete-tab.ativo { background:var(--azul-800); color:white; border-color:var(--azul-800); }
+  .isca-titulo-cores { font-size:.7rem; font-weight:800; color:var(--cinza-500); text-transform:uppercase; margin-bottom:8px; }
+  
+  .isca-grade, .anzol-grade, .molinete-grade { display:grid; grid-template-columns:repeat(auto-fill, minmax(130px, 1fr)); gap:8px; }
+  .isca-cor-card, .anzol-numero-card, .molinete-numero-card { background:white; border:1px solid var(--cinza-200); border-radius:8px; padding:6px; display:flex; flex-direction:column; align-items:center; position:relative; }
+  .isca-cor-card.ativa, .anzol-numero-card.ativa, .molinete-numero-card.ativa { border-color:var(--azul-800); }
+  .isca-cor-card img { width:100%; aspect-ratio:1; object-fit:contain; margin-bottom:2px; }
+  .cor-nome, .anzol-numero, .molinete-numero { font-size:.75rem; font-weight:800; color:var(--azul-800); text-align:center; word-break:break-word; }
+  .cor-preco, .anzol-preco, .molinete-preco { font-size:.75rem; font-weight:800; color:var(--verde); }
+
+  .isca-badge, .anzol-badge, .molinete-badge { position:absolute; top:-4px; right:-4px; min-width:18px; height:18px; background:var(--verde); color:white; border-radius:9px; font-size:10px; font-weight:900; display:none; align-items:center; justify-content:center; border:2px solid white; z-index:3; }
+  .isca-cor-card.tem-qtd .isca-badge, .anzol-numero-card.tem-qtd .anzol-badge, .molinete-numero-card.tem-qtd .molinete-badge { display:flex; }
+  .isca-cor-card.tem-qtd, .anzol-numero-card.tem-qtd, .molinete-numero-card.tem-qtd { border-color:var(--verde); background:#f0fdf4; }
+  
+  .isca-qtd-ctrl, .anzol-qtd-ctrl, .molinete-qtd-ctrl { display:flex; align-items:center; gap:2px; margin-top:4px; width:100%; justify-content:center; }
+  .isca-qtd-ctrl button, .anzol-qtd-ctrl button, .molinete-qtd-ctrl button { width:22px; height:22px; border-radius:4px; border:1px solid var(--cinza-300); background:white; font-weight:800; color:var(--azul-800); }
+  .isca-qtd-ctrl input, .anzol-qtd-ctrl input, .molinete-qtd-ctrl input { width:26px; height:22px; border:1px solid var(--cinza-300); border-radius:4px; text-align:center; font-weight:800; font-size:0.75rem; color:var(--azul-800); }
+
+  /* LISTAS DE ITENS DA TABELA */
+  .linha-filho-container { display:flex; flex-direction:column; background:white; border:1px solid var(--cinza-200); border-radius:8px; overflow:hidden; }
+  .linha-filho { display:flex; align-items:center; justify-content:space-between; gap:6px; padding:6px 8px; flex-wrap:wrap; }
+  .l-info-main { display:flex; align-items:center; gap:4px; flex:1; min-width:140px; }
+  .l-cod { font-family:monospace; font-weight:800; color:var(--cinza-500); font-size:.7rem; background:var(--cinza-100); padding:2px 4px; border-radius:4px; white-space:nowrap; }
+  .l-nome { font-size:.75rem; font-weight:800; color:var(--azul-800); line-height:1.2; word-break:break-word; }
+  .tag-lado { background: var(--azul-100); color: var(--azul-800); font-size: .6rem; font-weight: 800; padding: 2px 4px; border-radius: 4px; white-space: nowrap; }
+  .l-direita-wrap { display:flex; align-items:center; gap:6px; margin-left:auto; }
+  .btn-toggle-var { background:var(--azul-50); border:1px solid var(--azul-200); border-radius:4px; padding:2px 5px; font-size:.75rem; }
+  .l-preco { font-size:.8rem; font-weight:900; color:var(--verde); white-space:nowrap; }
+  .painel-variacao-oculta { display:none; background:var(--cinza-50); border-top:1px dashed var(--cinza-200); padding:6px 8px; font-size:.7rem; color:var(--cinza-700); }
+  .painel-variacao-oculta.ativo { display:block; }
+
+  .qtd-ctrl { display:inline-flex; align-items:center; border:1px solid var(--cinza-300); border-radius:6px; background:white; overflow:hidden; }
+  .qtd-ctrl button { width:24px; height:24px; border:none; background:var(--cinza-50); font-weight:800; color:var(--azul-800); font-size:.85rem; }
+  .qtd-ctrl input { width:26px; height:24px; text-align:center; border:none; font-weight:800; color:var(--azul-800); font-size:.75rem; }
+
+  .grade-soltos { display:grid; grid-template-columns:repeat(auto-fill, minmax(130px, 1fr)); gap:10px; }
+  .card-solto { background:white; border:1px solid var(--cinza-200); border-radius:8px; padding:8px; text-align:center; position:relative; }
+  .card-solto .img { width:100%; aspect-ratio:1; background:var(--cinza-50); display:flex; align-items:center; justify-content:center; border-radius:6px; margin-bottom:6px; overflow:hidden; }
+  .card-solto .img img { width:100%; height:100%; object-fit:contain; }
+  .card-solto .nome { font-size:.7rem; font-weight:700; color:var(--azul-800); margin-bottom:4px; line-height:1.2; word-break:break-word; }
+  .card-solto .preco { font-size:.8rem; font-weight:800; color:var(--verde); }
+
+  /* CARRINHO FLUTUANTE */
+  .fab-carrinho { position:fixed; bottom:20px; right:20px; background:var(--azul-800); color:white; width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; box-shadow:0 4px 16px rgba(0,51,102,0.4); cursor:pointer; z-index:150; }
+  .fab-qtd { position:absolute; top:-4px; right:-4px; background:var(--vermelho); color:white; font-size:11px; font-weight:900; min-width:20px; height:20px; border-radius:10px; display:flex; align-items:center; justify-content:center; border:2px solid white; }
+  .painel-carrinho { position:fixed; bottom:85px; right:16px; left:16px; max-width:400px; margin:0 auto; background:white; border-radius:12px; box-shadow:0 10px 40px rgba(0,0,0,0.3); z-index:200; display:none; flex-direction:column; overflow:hidden; border:1px solid var(--cinza-200); }
+  .painel-carrinho.on { display:flex; }
+  .painel-head { background:var(--azul-800); color:white; padding:12px 16px; font-weight:800; font-size:.85rem; display:flex; justify-content:space-between; align-items:center; }
+  .painel-lista { padding:10px; max-height:260px; overflow-y:auto; display:flex; flex-direction:column; gap:6px; }
+  .item-carrinho { display:grid; grid-template-columns:30px 1fr auto; gap:8px; align-items:center; padding:6px; background:var(--cinza-50); border-radius:6px; font-size:.75rem; }
+  .item-carrinho img { width:30px; height:30px; object-fit:contain; }
+  .painel-foot { padding:12px 16px; border-top:1px solid var(--cinza-200); background:white; }
+  .total-linha { display:flex; justify-content:space-between; font-weight:800; font-size:1rem; margin-bottom:10px; color:var(--azul-800); }
+  .btn-finalizar { width:100%; background:var(--verde); color:white; border:none; padding:10px; border-radius:8px; font-weight:800; font-size:.95rem; cursor:pointer; }
+
+  /* MODAIS */
+  .modal-bg { position:fixed; inset:0; z-index:500; background:rgba(0,15,30,.85); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; padding:16px; opacity:0; pointer-events:none; transition:.25s; }
+  .modal-bg.on { opacity:1; pointer-events:auto; }
+  .modal { background:white; border-radius:12px; max-width:550px; width:100%; max-height:85vh; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 25px 80px rgba(0,0,0,.5); }
+  .modal-head { background:var(--azul-800); color:white; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; }
+  .modal-body { padding:16px; overflow-y:auto; }
+
+  .zoom-modal-bg { position: fixed; inset: 0; z-index: 10000; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; padding: 16px; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
+  .zoom-modal-bg.on { opacity: 1; pointer-events: auto; }
+  .zoom-modal-content { position: relative; max-width: 95vw; max-height: 90vh; display: flex; align-items: center; justify-content: center; }
+  .zoom-modal-content img { max-width: 100%; max-height: 80vh; object-fit: contain; border-radius: 8px; background: white; padding: 6px; }
+  .zoom-x { position: absolute; top: -12px; right: -12px; background: var(--vermelho); color: white; border: 2px solid white; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 14px; font-weight: bold; }
+
+  /* ============================================================
+     BLACK NOVEMBER — ENCARTE INLINE
+     ============================================================ */
+  .black-hero {
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+    color: white;
+    padding: 28px 16px 22px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    margin: 12px;
+    border-radius: 16px;
+    border: 2px solid #facc15;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6), inset 0 0 60px rgba(250,204,21,0.05);
+  }
+  .black-hero::before {
+    content: '';
+    position: absolute; top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(250,204,21,0.08) 0%, transparent 60%);
+    animation: blackGlow 6s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes blackGlow {
+    0%, 100% { opacity: 0.5; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+  }
+  .black-hero .tag-black {
+    display: inline-block;
+    background: linear-gradient(135deg, #facc15, #eab308);
+    color: #0a0a0a;
+    font-size: 0.65rem;
+    font-weight: 900;
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    box-shadow: 0 4px 12px rgba(250,204,21,0.3);
+    position: relative; z-index: 2;
+  }
+  .black-hero h1 {
+    font-size: clamp(1.4rem, 5vw, 2rem);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+    background: linear-gradient(135deg, #fff 0%, #facc15 50%, #fff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative; z-index: 2;
+    line-height: 1.1;
+  }
+  .black-hero p {
+    font-size: 0.8rem;
+    opacity: 0.85;
+    font-weight: 600;
+    margin-bottom: 14px;
+    position: relative; z-index: 2;
+  }
+  .black-contador {
+    display: inline-flex; gap: 6px; align-items: center; justify-content: center;
+    flex-wrap: wrap;
+    position: relative; z-index: 2;
+  }
+  .black-contador .bloco-tempo {
+    background: rgba(250,204,21,0.1);
+    border: 1px solid rgba(250,204,21,0.4);
+    border-radius: 8px;
+    padding: 6px 10px;
+    min-width: 52px;
+  }
+  .black-contador .num-tempo {
+    display: block; font-size: 1.2rem; font-weight: 900; color: #facc15; line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .black-contador .label-tempo {
+    display: block; font-size: 0.55rem; font-weight: 800; color: rgba(255,255,255,0.6);
+    text-transform: uppercase; letter-spacing: 1px; margin-top: 2px;
+  }
+
+  .black-filtros {
+    display: flex; gap: 8px; overflow-x: auto; padding: 4px 12px 12px 12px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .black-filtro-btn {
+    background: white;
+    border: 2px solid #e2e8f0;
+    color: #003366;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: 0.2s;
+  }
+  .black-filtro-btn.ativo {
+    background: linear-gradient(135deg, #0a0a0a, #1a1a1a);
+    color: #facc15;
+    border-color: #facc15;
+    box-shadow: 0 4px 12px rgba(250,204,21,0.2);
+  }
+
+  .grade-ofertas {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+    padding: 0 12px 12px 12px;
+  }
+  .card-oferta {
+    background: white;
+    border-radius: 14px;
+    border: 2px solid #1a1a1a;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    display: flex; flex-direction: column; position: relative;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .card-oferta:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    border-color: #facc15;
+  }
+  .card-oferta .selo-desconto {
+    position: absolute; top: 10px; left: 10px; z-index: 5;
+    background: linear-gradient(135deg, #0a0a0a, #1a1a1a);
+    color: #facc15; font-weight: 900; font-size: 0.8rem;
+    padding: 5px 10px; border-radius: 6px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+    border: 1px solid #facc15;
+    letter-spacing: 0.3px;
+  }
+  .card-oferta .selo-black {
+    position: absolute; top: 10px; right: 10px; z-index: 5;
+    background: linear-gradient(135deg, #facc15, #eab308);
+    color: #0a0a0a; font-weight: 900; font-size: 0.55rem;
+    padding: 3px 7px; border-radius: 4px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .card-oferta .img-box {
+    width: 100%; aspect-ratio: 1; background: #fff; padding: 12px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .card-oferta .img-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .card-oferta .corpo-oferta {
+    padding: 12px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;
+    background: #fafafa; border-top: 1px solid #f1f5f9;
+  }
+  .card-oferta .marca-tag {
+    font-size: 0.6rem; font-weight: 800; color: #003366; text-transform: uppercase;
+    background: #f1f5f9; padding: 2px 6px; border-radius: 4px; align-self: flex-start; margin-bottom: 4px;
+  }
+  .card-oferta .titulo-prod {
+    font-size: 0.8rem; font-weight: 800; color: #0f172a; line-height: 1.2; margin-bottom: 8px;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+    min-height: 2.8em;
+  }
+  .card-oferta .bloco-preco-balcao {
+    background: linear-gradient(135deg, #fef2f2, #fff1f2);
+    border: 1px dashed #fca5a5; padding: 8px;
+    border-radius: 8px; text-align: center; margin-bottom: 8px;
+  }
+  .card-oferta .txt-de {
+    font-size: 0.7rem; color: #94a3b8; text-decoration: line-through;
+    font-weight: 700; display: block;
+  }
+  .card-oferta .txt-por {
+    font-size: 1.15rem; color: #b91c1c; font-weight: 900;
+    display: block; line-height: 1.1;
+  }
+  .card-oferta .btn-add-primeiro {
+    flex: 1; background: linear-gradient(135deg, #10b981, #059669);
+    color: white; border: none; padding: 10px; border-radius: 8px;
+    font-weight: 900; font-size: 0.8rem;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: 0.2s;
+  }
+  .card-oferta .btn-add-primeiro:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(16,185,129,0.4); }
+  .card-oferta .qtd-oferta-wrap {
+    display: flex; align-items: center; justify-content: space-between; gap: 4px;
+    background: white; border: 2px solid #10b981; border-radius: 8px; padding: 3px;
+  }
+  .card-oferta .qtd-oferta-wrap button {
+    width: 30px; height: 30px; border-radius: 6px; border: none;
+    background: #ecfdf5; color: #059669; font-weight: 900; font-size: 1rem;
+  }
+  .card-oferta .qtd-oferta-wrap .num {
+    flex: 1; text-align: center; font-weight: 900; color: #059669; font-size: 0.9rem;
+  }
+  .black-vazio {
+    text-align: center; padding: 60px 20px; color: #94a3b8; font-weight: 700;
+  }
+
+  /* ===== ITEM DO CARRINHO — NOVO LAYOUT ===== */
+.item-carrinho {
+  display: grid;
+  grid-template-columns: 42px 1fr auto;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px;
+  background: var(--cinza-50);
+  border-radius: 8px;
+  font-size: .75rem;
+  border: 1px solid transparent;
+}
+.item-carrinho.item-com-oferta {
+  background: linear-gradient(135deg, #fff7ed, #fef2f2);
+  border: 1px solid #fca5a5;
+  box-shadow: 0 2px 8px rgba(239,68,68,0.08);
+}
+.item-img-wrap {
+  width: 42px; height: 42px;
+  background: white; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; border: 1px solid var(--cinza-200);
+}
+.item-img-wrap img { width: 100%; height: 100%; object-fit: contain; }
+
+.item-dados { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.item-titulo {
+  font-size: .78rem; font-weight: 800; color: var(--azul-800);
+  line-height: 1.2; word-break: break-word;
+}
+.item-valores { display: flex; flex-direction: column; gap: 1px; }
+.item-linha-valor { font-size: .7rem; color: var(--cinza-500); font-weight: 600; }
+.item-linha-valor strong { color: var(--azul-800); font-weight: 900; }
+.item-linha-total { font-size: .72rem; color: var(--cinza-700); }
+.item-linha-total strong { color: var(--verde); font-weight: 900; font-size: .82rem; }
+
+.val-unit { color: var(--azul-800); font-weight: 800; }
+.val-de {
+  text-decoration: line-through; color: #94a3b8;
+  font-weight: 700; font-size: .68rem; margin-right: 3px;
+}
+.val-unit-oferta { color: #dc2626; font-weight: 900; }
+
+.item-selo-economia {
+  display: inline-block;
+  margin-top: 3px;
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  color: white;
+  font-size: .62rem;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 12px;
+  align-self: flex-start;
+  box-shadow: 0 2px 6px rgba(22,163,74,0.25);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.item-remover {
+  background: none; border: none;
+  color: var(--vermelho); font-weight: 900;
+  font-size: 1rem; cursor: pointer;
+  padding: 2px 6px; align-self: flex-start;
+  border-radius: 4px;
+  transition: 0.15s;
+}
+.item-remover:hover { background: #fee2e2; }
+
+/* Bloco de economia total acima do Total */
+.rodape-economia {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border: 1px dashed #f59e0b;
+  color: #92400e;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: .75rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 10px;
+}
+.rodape-economia strong { color: #b45309; font-weight: 900; font-size: .85rem; }
+
+/* ===== MELHORIA NO CAMPO DE QUANTIDADE (MOBILE) ===== */
+.molinete-qtd-ctrl input,
+.anzol-qtd-ctrl input,
+.isca-qtd-ctrl input,
+.qtd-ctrl input {
+  font-size: 16px !important; /* Impede o iOS de dar zoom na tela ao clicar */
+  min-width: 45px !important; /* Aumenta a largura para caber 3 dígitos */
+  width: auto !important;
+  padding: 2px 4px;
+}
+
+@media (max-width: 768px) {
+  /* Deixa o campo de quantidade bem maior no celular */
+  .molinete-qtd-ctrl input,
+  .anzol-qtd-ctrl input,
+  .isca-qtd-ctrl input,
+  .qtd-ctrl input {
+    min-width: 60px !important; 
+    font-size: 18px !important;
+    height: 32px !important;
+  }
+  
+  /* Aumenta os botões de + e - no celular */
+  .molinete-qtd-ctrl button,
+  .anzol-qtd-ctrl button,
+  .isca-qtd-ctrl button,
+  .qtd-ctrl button {
+    height: 32px !important;
+    width: 32px !important;
+    font-size: 1.2rem !important;
+  }
+
+  /* Força o container a ter uma largura mínima no mobile */
+  .molinete-qtd-ctrl,
+  .anzol-qtd-ctrl,
+  .isca-qtd-ctrl {
+    width: 100% !important;
+  }
+}
+
+
+
+/* ============================================================
+   MARINE B2B | REFINAMENTO VISUAL 2026
+   Apenas apresentacao. Sem alteracoes nas regras ou funcoes JS.
+   ============================================================ */
+:root {
+  --azul-900:#102b46; --azul-800:#173d60; --azul-700:#235679;
+  --azul-500:#3179a5; --azul-100:#e0edf5; --azul-50:#f0f6fa;
+  --cinza-50:#f5f7fa; --cinza-100:#edf1f5; --cinza-200:#dfe6ed;
+  --cinza-300:#cbd5df; --cinza-500:#657789; --texto:#203448;
+  --verde:#15856b; --verde-hover:#0d7159;
+}
+body {background:#f5f7fa; color:var(--texto); line-height:1.45; letter-spacing:-.008em;}
+button,input {font:inherit;}
+button {transition:background-color .18s ease,border-color .18s ease,box-shadow .18s ease,transform .18s ease;}
+button:focus-visible, input:focus-visible, a:focus-visible {outline:3px solid #7cc0e8; outline-offset:2px;}
+.topo {background:#102b46; box-shadow:0 3px 16px rgba(14,38,62,.14);}
+.topo-inner {padding:12px 20px; gap:16px;}
+.info-cliente {background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.13); border-radius:9px; padding:7px 10px; font-size:.78rem; gap:8px;}
+.info-cliente span.uf {background:#157d70; border-radius:5px;}
+.btn-topo-acao,.btn-topo-sair {font-size:.75rem; padding:7px 11px; border-radius:7px;}
+.btn-topo-acao {background:#2a638a;}.btn-topo-sair {background:#a9414b;}
+.busca-wrap input {background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.15); border-radius:9px; padding:11px 15px; font-size:.88rem;}
+.busca-wrap input:focus {background:rgba(255,255,255,.2); border-color:#90c5e6;}
+.chips-wrap {top:0; position:relative; padding:10px 20px; background:#fff; border-bottom:1px solid #e3eaf0; box-shadow:0 2px 8px rgba(20,48,72,.035);}
+.chips {gap:9px;}
+.chip {width:52px; height:52px; background:#f7f9fb; border:1px solid #e0e7ed; border-radius:11px; padding:5px;}
+.chip:hover {transform:translateY(-1px); border-color:#81a8c3; box-shadow:0 3px 10px rgba(15,52,80,.1);}
+.chip.ativo {background:#e8f2f8; border:2px solid #2a668c; box-shadow:0 0 0 2px rgba(42,102,140,.09);}
+.chip.chip-oferta.ativo {background:#382a24;}
+#barramarcasWrap {position:relative !important; top:auto !important; background:#f7f9fb !important; padding:9px 20px !important;}
+.conteudo {padding:12px 8px 40px;}
+.familia-bloco {margin:16px 12px 24px;}
+.familia-head {padding:0 2px 11px; margin-bottom:10px; border-bottom:1px solid #dbe5ed;}
+.familia-head h2 {font-size:1.15rem; font-weight:750; letter-spacing:-.025em; color:#163c5b;}
+.familia-head .marca-badge {border-radius:6px; padding:5px 10px;}
+.sub-grupo-header {background:#e9f2f8; border-left:3px solid #397ca5; border-radius:5px; padding:7px 12px; font-size:.73rem;}
+.familia-card,.isca-card,.anzol-card,.molinete-card {border:1px solid #e1e8ef; border-radius:13px; box-shadow:0 3px 16px rgba(22,51,75,.045); gap:17px; padding:16px;}
+.familia-foto-principal {background:#fafcfd; border:1px solid #e7edf2; border-radius:11px; max-width:235px; padding:12px;}
+.btn-detalhes {background:#f0f5f9; border:1px solid #dbe7ef; color:#285d80; border-radius:7px; padding:8px 12px; font-size:.7rem; margin-bottom:11px;}
+.btn-detalhes:hover {background:#e3eff7;}
+.topo-miniaturas {gap:8px; padding-bottom:12px;}
+.filho-mini {border:1px solid #dde6ed; border-radius:8px; padding:5px; width:72px; min-width:72px;}
+.filho-mini.ativa {border:2px solid #2e6c93; background:#edf5fa;}
+.mini-nome {font-size:.59rem;}
+.isca-modelos-tabs,.anzol-tabs,.molinete-tabs {gap:7px; padding-bottom:10px;}
+.isca-modelo-btn,.anzol-tab,.molinete-tab {border-radius:7px; padding:8px 12px; background:#f6f9fb; border:1px solid #dce6ee; font-size:.76rem;}
+.isca-modelo-btn.ativo,.anzol-tab.ativo,.molinete-tab.ativo {background:#1c4b6e; border-color:#1c4b6e;}
+.isca-grade,.anzol-grade,.molinete-grade {gap:10px; grid-template-columns:repeat(auto-fill,minmax(145px,1fr));}
+.isca-cor-card,.anzol-numero-card,.molinete-numero-card {border:1px solid #e0e7ee; border-radius:10px; padding:10px 8px; gap:3px; box-shadow:0 1px 4px rgba(20,45,70,.025);}
+.isca-cor-card.tem-qtd,.anzol-numero-card.tem-qtd,.molinete-numero-card.tem-qtd {background:#f1faf7; border-color:#74b7a5; box-shadow:0 0 0 1px rgba(21,133,107,.1);}
+.cor-nome,.anzol-numero,.molinete-numero {font-size:.79rem; line-height:1.35;}
+.cor-preco,.anzol-preco,.molinete-preco,.l-preco {color:#147b62; font-size:.85rem;}
+.isca-qtd-ctrl,.anzol-qtd-ctrl,.molinete-qtd-ctrl {gap:4px; margin-top:8px;}
+.isca-qtd-ctrl button,.anzol-qtd-ctrl button,.molinete-qtd-ctrl button {width:30px; height:30px; border:1px solid #d7e2ea; border-radius:7px; background:#f3f7fa; color:#1b4b70;}
+.isca-qtd-ctrl input,.anzol-qtd-ctrl input,.molinete-qtd-ctrl input {height:30px; border-radius:7px; border-color:#d7e2ea;}
+.linha-filho-container {border-color:#e0e7ee; border-radius:9px;}
+.linha-filho {padding:9px 11px; gap:9px;}
+.linha-filho + .linha-filho {border-top:1px solid #f0f3f6;}
+.l-cod {font-size:.73rem; padding:4px 6px; background:#f1f5f8;}
+.l-nome {font-size:.81rem; line-height:1.35;}
+.qtd-ctrl {border-radius:7px; border-color:#d6e1e9;}
+.qtd-ctrl button {width:30px; height:30px; background:#f2f6f9;}
+.qtd-ctrl input {height:30px;}
+.grade-soltos {grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px;}
+.card-solto {border:1px solid #e0e7ee; border-radius:11px; padding:11px; box-shadow:0 2px 9px rgba(25,53,76,.035);}
+.card-solto .img {border-radius:8px; background:#f8fafc;}
+.card-solto .nome {font-size:.78rem;}
+.card-solto .preco {font-size:.88rem; color:#147b62;}
+.fab-carrinho {background:#174969; width:60px; height:60px; box-shadow:0 7px 22px rgba(15,49,77,.26);}
+.painel-carrinho {border:1px solid #dce5ec; border-radius:14px; box-shadow:0 18px 55px rgba(17,42,64,.2);}
+.painel-head {background:#153c5a; padding:15px 17px; font-size:.95rem;}
+.painel-lista {gap:9px; padding:13px;}
+.item-carrinho {border-radius:9px; padding:11px;}
+.painel-foot {padding:16px;}
+.total-linha {font-size:1.08rem;}
+.btn-finalizar {background:#15856b; border-radius:8px; padding:12px;}
+.btn-finalizar:hover {background:#0d7159;}
+.modal-bg {background:rgba(13,31,48,.7);}
+.modal {border-radius:15px; box-shadow:0 25px 70px rgba(9,29,48,.25);}
+.modal-head {background:#153c5a; padding:15px 18px;}
+.modal-body {padding:19px;}
+.login-box {border-radius:18px; padding:32px 27px; box-shadow:0 25px 70px rgba(0,0,0,.2);}
+#telaLogin {background:linear-gradient(140deg,#102b46,#235679);}
+.login-box h1 {font-size:1.65rem; letter-spacing:-.03em;}
+.login-box input {border-radius:9px;}
+.login-box button {background:#174969; border-radius:9px;}
+.black-hero {border-radius:14px; box-shadow:0 8px 24px rgba(0,0,0,.16);}
+.card-oferta {border:1px solid #dfe6ec; border-radius:12px; box-shadow:0 3px 13px rgba(19,44,64,.06);}
+.card-oferta:hover {border-color:#d5a93d; box-shadow:0 8px 22px rgba(19,44,64,.1);}
+.card-oferta .corpo-oferta {background:#fff;}
+.card-oferta .titulo-prod {font-size:.84rem;}
+@media(min-width:768px) {
+  .familia-card,.isca-card,.anzol-card,.molinete-card {grid-template-columns:195px minmax(0,1fr); padding:19px;}
+}
+@media(max-width:767px) {
+  .topo-inner {padding:10px 12px; gap:8px; flex-wrap:wrap;}
+  .info-cliente {max-width:100%; overflow-x:auto; font-size:.7rem;}
+  .busca-wrap {flex-basis:100%;}
+  .chips-wrap {padding:9px 12px;}
+  #barramarcasWrap {padding:8px 12px !important;}
+  .conteudo {padding:5px 0 28px;}
+  .familia-bloco {margin:13px 9px 20px;}
+  .familia-card,.isca-card,.anzol-card,.molinete-card {padding:12px; gap:12px;}
+  .familia-head h2 {font-size:1.04rem;}
+  .familia-foto-principal {max-width:185px;}
+  .isca-grade,.anzol-grade,.molinete-grade {grid-template-columns:repeat(auto-fill,minmax(125px,1fr)); gap:8px;}
+  .grade-soltos {grid-template-columns:repeat(auto-fill,minmax(135px,1fr));}
+  .painel-carrinho {bottom:90px;}
+  .fab-carrinho {bottom:16px; right:16px;}
+}
+@media(prefers-reduced-motion:reduce) {button,.chip,.card-oferta {transition:none !important; animation:none !important;}}
+
+</style>
+</head>
+<body>
+
+<!-- BOTÃO FLUTUANTE DISCRETO DO WHATSAPP -->
+<a id="btnWhatsVendedor" href="#" target="_blank" style="display:none; position:fixed; bottom:20px; left:20px; background:#25D366; color:white; padding:10px 16px; border-radius:30px; font-weight:800; font-size:0.8rem; text-decoration:none; box-shadow:0 4px 16px rgba(37,211,102,0.4); z-index:150; align-items:center; gap:8px;">
+  <span style="font-size:1.1rem;">💬</span> Falar com <span id="nomeVendedorWhats">Vendedor</span>
+</a>
+<div id="telaLogin">
+  <div class="login-box">
+    <h1>Catálogo B2B</h1>
+    <p>Digite o seu CNPJ para acessar a tabela de preços.</p>
+    <div class="login-erro" id="loginErro">CNPJ não encontrado ou inativo.</div>
+    <input type="text" id="inputCnpj" placeholder="00.000.000/0000-00" autocomplete="off">
+    <button onclick="fazerLogin()">Acessar Catálogo</button>
+  </div>
+</div>
+
+<header class="topo">
+  <div class="topo-inner">
+    <div class="info-cliente" id="infoCliente" style="display:none;">
+      👤 <span id="nomeCliente">—</span>
+      <span class="uf" id="badgeUf">—</span>
+      <button class="btn-topo-acao" onclick="abrirMeusPedidos()">📋 Pedidos</button>
+      <button class="btn-topo-sair" onclick="sairCliente()">Sair</button>
+    </div>
+
+    <div class="busca-wrap">
+      <input type="search" id="busca" placeholder="🔍 Buscar produto por código, nome ou palavra-chave..." autocomplete="off">
+    </div>
+  </div>
+</header>
+
+<!-- AVISO DE VALIDADE DA TABELA -->
+<div id="barraAvisoTabela" style="display:none; text-align:center; padding:8px 12px; font-weight:800; font-size:0.8rem; border-bottom:1px solid transparent;"></div>
+
+<!-- CABAÇALHO DE GRUPOS -->
+<div class="chips-wrap"><div class="chips" id="chips"></div></div>
+
+<!-- BARRA SECUNDÁRIA DE MARCAS -->
+<div id="barramarcasWrap" style="display:none; background:#f1f5f9; border-bottom:1px solid #e2e8f0; padding:6px 12px; position:sticky; top:105px; z-index:89; overflow-x:auto;">
+  <div id="barramarcas" style="max-width:1600px; margin:0 auto; display:flex; gap:8px; align-items:center;"></div>
+</div>
+
+<main class="conteudo" id="conteudo">
+  <div class="loading">Carregando catálogo…</div>
+</main>
+
+<div class="fab-carrinho" id="btnCarrinho" onclick="toggleCarrinho()" style="display:none;">
+  🛒
+  <div class="fab-qtd" id="topoQtd">0</div>
+</div>
+
+<div class="painel-carrinho" id="painelCarrinho">
+  <div class="painel-head">
+    <span>Seu Pedido</span>
+    <button onclick="toggleCarrinho()" style="background:none; border:none; color:white; font-weight:bold;">✕</button>
+  </div>
+  <div class="painel-lista" id="listaCarrinho"></div>
+  <div class="painel-foot">
+  <div class="total-linha">
+    <span>Total:</span>
+    <span id="carrinhoTotal">R$ 0,00</span>
+  </div>
+  <div style="display:flex; gap:8px;">
+    <button type="button" onclick="salvarRascunho()" 
+            style="flex:1; background:#003366; color:white; border:none; padding:10px; border-radius:8px; font-weight:800; font-size:0.85rem; cursor:pointer;">
+      💾 Salvar Rascunho
+    </button>
+    <button type="button" class="btn-finalizar" onclick="finalizarPedido()" style="flex:1.5;">
+      🚀 Enviar Pedido
+    </button>
+  </div>
+</div>
+</div>
+
+<div class="modal-bg" id="modalBg" onclick="fecharModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <h3 id="modalTitulo" style="font-size:0.95rem;">—</h3>
+      <button onclick="fecharModal(null, true)" style="background:none; border:none; color:white; font-size:1.1rem; font-weight:bold;">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<div class="zoom-modal-bg" id="zoomModalBg" onclick="fecharZoomModal()">
+  <div class="zoom-modal-content" onclick="event.stopPropagation()">
+    <button class="zoom-x" onclick="fecharZoomModal()">✕</button>
+    <img id="zoomModalImg" src="" alt="Imagem ampliada">
+  </div>
+</div>
+
+<script>
+let todosItens = [], todasFamilias = [], grupoAtual = '__OFERTAS__', buscaAtual = '', carrinho = {};
+let clienteLogado = null;
+let porcentagemAcrescimo = 0;
+let mapaOfertas = {}; 
+let marcaAtual = '';
+let ofertasCache = [];
+let mapaCatalogoCache = new Map();
+let filtroOfertaAtual = '';
+let contadorBlackInterval = null;
+const PRODUTOS_LOTE_10 = ['5795', '5796'];
+
+const BUCKET_ICONIS = 'https://gpzqzwrqndawhhglycat.supabase.co/storage/v1/object/public/icones_area_trabalho/';
+
+// FIM DO BLACK NOVEMBER (30/11 do ano atual às 23:59:59)
+function getFimBlackNovember() {
+  const hoje = new Date();
+  const ano = hoje.getFullYear();
+  return new Date(ano, 10, 30, 23, 59, 59); // mês 10 = novembro (0-indexed)
+}
+
+function calcularQtdComLote(codigoProduto, quantidadeInserida) {
+  const qtd = parseInt(quantidadeInserida, 10) || 0;
+  if (qtd <= 0) return 0;
+  if (PRODUTOS_LOTE_10.includes(String(codigoProduto))) {
+    const resto = qtd % 10;
+    if (resto === 0) return qtd;
+    return Math.ceil(qtd / 10) * 10;
+  }
+  return qtd;
+}
+
+function montarBarraMarcas() {
+  const wrap = document.getElementById('barramarcasWrap');
+  const container = document.getElementById('barramarcas');
+
+  if (!container || !wrap) return;
+
+  if (grupoAtual === '__OFERTAS__' || grupoAtual === '__TODOS__') {
+    wrap.style.display = 'none';
+    return;
+  }
+
+  const produtosDoGrupo = todosItens.filter(it => it.grupo === grupoAtual && it.estoque > 0);
+  const marcasSet = new Set();
+  produtosDoGrupo.forEach(it => { if (it.marca) marcasSet.add(it.marca.trim()); });
+  let marcas = Array.from(marcasSet);
+
+  if (marcas.length <= 1) {
+    wrap.style.display = 'none';
+    return;
+  }
+
+  // ORDENAÇÃO CUSTOMIZADA: MARINE PRIMEIRO, DEPOIS AS OUTRAS EM ORDEM ALFABÉTICA
+  marcas.sort((a, b) => {
+    const aUpper = a.toUpperCase();
+    const bUpper = b.toUpperCase();
+    
+    if (aUpper === 'MARINE' && bUpper !== 'MARINE') return -1;
+    if (bUpper === 'MARINE' && aUpper !== 'MARINE') return 1;
+    
+    return a.localeCompare(b);
+  });
+
+  // REMOVIDO O BOTÃO "TODAS AS MARCAS" E INICIADO DIRETO COM O MAP DAS MARCAS
+  let html = '';
+
+  marcas.forEach(marca => {
+    const logoUrl = getLogoMarcaUrl(marca);
+    const ativo = marcaAtual.toUpperCase() === marca.toUpperCase();
+    const bg = ativo ? '#003366' : '#ffffff';
+    const borderColor = ativo ? '#003366' : '#cbd5e1';
+
+    // NOTA: Adicionei uma lógica para que, se a pessoa clicar na marca que já está ativa, 
+    // ela desmarque (volte a mostrar todas), já que removemos o botão "Todas as Marcas".
+    const acaoClique = ativo ? `onclick="filtrarPorMarca('', this)"` : `onclick="filtrarPorMarca('${escapeHtml(marca)}', this)"`;
+
+    html += `
+      <button ${acaoClique} 
+              style="padding:4px 8px; border-radius:12px; border:1px solid ${borderColor}; background:${bg}; cursor:pointer; display:flex; align-items:center; gap:4px; white-space:nowrap; transition:0.2s;">
+        ${logoUrl ? `<img src="${logoUrl}" style="height:18px; max-width:70px; object-fit:contain;">` : `<span style="font-size:0.7rem; font-weight:800; color:${ativo?'#fff':'#334155'}">${escapeHtml(marca)}</span>`}
+      </button>
+    `;
+  });
+
+  container.innerHTML = html;
+  wrap.style.display = 'block';
+}
+
+function filtrarPorMarca(marca, btn) {
+  marcaAtual = marca;
+  montarBarraMarcas();
+  renderizar();
+}
+
+function configurarWhatsAppVendedor() {
+  if (clienteLogado && clienteLogado.vendedor && clienteLogado.vendedor.whatsapp) {
+    const numWhats = clienteLogado.vendedor.whatsapp.replace(/\D/g, '');
+    if (!numWhats) return;
+    const nomeVendedor = clienteLogado.vendedor.nome.split(' ')[0];
+    const mensagem = encodeURIComponent(`Olá ${nomeVendedor}, sou da empresa ${clienteLogado.nome} (CNPJ: ${clienteLogado.cnpj}) e gostaria de tirar uma dúvida sobre os produtos.`);
+    const link = `https://wa.me/55${numWhats}?text=${mensagem}`;
+    const btn = document.getElementById('btnWhatsVendedor');
+    document.getElementById('nomeVendedorWhats').textContent = nomeVendedor;
+    btn.href = link;
+    btn.style.display = 'inline-flex';
+  }
+}
+
+function fmtDataBr(strData) {
+  if (!strData) return '';
+  const [ano, mes, dia] = strData.split('-');
+  return `${dia}/${mes}/${ano}`;
+}
+
+async function verificarValidadeTabela() {
+  try {
+    const r = await fetch('/api/regras');
+    const j = await r.json();
+    if (!j.ok || !j.regras || !j.regras.tabela_data_fim) return;
+
+    const barra = document.getElementById('barraAvisoTabela');
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    const [anoFim, mesFim, diaFim] = j.regras.tabela_data_fim.split('-');
+    const dataFimTabela = new Date(anoFim, mesFim - 1, diaFim);
+
+    if (hoje > dataFimTabela) {
+      barra.style.background = '#fee2e2';
+      barra.style.color = '#991b1b';
+      barra.style.borderColor = '#fca5a5';
+      barra.innerHTML = `⚠️ <strong>TABELA VENCIDA!</strong> Esta tabela expirou em <strong>${fmtDataBr(j.regras.tabela_data_fim)}</strong>. Os preços podem ter variação. Peça tabela nova ao seu vendedor.`;
+      barra.style.display = 'block';
+    } else {
+      barra.style.background = '#dbeafe';
+      barra.style.color = '#1e40af';
+      barra.style.borderColor = '#93c5fd';
+      barra.innerHTML = `📅 <strong>TABELA DE PREÇOS VÁLIDA ATÉ ${fmtDataBr(j.regras.tabela_data_fim)}</strong>`;
+      barra.style.display = 'block';
+    }
+  } catch (e) { console.error('Erro ao verificar validade da tabela:', e); }
+}
+
+function getIconeUrl(grupo) {
+  const g = grupo.toUpperCase().trim();
+  if (g.includes('CARRETILHA')) return BUCKET_ICONIS + 'CARRETILHA.jpg'; 
+  if (g.includes('MOLINETE')) return BUCKET_ICONIS + 'MOLINETE.jpg';
+  if (g.includes('ISCA')) return BUCKET_ICONIS + 'ISCA.jpg';  
+  if (g.includes('VARA')) return BUCKET_ICONIS + 'VARA.jpg';
+  if (g.includes('LINHA')) return BUCKET_ICONIS + 'LINHA.jpg';
+  if (g.includes('MOTOR')) return BUCKET_ICONIS + 'MOTOR.jpg';
+  if (g.includes('ANZOL')) return BUCKET_ICONIS + 'ANZOL.jpg';
+  if (g.includes('GARAT')) return BUCKET_ICONIS + 'GARATEIAS.jpg';
+  if (g.includes('GIRADOR') || g.includes('EMPATE') || g.includes('SNAP')) return BUCKET_ICONIS + 'GIRADORES.jpg';
+  if (g.includes('VESTUARIO')) return BUCKET_ICONIS + 'VESTUARIO.jpg';
+  if (g.includes('ACESSORIO')) return BUCKET_ICONIS + 'ACESSORIOS.jpg';
+  return BUCKET_ICONIS + 'ACESSORIOS.jpg';
+}
+
+function getLogoMarcaUrl(marca) {
+  if (!marca) return '';
+  const m = marca.toUpperCase().trim();
+  if (m.includes('DAIWA')) return BUCKET_ICONIS + 'daiwa.JPG';
+  if (m.includes('MARINE')) return BUCKET_ICONIS + 'MARINE.JPG';
+  if (m.includes('YO-ZURI') || m.includes('YOZURI')) return BUCKET_ICONIS + 'YO-ZURI.JPG';
+  if (m.includes('ZEST')) return BUCKET_ICONIS + 'zest.JPG';
+  if (m.includes('MEGABASS')) return BUCKET_ICONIS + 'MEGABASS.jpg';
+  if (m.includes('DUEL')) return BUCKET_ICONIS + 'DUEL.jpg';
+  if (m.includes('HARDCORE')) return BUCKET_ICONIS + 'HARDCORE.JPG';
+  return '';
+}
+
+function renderMarcaBadge(marca) {
+  if (!marca) return '';
+  const logoUrl = getLogoMarcaUrl(marca);
+  if (logoUrl) return `<img src="${logoUrl}" class="marca-logo-img" alt="${escapeHtml(marca)}" title="${escapeHtml(marca)}">`;
+  return `<span class="marca-badge">${escapeHtml(marca)}</span>`;
+}
+
+const fmtMoeda = v => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const parseAtributos = json => { try { return JSON.parse(json || '{}'); } catch { return {}; } };
+
+window.addEventListener('DOMContentLoaded', () => {
+  verificarValidadeTabela();
+  const cliSalvo = localStorage.getItem('clienteLogadoB2B');
+  const acrescimoSalvo = localStorage.getItem('acrescimoB2B');
+
+if (cliSalvo) {
+  clienteLogado = JSON.parse(cliSalvo);
+  porcentagemAcrescimo = parseFloat(acrescimoSalvo) || parseFloat(clienteLogado.acrescimo) || 0;
+
+    document.getElementById('telaLogin').style.display = 'none';
+    document.getElementById('infoCliente').style.display = 'flex';
+    document.getElementById('nomeCliente').textContent = (clienteLogado.nome || '').split(' ')[0];
+    document.getElementById('badgeUf').textContent = clienteLogado.uf;
+
+    configurarWhatsAppVendedor();
+    carregar();
+  }
+});
+
+function sairCliente() {
+  localStorage.removeItem('clienteLogadoB2B');
+  localStorage.removeItem('acrescimoB2B');
+  window.location.reload();
+}
+
+let pedidoEmEdicaoId = null;
+
+async function abrirMeusPedidos() {
+  if (!clienteLogado) return;
+  document.getElementById('modalTitulo').textContent = '📋 Meus Pedidos e Rascunhos';
+  document.getElementById('modalBody').innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">Buscando seus pedidos...</p>';
+  document.getElementById('modalBg').classList.add('on');
+
+  try {
+    const r = await fetch(`/api/cliente/${encodeURIComponent(clienteLogado.cnpj)}/pedidos`);
+    const j = await r.json();
+    if (!j.ok || !j.pedidos.length) {
+      document.getElementById('modalBody').innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">Você ainda não possui nenhum pedido ou rascunho registrado.</p>';
+      return;
+    }
+
+    const html = j.pedidos.map(p => {
+      const dataStr = new Date(p.data_criacao).toLocaleString('pt-BR');
+      const statusUpper = (p.status || '').toUpperCase();
+      const isRascunho = statusUpper === 'RASCUNHO';
+      const badgeStatus = isRascunho 
+        ? '<span style="background:#fef3c7; color:#d97706; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:800;">📝 RASCUNHO EM ABERTO</span>'
+        : '<span style="background:#d1fae5; color:#059669; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:800;">✅ ENVIADO</span>';
+
+      const itensTable = (p.itens || []).map(it => `
+        <tr>
+          <td style="padding:4px 0; font-size:0.75rem;"><strong>${it.codigo_produto}</strong> - ${escapeHtml(it.descricao)}</td>
+          <td style="padding:4px; font-size:0.75rem; text-align:center;">${it.quantidade}</td>
+          <td style="padding:4px 0; font-size:0.75rem; text-align:right;">R$ ${fmtMoeda(it.preco_final)}</td>
+        </tr>
+      `).join('');
+      const jsonItens = escapeHtml(JSON.stringify(p.itens || []));
+
+      return `
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px; margin-bottom:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid #cbd5e1; padding-bottom:6px;">
+            <div>
+              <strong style="color:#003366; font-size:0.85rem;">Pedido #${p.id}</strong>
+              <div style="font-size:0.68rem; color:#64748b;">${dataStr}</div>
+            </div>
+            <div>${badgeStatus}</div>
+          </div>
+          <table style="width:100%; border-collapse:collapse; margin-bottom:8px;">
+            <tbody>${itensTable}</tbody>
+          </table>
+          <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed #cbd5e1; padding-top:6px; flex-wrap:wrap; gap:6px;">
+            <div style="font-weight:900; color:#10b981; font-size:0.9rem;">Total: R$ ${fmtMoeda(p.total)}</div>
+            <div style="display:flex; gap:6px;">
+              ${isRascunho ? `
+                <button onclick="deletarRascunho(${p.id})" style="background:#ef4444; color:white; border:none; padding:6px 10px; border-radius:6px; font-size:0.75rem; font-weight:800; cursor:pointer;">🗑️ Excluir</button>
+                <button onclick="carregarPedidoParaEdicao(${p.id}, '${jsonItens}')" style="background:#2563eb; color:white; border:none; padding:6px 10px; border-radius:6px; font-size:0.75rem; font-weight:800; cursor:pointer;">✏️ Continuar Pedido</button>
+              ` : `
+                <button onclick="carregarPedidoParaEdicao(null, '${jsonItens}')" style="background:#003366; color:white; border:none; padding:6px 10px; border-radius:6px; font-size:0.75rem; font-weight:800; cursor:pointer;">📋 Reutilizar Itens</button>
+              `}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+    document.getElementById('modalBody').innerHTML = html;
+  } catch (e) {
+    document.getElementById('modalBody').innerHTML = '<p style="text-align:center; color:#ef4444; padding:20px;">Erro ao carregar os pedidos.</p>';
+  }
+}
+
+async function deletarRascunho(idPedido) {
+  if (!confirm(`Tem certeza que deseja excluir o rascunho #${idPedido}?`)) return;
+  try {
+    const r = await fetch(`/api/pedidos/${idPedido}`, { method: 'DELETE' });
+    const j = await r.json();
+    if (j.ok) {
+      if (pedidoEmEdicaoId === idPedido) {
+        carrinho = {};
+        pedidoEmEdicaoId = null;
+        atualizarCarrinho();
+      }
+      alert('🗑️ Rascunho excluído!');
+      abrirMeusPedidos();
+    } else { alert('❌ Erro ao excluir: ' + j.erro); }
+  } catch (e) { alert('❌ Erro de conexão ao excluir rascunho.'); }
+}
+
+function carregarPedidoParaEdicao(idPedido, jsonItensStr) {
+  try {
+    const itens = JSON.parse(jsonItensStr);
+    carrinho = {};
+    pedidoEmEdicaoId = idPedido;
+    itens.forEach(it => {
+      const prodEncontrado = todosItens.find(i => i.codigo === String(it.codigo_produto));
+      carrinho[it.codigo_produto] = {
+        qtd: it.quantidade,
+        precoBase: it.preco_unitario || (prodEncontrado ? prodEncontrado.precoBase : 0),
+        desc: it.descricao,
+        img: prodEncontrado ? prodEncontrado.imagem_url : ''
+      };
+    });
+    atualizarCarrinho();
+    fecharModal(null, true);
+    toggleCarrinho();
+    alert(`Pedido #${idPedido} carregado no carrinho! Você já pode alterar as quantidades.`);
+  } catch (e) { alert('Erro ao carregar o pedido para edição.'); }
+}
+
+async function salvarRascunho() {
+  const itens = Object.keys(carrinho).map(cod => {
+    const item = carrinho[cod];
+    const calc = calcularValoresProduto(item.precoBase, cod);
+    return { codigo: cod, desc: item.desc, qtd: item.qtd, precoBase: item.precoBase, precoFinal: calc.precoFinal };
+  });
+  if (itens.length === 0) { alert('Seu carrinho está vazio.'); return; }
+  const total = itens.reduce((acc, it) => acc + (it.precoFinal * it.qtd), 0);
+
+  try {
+    const r = await fetch('/api/pedidos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: pedidoEmEdicaoId,
+        cnpj_cliente: clienteLogado.cnpj,
+        codigo_representante: clienteLogado.representante,
+        status: 'RASCUNHO',
+        total,
+        itens
+      })
+    });
+    const j = await r.json();
+    if (j.ok) {
+      pedidoEmEdicaoId = j.id;
+      alert('💾 Rascunho salvo no banco com sucesso!');
+    } else { alert('❌ Erro ao salvar rascunho: ' + j.erro); }
+  } catch (e) { alert('❌ Erro de conexão ao salvar rascunho.'); }
+}
+
+function abrirZoomImagem(elemento) {
+  const img = elemento.querySelector('img');
+  if (!img || !img.src) return;
+  document.getElementById('zoomModalImg').src = img.src;
+  document.getElementById('zoomModalBg').classList.add('on');
+}
+function fecharZoomModal() {
+  const modalBg = document.getElementById('zoomModalBg');
+  if (modalBg) modalBg.classList.remove('on');
+}
+
+function calcularValoresProduto(precoBase, codItem) {
+  // Pega a taxa de acréscimo ativa
+  const taxaUf = porcentagemAcrescimo || parseFloat(clienteLogado?.acrescimo) || 0;
+  
+  // Aplica a porcentagem da UF sobre o preço base
+  const precoBaseComAcrescimo = precoBase + ((precoBase * taxaUf) / 100);
+  
+  if (mapaOfertas[codItem]) {
+    const pctDesconto = mapaOfertas[codItem];
+    const precoFinal = precoBaseComAcrescimo - (precoBaseComAcrescimo * pctDesconto / 100);
+    return { temOferta: true, pctDesconto: pctDesconto, precoOriginal: precoBaseComAcrescimo, precoFinal: precoFinal };
+  }
+
+  return { temOferta: false, pctDesconto: 0, precoOriginal: precoBaseComAcrescimo, precoFinal: precoBaseComAcrescimo };
+}
+function normalizarItem(it) {
+  return {
+    codigo: String(it.codigo ?? ''),
+    subgrupo: (it.subgrupo_scraping || it.descricao || '').trim(), 
+    descricao_longa: it.descricao || it.descricao_longa || '', 
+    imagem_url: it.imagem_url || '',
+    precoBase: Number(it.preco_venda) || 0,
+    get calculoPreco() { return calcularValoresProduto(this.precoBase, this.codigo); },
+    get preco() { return this.calculoPreco.precoFinal; },
+    grupo: (it.grupo_scraping || it.grupo || '').trim(),
+    marca: (it.marca || '').trim(),
+    atributos: parseAtributos(it.atributos_json),
+    estoque: Number(it.estoque) || 0,
+    ordem_excel: Number(it.ordem_excel) || 999999,
+    ordem_customizada_pos: 999999,
+    is_lancamento: Boolean(it.is_lancamento)
+  };
+}
+
+function formatarNomeCard(item, nomeFamilia) {
+  let sub = (item.subgrupo || item.descricao || '').trim();
+  const famUpper = (nomeFamilia || '').toUpperCase().trim();
+  const attrs = item.atributos || {};
+  const descCompleta = (item.descricao_longa || item.descricao || '').trim();
+  const modeloAttr = attrs['Modelo'] || attrs['MODELO'] || '';
+  const tamanhoAttr = attrs['Tamanho'] || attrs['TAMANHO'] || '';
+
+  const ehCaixaAlvo = famUpper.includes('MULTICASE') || famUpper.includes('ISCA MS') || 
+                      famUpper.includes('TACKLE BOX') || famUpper.includes('WATER RESISTANT') || famUpper.includes('SHALLOW');
+  if (ehCaixaAlvo) {
+    let dimensaoJson = attrs['Dimensões(cm)'] || attrs['Dimensões'] || attrs['Dimensoes'] || attrs['Dimensão'] || attrs['Dimensao'] || '';
+    if (!dimensaoJson) {
+      const matchMedida = descCompleta.match(/(\d+[\.,]?\d*\s*[xX]\s*\d+[\.,]?\d*(?:\s*[xX]\s*\d+[\.,]?\d*)?\s*(?:cm|mm)?)/i);
+      if (matchMedida) dimensaoJson = matchMedida[1].trim();
+    }
+    if (dimensaoJson) {
+      if (modeloAttr) return `${modeloAttr.split('-')[0].trim()} • ${dimensaoJson}`;
+      return dimensaoJson;
+    }
+  }
+  if (famUpper.includes('CARRETEL')) { if (modeloAttr) return modeloAttr.trim(); }
+  if (famUpper.includes('MOCHILA') || famUpper.includes('BOLSA')) {
+    if (modeloAttr) {
+      let txt = modeloAttr.trim();
+      if (sub.toUpperCase().includes('C/CAIXA') || sub.toUpperCase().includes('COM CAIXA')) {
+        if (!txt.toUpperCase().includes('C/CAIXA')) txt += ' C/CAIXA';
+      } else if (sub.toUpperCase().includes('S/CAIXA') || sub.toUpperCase().includes('SEM CAIXA')) {
+        if (!txt.toUpperCase().includes('S/CAIXA')) txt += ' S/CAIXA';
+      }
+      return txt;
+    }
+  }
+  if (famUpper.includes('CORDÃO') || famUpper.includes('CORDAO') || famUpper.includes('ÓCULOS') || famUpper.includes('OCULOS')) {
+    if (modeloAttr && modeloAttr.toUpperCase() !== 'ÚNICO' && modeloAttr.toUpperCase() !== 'UNICO') return modeloAttr.trim();
+    const matchCor = sub.match(/(SSB\s+[A-Z]+|[A-Z0-9-]+\s*(?:PRETO|AZUL|VERMELHO|VERDE|AMARELO))/i);
+    if (matchCor) return matchCor[1].toUpperCase();
+  }
+  if (famUpper.includes('FACA') || famUpper.includes('FILLET') || famUpper.includes('KNIFE')) {
+    if (modeloAttr) return modeloAttr.trim();
+    if (tamanhoAttr) return tamanhoAttr.trim();
+    const matchFaca = descCompleta.match(/\b([A-Z0-9-]{3,10}|\d+["']|\d+\s*cm)\b/i);
+    if (matchFaca && !matchFaca[1].toUpperCase().includes('FACA')) return matchFaca[1].toUpperCase();
+  }
+  if (['KNIFE', 'CAIXA', 'FACA', 'C', 'S', 'BOLSAS', 'CORDÃO', 'CORDAO'].includes(sub.toUpperCase())) {
+    return (modeloAttr || sub || item.codigo).trim();
+  }
+  if (modeloAttr && sub.toUpperCase() === famUpper) return modeloAttr.trim();
+  return sub || item.codigo;
+}
+
+function analisarVestuario(it) {
+  let attrs = it.atributos || {};
+  if (typeof attrs === 'string') { try { attrs = JSON.parse(attrs); } catch (e) { attrs = {}; } }
+  let tam = attrs['Tamanho'] || attrs['TAMANHO'] || attrs['Size'] || '';
+  if (!tam) {
+    const desc = (it.subgrupo || it.descricao_longa || it.codigo || '').toUpperCase();
+    const matchTam = desc.match(/\b(XXG|3XL|2XL|XG|XL|GG|G|M|P|S|L)\b/);
+    if (matchTam) tam = matchTam[1]; else tam = it.subgrupo || 'ÚNICO';
+  }
+  return { tamanho: tam };
+}
+
+function analisarAnzol(it) {
+  let attrs = it.atributos || {};
+  if (typeof attrs === 'string') { try { attrs = JSON.parse(attrs); } catch (e) { attrs = {}; } }
+  let numero = '';
+  const chavesNum = ['Tamanho', 'TAMANHO', 'Número', 'NÚMERO', 'Numero', 'Resistência (lb)', 'Resistencia', 'Libragem', 'Bitola', 'Modelo', 'MODELO'];
+  for (let k of chavesNum) { if (attrs[k]) { numero = String(attrs[k]).trim(); break; } }
+  if (!numero || numero === 'S/N') {
+    const subUpper = (it.subgrupo || '').toUpperCase();
+    const matchCabo = subUpper.match(/(\d+\s*LBS?|\d+\s*KG|\d+\s*M(?:ETROS)?)/i);
+    if (matchCabo) numero = matchCabo[1];
+    else {
+      const match = subUpper.match(/(?:Nº?|Nº|NUMERO|TAMANHO|SABIKI)?\s*(\d{1,2}(?:\/\d)?(?:\s*CM|\s*MM)?|\b[PMGG]{1,3}\b)(?:\s*C\/|\s|$)/i);
+      if (match) numero = match[1]; else numero = (it.subgrupo || '').replace(it.grupo || '', '').trim() || 'S/N';
+    }
+  }
+  let qtd = attrs['Quantidade'] || attrs['QUANTIDADE'] || attrs['Qtd'] || attrs['QTD'] || attrs['Qtd. Embalagem'] || attrs['Qtd Embalagem'] || attrs['Embalagem'] || '';
+  if (!qtd) {
+    const desc = (it.descricao_longa || it.descricao || it.subgrupo || '').toUpperCase();
+    const matchQtdText = desc.match(/(?:C\/|CX\s*C\/|EMB\s*C\/|\bQTD:?\s*)(\d+)/i);
+    if (matchQtdText) qtd = matchQtdText[1];
+  }
+  let qtdFormatada = '';
+  if (qtd) {
+    const qStr = String(qtd).trim();
+    qtdFormatada = qStr.toUpperCase().includes('C/') || qStr.toUpperCase().includes('UN') ? qStr : `C/ ${qStr}`;
+  }
+  return { numero, qtd: qtdFormatada };
+}
+
+function analisarMolinete(it) {
+  const attrs = it.atributos || {};
+  let modelo = attrs['Modelo'] || attrs['MODELO'] || '';
+  if (!modelo) { const partes = (it.subgrupo || '').trim().split(/\s+/); modelo = partes.slice(-2).join(' ') || it.subgrupo; }
+  return { modelo };
+}
+
+function analisarCarretilha(it) {
+  const attrs = it.atributos || {};
+  let modelo = attrs['Modelo'] || attrs['MODELO'] || '';
+  let ladoManivela = attrs['Lado Manivela'] || attrs['LADO MANIVELA'] || '';
+  const relacao = attrs['Relação de recolhimento'] || '';
+  const capacidade = attrs['Capacidade de linha (mm-m)'] || '';
+  const velMax = attrs['Velocidade Máxima'] || '';
+  const subUpper = (it.subgrupo || '').toUpperCase();
+
+  if (!ladoManivela) {
+    if (subUpper.includes('ESQ') || subUpper.includes('LEFT') || subUpper.includes('ESQUERDA')) ladoManivela = 'Esquerda';
+    else if (subUpper.includes('DIR') || subUpper.includes('RIGHT') || subUpper.includes('DIREITA')) ladoManivela = 'Direita';
+  }
+  if (!modelo) {
+    const matchNum = subUpper.match(/\b(\d{3,5}(?:\s*[A-Z]+)?)\b/);
+    if (matchNum) modelo = matchNum[1];
+    else {
+      const semLado = subUpper.replace(/\b(ESQ|ESQUERDA|DIR|DIREITA|LEFT|RIGHT)\b/g, '').trim();
+      const partes = semLado.split(/\s+/).filter(Boolean);
+      modelo = partes.slice(-2).join(' ') || it.subgrupo;
+    }
+  }
+  const partesVar = [];
+  if (relacao) partesVar.push(relacao);
+  if (capacidade) partesVar.push(capacidade);
+  if (velMax) partesVar.push(velMax);
+  return { modelo, ladoTag: ladoManivela, variacaoExtra: partesVar.join(' • ') };
+}
+
+function analisarMotor(it) {
+  let attrs = it.atributos || {};
+  if (typeof attrs === 'string') { try { attrs = JSON.parse(attrs); } catch (e) { attrs = {}; } }
+  let detalhe = attrs['Potência'] || attrs['Libragem'] || attrs['LBS'] || attrs['Modelo'] || '';
+  if (!detalhe) {
+    const texto = (it.subgrupo || it.descricao_longa || '').toUpperCase();
+    const match = texto.match(/\b(\d+\s*LBS?|\d+\s*LB|\d+\s*HP)\b/i);
+    if (match) detalhe = match[1];
+  }
+  return { variacao: detalhe || it.subgrupo || 'Padrão' };
+}
+
+function analisarVara(it) {
+  const attrs = it.atributos || {};
+  const modeloJson = attrs['Modelo'] || attrs['MODELO'] || it.subgrupo || 'Vara';
+  const ignorar = ['QTD', 'CX/CT', 'Modelo', 'MODELO']; 
+  const especificacoes = {};
+  for (const [chave, valor] of Object.entries(attrs)) {
+    if (!ignorar.includes(chave) && valor) especificacoes[chave] = valor;
+  }
+  return { modeloJson, especificacoes };
+}
+
+function analisarLinha(it) {
+  const attrs = it.atributos || {};
+  let bitola = '-';
+  const chaveBitola = Object.keys(attrs).find(k => k.toUpperCase() === 'MM' || k.toUpperCase() === 'BITOLA');
+  if (chaveBitola) bitola = attrs[chaveBitola];
+  let resistencia = '';
+  const chaveLbs = Object.keys(attrs).find(k => k.toUpperCase().includes('LBS') || k.toUpperCase().includes('KG') || k.toUpperCase().includes('LIBRAS'));
+  if (chaveLbs) resistencia = attrs[chaveLbs];
+  return { bitola, resistencia };
+}
+
+function analisarIsca(it) {
+  const attrs = it.atributos || {};
+  const getVal = (arr) => { for (let k of arr) if (attrs[k]) return String(attrs[k]); return ''; };
+  const modelo = getVal(['Modelo', 'MODELO']);
+  const cor = getVal(['Cores', 'COR', 'Cor']);
+  const tamanho = getVal(['Tamanho (cm)', 'TAMANHO']);
+  const peso = getVal(['Peso (g)', 'PESO']);
+  let especificacoes = [];
+  if (tamanho) especificacoes.push(tamanho);
+  if (peso) especificacoes.push(peso);
+  return { modelo, cor, especificacoes: especificacoes.join(' • ') };
+}
+
+async function fazerLogin() {
+  const cnpjInput = document.getElementById('inputCnpj');
+  const cnpj = cnpjInput.value.replace(/\D/g, '');
+  const erro = document.getElementById('loginErro');
+  
+  if (cnpj.length < 11) { erro.textContent = 'Digite um CNPJ válido.'; erro.style.display = 'block'; return; }
+
+  try {
+    const r = await fetch('/api/login/' + cnpj);
+    const j = await r.json();
+    if (!j.ok) { erro.textContent = j.erro || 'Erro ao validar CNPJ.'; erro.style.display = 'block'; return; }
+
+    clienteLogado = j.cliente;
+    
+    // Captura a porcentagem de forma segura tratando todas as chaves possíveis do banco
+// Substitua:
+// porcentagemAcrescimo = j.regra_acrescimo.porcentagem;
+
+// Por isto:
+porcentagemAcrescimo = parseFloat(
+  j.regra_acrescimo?.porcentagem ?? 
+  j.regra_acrescimo?.acrescimo ?? 
+  j.cliente?.acrescimo ?? 
+  0
+) || 0;
+
+    localStorage.setItem('clienteLogadoB2B', JSON.stringify(j.cliente));
+    localStorage.setItem('acrescimoB2B', porcentagemAcrescimo);
+    configurarWhatsAppVendedor();
+
+    document.getElementById('telaLogin').style.display = 'none';
+    document.getElementById('infoCliente').style.display = 'flex';
+    document.getElementById('nomeCliente').textContent = (clienteLogado.nome || '').split(' ')[0];
+    document.getElementById('badgeUf').textContent = clienteLogado.uf;
+
+    carregar();
+  } catch (e) { erro.textContent = 'Erro de conexão.'; erro.style.display = 'block'; }
+}
+
+async function finalizarPedido() {
+  const itens = Object.keys(carrinho).map(cod => {
+    const item = carrinho[cod];
+    const calc = calcularValoresProduto(item.precoBase, cod);
+    return { codigo: cod, desc: item.desc, qtd: item.qtd, precoBase: item.precoBase, precoFinal: calc.precoFinal };
+  });
+  if (itens.length === 0) { alert('Seu carrinho está vazio.'); return; }
+
+  if (!pedidoEmEdicaoId) {
+    try {
+      const r = await fetch(`/api/cliente/${encodeURIComponent(clienteLogado.cnpj)}/pedidos`);
+      const j = await r.json();
+      const rascunhoExistente = j.pedidos?.find(p => (p.status || '').toUpperCase() === 'RASCUNHO');
+      if (rascunhoExistente) {
+        alert(`⚠️ Você já possui o Rascunho #${rascunhoExistente.id} em aberto! Clique no botão "📋 Pedidos" no topo para editá-lo ou excluí-lo antes de enviar um novo.`);
+        return;
+      }
+    } catch (e) { console.error("Erro ao validar rascunhos em aberto", e); }
+  }
+
+  const total = itens.reduce((acc, it) => acc + (it.precoFinal * it.qtd), 0);
+  if (!confirm(`Deseja finalizar e enviar este pedido no valor de R$ ${fmtMoeda(total)}?`)) return;
+
+  try {
+    const r = await fetch('/api/pedidos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: pedidoEmEdicaoId,
+        cnpj_cliente: clienteLogado.cnpj,
+        codigo_representante: clienteLogado.representante,
+        status: 'ENVIADO',
+        total,
+        itens
+      })
+    });
+    const j = await r.json();
+    if (j.ok) {
+      alert('✅ Pedido enviado com sucesso!');
+      carrinho = {};
+      pedidoEmEdicaoId = null;
+      localStorage.removeItem('carrinho_b2b');
+      atualizarCarrinho();
+      fecharCarrinho();
+    } else { alert('❌ Erro ao enviar o pedido: ' + j.erro); }
+  } catch (e) { alert('❌ Erro ao enviar o pedido.'); }
+}
+
+async function carregar() {
+  try {
+    const ro = await fetch('/api/ofertas'); const jo = await ro.json();
+    if (jo.ok && jo.ofertas) {
+      ofertasCache = jo.ofertas;
+      jo.ofertas.forEach(o => mapaOfertas[o.codigo] = o.desconto_porcentagem);
+    }
+
+    const rf = await fetch('/api/familias'); const jf = await rf.json();
+    if (jf.ok) todasFamilias = jf.familias;
+    const r = await fetch('/api/catalogo'); const j = await r.json();
+    if (!j.ok) throw new Error('Erro API');
+    
+    todosItens = j.itens.map(normalizarItem).filter(it => it.grupo.length > 0 && it.estoque > 0);
+
+    mapaCatalogoCache = new Map();
+    j.itens.forEach(it => mapaCatalogoCache.set(String(it.codigo), it));
+
+    montarChips(); 
+    montarBarraMarcas();
+    renderizar();
+  } catch (e) { document.getElementById('conteudo').innerHTML = '<div class="loading">Erro ao carregar.</div>'; }
+}
+
+function montarChips() {
+  const contagem = {};
+  todosItens.forEach(it => { contagem[it.grupo] = (contagem[it.grupo] || 0) + 1; });
+  const todosGrupos = Object.keys(contagem);
+
+  const prioridadeGrupos = [
+    'MOLINETE','CARRETILHA','VARA','LINHA','ANZOL','ISCA',
+    'ALICATES','VESTUARIO','ACESSORIOS','GARATEIAS','GIRADORES'
+  ];
+
+  todosGrupos.sort((a, b) => {
+    const gA = a.toUpperCase().trim(), gB = b.toUpperCase().trim();
+    const idxA = prioridadeGrupos.findIndex(p => gA.includes(p));
+    const idxB = prioridadeGrupos.findIndex(p => gB.includes(p));
+    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+    if (idxA !== -1) return -1;
+    if (idxB !== -1) return 1;
+    return contagem[b] - contagem[a];
+  });
+
+  document.getElementById('chips').innerHTML = `
+    <button class="chip chip-oferta ativo" onclick="trocarGrupo('__OFERTAS__', this)" title="Black November - Ofertas">🔥</button>
+    ${todosGrupos.map(g => {
+      const iconeUrl = getIconeUrl(g);
+      return `<button class="chip" onclick="trocarGrupo('${g}', this)" title="${g}"><img src="${iconeUrl}" class="chip-img" alt="${g}" onerror="this.onerror=null; this.src='${BUCKET_ICONIS}ACESSORIOS.jpg';"></button>`;
+    }).join('')}
+  `;
+}
+
+function trocarGrupo(grupo, btn) {
+  grupoAtual = grupo;
+  marcaAtual = '';
+  filtroOfertaAtual = '';
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('ativo'));
+  btn.classList.add('ativo'); 
+  montarBarraMarcas();
+  renderizar();
+}
+
+function filtrar() {
+  let lista = todosItens;
+  if (grupoAtual !== '__TODOS__' && grupoAtual !== '__OFERTAS__') {
+    const grupoSelUpper = grupoAtual.toUpperCase().trim();
+    lista = lista.filter(it => {
+      const grupoItemUpper = (it.grupo || '').toUpperCase().trim();
+      if (grupoSelUpper.includes('VESTUAR')) return grupoItemUpper.includes('VESTUAR');
+      if (grupoSelUpper.includes('CARRETILHA')) return grupoItemUpper.includes('CARRETILHA');
+      if (grupoSelUpper.includes('MOLINETE')) return grupoItemUpper.includes('MOLINETE');
+      if (grupoSelUpper.includes('LINHA')) return grupoItemUpper.includes('LINHA');
+      if (grupoSelUpper.includes('ISCA')) return grupoItemUpper.includes('ISCA');
+      return grupoItemUpper === grupoSelUpper;
+    });
+  }
+  if (marcaAtual) lista = lista.filter(it => (it.marca || '').toUpperCase().trim() === marcaAtual.toUpperCase().trim());
+  if (buscaAtual) {
+    const q = buscaAtual.toLowerCase();
+    lista = lista.filter(it => it.codigo.includes(q) || it.subgrupo.toLowerCase().includes(q) || it.marca.toLowerCase().includes(q));
+  }
+  return lista;
+}
+
+function renderizar() {
+  const cont = document.getElementById('conteudo');
+
+  if (grupoAtual === '__OFERTAS__') {
+    renderOfertas();
+    return;
+  }
+
+  const lista = filtrar();
+  if (!lista.length) { cont.innerHTML = '<div class="loading">Nenhum produto encontrado.</div>'; return; }
+  
+  const processados = new Set(); 
+  let html = '';
+
+  let familiasOrdenadas = todasFamilias.map(f => {
+    let rawItens = f.subgrupos || f.itens || [];
+    if (typeof rawItens === 'string') { try { rawItens = JSON.parse(rawItens); } catch (e) {} }
+    if (typeof rawItens === 'string') { try { rawItens = JSON.parse(rawItens); } catch (e) {} }
+    if (!Array.isArray(rawItens)) rawItens = [];
+    const codigosLimpos = rawItens.map(c => String(c).trim());
+
+    let rawSubs = f.subdivisoes || [];
+    if (typeof rawSubs === 'string') { try { rawSubs = JSON.parse(rawSubs); } catch (e) {} }
+    if (typeof rawSubs === 'string') { try { rawSubs = JSON.parse(rawSubs); } catch (e) {} }
+    if (!Array.isArray(rawSubs)) rawSubs = [];
+
+    return { ...f, itens: codigosLimpos, subdivisoes: rawSubs };
+  });
+
+  familiasOrdenadas.sort((a, b) => {
+    const ordemA = a.ordem !== undefined && a.ordem !== null && a.ordem !== '' ? Number(a.ordem) : 9999;
+    const ordemB = b.ordem !== undefined && b.ordem !== null && b.ordem !== '' ? Number(b.ordem) : 9999;
+    if (ordemA !== ordemB) return ordemA - ordemB;
+    return (a.nome || '').localeCompare(b.nome || '');
+  });
+
+  familiasOrdenadas.forEach(fam => {
+    const filhos = lista.filter(it => fam.itens.includes(String(it.codigo).trim()));
+    if (filhos.length > 0) {
+      if (fam.ordem_customizada && fam.ordem_customizada.length > 0) {
+        filhos.forEach(f => {
+          const pos = fam.ordem_customizada.indexOf(f.subgrupo);
+          if (pos !== -1) f.ordem_customizada_pos = pos;
+        });
+      }
+
+      let tipo = 'comum';
+      const primeiroItem = filhos[0];
+      const attrs = Object.keys(primeiroItem.atributos || {}).map(k => k.toUpperCase());
+      const grupoItem = (primeiroItem.grupo || '').toUpperCase();
+      const nomeFam = (fam.nome || '').toUpperCase();
+
+      if (nomeFam.includes('VARA')) tipo = 'vara';
+      else if (nomeFam.includes('LINHA')) tipo = 'linha';
+      else if (nomeFam.includes('ISCA') || attrs.includes('CORES') || attrs.includes('COR')) tipo = 'isca';
+      else if (nomeFam.includes('ANZOL') || nomeFam.includes('GARAT') || grupoItem.includes('GARAT') || 
+               nomeFam.includes('SABIKI') || grupoItem.includes('SABIKI') || nomeFam.includes('EMPATE') || 
+               nomeFam.includes('GIRADOR') || nomeFam.includes('SNAP') || nomeFam.includes('CABO') || nomeFam.includes('LUVA')) tipo = 'anzol';
+      else if (nomeFam.includes('MOLINETE')) tipo = 'molinete';
+      else if (nomeFam.includes('CARRETILHA')) tipo = 'carretilha';
+      else if (nomeFam.includes('MOTOR') || grupoItem.includes('MOTOR')) tipo = 'motor';
+      else if (grupoItem.includes('VESTUARIO') || nomeFam.includes('VESTUARIO') ||
+               grupoItem.includes('ACESSORIO') || nomeFam.includes('ACESSORIO') ||
+               nomeFam.includes('ALICATE') || nomeFam.includes('TESOURA') || nomeFam.includes('BOLSA') || 
+               nomeFam.includes('POCHETE') || nomeFam.includes('MOCHILA') || nomeFam.includes('OXIGENADOR') || 
+               nomeFam.includes('FACA') || nomeFam.includes('CORDAO') || nomeFam.includes('CORDÃO') || 
+               nomeFam.includes('CARRETEL') || nomeFam.includes('CAIXA') || nomeFam.includes('CADEIRA') ||
+               nomeFam.includes('PONTEIRA') || nomeFam.includes('SUPORTE') || nomeFam.includes('ENROLADOR')) tipo = 'grade';
+
+      if (tipo === 'isca') html += renderFamiliaIsca(fam, filhos);
+      else if (tipo === 'molinete') html += renderFamiliaMolinete(fam, filhos);
+      else if (tipo === 'carretilha') html += renderFamiliaCarretilha(fam, filhos);
+      else if (tipo === 'anzol') html += renderFamiliaAnzol(fam, filhos);
+      else if (tipo === 'motor') html += renderFamiliaMotor(fam, filhos);
+      else if (tipo === 'vara') html += renderFamiliaVara(fam, filhos);
+      else if (tipo === 'linha') html += renderFamiliaLinha(fam, filhos);
+      else if (tipo === 'grade') html += renderFamiliaGrade(fam, filhos);
+      else html += renderFamiliaComum(fam, filhos);
+      
+      filhos.forEach(it => processados.add(it.codigo));
+    }
+  });
+
+  const soltos = lista.filter(it => !processados.has(it.codigo));
+  if (soltos.length > 0) {
+    html += `<div class="familia-bloco"><div class="familia-head"><h2>Outros Produtos</h2></div><div class="grade-soltos">${soltos.map(cardSoltos).join('')}</div></div>`;
+  }
+  cont.innerHTML = html;
+}
+
+/* ============================================================
+   BLACK NOVEMBER — ENCARTE INLINE
+   ============================================================ */
+function renderOfertas() {
+  const cont = document.getElementById('conteudo');
+
+  if (!ofertasCache || ofertasCache.length === 0) {
+    cont.innerHTML = `
+      <div class="black-hero">
+        <span class="tag-black">BLACK NOVEMBER</span>
+        <h1>Ofertas do Mês</h1>
+        <p>Preços especiais válidos enquanto durarem os estoques!</p>
+      </div>
+      <div class="black-vazio">Nenhuma oferta ativa no momento.</div>`;
+    return;
+  }
+
+  const ofertasRender = ofertasCache.map(of => {
+    const cat = mapaCatalogoCache.get(String(of.codigo)) || {};
+    const subgrupo = of.subgrupo || cat.subgrupo_scraping || cat.descricao_sistema || `Produto ${of.codigo}`;
+    const precoBase = Number(of.preco_base || cat.preco_venda || 0);
+    const imagem = of.imagem_oferta || cat.imagem_url || '';
+    const marca = of.marca || cat.marca || '';
+    const grupo = of.grupo || cat.grupo_scraping || cat.grupo || 'OUTROS';
+    return { ...of, subgrupo, preco_base: precoBase, imagem_oferta: imagem, marca, grupo };
+  });
+
+  // Filtros por grupo (só mostra os grupos que têm oferta)
+  const gruposUnicos = Array.from(new Set(ofertasRender.map(o => (o.grupo || 'OUTROS').toUpperCase().trim()))).sort();
+  const filtrosHtml = gruposUnicos.length > 1 ? `
+    <div class="black-filtros">
+      <button class="black-filtro-btn ${filtroOfertaAtual === '' ? 'ativo' : ''}" onclick="setFiltroOferta('')">TODAS</button>
+      ${gruposUnicos.map(g => `<button class="black-filtro-btn ${filtroOfertaAtual === g ? 'ativo' : ''}" onclick="setFiltroOferta('${escapeHtml(g)}')">${escapeHtml(g)}</button>`).join('')}
+    </div>` : '';
+
+  const filtradas = filtroOfertaAtual === ''
+    ? ofertasRender
+    : ofertasRender.filter(o => (o.grupo || 'OUTROS').toUpperCase().trim() === filtroOfertaAtual);
+
+  const htmlCards = filtradas.map(item => {
+    const pctDesconto = Number(item.desconto_porcentagem || 0);
+    const calc = calcularValoresProduto(item.preco_base, item.codigo);
+    const q = carrinho[item.codigo] ? carrinho[item.codigo].qtd : 0;
+
+    const imgHtml = item.imagem_oferta && item.imagem_oferta.trim() !== ''
+      ? `<img src="${item.imagem_oferta}" alt="${escapeHtml(item.subgrupo)}" onerror="this.onerror=null; this.parentElement.innerHTML='🖼️';">`
+      : '🖼️';
+
+    const qtdHtml = q > 0
+      ? `<div class="qtd-oferta-wrap" onclick="event.stopPropagation()">
+           <button onclick="mudarQtd('${item.codigo}', -1)">−</button>
+           <span class="num">${q}</span>
+           <button onclick="mudarQtd('${item.codigo}', 1)">+</button>
+         </div>`
+      : `<button class="btn-add-primeiro" onclick="mudarQtd('${item.codigo}', 1)">🛒 Adicionar</button>`;
+
+    return `
+      <div class="card-oferta">
+        <div class="selo-desconto">-${pctDesconto}%</div>
+        <div class="selo-black">🔥 BLACK</div>
+        <div class="img-box">${imgHtml}</div>
+        <div class="corpo-oferta">
+          ${item.marca ? `<span class="marca-tag">${escapeHtml(item.marca)}</span>` : ''}
+          <div class="titulo-prod">${escapeHtml(item.subgrupo)}</div>
+          <div class="bloco-preco-balcao">
+            <span class="txt-de">De: R$ ${fmtMoeda(calc.precoOriginal)}</span>
+            <span class="txt-por">Por: R$ ${fmtMoeda(calc.precoFinal)}</span>
+          </div>
+          ${qtdHtml}
+        </div>
+      </div>`;
+  }).join('');
+
+  cont.innerHTML = `
+    <div class="black-hero">
+      <span class="tag-black">BLACK NOVEMBER</span>
+      <h1>Ofertas do Mês</h1>
+      <p>Preços especiais válidos enquanto durarem os estoques!</p>
+      <div class="black-contador">
+        <div class="bloco-tempo"><span class="num-tempo" id="bnDias">--</span><span class="label-tempo">Dias</span></div>
+        <div class="bloco-tempo"><span class="num-tempo" id="bnHoras">--</span><span class="label-tempo">Horas</span></div>
+        <div class="bloco-tempo"><span class="num-tempo" id="bnMin">--</span><span class="label-tempo">Min</span></div>
+        <div class="bloco-tempo"><span class="num-tempo" id="bnSeg">--</span><span class="label-tempo">Seg</span></div>
+      </div>
+    </div>
+    ${filtrosHtml}
+    <div class="grade-ofertas">${htmlCards || '<div class="black-vazio">Nenhuma oferta neste grupo.</div>'}</div>`;
+
+  iniciarContadorBlack();
+}
+
+function setFiltroOferta(grupo) {
+  filtroOfertaAtual = grupo;
+  renderOfertas();
+}
+
+function iniciarContadorBlack() {
+  if (contadorBlackInterval) { clearInterval(contadorBlackInterval); contadorBlackInterval = null; }
+
+  const fim = getFimBlackNovember();
+  const tick = () => {
+    const agora = new Date();
+    let diff = fim - agora;
+    if (diff < 0) diff = 0;
+    const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const horas = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const min = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seg = Math.floor((diff % (1000 * 60)) / 1000);
+
+    const d = document.getElementById('bnDias');
+    if (d) {
+      d.textContent = String(dias).padStart(2, '0');
+      document.getElementById('bnHoras').textContent = String(horas).padStart(2, '0');
+      document.getElementById('bnMin').textContent = String(min).padStart(2, '0');
+      document.getElementById('bnSeg').textContent = String(seg).padStart(2, '0');
+    } else {
+      // saiu da aba — para o timer
+      if (contadorBlackInterval) { clearInterval(contadorBlackInterval); contadorBlackInterval = null; }
+    }
+  };
+  tick();
+  contadorBlackInterval = setInterval(tick, 1000);
+}
+
+/* ============================================================
+   CARRETILHA
+   ============================================================ */
+function renderFamiliaCarretilha(fam, itens) {
+  const primeiroItem = itens[0];
+  const imgInicial = primeiroItem?.imagem_url || '';
+  const itensComEstoque = itens.filter(it => it.estoque > 0);
+  if (itensComEstoque.length === 0) return '';
+
+  const temLancamentoNaFamilia = itensComEstoque.some(it => it.is_lancamento);
+  let subdivisoes = fam.subdivisoes || [];
+  if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Todos', itens: fam.itens }];
+
+  const temOfertaNaFamilia = itensComEstoque.some(it => it.calculoPreco.temOferta);
+  const maiorDesconto = Math.max(...itensComEstoque.map(it => it.calculoPreco.pctDesconto || 0));
+
+  const tabsHtml = subdivisoes.map((sub, idx) => 
+    `<button class="molinete-tab ${idx===0?'ativo':''}" onclick="trocarTipoCarretilha('${fam.id}', ${idx})">${escapeHtml(sub.nome)}</button>`
+  ).join('');
+
+  const itensIniciais = itensComEstoque.filter(it => subdivisoes[0].itens.includes(it.codigo));
+  itensIniciais.sort((a, b) => a.ordem_excel - b.ordem_excel);
+
+  const cardsHtml = itensIniciais.map(it => montarCardCarretilha(it)).join('');
+
+  window.carretilhaData = window.carretilhaData || {};
+  window.carretilhaData[fam.id] = { subdivisoes, itens: itensComEstoque };
+
+  return `
+    <div class="familia-bloco">
+      <div class="familia-head">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <h2>${escapeHtml(fam.nome)}</h2>
+          ${temOfertaNaFamilia ? `
+            <span style="background: linear-gradient(135deg, #001b3a, #020617); border: 1px solid #38bdf8; color: #38bdf8; font-size: 0.65rem; font-weight: 900; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">
+              ⚡ GRUPO BLACK NOVEMBER -${maiorDesconto}%
+            </span>
+          ` : ''}
+        </div>
+        ${renderMarcaBadge(itens[0].marca)}
+      </div>
+      <div class="molinete-card" id="card-fam-${fam.id}">
+        <div class="familia-side">
+          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)" style="position:relative;">
+            ${temLancamentoNaFamilia ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
+            ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
+          </div>
+        </div>
+        <div class="molinete-info">
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Descrição</button>
+          ${subdivisoes.length > 1 ? `<div class="molinete-tabs">${tabsHtml}</div>` : ''}
+          <div class="isca-titulo-cores">OPÇÕES / MODELOS</div>
+          <div class="molinete-grade" id="grade-carretilhas-${fam.id}">${cardsHtml}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function montarCardCarretilha(it) {
+  const info = analisarCarretilha(it);
+  const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+  const calc = it.calculoPreco;
+
+  const badgeLote = PRODUTOS_LOTE_10.includes(String(it.codigo))
+    ? `<span style="background:#f59e0b; color:white; font-size:0.55rem; font-weight:800; padding:1px 4px; border-radius:4px; margin-top:2px;">📦 Mín. 10</span>`
+    : '';
+
+  const temImagem = it.imagem_url && it.imagem_url.trim() !== '';
+
+  return `
+    <div class="molinete-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" style="padding:8px;">
+      <span class="molinete-badge">${q}</span>
+
+      <div style="width:100%; aspect-ratio:1; background:var(--cinza-50); border-radius:6px; display:flex; align-items:center; justify-content:center; overflow:hidden; margin-bottom:6px;">
+        ${temImagem 
+          ? `<img src="${it.imagem_url}" alt="${escapeHtml(it.subgrupo)}" style="width:100%; height:100%; object-fit:contain;">` 
+          : `<span style="font-size:1.5rem;">🖼️</span>`}
+      </div>
+
+      <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700;">CÓD: ${escapeHtml(it.codigo)}</div>
+      <div class="molinete-numero">${escapeHtml(info.modelo || it.subgrupo)}</div>
+      ${info.ladoTag ? `<div style="font-size:0.6rem; color:var(--azul-800); font-weight:800;">${escapeHtml(info.ladoTag)}</div>` : ''}
+      ${info.variacaoExtra ? `<div style="font-size:0.55rem; color:var(--cinza-500); font-weight:600; text-align:center; line-height:1.1; margin-bottom:2px;">${escapeHtml(info.variacaoExtra)}</div>` : ''}
+      ${badgeLote}
+      
+      ${calc.temOferta ? `
+        <div class="preco-box-oferta">
+          <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
+          <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
+        </div>
+      ` : `<div class="molinete-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+
+      <div class="molinete-qtd-ctrl" onclick="event.stopPropagation()">
+        <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+        <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+        <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+      </div>
+    </div>`;
+}
+
+function trocarTipoCarretilha(famId, subIndex) {
+  const data = window.carretilhaData[famId];
+  const sub = data.subdivisoes[subIndex];
+  const card = document.getElementById(`card-fam-${famId}`);
+  card.querySelectorAll('.molinete-tab').forEach(b => b.classList.remove('ativo'));
+  card.querySelectorAll('.molinete-tab')[subIndex].classList.add('ativo');
+
+  const itensFiltrados = data.itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
+  itensFiltrados.sort((a, b) => a.ordem_excel - b.ordem_excel);
+
+  document.getElementById(`grade-carretilhas-${famId}`).innerHTML = 
+    itensFiltrados.map(it => montarCardCarretilha(it)).join('');
+}
+
+/* ============================================================
+   MOLINETE
+   ============================================================ */
+function renderFamiliaMolinete(fam, itens) {
+  const primeiroItem = itens[0];
+  const imgInicial = primeiroItem?.imagem_url || '';
+  const itensComEstoque = itens.filter(it => it.estoque > 0);
+  if (itensComEstoque.length === 0) return '';
+
+  const temLancamentoNaFamilia = itensComEstoque.some(it => it.is_lancamento);
+  let subdivisoes = fam.subdivisoes || [];
+  if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Todos', itens: fam.itens }];
+
+  const temOfertaNaFamilia = itensComEstoque.some(it => it.calculoPreco.temOferta);
+  const maiorDesconto = Math.max(...itensComEstoque.map(it => it.calculoPreco.pctDesconto || 0));
+
+  const tabsHtml = subdivisoes.map((sub, idx) => `<button class="molinete-tab ${idx===0?'ativo':''}" onclick="trocarTipoMolinete('${fam.id}', ${idx})">${escapeHtml(sub.nome)}</button>`).join('');
+  const itensIniciais = itensComEstoque.filter(it => subdivisoes[0].itens.includes(it.codigo));
+  itensIniciais.sort((a, b) => a.ordem_excel - b.ordem_excel);
+
+  const cardsHtml = itensIniciais.map(it => {
+    const info = analisarMolinete(it);
+    const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+    const calc = it.calculoPreco;
+
+    return `
+      <div class="molinete-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}">
+        <span class="molinete-badge">${q}</span>
+        <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700;">CÓD: ${escapeHtml(it.codigo)}</div>
+        <div class="molinete-numero">${escapeHtml(info.modelo || it.subgrupo)}</div>
+        
+        ${calc.temOferta ? `
+          <div class="preco-box-oferta">
+            <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
+            <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
+          </div>
+        ` : `<div class="molinete-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+
+        <div class="molinete-qtd-ctrl" onclick="event.stopPropagation()">
+          <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+          <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+          <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  window.molineteData = window.molineteData || {}; 
+  window.molineteData[fam.id] = { subdivisoes, itens: itensComEstoque };
+
+  return `
+    <div class="familia-bloco">
+      <div class="familia-head">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <h2>${escapeHtml(fam.nome)}</h2>
+          ${temOfertaNaFamilia ? `
+            <span style="background: linear-gradient(135deg, #001b3a, #020617); border: 1px solid #38bdf8; color: #38bdf8; font-size: 0.65rem; font-weight: 900; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">
+              ⚡ GRUPO BLACK NOVEMBER -${maiorDesconto}%
+            </span>
+          ` : ''}
+        </div>
+        ${renderMarcaBadge(itens[0].marca)}
+      </div>
+      <div class="molinete-card" id="card-fam-${fam.id}">
+        <div class="familia-side">
+          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)" style="position:relative;">
+            ${temLancamentoNaFamilia ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
+            ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
+          </div>
+        </div>
+        <div class="molinete-info">
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Descrição</button>
+          ${subdivisoes.length > 1 ? `<div class="molinete-tabs">${tabsHtml}</div>` : ''}
+          <div class="isca-titulo-cores">OPÇÕES / MODELOS</div>
+          <div class="molinete-grade" id="grade-molinetes-${fam.id}">${cardsHtml}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function trocarTipoMolinete(famId, subIndex) {
+  const data = window.molineteData[famId]; 
+  const sub = data.subdivisoes[subIndex];
+  const card = document.getElementById(`card-fam-${famId}`);
+  card.querySelectorAll('.molinete-tab').forEach(b => b.classList.remove('ativo'));
+  card.querySelectorAll('.molinete-tab')[subIndex].classList.add('ativo');
+  
+  const itensFiltrados = data.itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
+  itensFiltrados.sort((a, b) => a.ordem_excel - b.ordem_excel);
+
+  document.getElementById(`grade-molinetes-${famId}`).innerHTML = itensFiltrados.map(it => {
+    const info = analisarMolinete(it); 
+    const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+    const calc = it.calculoPreco;
+
+    return `
+      <div class="molinete-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}">
+        <span class="molinete-badge">${q}</span>
+        <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700;">CÓD: ${escapeHtml(it.codigo)}</div>
+        <div class="molinete-numero">${escapeHtml(info.modelo || it.subgrupo)}</div>
+        
+        ${calc.temOferta ? `
+          <div class="preco-box-oferta">
+            <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
+            <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
+          </div>
+        ` : `<div class="molinete-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+
+        <div class="molinete-qtd-ctrl" onclick="event.stopPropagation()">
+          <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+          <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+          <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ============================================================
+   MOTOR
+   ============================================================ */
+function renderFamiliaMotor(fam, itens) {
+  const primeiroItem = itens[0];
+  const imgInicial = primeiroItem?.imagem_url || '';
+  const descInicial = primeiroItem?.descricao_longa || '';
+
+  const itensComEstoque = itens.filter(it => it.estoque > 0);
+  if (itensComEstoque.length === 0) return '';
+
+  const temLancamentoNaFamilia = itensComEstoque.some(it => it.is_lancamento);
+  itensComEstoque.sort((a, b) => a.ordem_excel - b.ordem_excel);
+
+  const cardsHtml = itensComEstoque.map(it => {
+    const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+    const calc = it.calculoPreco;
+    const infoMotor = analisarMotor(it);
+
+    return `
+      <div class="isca-cor-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" 
+           onclick="selecionarEquipamento('${fam.id}', '${it.codigo}', '${it.imagem_url}')" 
+           style="position:relative; cursor:pointer;">
+        
+        <span class="isca-badge">${q}</span>
+        ${it.imagem_url ? `<img src="${it.imagem_url}" style="height: 65px; object-fit: contain; margin-bottom:4px;">` : ''}
+        
+        <div class="cor-nome" style="font-size: 0.65rem; font-weight: 700; color: var(--cinza-400);">CÓD: ${escapeHtml(it.codigo)}</div>
+        <div style="font-size: .7rem; color: var(--azul-800); font-weight: 800; text-align: center; margin: 2px 0 4px 0; line-height: 1.1;">
+          ${escapeHtml(infoMotor.variacao)}
+        </div>
+        
+        ${calc.temOferta ? `
+          <div style="text-align:center; width:100%; margin-bottom:4px;">
+            <span style="background: linear-gradient(135deg, #001b3a, #0f172a); color: #38bdf8; border: 1px solid #38bdf8; font-size: 0.55rem; font-weight: 900; padding: 2px 4px; border-radius: 4px; display: inline-block; margin-bottom: 2px; text-transform: uppercase;">
+              ⚡ BLACK NOVEMBER -${calc.pctDesconto}%
+            </span>
+            <div class="preco-de" style="font-size:0.68rem; color:#94a3b8; text-decoration:line-through; font-weight:700;">R$ ${fmtMoeda(calc.precoOriginal)}</div>
+            <div class="preco-por" style="color:#ef4444; font-size:0.9rem; font-weight:900;">R$ ${fmtMoeda(calc.precoFinal)}</div>
+          </div>
+        ` : `<div class="cor-preco" style="font-size:0.85rem; font-weight:900; color:var(--verde); margin-bottom:4px;">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+
+        <div class="isca-qtd-ctrl" onclick="event.stopPropagation()">
+          <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+          <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+          <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="familia-bloco">
+      <div class="familia-head">
+        <h2>${escapeHtml(fam.nome)}</h2> 
+        ${renderMarcaBadge(itens[0].marca)}
+      </div>
+      <div class="isca-card" id="card-fam-${fam.id}">
+        <div class="familia-side">
+          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)" style="position:relative;">
+            ${temLancamentoNaFamilia ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
+            ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
+          </div>
+        </div>
+        <div class="isca-info">
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(descInicial)}" onclick="abrirModalPorBotao(this)">🔍 Descrição / Ficha Técnica</button>
+          <div class="isca-grade" style="margin-top: 8px;">${cardsHtml}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function selecionarEquipamento(famId, codigo, url) {
+  const card = document.getElementById(`card-fam-${famId}`);
+  if (!card) return;
+  card.querySelectorAll('.isca-cor-card').forEach(m => m.classList.remove('ativa'));
+  const targetMini = document.getElementById(`mini-${codigo}`);
+  if (targetMini) targetMini.classList.add('ativa');
+  if (url && url.trim() !== '') {
+    const fotoPai = document.getElementById(`foto-pai-${famId}`);
+    const badgeNovidade = fotoPai.querySelector('.tarja-lancamento-foto');
+    fotoPai.innerHTML = `${badgeNovidade ? badgeNovidade.outerHTML : ''}<img src="${url}">`;
+  }
+}
+
+function linhaMotor(it) {
+  const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+  const info = analisarMotor(it);
+  const calc = it.calculoPreco;
+  const temVariacaoExtra = Boolean(info.variacaoExtra && info.variacaoExtra.trim() !== '');
+
+  return `
+    <div class="linha-filho-container">
+      <div class="linha-filho">
+        <div class="l-info-main">
+          <span class="l-cod">${it.codigo}</span>
+          ${info.tagPotencia ? `<span class="tag-lado">${escapeHtml(info.tagPotencia)}</span>` : ''}
+          ${calc.temOferta ? `<span class="tarja-oferta-item">🔥 -${calc.pctDesconto}%</span>` : ''}
+        </div>
+        <div class="l-direita-wrap">
+          ${temVariacaoExtra ? `<button type="button" class="btn-toggle-var" onclick="toggleVariacao('${it.codigo}', event)">👁️</button>` : ''}
+          ${calc.temOferta ? `
+            <div class="preco-box-oferta">
+              <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
+              <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
+            </div>
+          ` : `<div class="l-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+        </div>
+        <div class="l-qtd" onclick="event.stopPropagation()">
+          <div class="qtd-ctrl">
+            <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+            <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+            <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+          </div>
+        </div>
+      </div>
+      ${temVariacaoExtra ? `<div class="painel-variacao-oculta" id="var-panel-${it.codigo}"><strong>Especificações:</strong> ${escapeHtml(info.variacaoExtra)}</div>` : ''}
+    </div>`;
+}
+
+function toggleVariacao(codigo, event) {
+  event.stopPropagation();
+  const painel = document.getElementById(`var-panel-${codigo}`);
+  if (painel) painel.classList.toggle('ativo');
+}
+
+/* ============================================================
+   VARA
+   ============================================================ */
+function renderFamiliaVara(fam, itens) {
+  const primeiroItem = itens[0];
+  const imgInicial = primeiroItem?.imagem_url || '';
+  const itensComEstoque = itens.filter(it => it.estoque > 0);
+  if (itensComEstoque.length === 0) return '';
+
+  const temLancamentoNaFamilia = itensComEstoque.some(it => it.is_lancamento);
+  let subdivisoes = fam.subdivisoes || [];
+  if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Produtos', itens: fam.itens }];
+
+  const blocosTabelas = subdivisoes.map(sub => {
+    const itensDaSub = itensComEstoque.filter(it => sub.itens.includes(it.codigo));
+    if (itensDaSub.length === 0) return '';
+    itensDaSub.sort((a, b) => a.ordem_excel - b.ordem_excel);
+
+    const linhas = itensDaSub.map(it => {
+      const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+      const info = analisarVara(it);
+      const calc = it.calculoPreco;
+      const specs = info.especificacoes || {};
+      const tamanho = specs['Tamanho (cm)'] || specs['Comprimento'] || specs['TAMANHO'] || '';
+      const libragem = specs['Resistência da linha'] || specs['Libragem'] || specs['LBS'] || specs['RESISTÊNCIA'] || '';
+      const specsGuardadas = Object.entries(specs).map(([k, v]) => `<span style="white-space:nowrap;"><strong>${escapeHtml(k)}:</strong> ${escapeHtml(v)}</span>`).join(' • ');
+
+      return `
+        <tr class="linha-tabela-vara" style="border-bottom:1px solid #e2e8f0;">
+          <td style="font-weight:800; color:var(--azul-800); font-size:0.75rem; padding:8px 4px; vertical-align:middle;">
+            <div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
+              <span>${escapeHtml(info.modeloJson)}</span>
+              ${tamanho ? `<span style="font-size:0.68rem; color:#64748b; font-weight:700;">(${escapeHtml(tamanho)})</span>` : ''}
+              <button type="button" onclick="event.stopPropagation(); togglePainelVara('${it.codigo}')" title="Ver libragem e detalhes" style="padding:2px 5px; font-size:0.68rem; border-radius:4px; background:#eff6ff; border:1px solid #93c5fd; cursor:pointer;">👁️</button>
+            </div>
+            ${libragem ? `<div style="font-size:0.65rem; color:#2563eb; font-weight:700; margin-top:2px;">${escapeHtml(libragem)}</div>` : ''}
+            ${calc.temOferta ? `<span class="tarja-oferta-item">🔥 -${calc.pctDesconto}%</span>` : ''}
+          </td>
+          <td style="text-align:center; font-weight:800; color:var(--azul-800); padding:8px 2px; vertical-align:middle; white-space:nowrap;">
+            ${calc.temOferta ? `
+              <div class="preco-box-oferta">
+                <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
+                <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
+              </div>
+            ` : `R$ ${fmtMoeda(calc.precoFinal)}`}
+          </td>
+          <td style="text-align:right; padding:8px 2px; vertical-align:middle;" onclick="event.stopPropagation()">
+            <div class="qtd-ctrl" style="display:inline-flex;">
+              <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+              <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+              <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+            </div>
+          </td>
+        </tr>
+        <tr id="panel-vara-${it.codigo}" style="display:none; background:#f8fafc;">
+          <td colspan="3" style="padding:8px; font-size:0.68rem; color:#334155; border-bottom:1px solid #cbd5e1; line-height:1.4;">
+            <div style="background:#fff; border:1px solid #cbd5e1; padding:6px 8px; border-radius:6px;">
+              <strong>📌 Cód:</strong> ${it.codigo} ${specsGuardadas ? ' • ' + specsGuardadas : ''}
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
+
+    return `
+      <div class="sub-bloco" style="margin-top: 8px;">
+        ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
+        <div style="width: 100%; margin-top: 4px; background: white; border-radius: 8px; border: 1px solid var(--cinza-200);">
+          <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+            <thead>
+              <tr style="background: var(--cinza-50); border-bottom: 2px solid var(--cinza-200); font-size: 0.62rem; font-weight: 800; color: var(--cinza-500); text-transform: uppercase;">
+                <th style="padding: 6px 4px; text-align: left; width: 45%;">Modelo / Tam</th>
+                <th style="padding: 6px 2px; text-align: center; width: 28%;">Preço</th>
+                <th style="padding: 6px 2px; text-align: right; width: 27%;">Qtd</th>
+              </tr>
+            </thead>
+            <tbody>${linhas}</tbody>
+          </table>
+        </div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="familia-bloco">
+      <div class="familia-head">
+        <h2>${escapeHtml(fam.nome)}</h2> 
+        ${renderMarcaBadge(itens[0].marca)}
+      </div>
+      <div class="molinete-card" id="card-fam-${fam.id}">
+        <div class="familia-side">
+          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)" style="position:relative;">
+            ${temLancamentoNaFamilia ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
+            ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
+          </div>
+        </div>
+        <div class="molinete-info" style="overflow: hidden;">
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Detalhes / Ficha Técnica</button>
+          ${blocosTabelas}
+        </div>
+      </div>
+    </div>`;
+}
+
+function togglePainelVara(codigo) {
+  const el = document.getElementById(`panel-vara-${codigo}`);
+  if (!el) return;
+  el.style.display = (el.style.display === 'none' || !el.style.display) ? 'table-row' : 'none';
+}
+
+/* ============================================================
+   LINHA
+   ============================================================ */
+function renderFamiliaLinha(fam, itens) {
+  const primeiroItem = itens[0];
+  const imgInicial = primeiroItem?.imagem_url || '';
+  const itensComEstoque = itens.filter(it => it.estoque > 0);
+  if (itensComEstoque.length === 0) return '';
+
+  const temLancamentoNaFamilia = itensComEstoque.some(it => it.is_lancamento);
+  let subdivisoes = fam.subdivisoes || [];
+  if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Produtos', itens: fam.itens }];
+
+  const blocosTabelas = subdivisoes.map(sub => {
+    const itensDaSub = itensComEstoque.filter(it => sub.itens.includes(it.codigo));
+    if (itensDaSub.length === 0) return '';
+    itensDaSub.sort((a, b) => a.ordem_excel - b.ordem_excel);
+
+    const cardsHtml = itensDaSub.map(it => {
+      const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+      const info = analisarLinha(it);
+      const calc = it.calculoPreco;
+      
+      return `
+        <div class="isca-cor-card" style="padding: 8px; justify-content: flex-start; position:relative;">
+          ${calc.temOferta ? `<div style="position:absolute; top:4px; left:4px; background:#ef4444; color:white; font-size:8px; font-weight:900; padding:2px 4px; border-radius:4px;">-${calc.pctDesconto}%</div>` : ''}
+          <div style="font-size: 1rem; font-weight: 900; color: var(--azul-800); line-height: 1; margin-bottom: 4px; text-align: center; text-transform: uppercase; margin-top:6px;">${escapeHtml(info.bitola)}</div>
+          ${info.resistencia ? `<div style="font-size: .65rem; font-weight: 700; color: var(--cinza-500); text-align: center; margin-bottom: 8px;">${escapeHtml(info.resistencia)}</div>` : '<div style="height: 16px;"></div>'}
+          
+          ${calc.temOferta ? `
+            <div class="preco-box-oferta" style="margin-bottom:6px; align-items:center;">
+              <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
+              <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
+            </div>
+          ` : `<div class="cor-preco" style="font-size: .85rem; margin-bottom: 6px;">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+
+          <div class="qtd-ctrl" style="display: flex; width: 100%; justify-space-between;" onclick="event.stopPropagation()">
+            <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+            <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)" style="flex: 1;">
+            <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+          </div>
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="sub-bloco" style="margin-top: 12px;">
+        ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
+        <div class="isca-grade" style="margin-top: 8px;">${cardsHtml}</div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="familia-bloco">
+      <div class="familia-head">
+        <h2>${escapeHtml(fam.nome)}</h2> 
+        ${renderMarcaBadge(itens[0].marca)}
+      </div>
+      <div class="molinete-card" id="card-fam-${fam.id}">
+        <div class="familia-side">
+          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)" style="position:relative;">
+            ${temLancamentoNaFamilia ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
+            ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
+          </div>
+        </div>
+        <div class="molinete-info" style="overflow: hidden;">
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Detalhes</button>
+          ${blocosTabelas}
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ============================================================
+   GRADE
+   ============================================================ */
+function renderFamiliaGrade(fam, itens) {
+  const primeiroItem = itens[0];
+  const imgInicial = primeiroItem?.imagem_url || '';
+  const descInicial = primeiroItem?.descricao_longa || primeiroItem?.descricao || '';
+  const itensComEstoque = itens.filter(it => it.estoque > 0);
+  if (itensComEstoque.length === 0) return '';
+
+  const temLancamentoNaFamilia = itensComEstoque.some(it => it.is_lancamento);
+  let subdivisoes = fam.subdivisoes || [];
+  if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Produtos', itens: fam.itens }];
+
+  const isVestuarioCorpo = itens.some(it => {
+    const sub = (it.subgrupo || '').toUpperCase();
+    const famNome = (fam.nome || '').toUpperCase();
+    const grp = (it.grupo || '').toUpperCase();
+    const ehRoupa = sub.includes('CAMISA') || sub.includes('BERMUDA') || sub.includes('CALCA') ||
+                    famNome.includes('CAMISA') || famNome.includes('BERMUDA') || famNome.includes('CALCA') ||
+                    grp.includes('VESTUARIO');
+    const ehAcessorioCabeca = sub.includes('BONE') || sub.includes('BONÉ') || 
+                              sub.includes('CHAPEU') || sub.includes('CHAPÉU') || 
+                              sub.includes('VISEIRA') || famNome.includes('BONE') || famNome.includes('BONÉ');
+    return ehRoupa && !ehAcessorioCabeca;
+  });
+
+  const blocosTabelas = subdivisoes.map(sub => {
+    const itensDaSub = itensComEstoque.filter(it => sub.itens.includes(it.codigo));
+    if (itensDaSub.length === 0) return '';
+    itensDaSub.sort((a, b) => a.ordem_excel - b.ordem_excel);
+
+    if (isVestuarioCorpo) {
+      const cardsHtml = itensDaSub.map(it => {
+        const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+        const infoVest = analisarVestuario(it);
+        const calc = it.calculoPreco;
+
+        return `
+          <div class="anzol-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" style="min-width:100px; padding:10px 6px;">
+            <span class="anzol-badge">${q}</span>
+            <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700; display:flex; align-items:center; justify-content:center; gap:4px; flex-wrap:wrap;">
+              <span>CÓD: ${escapeHtml(it.codigo)}</span>
+            </div>
+            <div class="anzol-numero" style="font-size:1.2rem; font-weight:900; color:var(--azul-800); margin:4px 0;">${escapeHtml(infoVest.tamanho)}</div>
+            ${calc.temOferta ? `
+              <div class="preco-box-oferta">
+                <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
+                <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
+              </div>
+            ` : `<div class="anzol-preco" style="font-size:0.85rem; font-weight:800; color:var(--verde); margin-bottom:4px;">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+            <div class="anzol-qtd-ctrl" onclick="event.stopPropagation()">
+              <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+              <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+              <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+            </div>
+          </div>`;
+      }).join('');
+
+      return `
+        <div class="sub-bloco" style="margin-top: 10px;">
+          ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
+          <div class="isca-titulo-cores" style="margin-top:4px;">TAMANHOS DISPONÍVEIS</div>
+          <div class="anzol-grade" style="margin-top: 6px;">${cardsHtml}</div>
+        </div>`;
+    }
+
+    const cardsHtml = itensDaSub.map((it, index) => {
+      const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+      const temImagem = it.imagem_url && it.imagem_url.trim() !== '';
+      const isAtivo = index === 0 ? 'ativa' : '';
+      const calc = it.calculoPreco;
+      const nomeLimpo = formatarNomeCard(it, fam.nome);
+
+      return `
+        <div class="card-solto ${isAtivo}" id="mini-${it.codigo}" 
+             style="position:relative; display:flex; flex-direction:column; justify-content:space-between; padding:8px; height: 100%; cursor:pointer;"
+             onclick="selecionarAcessorio('${fam.id}', '${it.codigo}', '${it.imagem_url}', \`${escapeHtml(it.descricao_longa || '').replace(/`/g, '')}\`, \`${escapeHtml(nomeLimpo).replace(/`/g, '')}\`)">
+          
+          ${calc.temOferta ? `<div style="position:absolute; top:4px; left:4px; background:#ef4444; color:white; font-size:8px; font-weight:900; padding:2px 4px; border-radius:4px; z-index:3;">-${calc.pctDesconto}%</div>` : ''}
+          ${q > 0 ? `<div style="position:absolute; top:4px; right:4px; background:var(--verde); color:white; width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:900; border:2px solid white; z-index:3;">${q}</div>` : ''}
+          
+          <div class="img" style="margin-bottom:6px; aspect-ratio:1; background:var(--cinza-50); border-radius:6px; overflow:hidden;">
+            ${temImagem ? `<img src="${it.imagem_url}" alt="${escapeHtml(nomeLimpo)}">` : '🖼️'}
+          </div>
+          
+          <div style="flex:1; display:flex; flex-direction:column; justify-content:flex-start;">
+            <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700; display:flex; align-items:center; justify-content:center; gap:4px; flex-wrap:wrap;">
+              <span>CÓD: ${escapeHtml(it.codigo)}</span>
+            </div>
+            <div class="nome" style="font-size:0.7rem; font-weight:800; color:var(--azul-800); margin-bottom:4px; line-height:1.2; text-align:center;">
+              ${escapeHtml(nomeLimpo)}
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:6px; margin-top:4px;">
+            ${calc.temOferta ? `
+              <div class="preco-box-oferta" style="align-items:center;">
+                <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
+                <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
+              </div>
+            ` : `<div class="preco" style="font-size:.8rem; font-weight:900; color:var(--verde); text-align:center;">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+            
+            <div class="qtd-ctrl" style="display:flex; width:100%; justify-content:space-between;" onclick="event.stopPropagation()">
+              <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+              <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)" style="flex:1;">
+              <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="sub-bloco" style="margin-top: 12px;">
+        ${subdivisoes.length > 1 ? `<div class="sub-grupo-header">${escapeHtml(sub.nome)}</div>` : ''}
+        <div class="grade-soltos" style="margin-top: 6px;">${cardsHtml}</div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="familia-bloco">
+      <div class="familia-head">
+        <h2>${escapeHtml(fam.nome)}</h2> 
+        ${renderMarcaBadge(itens[0].marca)}
+      </div>
+      <div class="molinete-card" id="card-fam-${fam.id}">
+        <div class="familia-side">
+          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)" style="position:relative;">
+            ${temLancamentoNaFamilia ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
+            ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
+          </div>
+          <button class="btn-detalhes" id="btn-detalhes-${fam.id}" data-titulo="${escapeHtml(primeiroItem.subgrupo || fam.nome)}" data-desc="${escapeHtml(descInicial)}" onclick="abrirModalPorBotao(this)" style="justify-content:center; width:100%;">🔍 Detalhes</button>
+        </div>
+        <div class="molinete-info" style="overflow: hidden;">${blocosTabelas}</div>
+      </div>
+    </div>`;
+}
+
+/* ============================================================
+   ISCA
+   ============================================================ */
+function renderFamiliaIsca(fam, itens) {
+  const primeiroItem = itens[0];
+  const imgInicial = primeiroItem?.imagem_url || '';
+  const itensComEstoque = itens.filter(it => it.estoque > 0);
+  if (itensComEstoque.length === 0) return '';
+
+  const temLancamentoNaFamilia = itensComEstoque.some(it => it.is_lancamento);
+  const modelosMap = new Map();
+  
+  itensComEstoque.forEach(it => {
+    const info = analisarIsca(it);
+    const chave = info.modelo || it.subgrupo; 
+    if (!modelosMap.has(chave)) modelosMap.set(chave, { nome: chave, itens: [] });
+    modelosMap.get(chave).itens.push(it);
+  });
+  
+  const modelos = Array.from(modelosMap.values());
+  modelos.forEach(m => m.itens.sort((a, b) => a.ordem_excel - b.ordem_excel));
+
+  const tabsHtml = modelos.map((mod, idx) => `<button class="isca-modelo-btn ${idx===0?'ativo':''}" onclick="trocarModeloIsca('${fam.id}', '${escapeHtml(mod.nome)}')">${escapeHtml(mod.nome)}</button>`).join('');
+  
+  const coresHtml = modelos[0] ? modelos[0].itens.map(it => {
+    const info = analisarIsca(it); 
+    const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+    const calc = it.calculoPreco;
+    return `
+      <div class="isca-cor-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" onclick="selecionarIsca('${fam.id}', '${it.codigo}', '${it.imagem_url}')">
+        <span class="isca-badge">${q}</span>
+        <img src="${it.imagem_url}">
+        <div class="cor-nome">${escapeHtml(info.cor || 'Padrão')}</div>
+        ${info.especificacoes ? `<div style="font-size:.6rem; color:var(--cinza-500); font-weight:600; text-align:center; margin-bottom:2px;">${info.especificacoes}</div>` : ''}
+        
+        ${calc.temOferta ? `
+          <div class="preco-box-oferta">
+            <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
+            <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
+          </div>
+        ` : `<div class="cor-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+
+        <div class="isca-qtd-ctrl" onclick="event.stopPropagation()">
+          <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+          <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+          <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+        </div>
+      </div>`;
+  }).join('') : '';
+
+  window.iscasData = window.iscasData || {}; 
+  window.iscasData[fam.id] = modelos;
+  
+  return `
+    <div class="familia-bloco">
+      <div class="familia-head">
+        <h2>${escapeHtml(fam.nome)}</h2> 
+        ${renderMarcaBadge(itens[0].marca)}
+      </div>
+      <div class="isca-card" id="card-fam-${fam.id}">
+        <div class="familia-side">
+          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)" style="position:relative;">
+            ${temLancamentoNaFamilia ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
+            ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
+          </div>
+        </div>
+        <div class="isca-info">
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Descrição</button>
+          <div class="isca-modelos-tabs">${tabsHtml}</div>
+          <div class="isca-titulo-cores">Cores e Tamanhos</div>
+          <div class="isca-grade" id="grade-cores-${fam.id}">${coresHtml}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function trocarModeloIsca(famId, modeloNome) {
+  const modelos = window.iscasData[famId]; 
+  const modelo = modelos.find(m => m.nome === modeloNome);
+  const card = document.getElementById(`card-fam-${famId}`);
+  card.querySelectorAll('.isca-modelo-btn').forEach(b => {
+    if(b.textContent.trim() === modeloNome) b.classList.add('ativo'); else b.classList.remove('ativo');
+  });
+  const grade = document.getElementById(`grade-cores-${famId}`);
+  grade.innerHTML = modelo.itens.map(it => {
+    const info = analisarIsca(it); 
+    const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+    const calc = it.calculoPreco;
+    return `
+      <div class="isca-cor-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" onclick="selecionarIsca('${famId}', '${it.codigo}', '${it.imagem_url}')">
+        <span class="isca-badge">${q}</span>
+        <img src="${it.imagem_url}">
+        <div class="cor-nome">${escapeHtml(info.cor || 'Padrão')}</div>
+        ${info.especificacoes ? `<div style="font-size:.6rem; color:var(--cinza-500); font-weight:600; text-align:center; margin-bottom:2px;">${info.especificacoes}</div>` : ''}
+        ${calc.temOferta ? `
+          <div class="preco-box-oferta">
+            <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
+            <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
+          </div>
+        ` : `<div class="cor-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+        <div class="isca-qtd-ctrl" onclick="event.stopPropagation()">
+          <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+          <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+          <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function selecionarIsca(famId, codigo, url) {
+  const card = document.getElementById(`card-fam-${famId}`);
+  card.querySelectorAll('.isca-cor-card').forEach(m => m.classList.remove('ativa'));
+  const targetMini = document.getElementById(`mini-${codigo}`);
+  if (targetMini) targetMini.classList.add('ativa');
+  const fotoPai = document.getElementById(`foto-pai-${famId}`);
+  const badgeNovidade = fotoPai.querySelector('.tarja-lancamento-foto');
+  fotoPai.innerHTML = `${badgeNovidade ? badgeNovidade.outerHTML : ''}<img src="${url}">`;
+}
+
+/* ============================================================
+   ANZOL
+   ============================================================ */
+function renderFamiliaAnzol(fam, itens) {
+  const primeiroItem = itens[0];
+  const imgInicial = primeiroItem?.imagem_url || '';
+  const itensComEstoque = itens.filter(it => it.estoque > 0);
+  if (itensComEstoque.length === 0) return '';
+
+  const temLancamentoNaFamilia = itensComEstoque.some(it => it.is_lancamento);
+  let subdivisoes = fam.subdivisoes || [];
+  if (subdivisoes.length === 0) subdivisoes = [{ nome: 'Todos', itens: fam.itens }];
+  
+  const temOfertaNaFamilia = itensComEstoque.some(it => it.calculoPreco.temOferta);
+  const maiorDesconto = Math.max(...itensComEstoque.map(it => it.calculoPreco.pctDesconto || 0));
+
+  const tabsHtml = subdivisoes.map((sub, idx) => `<button class="anzol-tab ${idx===0?'ativo':''}" onclick="trocarTipoAnzol('${fam.id}', ${idx})">${sub.nome}</button>`).join('');
+  const itensIniciais = itensComEstoque.filter(it => subdivisoes[0].itens.includes(it.codigo));
+  itensIniciais.sort((a, b) => a.ordem_excel - b.ordem_excel);
+
+  const numerosHtml = itensIniciais.map(it => {
+    const info = analisarAnzol(it); 
+    const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+    const calc = it.calculoPreco;
+
+    return `
+      <div class="anzol-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}">
+        <span class="anzol-badge">${q}</span>
+        <div class="anzol-numero">${escapeHtml(info.numero)}</div>
+        ${info.qtd ? `<div style="font-size:.6rem; color:var(--cinza-500); font-weight:700; margin-bottom:2px; text-align:center;">${escapeHtml(info.qtd)}</div>` : ''}
+        
+        ${calc.temOferta ? `
+          <div class="preco-box-oferta">
+            <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
+            <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
+          </div>
+        ` : `<div class="anzol-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+
+        <div class="anzol-qtd-ctrl" onclick="event.stopPropagation()">
+          <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+          <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+          <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+        </div>
+      </div>`;
+  }).join('');
+  
+  window.anzolData = window.anzolData || {}; 
+  window.anzolData[fam.id] = { subdivisoes, itens: itensComEstoque };
+  
+  return `
+    <div class="familia-bloco">
+      <div class="familia-head">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <h2>${escapeHtml(fam.nome)}</h2>
+          ${temOfertaNaFamilia ? `
+            <span style="background: linear-gradient(135deg, #001b3a, #020617); border: 1px solid #38bdf8; color: #38bdf8; font-size: 0.65rem; font-weight: 900; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">
+              ⚡ GRUPO BLACK NOVEMBER -${maiorDesconto}%
+            </span>
+          ` : ''}
+        </div>
+        ${renderMarcaBadge(itens[0].marca)}
+      </div>
+      <div class="anzol-card" id="card-fam-${fam.id}">
+        <div class="familia-side">
+          <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)" style="position:relative;">
+            ${temLancamentoNaFamilia ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
+            ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
+          </div>
+        </div>
+        <div class="anzol-info">
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Descrição</button>
+          ${subdivisoes.length > 1 ? `<div class="anzol-tabs">${tabsHtml}</div>` : ''}
+          <div class="isca-titulo-cores">OPÇÕES / ESPECIFICAÇÕES</div>
+          <div class="anzol-grade" id="grade-numeros-${fam.id}">${numerosHtml}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function trocarTipoAnzol(famId, subIndex) {
+  const data = window.anzolData[famId]; 
+  const sub = data.subdivisoes[subIndex];
+  const card = document.getElementById(`card-fam-${famId}`);
+  card.querySelectorAll('.anzol-tab').forEach(b => b.classList.remove('ativo'));
+  card.querySelectorAll('.anzol-tab')[subIndex].classList.add('ativo');
+  
+  const itensFiltrados = data.itens.filter(it => sub.itens.includes(it.codigo) && it.estoque > 0);
+  itensFiltrados.sort((a, b) => a.ordem_excel - b.ordem_excel);
+
+  document.getElementById(`grade-numeros-${famId}`).innerHTML = itensFiltrados.map(it => {
+    const info = analisarAnzol(it); 
+    const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+    const calc = it.calculoPreco;
+
+    return `
+      <div class="anzol-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}">
+        <span class="anzol-badge">${q}</span>
+        <div class="anzol-numero">${escapeHtml(info.numero)}</div>
+        ${info.qtd ? `<div style="font-size:.6rem; color:var(--cinza-500); font-weight:700; margin-bottom:2px; text-align:center;">${escapeHtml(info.qtd)}</div>` : ''}
+        
+        ${calc.temOferta ? `
+          <div class="preco-box-oferta">
+            <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
+            <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
+          </div>
+        ` : `<div class="anzol-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+
+        <div class="anzol-qtd-ctrl" onclick="event.stopPropagation()">
+          <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
+          <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
+          <button onclick="mudarQtd('${it.codigo}', 1)">+</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ============================================================
+   COMUM
+   ============================================================ */
+function renderFamiliaComum(fam, itens) {
+  const primeiroItem = itens[0];
+  const imgInicial = primeiroItem?.imagem_url || '';
+  const itensComEstoque = itens.filter(it => it.estoque > 0);
+  if (itensComEstoque.length === 0) return '';
+
+  itensComEstoque.sort((a, b) => a.ordem_excel - b.ordem_excel);
+  
+  const linhasHtml = itensComEstoque.map(it => {
+    const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
+    const calc = it.calculoPreco;
+    const isCarretilha = fam.nome.toUpperCase().includes('CARRETILHA') || fam.nome.toUpperCase().includes('MOLINETE');
+    let nomeExibicao = escapeHtml(it.subgrupo);
+
+    if (isCarretilha) {
+      const info = analisarCarretilha(it);
+      const partes = [info.modelo, info.ladoTag].filter(Boolean);
+      if (partes.length > 0) nomeExibicao = `<strong>${escapeHtml(partes.join(' '))}</strong>`;
+    }
+
+    const badgeLote = PRODUTOS_LOTE_10.includes(String(it.codigo))
+      ? `<span style="background:#f59e0b; color:white; font-size:0.65rem; font-weight:800; padding:2px 6px; border-radius:4px; margin-left:6px;">📦 Mín. 10 un.</span>`
+      : '';
+
+    return `
+      <div class="linha-filho">
+        <div class="l-cod">${it.codigo}</div>
+        <div class="l-nome">
+          ${nomeExibicao}
+          ${badgeLote}
+          ${calc.temOferta ? `<span class="tarja-oferta-item">🔥 -${calc.pctDesconto}%</span>` : ''}
+        </div>
+        <div class="l-var-col"></div>
+        ${calc.temOferta ? `
+          <div class="preco-box-oferta">
+            <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
+            <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
+          </div>
+        ` : `<div class="l-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+        <div class="l-qtd" onclick="event.stopPropagation()">
+          <div class="qtd-ctrl"><button onclick="mudarQtd('${it.codigo}', -1)">−</button><input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)"><button onclick="mudarQtd('${it.codigo}', 1)">+</button></div>
+        </div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="familia-bloco">
+      <div class="familia-head"><h2>${escapeHtml(fam.nome)}</h2> <span class="marca-badge">${escapeHtml(itens[0].marca)}</span></div>
+      <div class="familia-card" id="card-fam-${fam.id}">
+        <div class="familia-side"><div class="familia-foto-principal" onclick="abrirZoomImagem(this)">${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}</div></div>
+        <div class="familia-info">
+          <button class="btn-detalhes" data-titulo="${escapeHtml(fam.nome)}" data-desc="${escapeHtml(primeiroItem.descricao_longa)}" onclick="abrirModalPorBotao(this)">🔍 Ver detalhes</button>
+          <div class="lista-filhos">${linhasHtml}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function cardSoltos(it) {
+  const calc = it.calculoPreco;
+  return `
+    <div class="card-solto" style="position:relative;">
+      ${it.is_lancamento ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
+      ${calc.temOferta ? `<div style="position:absolute; top:4px; right:4px; background:#ef4444; color:white; font-size:8px; font-weight:800; padding:2px 4px; border-radius:4px;">-${calc.pctDesconto}%</div>` : ''}
+      <div class="img" onclick="abrirZoomImagem(this)">${it.imagem_url ? `<img src="${it.imagem_url}">` : '🖼️'}</div>
+      <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700; margin-bottom:2px;">CÓD: ${escapeHtml(it.codigo)}</div>
+      <div class="nome">${escapeHtml(it.subgrupo)}</div>
+      ${calc.temOferta ? `
+        <div class="preco-box-oferta" style="align-items:center;">
+          <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
+          <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
+        </div>
+      ` : `<div class="preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+    </div>`;
+}
+
+function abrirModalDescricao(titulo, texto) {
+  if (!texto) texto = 'Este produto não possui descrição detalhada.';
+  document.getElementById('modalTitulo').textContent = titulo || 'Detalhes do Produto';
+  document.getElementById('modalBody').innerHTML = `<p style="font-size:0.85rem; line-height:1.4;">${escapeHtml(texto)}</p>`;
+  document.getElementById('modalBg').classList.add('on');
+}
+function abrirModalPorBotao(btn) { abrirModalDescricao(btn.getAttribute('data-titulo'), btn.getAttribute('data-desc')); }
+function fecharModal(ev, force) {
+  if (!force && ev && ev.target && ev.target.id !== 'modalBg') return;
+  document.getElementById('modalBg').classList.remove('on');
+}
+
+function buscarItem(codigo) { return todosItens.find(i => i.codigo === codigo); }
+function mudarQtd(cod, delta) { 
+  const a = carrinho[cod] ? carrinho[cod].qtd : 0;
+  if (PRODUTOS_LOTE_10.includes(String(cod))) {
+    setQtd(cod, a + (delta > 0 ? 10 : -10));
+  } else {
+    setQtd(cod, a + delta);
+  }
+}
+function setQtd(cod, valor) {
+  let q = parseInt(valor) || 0; 
+  const item = buscarItem(cod);
+
+  // Se o produto é de oferta mas não está em todosItens (ex: estoque 0 ou fora do grupo), 
+  // busca no catálogo bruto para pegar precoBase
+  let precoBase = item ? item.precoBase : 0;
+  let desc = item ? item.subgrupo : '';
+  let img = item ? item.imagem_url : '';
+
+  if (!item && mapaCatalogoCache.has(String(cod))) {
+    const cat = mapaCatalogoCache.get(String(cod));
+    precoBase = Number(cat.preco_venda) || 0;
+    desc = cat.subgrupo_scraping || cat.descricao || `Produto ${cod}`;
+    img = cat.imagem_url || '';
+  }
+
+  if (q > 0 && PRODUTOS_LOTE_10.includes(String(cod))) {
+    const resto = q % 10;
+    if (resto !== 0) q = Math.ceil(q / 10) * 10;
+  }
+
+  if (q <= 0) {
+    delete carrinho[cod];
+  } else {
+    carrinho[cod] = { qtd: q, precoBase, desc, img };
+  }
+
+  document.querySelectorAll(`input[onchange*="'${cod}'"]`).forEach(inp => inp.value = q);
+
+  const card = document.getElementById(`mini-${cod}`);
+  if (card) {
+    const badge = card.querySelector('.anzol-badge') || card.querySelector('.isca-badge') || card.querySelector('.molinete-badge');
+    if (q > 0) { card.classList.add('tem-qtd'); if (badge) badge.textContent = q; }
+    else { card.classList.remove('tem-qtd'); }
+  }
+
+  // Se está na aba de ofertas, re-renderiza o encarte para refletir qtd
+  if (grupoAtual === '__OFERTAS__') {
+    renderOfertas();
+  }
+
+  atualizarCarrinho();
+}
+
+function atualizarCarrinho() {
+  const itens = Object.keys(carrinho); 
+  let total = 0, qtdTotal = 0;
+  let economiaTotal = 0; // NOVO: acumula quanto o cliente está economizando
+  
+  const html = itens.map(cod => {
+    const i = carrinho[cod];
+    const calc = calcularValoresProduto(i.precoBase, cod);
+    
+    const subUnitario = calc.precoFinal;
+    const subTotal = subUnitario * i.qtd;
+    
+    // Economia = (preço original - preço final) * qtd
+    const economiaItem = calc.temOferta ? (calc.precoOriginal - calc.precoFinal) * i.qtd : 0;
+    economiaTotal += economiaItem;
+
+    total += subTotal; 
+    qtdTotal += i.qtd;
+    
+    return `
+      <div class="item-carrinho ${calc.temOferta ? 'item-com-oferta' : ''}">
+        
+        <div class="item-img-wrap">
+          ${i.img ? `<img src="${i.img}">` : '<span style="font-size:16px;">🖼️</span>'}
+        </div>
+
+        <div class="item-dados">
+          <span class="item-titulo">${escapeHtml(i.desc)}</span>
+          
+          <div class="item-valores">
+            <span class="item-linha-valor">
+              <strong>${i.qtd}</strong> un × 
+              ${calc.temOferta 
+                ? `<span class="val-de">R$ ${fmtMoeda(calc.precoOriginal)}</span> <span class="val-unit-oferta">R$ ${fmtMoeda(subUnitario)}</span>` 
+                : `<span class="val-unit">R$ ${fmtMoeda(subUnitario)}</span>`}
+            </span>
+            <span class="item-linha-total">Total: <strong>R$ ${fmtMoeda(subTotal)}</strong></span>
+          </div>
+
+          ${calc.temOferta ? `
+            <div class="item-selo-economia">
+              🔥 Você economiza R$ ${fmtMoeda(economiaItem)}
+            </div>
+          ` : ''}
+        </div>
+
+        <button class="item-remover" onclick="setQtd('${cod}', 0)" title="Remover">✕</button>
+      </div>`;
+  }).join('');
+
+  const btnFab = document.getElementById('btnCarrinho');
+  const badgeFab = document.getElementById('topoQtd');
+  
+  if (qtdTotal > 0) { btnFab.style.display = 'flex'; badgeFab.textContent = qtdTotal; } 
+  else { btnFab.style.display = 'none'; fecharCarrinho(); }
+
+  // Bloco de economia total acima do Total (só aparece se houver economia)
+  const rodapeEconomia = economiaTotal > 0 
+    ? `<div class="rodape-economia">🎉 Você está economizando <strong>R$ ${fmtMoeda(economiaTotal)}</strong> nesta compra!</div>` 
+    : '';
+
+  // Atualiza apenas o texto do total e a lista (o rodapé fica num div separado)
+  document.getElementById('carrinhoTotal').textContent = `R$ ${fmtMoeda(total)}`;
+  document.getElementById('listaCarrinho').innerHTML = html || '<div style="text-align:center;color:#94a3b8;padding:20px;">Vazio</div>';
+
+  // Atualiza (ou cria) o bloco de economia dentro do .painel-foot
+  let rodapeEcoEl = document.getElementById('rodapeEconomiaCarrinho');
+  if (!rodapeEcoEl) {
+    rodapeEcoEl = document.createElement('div');
+    rodapeEcoEl.id = 'rodapeEconomiaCarrinho';
+    const foot = document.querySelector('#painelCarrinho .painel-foot');
+    if (foot) foot.insertBefore(rodapeEcoEl, foot.firstChild);
+  }
+  rodapeEcoEl.innerHTML = rodapeEconomia;
+}
+
+function toggleCarrinho() { document.getElementById('painelCarrinho').classList.toggle('on'); }
+function fecharCarrinho() { document.getElementById('painelCarrinho').classList.remove('on'); }
+
+let deb;
+document.getElementById('busca').addEventListener('input', e => {
+  clearTimeout(deb); deb = setTimeout(() => { buscaAtual = e.target.value; renderizar(); }, 150);
+});
+
+document.getElementById('inputCnpj').addEventListener('input', function(e) {
+  let v = e.target.value.replace(/\D/g, '');
+  if (v.length > 14) v = v.slice(0, 14);
+  v = v.replace(/^(\d{2})(\d)/, '$1.$2');
+  v = v.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+  v = v.replace(/\.(\d{3})(\d)/, '.$1/$2');
+  v = v.replace(/(\d{4})(\d)/, '$1-$2');
+  e.target.value = v;
+});
+
+document.getElementById('inputCnpj').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') fazerLogin();
+});
+
+// Ajusta a largura do input de acordo com a quantidade de dígitos
+document.addEventListener('input', function(e) {
+  if (e.target.tagName === 'INPUT' && e.target.type === 'number') {
+    // Se a pessoa digitou 3 ou mais números (ex: 100, 250)
+    if (e.target.value.length >= 3) {
+      e.target.style.setProperty('min-width', (e.target.value.length * 12) + 'px', 'important');
+    } else {
+      // Se apagou e voltou pra 1 ou 2 números, volta ao normal
+      e.target.style.setProperty('min-width', window.innerWidth <= 768 ? '60px' : '45px', 'important');
+    }
+  }
+});
+</script>
+</body>
+</html>
