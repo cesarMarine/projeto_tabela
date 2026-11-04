@@ -495,6 +495,47 @@
   margin-bottom: 10px;
 }
 .rodape-economia strong { color: #b45309; font-weight: 900; font-size: .85rem; }
+
+/* ===== MELHORIA NO CAMPO DE QUANTIDADE (MOBILE) ===== */
+.molinete-qtd-ctrl input,
+.anzol-qtd-ctrl input,
+.isca-qtd-ctrl input,
+.qtd-ctrl input {
+  font-size: 16px !important; /* Impede o iOS de dar zoom na tela ao clicar */
+  min-width: 45px !important; /* Aumenta a largura para caber 3 dígitos */
+  width: auto !important;
+  padding: 2px 4px;
+}
+
+@media (max-width: 768px) {
+  /* Deixa o campo de quantidade bem maior no celular */
+  .molinete-qtd-ctrl input,
+  .anzol-qtd-ctrl input,
+  .isca-qtd-ctrl input,
+  .qtd-ctrl input {
+    min-width: 60px !important; 
+    font-size: 18px !important;
+    height: 32px !important;
+  }
+  
+  /* Aumenta os botões de + e - no celular */
+  .molinete-qtd-ctrl button,
+  .anzol-qtd-ctrl button,
+  .isca-qtd-ctrl button,
+  .qtd-ctrl button {
+    height: 32px !important;
+    width: 32px !important;
+    font-size: 1.2rem !important;
+  }
+
+  /* Força o container a ter uma largura mínima no mobile */
+  .molinete-qtd-ctrl,
+  .anzol-qtd-ctrl,
+  .isca-qtd-ctrl {
+    width: 100% !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -2649,6 +2690,19 @@ document.getElementById('inputCnpj').addEventListener('input', function(e) {
 
 document.getElementById('inputCnpj').addEventListener('keypress', function(e) {
   if (e.key === 'Enter') fazerLogin();
+});
+
+// Ajusta a largura do input de acordo com a quantidade de dígitos
+document.addEventListener('input', function(e) {
+  if (e.target.tagName === 'INPUT' && e.target.type === 'number') {
+    // Se a pessoa digitou 3 ou mais números (ex: 100, 250)
+    if (e.target.value.length >= 3) {
+      e.target.style.setProperty('min-width', (e.target.value.length * 12) + 'px', 'important');
+    } else {
+      // Se apagou e voltou pra 1 ou 2 números, volta ao normal
+      e.target.style.setProperty('min-width', window.innerWidth <= 768 ? '60px' : '45px', 'important');
+    }
+  }
 });
 </script>
 </body>
