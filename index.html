@@ -664,6 +664,7 @@ function calcularQtdComLote(codigoProduto, quantidadeInserida) {
 function montarBarraMarcas() {
   const wrap = document.getElementById('barramarcasWrap');
   const container = document.getElementById('barramarcas');
+
   if (!container || !wrap) return;
 
   if (grupoAtual === '__OFERTAS__' || grupoAtual === '__TODOS__') {
@@ -674,25 +675,40 @@ function montarBarraMarcas() {
   const produtosDoGrupo = todosItens.filter(it => it.grupo === grupoAtual && it.estoque > 0);
   const marcasSet = new Set();
   produtosDoGrupo.forEach(it => { if (it.marca) marcasSet.add(it.marca.trim()); });
-  const marcas = Array.from(marcasSet).sort();
+  let marcas = Array.from(marcasSet);
 
-  if (marcas.length <= 1) { wrap.style.display = 'none'; return; }
+  if (marcas.length <= 1) {
+    wrap.style.display = 'none';
+    return;
+  }
 
-  let html = `
-    <button onclick="filtrarPorMarca('', this)" 
-            style="padding:4px 10px; border-radius:12px; border:1px solid #cbd5e1; background:${marcaAtual===''?'#003366':'white'}; color:${marcaAtual===''?'#fff':'#334155'}; font-weight:800; font-size:0.7rem; cursor:pointer; white-space:nowrap;">
-      TODAS AS MARCAS
-    </button>
-  `;
+  // ORDENAÇÃO CUSTOMIZADA: MARINE PRIMEIRO, DEPOIS AS OUTRAS EM ORDEM ALFABÉTICA
+  marcas.sort((a, b) => {
+    const aUpper = a.toUpperCase();
+    const bUpper = b.toUpperCase();
+    
+    if (aUpper === 'MARINE' && bUpper !== 'MARINE') return -1;
+    if (bUpper === 'MARINE' && aUpper !== 'MARINE') return 1;
+    
+    return a.localeCompare(b);
+  });
+
+  // REMOVIDO O BOTÃO "TODAS AS MARCAS" E INICIADO DIRETO COM O MAP DAS MARCAS
+  let html = '';
 
   marcas.forEach(marca => {
     const logoUrl = getLogoMarcaUrl(marca);
     const ativo = marcaAtual.toUpperCase() === marca.toUpperCase();
     const bg = ativo ? '#003366' : '#ffffff';
     const borderColor = ativo ? '#003366' : '#cbd5e1';
+
+    // NOTA: Adicionei uma lógica para que, se a pessoa clicar na marca que já está ativa, 
+    // ela desmarque (volte a mostrar todas), já que removemos o botão "Todas as Marcas".
+    const acaoClique = ativo ? `onclick="filtrarPorMarca('', this)"` : `onclick="filtrarPorMarca('${escapeHtml(marca)}', this)"`;
+
     html += `
-      <button onclick="filtrarPorMarca('${escapeHtml(marca)}', this)" 
-              style="padding:4px 8px; border-radius:12px; border:1px solid ${borderColor}; background:${bg}; cursor:pointer; display:flex; align-items:center; gap:4px; white-space:nowrap;">
+      <button ${acaoClique} 
+              style="padding:4px 8px; border-radius:12px; border:1px solid ${borderColor}; background:${bg}; cursor:pointer; display:flex; align-items:center; gap:4px; white-space:nowrap; transition:0.2s;">
         ${logoUrl ? `<img src="${logoUrl}" style="height:18px; max-width:70px; object-fit:contain;">` : `<span style="font-size:0.7rem; font-weight:800; color:${ativo?'#fff':'#334155'}">${escapeHtml(marca)}</span>`}
       </button>
     `;
