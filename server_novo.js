@@ -1109,29 +1109,7 @@ app.put('/api/vendedor/cliente/:cnpj/acesso', async (req, res) => {
 // ==========================================
 // PEDIDOS
 // ==========================================
-app.post('/api/pedidos', async (req, res) => {
-  try {
-    const { cnpj_cliente, codigo_representante, total, itens } = req.body;
-    if (!cnpj_cliente || !itens || itens.length === 0) return res.status(400).json({ ok: false, erro: 'Dados do pedido incompletos.' });
 
-    const { data: pedidoData, error: errP } = await supabase.from('pedidos02').insert({
-      cnpj_cliente, codigo_representante, total, status: 'Recebido'
-    }).select();
-    if (errP) throw errP;
-
-    const pedidoId = pedidoData[0].id;
-    const itensInsert = itens.map(it => ({
-      pedido_id: pedidoId, codigo_produto: it.codigo, descricao: it.desc,
-      quantidade: it.qtd, preco_base: it.precoBase, preco_final: it.precoFinal
-    }));
-
-    await supabase.from('pedidos02_itens').insert(itensInsert);
-    res.json({ ok: true, mensagem: 'Pedido enviado com sucesso!' });
-  } catch (e) { 
-    console.error("ERRO AO SALVAR PEDIDO:", e.message);
-    res.status(500).json({ ok: false, erro: e.message }); 
-  }
-});
 
 // DELETAR RASCUNHO/PEDIDO
 app.delete('/api/pedidos/:id', async (req, res) => {
@@ -1405,13 +1383,17 @@ app.post('/api/pedidos', async (req, res) => {
   try {
     const { id, cnpj_cliente, codigo_representante, status = 'ENVIADO', total, itens } = req.body;
 
+    if (!cnpj_cliente || !itens || itens.length === 0) {
+      return res.status(400).json({ ok: false, erro: 'Dados do pedido incompletos.' });
+    }
+
     let pedidoId = id;
 
     if (pedidoId) {
       // Atualiza o rascunho / pedido existente
       const { error: errUpdate } = await supabase
         .from('pedidos02')
-        .update({ total, status })
+        .update({ total, status, data_criacao: new Date().toISOString() })
         .eq('id', pedidoId);
 
       if (errUpdate) throw errUpdate;
@@ -1446,11 +1428,17 @@ app.post('/api/pedidos', async (req, res) => {
       preco_final: Number(it.precoFinal)
     }));
 
-    const { error: errItens } = await supabase.from('pedidos02_itens').insert(itensFormatados);
-    if (errItens) throw errItens;
+    // 👇 MÁGICA PARA PEDIDOS GRANDES: Salva de 50 em 50
+    const TAMANHO_LOTE = 50;
+    for (let i = 0; i < itensFormatados.length; i += TAMANHO_LOTE) {
+      const lote = itensFormatados.slice(i, i + TAMANHO_LOTE);
+      const { error: errItens } = await supabase.from('pedidos02_itens').insert(lote);
+      if (errItens) throw errItens;
+    }
 
     res.json({ ok: true, id: pedidoId, mensagem: 'Gravado com sucesso!' });
   } catch (e) {
+    console.error("ERRO AO SALVAR PEDIDO:", e.message);
     res.status(500).json({ ok: false, erro: e.message });
   }
 });

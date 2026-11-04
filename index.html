@@ -944,10 +944,25 @@ async function salvarRascunho() {
   const itens = Object.keys(carrinho).map(cod => {
     const item = carrinho[cod];
     const calc = calcularValoresProduto(item.precoBase, cod);
-    return { codigo: cod, desc: item.desc, qtd: item.qtd, precoBase: item.precoBase, precoFinal: calc.precoFinal };
+    return { 
+      codigo: cod, 
+      desc: item.desc, 
+      qtd: item.qtd, 
+      precoBase: item.precoBase, 
+      precoFinal: calc.precoFinal 
+    };
   });
+
   if (itens.length === 0) { alert('Seu carrinho está vazio.'); return; }
   const total = itens.reduce((acc, it) => acc + (it.precoFinal * it.qtd), 0);
+
+  // Desabilita o botão para não clicar 2 vezes enquanto salva
+  const btnSalvar = document.querySelector('button[onclick="salvarRascunho()"]');
+  const textoOriginal = btnSalvar ? btnSalvar.innerHTML : 'Salvar';
+  if (btnSalvar) {
+    btnSalvar.innerHTML = '⏳ Salvando...';
+    btnSalvar.disabled = true;
+  }
 
   try {
     const r = await fetch('/api/pedidos', {
@@ -963,11 +978,22 @@ async function salvarRascunho() {
       })
     });
     const j = await r.json();
+
     if (j.ok) {
       pedidoEmEdicaoId = j.id;
       alert('💾 Rascunho salvo no banco com sucesso!');
-    } else { alert('❌ Erro ao salvar rascunho: ' + j.erro); }
-  } catch (e) { alert('❌ Erro de conexão ao salvar rascunho.'); }
+    } else {
+      alert('❌ Erro ao salvar rascunho: ' + j.erro);
+    }
+  } catch (e) {
+    alert('❌ Erro de conexão ao salvar o rascunho. O pedido é muito grande, aguarde um momento e tente novamente.');
+  } finally {
+    // Devolve o botão ao normal após terminar
+    if (btnSalvar) {
+      btnSalvar.innerHTML = textoOriginal;
+      btnSalvar.disabled = false;
+    }
+  }
 }
 
 function abrirZoomImagem(elemento) {
