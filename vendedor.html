@@ -419,41 +419,54 @@ async function carregarPedidos() {
 
     container.innerHTML = j.pedidos.map(p => {
       const nomeCliente = p.nome_fantasia || p.razao_social || 'Cliente';
-      const dataFormatada = new Date(p.data_criacao).toLocaleString('pt-BR');
+      
+      // Formata a data e hora (ex: 04/11/2026 às 15:30)
+      const dataObj = new Date(p.data_criacao);
+      const dataFormatada = dataObj.toLocaleDateString('pt-BR');
+      const horaFormatada = dataObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      
+      // Verifica se é Rascunho ou Enviado
+      const isRascunho = (p.status || '').toUpperCase() === 'RASCUNHO';
+      
+      // Define as cores do crachá de status
+      const badgeStatus = isRascunho 
+        ? `<span style="background:#fef3c7; color:#d97706; padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:800;">📝 RASCUNHO</span>` 
+        : `<span style="background:#d1fae5; color:#059669; padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:800;">✅ FINALIZADO</span>`;
 
-const itensHtml = (p.itens || []).map(it => {
-  const qtd = Number(it.quantidade) || 0;
-  const precoUnitario = Number(it.preco_final) || 0;
-  const totalItem = precoUnitario * qtd;
+      const itensHtml = (p.itens || []).map(it => {
+        const qtd = Number(it.quantidade) || 0;
+        const precoUnitario = Number(it.preco_final) || 0;
+        const totalItem = precoUnitario * qtd;
 
-  return `
-    <tr>
-      <td><strong>${it.codigo_produto}</strong></td>
-      <td>${it.descricao}</td>
-      <td style="text-align:center; font-weight:800;">${qtd}</td>
-      <td style="text-align:right;">R$ ${fmtMoeda(precoUnitario)}</td>
-      <td style="text-align:right; font-weight:800;">R$ ${fmtMoeda(totalItem)}</td>
-    </tr>
-  `;
-}).join('');
+        return `
+          <tr>
+            <td><strong>${it.codigo_produto}</strong></td>
+            <td>${it.descricao}</td>
+            <td style="text-align:center; font-weight:800;">${qtd}</td>
+            <td style="text-align:right;">R$ ${fmtMoeda(precoUnitario)}</td>
+            <td style="text-align:right; font-weight:800;">R$ ${fmtMoeda(totalItem)}</td>
+          </tr>
+        `;
+      }).join('');
 
       return `
-        <div class="pedido-card">
-          <!-- CABEÇALHO RESUMIDO DO PEDIDO -->
+        <div class="pedido-card" style="border-left: 4px solid ${isRascunho ? '#f59e0b' : '#10b981'};">
           <div class="pedido-summary" onclick="toggleDetalhesPedido(${p.id})">
             <div class="pedido-info-main">
               <span class="pedido-id">Pedido #${p.id}</span>
+              ${badgeStatus}
               <span class="pedido-cliente-nome">👤 ${nomeCliente} (${p.uf || 'UF'})</span>
-              <span class="pedido-data">🕒 ${dataFormatada}</span>
+              <span class="pedido-data">🕒 ${dataFormatada} às ${horaFormatada}</span>
             </div>
             <div class="pedido-acoes" onclick="event.stopPropagation()">
-              <span class="pedido-valor-destaque">R$ ${fmtMoeda(p.total)}</span>
-              <button class="btn-export-excel" onclick="exportarPedidoExcel(${p.id})">📊 Baixar Excel</button>
+              <span class="pedido-valor-destaque" style="color: ${isRascunho ? '#f59e0b' : '#10b981'};">
+                R$ ${fmtMoeda(p.total)}
+              </span>
+              ${!isRascunho ? `<button class="btn-export-excel" onclick="exportarPedidoExcel(${p.id})">📊 Baixar Excel</button>` : ''}
               <button class="btn-toggle-detalhe" onclick="toggleDetalhesPedido(${p.id})">👁️ Ver Detalhes</button>
             </div>
           </div>
 
-          <!-- DETALHES EXPANSÍVEIS DO PEDIDO -->
           <div class="pedido-corpo-expansivel" id="detalhe-pedido-${p.id}">
             <table class="pedido-itens">
               <thead>
