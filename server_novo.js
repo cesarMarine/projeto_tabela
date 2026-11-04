@@ -1377,6 +1377,54 @@ app.get('/api/cliente/:cnpj/pedidos', async (req, res) => {
   }
 });
 
+// Rota exclusiva para Autosave (Salvamento automático em segundo plano)
+app.post('/api/pedidos/autosave', async (req, res) => {
+  try {
+    const { id, cnpj_cliente, codigo_representante, total, itens } = req.body;
+
+    if (!cnpj_cliente || !itens || itens.length === 0) {
+      return res.status(400).json({ ok: false, erro: 'Carrinho vazio.' });
+    }
+
+    let pedidoId = id;
+
+    if (pedidoId) {
+      // Atualiza o rascunho existente
+      await supabase.from('pedidos02').update({ total, status: 'RASCUNHO', data_criacao: new Date().toISOString() }).eq('id', pedidoId);
+      await supabase.from('pedidos02_itens').delete().eq('pedido_id', pedidoId);
+    } else {
+      // Cria um rascunho novo
+      const { data: novoPed, error: errInsert } = await supabase
+        .from('pedidos02')
+        .insert([{ cnpj_cliente, codigo_representante, status: 'RASCUNHO', total, data_criacao: new Date().toISOString() }])
+        .select().single();
+      if (errInsert) throw errInsert;
+      pedidoId = novoPed.id;
+    }
+
+    const itensFormatados = itens.map(it => ({
+      pedido_id: pedidoId,
+      codigo_produto: String(it.codigo),
+      descricao: it.desc,
+      quantidade: Number(it.qtd),
+      preco_base: Number(it.precoBase),
+      preco_final: Number(it.precoFinal)
+    }));
+
+    // Salva em lotes de 50 para nunca dar timeout
+    const TAMANHO_LOTE = 50;
+    for (let i = 0; i < itensFormatados.length; i += TAMANHO_LOTE) {
+      const lote = itensFormatados.slice(i, i + TAMANHO_LOTE);
+      await supabase.from('pedidos02_itens').insert(lote);
+    }
+
+    res.json({ ok: true, id: pedidoId });
+  } catch (e) {
+    console.error("Erro no autosave:", e.message);
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
+
 // 2. ROTA PARA CRIAR OU ATUALIZAR PEDIDO (RASCUNHO OU ENVIADO)
 // 2. SALVAR RASCUNHO OU FINALIZAR PEDIDO
 app.post('/api/pedidos', async (req, res) => {

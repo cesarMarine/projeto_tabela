@@ -2655,10 +2655,15 @@ function setQtd(cod, valor) {
   atualizarCarrinho();
 }
 
+// Variáveis de controle do Autosave (coloque-as no topo do seu script, junto com as outras variáveis)
+let timerAutosave = null;
+let isAutosaving = false;
+
+
 function atualizarCarrinho() {
   const itens = Object.keys(carrinho); 
   let total = 0, qtdTotal = 0;
-  let economiaTotal = 0; // NOVO: acumula quanto o cliente está economizando
+  let economiaTotal = 0; 
   
   const html = itens.map(cod => {
     const i = carrinho[cod];
@@ -2667,7 +2672,6 @@ function atualizarCarrinho() {
     const subUnitario = calc.precoFinal;
     const subTotal = subUnitario * i.qtd;
     
-    // Economia = (preço original - preço final) * qtd
     const economiaItem = calc.temOferta ? (calc.precoOriginal - calc.precoFinal) * i.qtd : 0;
     economiaTotal += economiaItem;
 
@@ -2711,16 +2715,13 @@ function atualizarCarrinho() {
   if (qtdTotal > 0) { btnFab.style.display = 'flex'; badgeFab.textContent = qtdTotal; } 
   else { btnFab.style.display = 'none'; fecharCarrinho(); }
 
-  // Bloco de economia total acima do Total (só aparece se houver economia)
   const rodapeEconomia = economiaTotal > 0 
     ? `<div class="rodape-economia">🎉 Você está economizando <strong>R$ ${fmtMoeda(economiaTotal)}</strong> nesta compra!</div>` 
     : '';
 
-  // Atualiza apenas o texto do total e a lista (o rodapé fica num div separado)
   document.getElementById('carrinhoTotal').textContent = `R$ ${fmtMoeda(total)}`;
   document.getElementById('listaCarrinho').innerHTML = html || '<div style="text-align:center;color:#94a3b8;padding:20px;">Vazio</div>';
 
-  // Atualiza (ou cria) o bloco de economia dentro do .painel-foot
   let rodapeEcoEl = document.getElementById('rodapeEconomiaCarrinho');
   if (!rodapeEcoEl) {
     rodapeEcoEl = document.createElement('div');
@@ -2729,6 +2730,78 @@ function atualizarCarrinho() {
     if (foot) foot.insertBefore(rodapeEcoEl, foot.firstChild);
   }
   rodapeEcoEl.innerHTML = rodapeEconomia;
+
+  // ==========================================
+  // INÍCIO DO GATILHO DE AUTOSAVE
+  // ==========================================
+  clearTimeout(timerAutosave);
+  
+  // Só dispara o salvamento se o carrinho tiver itens
+  if (Object.keys(carrinho).length > 0) {
+    timerAutosave = setTimeout(() => {
+      autosaveCarrinho();
+    }, 2000); // Aguarda 2 segundos de inatividade para salvar
+  }
+}
+
+async function autosaveCarrinho() {
+  // Proteções iniciais
+  if (!clienteLogado) return;
+  if (isAutosaving) return; 
+  
+  // 👇 AQUI ESTÁ A CORREÇÃO: Garante que a variável existe no sistema
+  if (typeof pedidoEmEdicaoId === 'undefined') {
+    console.warn('pedidoEmEdicaoId não declarado. O autosave será ignorado.');
+    return;
+  }
+  
+  isAutosaving = true;
+
+  const itens = Object.keys(carrinho).map(cod => {
+    const item = carrinho[cod];
+    const calc = calcularValoresProduto(item.precoBase, cod);
+    return { codigo: cod, desc: item.desc, qtd: item.qtd, precoBase: item.precoBase, precoFinal: calc.precoFinal };
+  });
+  
+  const total = itens.reduce((acc, it) => acc + (it.precoFinal * it.qtd), 0);
+
+  const painelHead = document.querySelector('#painelCarrinho .painel-head span');
+  const textoOriginal = painelHead ? painelHead.textContent : 'Seu Pedido';
+
+  if (painelHead) painelHead.innerHTML = 'Seu Pedido <span style="font-size:0.7rem; color:#6ee7b7;">(salvando auto...)</span>';
+
+  try {
+    const r = await fetch('/api/pedidos/autosave', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: pedidoEmEdicaoId, // Agora temos certeza que essa variável existe
+        cnpj_cliente: clienteLogado.cnpj,
+        codigo_representante: clienteLogado.representante,
+        total,
+        itens
+      })
+    });
+    
+    const j = await r.json();
+    
+    if (j.ok) {
+      pedidoEmEdicaoId = j.id; // Atualiza a variável com o ID que o backend devolveu
+      if (painelHead) painelHead.innerHTML = 'Seu Pedido <span style="font-size:0.7rem; color:#6ee7b7;">(✓ salvo)</span>';
+    } else {
+      if (painelHead) painelHead.innerHTML = textoOriginal;
+    }
+  } catch (e) {
+    console.error("Erro no autosave:", e);
+    if (painelHead) painelHead.innerHTML = textoOriginal;
+  } finally {
+    isAutosaving = false;
+    setTimeout(() => {
+      if (painelHead && painelHead.innerHTML.includes('salvo')) {
+        painelHead.innerHTML = 'Seu Pedido';
+      }
+    }, 2000);
+  }
 }
 
 function toggleCarrinho() { document.getElementById('painelCarrinho').classList.toggle('on'); }
