@@ -924,20 +924,30 @@ function carregarPedidoParaEdicao(idPedido, jsonItensStr) {
     const itens = JSON.parse(jsonItensStr);
     carrinho = {};
     pedidoEmEdicaoId = idPedido;
+    
     itens.forEach(it => {
       const prodEncontrado = todosItens.find(i => i.codigo === String(it.codigo_produto));
+      
+      // 👇 AQUI ESTÁ A MÁGICA: Pega o preço atualizado do catálogo (prodEncontrado)
+      // Se por algum motivo o produto não estiver mais no catálogo, usa o 0.
+      const precoAtualizado = prodEncontrado ? prodEncontrado.precoBase : 0;
+
       carrinho[it.codigo_produto] = {
         qtd: it.quantidade,
-        precoBase: it.preco_unitario || (prodEncontrado ? prodEncontrado.precoBase : 0),
-        desc: it.descricao,
+        precoBase: precoAtualizado, 
+        desc: prodEncontrado ? prodEncontrado.subgrupo : it.descricao, // Pega a descrição nova tbm se tiver
         img: prodEncontrado ? prodEncontrado.imagem_url : ''
       };
     });
+    
     atualizarCarrinho();
     fecharModal(null, true);
     toggleCarrinho();
-    alert(`Pedido #${idPedido} carregado no carrinho! Você já pode alterar as quantidades.`);
-  } catch (e) { alert('Erro ao carregar o pedido para edição.'); }
+    alert(`Pedido #${idPedido} carregado no carrinho! Os preços foram atualizados para a tabela de hoje.`);
+  } catch (e) { 
+    console.error("Erro ao carregar pedido:", e);
+    alert('Erro ao carregar o pedido para edição.'); 
+  }
 }
 
 async function salvarRascunho() {
@@ -1324,9 +1334,34 @@ async function carregar() {
     montarChips(); 
     montarBarraMarcas();
     renderizar();
+
+    // 👇 NOVO: Verifica se o cliente deixou algum rascunho salvo ao sair
+    await verificarRascunhoPendente();
+
   } catch (e) { document.getElementById('conteudo').innerHTML = '<div class="loading">Erro ao carregar.</div>'; }
 }
 
+async function verificarRascunhoPendente() {
+  if (!clienteLogado) return;
+  
+  try {
+    const r = await fetch(`/api/cliente/${encodeURIComponent(clienteLogado.cnpj)}/pedidos`);
+    const j = await r.json();
+    
+    // Procura se existe algum pedido com status RASCUNHO
+    const rascunho = j.pedidos?.find(p => (p.status || '').toUpperCase() === 'RASCUNHO');
+    
+    if (rascunho && rascunho.itens && rascunho.itens.length > 0) {
+      const continuar = confirm(`Você tem um pedido em aberto (#${rascunho.id}) no valor de R$ ${fmtMoeda(rascunho.total)}.\n\nDeseja continuar de onde parou?`);
+      
+      if (continuar) {
+        carregarPedidoParaEdicao(rascunho.id, JSON.stringify(rascunho.itens));
+      }
+    }
+  } catch (e) {
+    console.error("Erro ao verificar rascunho pendente:", e);
+  }
+}
 function montarChips() {
   const contagem = {};
   todosItens.forEach(it => { contagem[it.grupo] = (contagem[it.grupo] || 0) + 1; });
