@@ -99,6 +99,7 @@
   <aside class="sidebar">
     <button class="active" data-page="importar">📥 Importar</button>
     <button data-page="estoque">📦 Produtos em Estoque</button>
+    <button data-page="auditoria">🔍 Auditoria de Produtos</button>
     <button data-page="ofertas">🔥 Ofertas</button>
     <button data-page="familias">👨‍👩‍👧‍👦 Famílias</button>
     <button data-page="clientes">👥 Clientes</button>
@@ -230,6 +231,48 @@
             <tbody>
               <tr><td colspan="8" style="text-align:center; padding:30px; color:#94a3b8;">Carregando estoque...</td></tr>
             </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- PÁGINA: AUDITORIA DE PRODUTOS -->
+    <section class="page" id="page-auditoria">
+      <div class="painel">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+          <div>
+            <h2>🔍 Auditoria: Produtos no Estoque x Scraping</h2>
+            <p style="font-size:14px; color:#94a3b8;">Verifica quais produtos da tabela <code>itens_sistema</code> (com estoque) ficaram sem foto/descrição (fora do <code>scraping_produtos</code>).</p>
+          </div>
+          <button class="btn-primario" style="background:#38bdf8; color:#0f172a;" onclick="carregarAuditoria()">🔄 Gerar Relatório</button>
+        </div>
+
+        <div id="resumoAuditoria" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-bottom:24px; display:none;">
+          <div style="background:#0f172a; padding:16px; border-radius:10px; border:1px solid #334155;">
+            <span style="font-size:12px; font-weight:800; color:#38bdf8; text-transform:uppercase;">Total com Estoque</span>
+            <div id="audTotal" style="font-size:24px; font-weight:900; color:#f8fafc; margin-top:4px;">0</div>
+          </div>
+          <div style="background:#0f172a; padding:16px; border-radius:10px; border:1px solid #334155;">
+            <span style="font-size:12px; font-weight:800; color:#10b981; text-transform:uppercase;">Com Match (No Catálogo)</span>
+            <div id="audMatch" style="font-size:24px; font-weight:900; color:#f8fafc; margin-top:4px;">0</div>
+          </div>
+          <div style="background:#0f172a; padding:16px; border-radius:10px; border:1px solid #334155;">
+            <span style="font-size:12px; font-weight:800; color:#ef4444; text-transform:uppercase;">Sem Match (Fora do Catálogo)</span>
+            <div id="audSemMatch" style="font-size:24px; font-weight:900; color:#f8fafc; margin-top:4px;">0</div>
+          </div>
+        </div>
+
+        <div id="tabelaAuditoriaWrap" style="display:none; max-height: 600px; overflow-y: auto;">
+          <table id="tabelaAuditoria">
+            <thead style="position:sticky; top:0; background:#1e293b; z-index:10;">
+              <tr>
+                <th>Código</th>
+                <th>Descrição (Sistema)</th>
+                <th style="text-align:center;">Estoque</th>
+                <th style="text-align:right;">Preço Venda</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
           </table>
         </div>
       </div>
@@ -694,6 +737,7 @@ document.querySelectorAll('.sidebar button').forEach(b => {
 
     if (pageId === 'importar') carregarStatus();
     if (pageId === 'estoque') carregarEstoque();
+    if (pageId === 'auditoria') carregarAuditoria();
     if (pageId === 'ofertas') carregarOfertasAdmin();
     if (pageId === 'familias') carregarDados();
     if (pageId === 'clientes') carregarClientes(1);
@@ -773,9 +817,7 @@ async function removerOfertaGrupo(nomeGrupo, pctDesconto) {
   if (!confirm(`Deseja remover as ofertas do grupo "${nomeGrupo}"${pctDesconto ? ` (-${pctDesconto}%)` : ''}?`)) return;
 
   try {
-    // Monta a URL passando o desconto via query string (caso exista)
     const url = `/api/ofertas/grupo/${encodeURIComponent(nomeGrupo)}${pctDesconto ? '?desconto=' + pctDesconto : ''}`;
-    
     const r = await fetch(url, { method: 'DELETE' });
     const j = await r.json();
 
@@ -1145,6 +1187,44 @@ function filtrarTabelaEstoque() {
   renderizarTabelaEstoque(filtrados);
 }
 
+async function carregarAuditoria() {
+  const tbody = document.querySelector('#tabelaAuditoria tbody');
+  const resumo = document.getElementById('resumoAuditoria');
+  const tableWrap = document.getElementById('tabelaAuditoriaWrap');
+  
+  tableWrap.style.display = 'block';
+  resumo.style.display = 'grid';
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:30px; color:#94a3b8;">Cruzando dados... Aguarde.</td></tr>';
+
+  try {
+    const r = await fetch('/api/admin/auditoria-scraping');
+    const j = await r.json();
+
+    if (!j.ok) throw new Error(j.erro);
+
+    document.getElementById('audTotal').textContent = j.total_estoque;
+    document.getElementById('audMatch').textContent = j.com_match;
+    document.getElementById('audSemMatch').textContent = j.sem_match_qtd;
+
+    if (j.produtos_sem_match.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:30px; color:#10b981; font-weight:bold;">🎉 Tudo certo! Todos os produtos com estoque possuem cadastro no scraping.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = j.produtos_sem_match.map(p => `
+      <tr>
+        <td><strong style="color:#f87171; font-family:monospace;">${p.codigo}</strong></td>
+        <td>${p.descricao}</td>
+        <td style="text-align:center;"><span style="background:#7f1d1d; color:#fca5a5; font-weight:800; padding:3px 10px; border-radius:12px; font-size:12px;">${p.estoque}</span></td>
+        <td style="text-align:right;">R$ ${Number(p.preco).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+      </tr>
+    `).join('');
+
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#ef4444; padding:20px;">Erro: ${e.message}</td></tr>`;
+  }
+}
+
 async function carregarDados() {
   try {
     const rf = await fetch('/api/familias'); 
@@ -1153,7 +1233,6 @@ async function carregarDados() {
 
     if (jf.ok && jf.familias) {
       jf.familias.forEach(f => {
-        // Trata os itens/subgrupos de forma segura
         const itensDaFamilia = parseSeguroJSON(f.subgrupos || f.itens);
         itensDaFamilia.forEach(c => codigosOcupados.add(String(c).trim()));
       });

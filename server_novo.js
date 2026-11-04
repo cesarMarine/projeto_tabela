@@ -729,6 +729,80 @@ app.get('/api/login/:cnpj', async (req, res) => {
   }
 });
 
+// ==========================================
+// ROTA: AUDITORIA DE PRODUTOS (SEM SCRAPING)
+// ==========================================
+app.get('/api/admin/auditoria-scraping', async (req, res) => {
+  try {
+    // 1. Puxa todos os produtos com estoque > 0
+    let itensSistema = [];
+    let de = 0;
+    let temMais = true;
+    while (temMais) {
+      const { data, error } = await supabase
+        .from('itens_sistema')
+        .select('codigo, descricao, estoque, preco_venda')
+        .gt('estoque', 0)
+        .range(de, de + 999);
+      if (error) throw error;
+      if (data && data.length > 0) { itensSistema.push(...data); de += 1000; } 
+      else { temMais = false; }
+    }
+
+    // 2. Puxa todos os códigos do scraping
+    let itensScraping = [];
+    de = 0;
+    temMais = true;
+    while (temMais) {
+      const { data, error } = await supabase
+        .from('scraping_produtos')
+        .select('codigo')
+        .range(de, de + 999);
+      if (error) throw error;
+      if (data && data.length > 0) { itensScraping.push(...data); de += 1000; } 
+      else { temMais = false; }
+    }
+
+    // 3. Normaliza os códigos para comparação (ex: "0123" vira "123")
+    const normalizar = (c) => String(c ?? '').trim().replace(/^0+/, '').toLowerCase();
+    
+    // Cria uma "lista negra" com todos os códigos que existem no scraping
+    const codigosScrapingSet = new Set(itensScraping.map(s => normalizar(s.codigo)));
+
+    // 4. Separa o que deu match e o que não deu
+    let comMatch = 0;
+    let semMatch = [];
+
+    itensSistema.forEach(item => {
+      const codNorm = normalizar(item.codigo);
+      if (codigosScrapingSet.has(codNorm)) {
+        comMatch++;
+      } else {
+        // Adiciona na lista de "órfãos"
+        semMatch.push({
+          codigo: item.codigo,
+          descricao: item.descricao,
+          estoque: item.estoque,
+          preco: item.preco_venda
+        });
+      }
+    });
+
+    // 5. Retorna o relatório completo
+    res.json({
+      ok: true,
+      total_estoque: itensSistema.length,
+      com_match: comMatch,
+      sem_match_qtd: semMatch.length,
+      produtos_sem_match: semMatch.sort((a, b) => a.descricao.localeCompare(b.descricao))
+    });
+
+  } catch (e) {
+    console.error("Erro na auditoria:", e);
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
+
 // POST: Criar / Atualizar Oferta por Grupo/Família
 // POST: Criar / Atualizar Oferta por Subgrupo/Família
 // POST: Criar / Atualizar Oferta por Subgrupo/Família
