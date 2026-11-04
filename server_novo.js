@@ -690,11 +690,12 @@ app.get('/api/login/:cnpj', async (req, res) => {
     
     if (cliente.uf) {
       // Procura qual grupo está atrelado à UF do cliente (ex: SP, PR, etc)
-      const { data: ufConfig } = await supabase
-        .from('acrescimos_ufs')
+      // 👇 CORRIGIDO: Nome da tabela igual ao do Admin (uf_acrescimo) e maybeSingle()
+      const { data: ufConfig, error: errUf } = await supabase
+        .from('uf_acrescimo') 
         .select('grupo_id')
         .eq('uf', cliente.uf.toUpperCase())
-        .single();
+        .maybeSingle(); 
 
       // Se achou o grupo da UF, busca a porcentagem desse grupo
       if (ufConfig && ufConfig.grupo_id) {
@@ -702,7 +703,7 @@ app.get('/api/login/:cnpj', async (req, res) => {
           .from('grupos_acrescimo')
           .select('acrescimo')
           .eq('id', ufConfig.grupo_id)
-          .single();
+          .maybeSingle();
 
         if (grupoInfo && grupoInfo.acrescimo) {
           acrescimoFinal = Number(grupoInfo.acrescimo);
