@@ -81,6 +81,7 @@
   .modal-actions { display: flex; justify-content: flex-end; gap: 12px; }
   .btn-cancel { background: none; border: 1px solid #475569; color: white; padding: 10px 16px; border-radius: 8px; cursor: pointer; }
   .btn-save { background: #10b981; border: none; color: white; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+  textarea:focus { outline: none; border-color: #38bdf8; }
  
   @media(max-width: 800px) { .wrap { flex-direction: column; } .sidebar { width: 100%; flex-direction: row; overflow-x: auto; padding: 8px; } .sidebar button { white-space: nowrap; border-left: none; border-bottom: 3px solid transparent; } .sidebar button.active { border-left: none; border-bottom-color: #38bdf8; } .familia-grid, .status-cards { grid-template-columns: 1fr; } }
 </style>
@@ -277,10 +278,16 @@
     <section class="page" id="page-auditoria">
       <div class="painel">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
           <div>
             <h2>🔍 Auditoria: Produtos no Estoque x Scraping</h2>
-            <p style="font-size:14px; color:#94a3b8;">Verifica quais produtos da tabela <code>itens_sistema</code> (com estoque) ficaram sem foto/descrição (fora do <code>scraping_produtos</code>).</p>
+            <p style="font-size:14px; color:#94a3b8;">Verifica quais produtos da tabela <code>itens_sistema</code> (com estoque) ficaram sem foto/descrição.</p>
           </div>
+          <div style="display:flex; gap:10px;">
+            <button class="btn-primario" style="background:#10b981;" onclick="abrirModalManual()">➕ Cadastrar Manual</button>
+            <button class="btn-primario" style="background:#38bdf8; color:#0f172a;" onclick="carregarAuditoria()">🔄 Gerar Relatório</button>
+          </div>
+        </div>
           <button class="btn-primario" style="background:#38bdf8; color:#0f172a;" onclick="carregarAuditoria()">🔄 Gerar Relatório</button>
         </div>
 
@@ -301,14 +308,15 @@
 
         <div id="tabelaAuditoriaWrap" style="display:none; max-height: 600px; overflow-y: auto;">
           <table id="tabelaAuditoria">
-            <thead style="position:sticky; top:0; background:#1e293b; z-index:10;">
-              <tr>
-                <th>Código</th>
-                <th>Descrição (Sistema)</th>
-                <th style="text-align:center;">Estoque</th>
-                <th style="text-align:right;">Preço Venda</th>
-              </tr>
-            </thead>
+  <thead style="position:sticky; top:0; background:#1e293b; z-index:10;">
+    <tr>
+      <th>Código</th>
+      <th>Descrição (Sistema)</th>
+      <th style="text-align:center;">Estoque</th>
+      <th style="text-align:right;">Preço Venda</th>
+      <th style="text-align:center;">Ação</th> <!-- 👈 NOVA COLUNA -->
+    </tr>
+  </thead>
             <tbody></tbody>
           </table>
         </div>
@@ -618,6 +626,51 @@
   </div>
 </div>
 
+<!-- MODAL CADASTRAR PRODUTO MANUAL -->
+<div id="modalCadastroManual" class="modal-bg">
+  <div class="modal" style="max-width: 700px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <h3 style="margin:0; color:#38bdf8;">➕ Cadastrar Produto Manualmente</h3>
+      <button onclick="fecharModalManual()" style="background:none; border:none; color:white; font-size:1.2rem; cursor:pointer;">✕</button>
+    </div>
+
+    <div class="row" style="gap:12px; margin-bottom:12px;">
+      <div style="flex:1;"><label>Código (Sistema)</label><input type="text" id="manualCodigo" placeholder="Ex: 8711"></div>
+      <div style="flex:1;"><label>Código de Barras</label><input type="text" id="manualCodBarras" placeholder="Ex: 756791..."></div>
+    </div>
+
+    <div class="row" style="gap:12px; margin-bottom:12px;">
+      <div style="flex:1;"><label>Grupo</label><input type="text" id="manualGrupo" placeholder="Ex: ISCAS 02"></div>
+      <div style="flex:1;"><label>Marca</label><input type="text" id="manualMarca" placeholder="Ex: MARINE"></div>
+    </div>
+
+    <div style="margin-bottom:12px;">
+      <label>Nome do Produto (Subgrupo)</label>
+      <input type="text" id="manualSubgrupo" placeholder="Ex: ISCA 3DB PENCIL POPPER 135">
+    </div>
+
+    <div style="margin-bottom:12px;">
+      <label>URL da Imagem (Foto)</label>
+      <input type="text" id="manualImagem" placeholder="https://exemplo.com/foto.jpg">
+    </div>
+
+    <div style="margin-bottom:12px;">
+      <label>Descrição Longa (Opcional)</label>
+      <textarea id="manualDescricao" rows="3" placeholder="Digite a descrição detalhada..." style="width:100%; padding:12px; border-radius:8px; border:1px solid #475569; background:#0f172a; color:white; font-family:inherit;"></textarea>
+    </div>
+
+    <div style="margin-bottom:20px;">
+      <label>Atributos (JSON - Opcional)</label>
+      <input type="text" id="manualAtributos" placeholder='{"Cores": "TM", "Tamanho (cm)": "13.5"}'>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="fecharModalManual()">Cancelar</button>
+      <button class="btn-save" onclick="salvarProdutoManual()">💾 Salvar no Scraping</button>
+    </div>
+  </div>
+</div>
+
 <script>
 let todosSubgrupos = [], selecionados = new Set(), familiaAtualParaSub = null;
 let todosOsProdutos = []; 
@@ -679,6 +732,62 @@ async function carregarScraping(pagina = 1) {
     renderPaginacaoScraping();
   } catch (e) {
     tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#ef4444; padding:30px;">Erro: ${e.message}</td></tr>`;
+  }
+}
+
+function abrirModalManual(codigo = '', nome = '') {
+  document.getElementById('manualCodigo').value = codigo;
+  document.getElementById('manualSubgrupo').value = nome;
+  document.getElementById('manualCodBarras').value = '';
+  document.getElementById('manualGrupo').value = '';
+  document.getElementById('manualMarca').value = '';
+  document.getElementById('manualImagem').value = '';
+  document.getElementById('manualDescricao').value = '';
+  document.getElementById('manualAtributos').value = '';
+  
+  document.getElementById('modalCadastroManual').classList.add('on');
+}
+
+function fecharModalManual() {
+  document.getElementById('modalCadastroManual').classList.remove('on');
+}
+
+async function salvarProdutoManual() {
+  const codigo = document.getElementById('manualCodigo').value.trim();
+  const cod_barras = document.getElementById('manualCodBarras').value.trim();
+  const grupo = document.getElementById('manualGrupo').value.trim();
+  const subgrupo = document.getElementById('manualSubgrupo').value.trim();
+  const marca = document.getElementById('manualMarca').value.trim();
+  const imagem_url = document.getElementById('manualImagem').value.trim();
+  const descricao_longa = document.getElementById('manualDescricao').value.trim();
+  const atributos_json = document.getElementById('manualAtributos').value.trim();
+
+  if (!codigo || !subgrupo) {
+    return alert('Por favor, preencha o Código e o Nome do Produto.');
+  }
+
+  try {
+    const r = await fetch('/api/admin/scraping-produtos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        codigo, cod_barras, grupo, subgrupo, marca, imagem_url, descricao_longa, atributos_json
+      })
+    });
+    
+    const j = await r.json();
+    if (j.ok) {
+      alert('✅ ' + j.mensagem);
+      fecharModalManual();
+      // Se estiver na tela de auditoria, recarrega ela para o produto sumir da lista de "Sem Match"
+      if (document.getElementById('page-auditoria').classList.contains('active')) {
+        carregarAuditoria();
+      }
+    } else {
+      alert('❌ ' + j.erro);
+    }
+  } catch (e) {
+    alert('❌ Erro de conexão ao salvar o produto.');
   }
 }
 
@@ -1339,7 +1448,7 @@ async function carregarAuditoria() {
   
   tableWrap.style.display = 'block';
   resumo.style.display = 'grid';
-  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:30px; color:#94a3b8;">Cruzando dados... Aguarde.</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:#94a3b8;">Cruzando dados... Aguarde.</td></tr>';
 
   try {
     const r = await fetch('/api/admin/auditoria-scraping');
@@ -1352,21 +1461,26 @@ async function carregarAuditoria() {
     document.getElementById('audSemMatch').textContent = j.sem_match_qtd;
 
     if (j.produtos_sem_match.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:30px; color:#10b981; font-weight:bold;">🎉 Tudo certo! Todos os produtos com estoque possuem cadastro no scraping.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:#10b981; font-weight:bold;">🎉 Tudo certo! Todos os produtos com estoque possuem cadastro no scraping.</td></tr>';
       return;
     }
 
+    // 👇 AQUI ESTÁ O TRECHO QUE VOCÊ SUBSTITUI 👇
     tbody.innerHTML = j.produtos_sem_match.map(p => `
       <tr>
         <td><strong style="color:#f87171; font-family:monospace;">${p.codigo}</strong></td>
         <td>${p.descricao}</td>
         <td style="text-align:center;"><span style="background:#7f1d1d; color:#fca5a5; font-weight:800; padding:3px 10px; border-radius:12px; font-size:12px;">${p.estoque}</span></td>
         <td style="text-align:right;">R$ ${Number(p.preco).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+        <td style="text-align:center;">
+          <button class="btn-primario btn-mini" style="background:#10b981;" onclick="abrirModalManual('${p.codigo}', '${p.descricao}')">➕ Cadastrar</button>
+        </td>
       </tr>
     `).join('');
+    // 👆 FIM DO TRECHO 👆
 
   } catch (e) {
-    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#ef4444; padding:20px;">Erro: ${e.message}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#ef4444; padding:20px;">Erro: ${e.message}</td></tr>`;
   }
 }
 

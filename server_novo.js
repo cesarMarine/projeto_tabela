@@ -1477,6 +1477,51 @@ app.put('/api/admin/scraping-produtos/:id', async (req, res) => {
   }
 });
 
+// ==========================================
+// ROTA: CADASTRAR PRODUTO MANUAL NO SCRAPING
+// ==========================================
+app.post('/api/admin/scraping-produtos', async (req, res) => {
+  try {
+    const { codigo, cod_barras, grupo, subgrupo, marca, descricao_longa, imagem_url, atributos_json } = req.body;
+
+    if (!codigo || !subgrupo) {
+      return res.status(400).json({ ok: false, erro: 'Código e Nome do Produto são obrigatórios.' });
+    }
+
+    // Verifica se o produto já existe para não duplicar
+    const { data: existente } = await supabase
+      .from('scraping_produtos')
+      .select('id')
+      .eq('codigo', codigo)
+      .maybeSingle();
+
+    if (existente) {
+      return res.status(400).json({ ok: false, erro: 'Já existe um produto com este código no Scraping.' });
+    }
+
+    // Insere o novo produto
+    const { error } = await supabase.from('scraping_produtos').insert([{
+      site: 'manual', // Identifica que foi cadastrado à mão
+      codigo: String(codigo).trim(),
+      cod_barras: String(cod_barras || '').trim(),
+      grupo: grupo || 'OUTROS',
+      subgrupo: subgrupo,
+      marca: marca || '',
+      descricao_longa: descricao_longa || '',
+      imagem_url: imagem_url || '',
+      atributos_json: typeof atributos_json === 'string' ? atributos_json : JSON.stringify(atributos_json || {}),
+      data_scraping: new Date().toISOString()
+    }]);
+
+    if (error) throw error;
+
+    res.json({ ok: true, mensagem: 'Produto cadastrado com sucesso no Scraping!' });
+  } catch (e) {
+    console.error('Erro ao cadastrar produto manual:', e);
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
+
 app.delete('/api/admin/scraping-produtos/:id', async (req, res) => {
   try {
     const { id } = req.params;
