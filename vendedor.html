@@ -102,8 +102,35 @@
 
   /* BOTÃO WHATSAPP */
   .btn-whats { background:#25D366; color:white; border:none; padding:6px 10px; border-radius:6px; font-weight:800; font-size:0.75rem; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:4px; }
+
+  .modal-bg.on { display:flex !important; }
 </style>
 </head>
+
+<!-- MODAL DE QUEM LOGOU -->
+<div class="modal-bg" id="modalLogins" style="position:fixed; inset:0; background:rgba(0,0,0,0.7); display:none; align-items:center; justify-content:center; z-index:2000; padding:20px;" onclick="fecharModalLogins(event)">
+  <div style="background:white; border-radius:12px; width:100%; max-width:600px; max-height:80vh; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,0.3);" onclick="event.stopPropagation()">
+    
+    <div style="padding:16px 20px; background:#0d3b66; color:white; border-radius:12px 12px 0 0; display:flex; justify-content:space-between; align-items:center;">
+      <h3 style="margin:0; font-size:1.1rem;">👥 Quem acessou nos últimos 7 dias</h3>
+      <button onclick="fecharModalLogins()" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">✕</button>
+    </div>
+
+    <div style="padding:16px; overflow-y:auto;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr style="background:#f1f5f9; text-align:left;">
+            <th style="padding:10px; font-size:0.75rem; color:#475569; text-transform:uppercase;">Cliente</th>
+            <th style="padding:10px; font-size:0.75rem; color:#475569; text-transform:uppercase;">CNPJ</th>
+            <th style="padding:10px; font-size:0.75rem; color:#475569; text-transform:uppercase;">Quando</th>
+          </tr>
+        </thead>
+        <tbody id="listaLoginsTbody"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
 <body>
 
 <!-- TELA DE LOGIN -->
@@ -144,8 +171,8 @@
         <h3>Total de Clientes</h3>
         <div class="value" id="dashTotalClientes">0</div>
       </div>
-      <div class="dash-card acesso">
-        <h3>Acessaram nos Últimos 7 Dias</h3>
+            <div class="dash-card acesso" onclick="abrirModalLogins()" style="cursor:pointer;" title="Clique para ver a lista">
+        <h3>Acessaram nos Últimos 7 Dias 🔍</h3>
         <div class="value" id="dashAcessos">0</div>
       </div>
       <div class="dash-card pedidos">
@@ -262,6 +289,55 @@ async function fazerLogin() {
     await carregarClientes();
     carregarResumoPedidos();
   } catch (e) { erro.textContent = 'Erro de conexão com o servidor.'; erro.style.display = 'block'; }
+}
+
+// ==========================================
+// MODAL DE QUEM LOGOU
+// ==========================================
+function abrirModalLogins() {
+  // Filtra os clientes que acessaram nos últimos 7 dias
+  const logados = clientesCache.filter(c => {
+    if (!c.ultimo_login) return false;
+    const diffDias = Math.floor((new Date() - new Date(c.ultimo_login)) / (1000 * 60 * 60 * 24));
+    return diffDias <= 7;
+  });
+
+  // Ordena do mais recente para o mais antigo
+  logados.sort((a, b) => new Date(b.ultimo_login) - new Date(a.ultimo_login));
+
+  const tbody = document.getElementById('listaLoginsTbody');
+  
+  if (logados.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:30px; color:#94a3b8;">Nenhum cliente acessou nos últimos 7 dias.</td></tr>';
+  } else {
+    tbody.innerHTML = logados.map(c => {
+      const dataLogin = new Date(c.ultimo_login);
+      const hoje = new Date();
+      const diffDias = Math.floor((hoje - dataLogin) / (1000 * 60 * 60 * 24));
+      const hora = dataLogin.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      const dia = dataLogin.toLocaleDateString('pt-BR');
+      
+      let textoData = `${dia} às ${hora}`;
+      if (diffDias === 0) textoData = `<strong style="color:#059669;">Hoje</strong> às ${hora}`;
+      else if (diffDias === 1) textoData = `Ontem às ${hora}`;
+
+      return `
+        <tr style="border-bottom:1px solid #f1f5f9;">
+          <td style="padding:10px; font-weight:700; color:#0d3b66;">${c.nome_fantasia || c.razao_social}</td>
+          <td style="padding:10px; font-family:monospace; font-size:0.85rem;">${c.cnpj}</td>
+          <td style="padding:10px; font-size:0.85rem;">${textoData}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+  
+  document.getElementById('modalLogins').style.display = 'flex';
+}
+
+function fecharModalLogins(event) {
+  if (!event || event.target.id === 'modalLogins' || event === undefined) {
+    document.getElementById('modalLogins').style.display = 'none';
+  }
 }
 
 // ==========================================
