@@ -1565,13 +1565,15 @@ function renderOfertas() {
       ? `<img src="${item.imagem_oferta}" alt="${escapeHtml(item.subgrupo)}" onerror="this.onerror=null; this.parentElement.innerHTML='🖼️';">`
       : '🖼️';
 
-    const qtdHtml = q > 0
-      ? `<div class="qtd-oferta-wrap" onclick="event.stopPropagation()">
-           <button onclick="mudarQtd('${item.codigo}', -1)">−</button>
-           <span class="num">${q}</span>
-           <button onclick="mudarQtd('${item.codigo}', 1)">+</button>
-         </div>`
-      : `<button class="btn-add-primeiro" onclick="mudarQtd('${item.codigo}', 1)">🛒 Adicionar</button>`;
+    const qtdHtml = item.preco_base <= 0
+      ? `<button class="btn-add-primeiro" disabled style="background:#cbd5e1; color:#94a3b8; cursor:not-allowed;">Indisponível</button>`
+      : (q > 0
+          ? `<div class="qtd-oferta-wrap" onclick="event.stopPropagation()">
+               <button onclick="mudarQtd('${item.codigo}', -1)">−</button>
+               <span class="num">${q}</span>
+               <button onclick="mudarQtd('${item.codigo}', 1)">+</button>
+             </div>`
+          : `<button class="btn-add-primeiro" onclick="mudarQtd('${item.codigo}', 1)">🛒 Adicionar</button>`);
 
     return `
       <div class="card-oferta">
