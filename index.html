@@ -1178,19 +1178,24 @@ function analisarCarretilha(it) {
   if (velMax) partesVar.push(velMax);
   return { modelo, ladoTag: ladoManivela, variacaoExtra: partesVar.join(' • ') };
 }
-
 function analisarMotor(it) {
   let nome = it.subgrupo || 'Padrão';
   
-  // Remove "MOTOR ELÉTRICO" ou "MOTOR ELETRICO" do começo ou do meio do nome
+  // Remove "MOTOR ELÉTRICO" ou "MOTOR ELETRICO"
   nome = nome.replace(/MOTOR\s+EL[EÉ]TRICO\s*/gi, '').trim();
 
-  // Deixa a primeira letra maiúscula novamente (caso tenha ficado minúscula)
   if (nome.length > 0) {
     nome = nome.charAt(0).toUpperCase() + nome.slice(1);
   }
 
-  return { variacao: nome };
+  // Pega a libragem (ex: 34 lb)
+  let libragem = it.atributos?.['Potência'] || it.atributos?.['Libragem'] || '';
+  if (!libragem) {
+    const match = nome.match(/(\d+\s*(?:lb|LBS?))/i);
+    if (match) libragem = match[1];
+  }
+
+  return { variacao: nome, libragem: libragem };
 }
 
 function analisarVara(it) {
@@ -1913,8 +1918,13 @@ function renderFamiliaMotor(fam, itens) {
         <span class="isca-badge">${q}</span>
         ${it.imagem_url ? `<img src="${it.imagem_url}" style="height: 65px; object-fit: contain; margin-bottom:4px;">` : ''}
         
-        <div class="cor-nome" style="font-size: 0.65rem; font-weight: 700; color: var(--cinza-400);">CÓD: ${escapeHtml(it.codigo)}</div>
-               <div style="font-size: 0.7rem; color: var(--azul-800); font-weight: 800; text-align: center; margin: 2px 0 6px 0; line-height: 1.2; min-height: 3.5em; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+        <div class="cor-nome" style="font-size: 0.6rem; font-weight: 700; color: var(--cinza-400);">CÓD: ${escapeHtml(it.codigo)}</div>
+        
+        <!-- 👇 NOVO: Libragem em destaque e Nome embaixo -->
+        <div style="font-size: 0.95rem; font-weight: 900; color: var(--azul-800); text-align: center; margin: 4px 0 2px 0; text-transform: uppercase;">
+          ${escapeHtml(infoMotor.libragem || '')}
+        </div>
+        <div style="font-size: 0.65rem; color: var(--cinza-500); font-weight: 700; text-align: center; margin-bottom: 6px; line-height: 1.1; min-height: 2.2em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
           ${escapeHtml(infoMotor.variacao)}
         </div>
         
