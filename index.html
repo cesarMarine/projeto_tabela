@@ -1253,6 +1253,17 @@ porcentagemAcrescimo = parseFloat(
 ) || 0;
 
     localStorage.setItem('clienteLogadoB2B', JSON.stringify(j.cliente));
+
+     // 👇 ADICIONE ESTA LINHA 👇
+    fetch('/api/registrar-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cnpj: j.cliente.cnpj, nome: j.cliente.nome })
+    }).catch(() => {});
+
+    carregar();
+
+    
     localStorage.setItem('acrescimoB2B', porcentagemAcrescimo);
     configurarWhatsAppVendedor();
 

@@ -1522,6 +1522,57 @@ app.post('/api/admin/scraping-produtos', async (req, res) => {
   }
 });
 
+// 1. Registra o login do cliente (chamado pelo index.html)
+app.post('/api/registrar-login', async (req, res) => {
+  try {
+    const { cnpj, nome } = req.body;
+    await supabase.from('logins_clientes').insert({ cnpj, nome_cliente: nome });
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
+
+// 2. Retorna a lista de clientes com o último acesso (chamado pelo vendedor.html)
+app.get('/api/vendedor/:codigo/clientes-logins', async (req, res) => {
+  try {
+    const { codigo } = req.params;
+    
+    // Busca clientes do vendedor
+    const { data: clientes, error: errCli } = await supabase
+      .from('clientes')
+      .select('*')
+      .eq('codigo_representante', codigo);
+      
+    if (errCli) throw errCli;
+
+    // Busca todos os logins recentes (últimos 7 dias)
+    const dataLimite = new Date();
+    dataLimite.setDate(dataLimite.getDate() - 7);
+    
+    const { data: logins } = await supabase
+      .from('logins_clientes')
+      .select('cnpj, data_login')
+      .gte('data_login', dataLimite.toISOString())
+      .order('data_login', { ascending: false });
+
+    // Cruza os dados
+    const ultimosLoginsMap = {};
+    (logins || []).forEach(l => {
+      if (!ultimosLoginsMap[l.cnpj]) ultimosLoginsMap[l.cnpj] = l.data_login;
+    });
+
+    const clientesComLogins = clientes.map(c => ({
+      ...c,
+      ultimo_login: ultimosLoginsMap[c.cnpj] || null
+    }));
+
+    res.json({ ok: true, clientes: clientesComLogins });
+  } catch (e) {
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
+
 app.delete('/api/admin/scraping-produtos/:id', async (req, res) => {
   try {
     const { id } = req.params;
