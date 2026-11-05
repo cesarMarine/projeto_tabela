@@ -1180,15 +1180,8 @@ function analisarCarretilha(it) {
 }
 
 function analisarMotor(it) {
-  let attrs = it.atributos || {};
-  if (typeof attrs === 'string') { try { attrs = JSON.parse(attrs); } catch (e) { attrs = {}; } }
-  let detalhe = attrs['Potência'] || attrs['Libragem'] || attrs['LBS'] || attrs['Modelo'] || '';
-  if (!detalhe) {
-    const texto = (it.subgrupo || it.descricao_longa || '').toUpperCase();
-    const match = texto.match(/\b(\d+\s*LBS?|\d+\s*LB|\d+\s*HP)\b/i);
-    if (match) detalhe = match[1];
-  }
-  return { variacao: detalhe || it.subgrupo || 'Padrão' };
+  // Agora usa o nome completo (subgrupo) em vez de pegar só a potência
+  return { variacao: it.subgrupo || 'Padrão' };
 }
 
 function analisarVara(it) {
@@ -1263,7 +1256,7 @@ porcentagemAcrescimo = parseFloat(
 
     carregar();
 
-    
+
     localStorage.setItem('acrescimoB2B', porcentagemAcrescimo);
     configurarWhatsAppVendedor();
 
@@ -1912,7 +1905,7 @@ function renderFamiliaMotor(fam, itens) {
         ${it.imagem_url ? `<img src="${it.imagem_url}" style="height: 65px; object-fit: contain; margin-bottom:4px;">` : ''}
         
         <div class="cor-nome" style="font-size: 0.65rem; font-weight: 700; color: var(--cinza-400);">CÓD: ${escapeHtml(it.codigo)}</div>
-        <div style="font-size: .7rem; color: var(--azul-800); font-weight: 800; text-align: center; margin: 2px 0 4px 0; line-height: 1.1;">
+               <div style="font-size: 0.7rem; color: var(--azul-800); font-weight: 800; text-align: center; margin: 2px 0 6px 0; line-height: 1.2; min-height: 3.5em; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
           ${escapeHtml(infoMotor.variacao)}
         </div>
         
