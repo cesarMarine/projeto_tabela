@@ -1425,6 +1425,69 @@ app.post('/api/pedidos/autosave', async (req, res) => {
   }
 });
 
+// ==========================================
+// ROTAS PARA O SCRAPING (Admin)
+// ==========================================
+
+// 1. Listar e Buscar Scraping
+app.get('/api/admin/scraping-produtos', async (req, res) => {
+  try {
+    const { busca, pagina = 1, limite = 50 } = req.query;
+    const offset = (pagina - 1) * limite;
+    
+    let query = supabase.from('scraping_produtos').select('*', { count: 'exact' });
+    
+    if (busca) {
+      query = query.or(`codigo.ilike.%${busca}%,subgrupo.ilike.%${busca}%,marca.ilike.%${busca}%`);
+    }
+    
+    const { data, count, error } = await query
+      .order('id', { ascending: false })
+      .range(offset, offset + limite - 1);
+      
+    if (error) throw error;
+    
+    res.json({ 
+      ok: true, 
+      total: count || 0, 
+      pagina: Number(pagina), 
+      totalPaginas: Math.ceil((count || 0) / limite), 
+      produtos: data 
+    });
+  } catch (e) {
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
+
+// 2. Editar ou Deletar Scraping
+app.put('/api/admin/scraping-produtos/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { grupo, subgrupo, marca, descricao_longa } = req.body;
+    
+    const { error } = await supabase
+      .from('scraping_produtos')
+      .update({ grupo, subgrupo, marca, descricao_longa })
+      .eq('id', id);
+      
+    if (error) throw error;
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
+
+app.delete('/api/admin/scraping-produtos/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { error } = await supabase.from('scraping_produtos').delete().eq('id', id);
+    if (error) throw error;
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
+
 // 2. ROTA PARA CRIAR OU ATUALIZAR PEDIDO (RASCUNHO OU ENVIADO)
 // 2. SALVAR RASCUNHO OU FINALIZAR PEDIDO
 app.post('/api/pedidos', async (req, res) => {

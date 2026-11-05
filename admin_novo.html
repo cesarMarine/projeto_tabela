@@ -99,6 +99,7 @@
   <aside class="sidebar">
     <button class="active" data-page="importar">📥 Importar</button>
     <button data-page="estoque">📦 Produtos em Estoque</button>
+        <button data-page="scraping">🕷️ Scraping</button>
     <button data-page="auditoria">🔍 Auditoria de Produtos</button>
     <button data-page="ofertas">🔥 Ofertas</button>
     <button data-page="familias">👨‍👩‍👧‍👦 Famílias</button>
@@ -111,6 +112,42 @@
 
   <main class="main">
     <div class="alerta" id="alerta"></div>
+
+        <!-- PÁGINA: SCRAPING -->
+    <section class="page" id="page-scraping">
+      <div class="painel">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:20px;">
+          <div>
+            <h2>🕷️ Produtos Importados do Scraping</h2>
+            <p style="font-size:14px; color:#94a3b8;">Gerencie os dados que vieram do JSON (Fotos, Descrições e Grupos).</p>
+          </div>
+          <div style="display:flex; gap:12px; align-items:center;">
+            <input type="text" id="buscaScraping" placeholder="🔍 Buscar por código, nome ou marca..." oninput="debounceScraping()" style="width:300px; padding:12px; border-radius:8px; border:1px solid #475569; background:#0f172a; color:white;">
+            <button class="btn-primario" onclick="carregarScraping(1)">🔍 Buscar</button>
+          </div>
+        </div>
+
+        <div style="overflow-x:auto;">
+          <table id="tabelaScraping">
+            <thead>
+              <tr>
+                <th style="width:80px;">Código</th>
+                <th>Foto</th>
+                <th>Descrição (Subgrupo)</th>
+                <th>Grupo</th>
+                <th>Marca</th>
+                <th style="text-align:center;">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="6" style="text-align:center; padding:30px; color:#94a3b8;">Clique em buscar para carregar os itens...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <div id="paginacaoScraping" style="display:flex; justify-content:center; gap:8px; margin-top:20px;"></div>
+      </div>
+    </section>
 
     <!-- PÁGINA: ORDENAÇÃO DE SUBGRUPOS -->
     <section class="page" id="page-ordem-subgrupos">
@@ -592,6 +629,113 @@ let listaEstoqueCache = [];
 
 let listaSubgruposOrdemCache = [];
 
+// Variáveis de controle para o Scraping
+let pagScraping = 1, totPagScraping = 1, timeoutScraping = null;
+
+// Adicione a chamada no menu lateral. Procure o bloco que já existe e adicione:
+// if (pageId === 'scraping') carregarScraping(1);
+
+function debounceScraping() {
+  clearTimeout(timeoutScraping);
+  timeoutScraping = setTimeout(() => carregarScraping(1), 500);
+}
+
+async function carregarScraping(pagina = 1) {
+  const busca = document.getElementById('buscaScraping').value.trim();
+  pagScraping = pagina;
+  const tbody = document.querySelector('#tabelaScraping tbody');
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px; color:#94a3b8;">Carregando dados do scraping...</td></tr>';
+
+  try {
+    const r = await fetch(`/api/admin/scraping-produtos?busca=${encodeURIComponent(busca)}&pagina=${pagina}&limite=50`);
+    const j = await r.json();
+
+    if (!j.ok) throw new Error(j.erro);
+
+    totPagScraping = j.totalPaginas;
+
+    if (!j.produtos.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px; color:#94a3b8;">Nenhum produto encontrado.</td></tr>';
+      document.getElementById('paginacaoScraping').innerHTML = '';
+      return;
+    }
+
+    tbody.innerHTML = j.produtos.map(p => `
+      <tr>
+        <td><strong style="color:#38bdf8; font-family:monospace;">${p.codigo}</strong></td>
+        <td>
+          <img src="${p.imagem_url}" style="height:40px; width:40px; object-fit:contain; background:white; border-radius:4px; padding:2px;" onerror="this.src='https://gpzqzwrqndawhhglycat.supabase.co/storage/v1/object/public/icones_area_trabalho/ACESSORIOS.jpg'">
+        </td>
+        <td style="font-weight:600;">${p.subgrupo || '<span style="color:#ef4444">Sem Nome</span>'}</td>
+        <td><span style="background:#1e293b; color:#e2e8f0; padding:4px 8px; border-radius:6px; font-size:12px;">${p.grupo || '—'}</span></td>
+        <td><span style="background:#064e3b; color:#6ee7b7; padding:4px 8px; border-radius:6px; font-size:12px; font-weight:800;">${p.marca || '—'}</span></td>
+        <td style="text-align:center;">
+          <button class="btn-mini btn-primario" onclick="editarScraping(${p.id})">✏️ Editar</button>
+          <button class="btn-del" onclick="deletarScraping(${p.id})">🗑️</button>
+        </td>
+      </tr>
+    `).join('');
+
+    renderPaginacaoScraping();
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#ef4444; padding:30px;">Erro: ${e.message}</td></tr>`;
+  }
+}
+
+function renderPaginacaoScraping() {
+  const cont = document.getElementById('paginacaoScraping');
+  if (totPagScraping <= 1) { cont.innerHTML = ''; return; }
+  let html = `<button class="btn-primario btn-mini" ${pagScraping===1?'disabled':''} onclick="carregarScraping(${pagScraping-1})">← Anterior</button>`;
+  html += `<span style="display:flex; align-items:center; padding:0 12px; font-size:.85rem; font-weight:600; color:#94a3b8;">Página ${pagScraping} de ${totPagScraping}</span>`;
+  html += `<button class="btn-primario btn-mini" ${pagScraping===totPagScraping?'disabled':''} onclick="carregarScraping(${pagScraping+1})">Próxima →</button>`;
+  cont.innerHTML = html;
+}
+
+async function editarScraping(id) {
+  // Para simplificar, usaremos prompts. Se preferir, posso fazer um modal completo.
+  const novoGrupo = prompt("Digite o novo GRUPO (Ex: ISCAS 02):");
+  if (novoGrupo === null) return;
+  
+  const novoSubgrupo = prompt("Digite o novo SUBGRUPO (Nome do produto):");
+  if (novoSubgrupo === null) return;
+  
+  const novaMarca = prompt("Digite a nova MARCA (Ex: MARINE):");
+  if (novaMarca === null) return;
+
+  try {
+    const r = await fetch(`/api/admin/scraping-produtos/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ grupo: novoGrupo, subgrupo: novoSubgrupo, marca: novaMarca })
+    });
+    const j = await r.json();
+    if (j.ok) {
+      alert('✅ Produto atualizado com sucesso!');
+      carregarScraping(pagScraping);
+    } else {
+      alert('❌ Erro: ' + j.erro);
+    }
+  } catch (e) {
+    alert('❌ Erro de conexão ao editar.');
+  }
+}
+
+async function deletarScraping(id) {
+  if (!confirm('Tem certeza que deseja excluir este produto do scraping?')) return;
+  try {
+    const r = await fetch(`/api/admin/scraping-produtos/${id}`, { method: 'DELETE' });
+    const j = await r.json();
+    if (j.ok) {
+      alert('🗑️ Produto removido do scraping!');
+      carregarScraping(pagScraping);
+    } else {
+      alert('❌ Erro ao deletar: ' + j.erro);
+    }
+  } catch (e) {
+    alert('❌ Erro de conexão ao deletar.');
+  }
+}
+
 // --- FUNÇÕES DE APOIO GLOBAIS ---
 function escapeHtml(text) {
   if (!text) return '';
@@ -738,6 +882,7 @@ document.querySelectorAll('.sidebar button').forEach(b => {
     if (pageId === 'importar') carregarStatus();
     if (pageId === 'estoque') carregarEstoque();
     if (pageId === 'auditoria') carregarAuditoria();
+        if (pageId === 'scraping') carregarScraping(1);
     if (pageId === 'ofertas') carregarOfertasAdmin();
     if (pageId === 'familias') carregarDados();
     if (pageId === 'clientes') carregarClientes(1);
