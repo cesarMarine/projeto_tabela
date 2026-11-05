@@ -1180,8 +1180,17 @@ function analisarCarretilha(it) {
 }
 
 function analisarMotor(it) {
-  // Agora usa o nome completo (subgrupo) em vez de pegar só a potência
-  return { variacao: it.subgrupo || 'Padrão' };
+  let nome = it.subgrupo || 'Padrão';
+  
+  // Remove "MOTOR ELÉTRICO" ou "MOTOR ELETRICO" do começo ou do meio do nome
+  nome = nome.replace(/MOTOR\s+EL[EÉ]TRICO\s*/gi, '').trim();
+
+  // Deixa a primeira letra maiúscula novamente (caso tenha ficado minúscula)
+  if (nome.length > 0) {
+    nome = nome.charAt(0).toUpperCase() + nome.slice(1);
+  }
+
+  return { variacao: nome };
 }
 
 function analisarVara(it) {
