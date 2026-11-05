@@ -1530,15 +1530,19 @@ function renderOfertas() {
     return;
   }
 
-  const ofertasRender = ofertasCache.map(of => {
+   const ofertasRender = ofertasCache.map(of => {
     const cat = mapaCatalogoCache.get(String(of.codigo)) || {};
     const subgrupo = of.subgrupo || cat.subgrupo_scraping || cat.descricao_sistema || `Produto ${of.codigo}`;
     const precoBase = Number(of.preco_base || cat.preco_venda || 0);
     const imagem = of.imagem_oferta || cat.imagem_url || '';
     const marca = of.marca || cat.marca || '';
     const grupo = of.grupo || cat.grupo_scraping || cat.grupo || 'OUTROS';
-    return { ...of, subgrupo, preco_base: precoBase, imagem_oferta: imagem, marca, grupo };
-  });
+    const estoque = Number(cat.estoque) || 0; // Pega o estoque atual do catálogo
+
+    return { ...of, subgrupo, preco_base: precoBase, imagem_oferta: imagem, marca, grupo, estoque };
+  })
+  // 👇 AQUI ESTÁ A CORREÇÃO: Só deixa passar quem tem preço maior que zero E estoque maior que zero
+  .filter(of => of.preco_base > 0 && of.estoque > 0);
 
   // Filtros por grupo (só mostra os grupos que têm oferta)
   const gruposUnicos = Array.from(new Set(ofertasRender.map(o => (o.grupo || 'OUTROS').toUpperCase().trim()))).sort();
