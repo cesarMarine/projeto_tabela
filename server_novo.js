@@ -1526,19 +1526,26 @@ app.post('/api/admin/scraping-produtos', async (req, res) => {
 app.post('/api/registrar-login', async (req, res) => {
   try {
     const { cnpj, nome } = req.body;
-    await supabase.from('logins_clientes').insert({ cnpj, nome_cliente: nome });
+    // Limpa o CNPJ (apenas números)
+    const cnpjLimpo = String(cnpj || '').replace(/\D/g, '');
+    
+    await supabase.from('logins_clientes').insert({ 
+      cnpj: cnpjLimpo, 
+      nome_cliente: nome 
+    });
+    
     res.json({ ok: true });
   } catch (e) {
+    console.error("Erro ao registrar login:", e);
     res.status(500).json({ ok: false, erro: e.message });
   }
 });
-
 // 2. Retorna a lista de clientes com o último acesso (chamado pelo vendedor.html)
 app.get('/api/vendedor/:codigo/clientes-logins', async (req, res) => {
   try {
     const { codigo } = req.params;
     
-    // Busca clientes do vendedor
+    // 1. Busca os clientes do vendedor
     const { data: clientes, error: errCli } = await supabase
       .from('clientes')
       .select('*')
@@ -1546,31 +1553,68 @@ app.get('/api/vendedor/:codigo/clientes-logins', async (req, res) => {
       
     if (errCli) throw errCli;
 
-    // Busca todos os logins recentes (últimos 7 dias)
+    // 2. Busca logins dos últimos 7 dias
     const dataLimite = new Date();
     dataLimite.setDate(dataLimite.getDate() - 7);
     
-    const { data: logins } = await supabase
+    const { data: logins, error: errLogins } = await supabase
       .from('logins_clientes')
       .select('cnpj, data_login')
       .gte('data_login', dataLimite.toISOString())
       .order('data_login', { ascending: false });
 
-    // Cruza os dados
+    if (errLogins) throw errLogins;
+
+    // 3. Cria um mapa de logins com CNPJ limpo (só números)
     const ultimosLoginsMap = {};
     (logins || []).forEach(l => {
-      if (!ultimosLoginsMap[l.cnpj]) ultimosLoginsMap[l.cnpj] = l.data_login;
+      const cnpjLimpo = String(l.cnpj || '').replace(/\D/g, '');
+      if (!ultimosLoginsMap[cnpjLimpo]) {
+        ultimosLoginsMap[cnpjLimpo] = l.data_login;
+      }
     });
 
-    const clientesComLogins = clientes.map(c => ({
-      ...c,
-      ultimo_login: ultimosLoginsMap[c.cnpj] || null
-    }));
+    // 4. Cruza os dados limpando o CNPJ do cliente também
+    const clientesComLogins = (clientes || []).map(c => {
+      const cnpjLimpoCliente = String(c.cnpj || '').replace(/\D/g, '');
+      return {
+        ...c,
+        ultimo_login: ultimosLoginsMap[cnpjLimpoCliente] || null
+      };
+    });
 
     res.json({ ok: true, clientes: clientesComLogins });
   } catch (e) {
+    console.error('Erro na rota clientes-logins:', e);
     res.status(500).json({ ok: false, erro: e.message });
   }
+});
+
+// Enviar mensagem
+app.post('/api/mensagens', async (req, res) => {
+  try {
+    const { cnpj_cliente, codigo_representante, remetente, texto } = req.body;
+    const { error } = await supabase.from('mensagens').insert({
+      cnpj_cliente, codigo_representante, remetente, texto
+    });
+    if (error) throw error;
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }
+});
+
+// Buscar mensagens do vendedor com o cliente
+app.get('/api/mensagens/:cnpj/:codigoRep', async (req, res) => {
+  try {
+    const { cnpj, codigoRep } = req.params;
+    const { data, error } = await supabase
+      .from('mensagens')
+      .select('*')
+      .eq('cnpj_cliente', cnpj)
+      .eq('codigo_representante', codigoRep)
+      .order('data_criacao', { ascending: true });
+    if (error) throw error;
+    res.json({ ok: true, mensagens: data });
+  } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
 
 app.delete('/api/admin/scraping-produtos/:id', async (req, res) => {
@@ -1670,6 +1714,8 @@ app.post('/api/regras', (req, res) => {
   
   res.json({ ok: true, mensagem: "Regras salvas com sucesso!" });
 });
+
+
 
 // ROTA DELETAR FAMÍLIA CORRIGIDA
 app.delete('/api/familias/:id', async (req, res) => {
