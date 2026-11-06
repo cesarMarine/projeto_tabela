@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Executivo - Marine</title>
+<!-- Biblioteca de Gráficos -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter','Segoe UI',system-ui,sans-serif; }
+  
+  /* TELA DE LOGIN */
+  #telaLogin { 
+    position:fixed; inset:0; 
+    background: linear-gradient(135deg, #001f3f 0%, #003366 100%); 
+    display:flex; align-items:center; justify-content:center; padding:20px; z-index:1000; 
+  }
+  .login-box { 
+    background:rgba(255,255,255,0.05); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.1);
+    border-radius:16px; padding:40px; width:100%; max-width:400px; box-shadow:0 20px 60px rgba(0,0,0,0.5); text-align:center; 
+  }
+  .login-logo { height: 60px; margin-bottom: 20px; object-fit: contain; }
+  .login-box h1 { color:white; font-size:1.5rem; font-weight:800; margin-bottom:8px; }
+  .login-box p { color:#94a3b8; font-size:.9rem; margin-bottom:24px; }
+  .login-box input { 
+    width:100%; padding:14px 16px; border:1px solid rgba(255,255,255,0.2); border-radius:10px; 
+    background:rgba(0,0,0,0.2); color:white; font-size:1rem; margin-bottom:16px; font-weight:600; 
+  }
+  .login-box input:focus { outline:none; border-color:#38bdf8; }
+  .login-box button { 
+    width:100%; padding:14px; background:#2563eb; color:white; border:none; border-radius:10px; 
+    font-size:1rem; font-weight:800; cursor:pointer; transition:.2s; 
+  }
+  .login-box button:hover { background:#1d4ed8; }
+  .login-erro { color:#ef4444; font-size:.85rem; font-weight:700; margin-bottom:12px; display:none; }
+
+  /* DASHBOARD */
+  #telaDashboard { display:none; background:#f0f4f8; min-height:100vh; padding-bottom:40px; }
+  .header-dash { 
+    background:white; padding:16px 24px; display:flex; justify-content:space-between; align-items:center; 
+    box-shadow:0 2px 10px rgba(0,0,0,.05); position:sticky; top:0; z-index:100; 
+  }
+  .header-dash img { height: 32px; }
+  .header-dash .user-info { display:flex; align-items:center; gap:16px; font-size:0.9rem; font-weight:700; color:#0f172a; }
+  .btn-sair { background:#fee2e2; color:#ef4444; border:none; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer; }
+
+  .container { max-width:1400px; margin:0 auto; padding:24px; }
+
+  /* CARDS KPI */
+  .kpi-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:24px; }
+  .kpi-card { background:white; border-radius:12px; padding:24px; box-shadow:0 2px 12px rgba(0,0,0,.04); border-top:4px solid #0d3b66; }
+  .kpi-card h3 { font-size:0.8rem; color:#64748b; text-transform:uppercase; font-weight:800; margin-bottom:8px; }
+  .kpi-card .value { font-size:2.2rem; font-weight:900; color:#0d3b66; }
+  .kpi-card.verde { border-top-color: #10b981; }
+  .kpi-card.verde .value { color:#10b981; }
+  .kpi-card.azul { border-top-color: #38bdf8; }
+  .kpi-card.azul .value { color:#0284c7; }
+  .kpi-card.laranja { border-top-color: #f59e0b; }
+  .kpi-card.laranja .value { color:#d97706; }
+
+  /* GRÁFICOS */
+  .charts-grid { display:grid; grid-template-columns: 1fr 1fr; gap:24px; margin-bottom:24px; }
+  .chart-card { background:white; border-radius:12px; padding:24px; box-shadow:0 2px 12px rgba(0,0,0,.04); }
+  .chart-card h3 { font-size:1rem; color:#0f172a; margin-bottom:20px; font-weight:800; border-bottom:1px solid #f1f5f9; padding-bottom:10px; }
+  .chart-container { position: relative; height: 300px; width: 100%; }
+
+  /* LISTAS */
+  .listas-grid { display:grid; grid-template-columns: 1fr 1fr; gap:24px; }
+  .lista-card { background:white; border-radius:12px; padding:24px; box-shadow:0 2px 12px rgba(0,0,0,.04); }
+  .lista-card h3 { font-size:1rem; color:#0f172a; margin-bottom:16px; font-weight:800; border-bottom:1px solid #f1f5f9; padding-bottom:10px; }
+  .tabela-mini { width:100%; border-collapse:collapse; }
+  .tabela-mini th { text-align:left; font-size:0.7rem; color:#64748b; text-transform:uppercase; padding-bottom:8px; border-bottom:1px solid #e2e8f0; }
+  .tabela-mini td { padding:10px 0; font-size:0.85rem; border-bottom:1px solid #f1f5f9; color:#334155; }
+  .badge-uf { background:#dbeafe; color:#1e40af; padding:2px 6px; border-radius:4px; font-weight:800; font-size:0.7rem; }
+
+  @media(max-width: 900px) {
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+    .charts-grid, .listas-grid { grid-template-columns: 1fr; }
+  }
+  @media(max-width: 600px) {
+    .kpi-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TELA DE LOGIN -->
+<div id="telaLogin">
+  <div class="login-box">
+    <img src="https://gpzqzwrqndawhhglycat.supabase.co/storage/v1/object/public/icones_area_trabalho/logo--marine-rgb-png.png" class="login-logo" alt="Marine">
+    <h1>Acesso Restrito</h1>
+    <p>Insira suas credenciais para acessar as métricas.</p>
+    <div class="login-erro" id="loginErro">Usuário ou senha incorretos.</div>
+    <input type="text" id="loginUser" placeholder="Usuário" autocomplete="off">
+    <input type="password" id="loginPass" placeholder="Senha" autocomplete="off">
+    <button onclick="fazerLoginAdmin()">Entrar no Dashboard</button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="telaDashboard">
+  <div class="header-dash">
+    <img src="https://gpzqzwrqndawhhglycat.supabase.co/storage/v1/object/public/icones_area_trabalho/logo--marine-rgb-png.png" alt="Marine">
+    <div class="user-info">
+      <span>👤 Admin</span>
+      <button class="btn-sair" onclick="sairAdmin()">Sair</button>
+    </div>
+  </div>
+
+  <div class="container">
+    
+    <!-- CARDS KPI -->
+    <div class="kpi-grid">
+      <div class="kpi-card verde">
+        <h3>Faturamento Total</h3>
+        <div class="value" id="kpiFaturamento">R$ 0,00</div>
+      </div>
+      <div class="kpi-card">
+        <h3>Total de Pedidos</h3>
+        <div class="value" id="kpiPedidos">0</div>
+      </div>
+      <div class="kpi-card azul">
+        <h3>Ticket Médio</h3>
+        <div class="value" id="kpiTicket">R$ 0,00</div>
+      </div>
+      <div class="kpi-card laranja">
+        <h3>Clientes que Acessaram</h3>
+        <div class="value" id="kpiLogins">0</div>
+      </div>
+    </div>
+
+    <!-- GRÁFICOS -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h3>🏆 Faturamento por Vendedor</h3>
+        <div class="chart-container">
+          <canvas id="graficoVendedores"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h3>📍 Vendas por Estado (UF)</h3>
+        <div class="chart-container">
+          <canvas id="graficoUFs"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABELAS AO VIVO -->
+    <div class="listas-grid">
+      <div class="lista-card">
+        <h3>🕒 Últimos Pedidos Recebidos</h3>
+        <table class="tabela-mini">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Cliente</th>
+              <th>UF</th>
+              <th>Valor</th>
+            </tr>
+          </thead>
+          <tbody id="listaUltimosPedidos">
+            <tr><td colspan="4" style="text-align:center; color:#94a3b8;">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="lista-card">
+        <h3>👀 Radar de Clientes (Últimos Logins)</h3>
+        <table class="tabela-mini">
+          <thead>
+            <tr>
+              <th>Cliente / CNPJ</th>
+              <th>UF</th>
+              <th>Horário</th>
+            </tr>
+          </thead>
+          <tbody id="listaUltimosLogins">
+            <tr><td colspan="3" style="text-align:center; color:#94a3b8;">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let chartVendedores = null;
+let chartUFs = null;
+
+const fmtMoeda = v => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+// ==========================================
+// LOGIN
+// ==========================================
+function fazerLoginAdmin() {
+  const user = document.getElementById('loginUser').value.trim();
+  const pass = document.getElementById('loginPass').value.trim();
+  const erro = document.getElementById('loginErro');
+
+  if (user === 'admin' && pass === 'marineadmin') {
+    document.getElementById('telaLogin').style.display = 'none';
+    document.getElementById('telaDashboard').style.display = 'block';
+    localStorage.setItem('adminLogadoMarine', 'true');
+    carregarMetricas();
+  } else {
+    erro.style.display = 'block';
+  }
+}
+
+function sairAdmin() {
+  localStorage.removeItem('adminLogadoMarine');
+  window.location.reload();
+}
+
+// Verifica se já estava logado
+window.onload = () => {
+  if (localStorage.getItem('adminLogadoMarine') === 'true') {
+    document.getElementById('telaLogin').style.display = 'none';
+    document.getElementById('telaDashboard').style.display = 'block';
+    carregarMetricas();
+  }
+}
+
+// ==========================================
+// BUSCAR E CRUZAR DADOS
+// ==========================================
+async function carregarMetricas() {
+  try {
+    // 1. Puxa os dados de todos os pedidos e clientes
+    // Como o admin precisa de uma visão macro, vamos puxar tudo de uma vez
+    // e fazer as contas aqui na tela.
+    
+    // Como a API de pedidos é por vendedor, e queremos todos, precisamos
+    // de uma rota que retorne tudo. Se não tiver, usamos o catálogo de clientes
+    // e puxamos os pedidos via query total.
+    
+    // O ideal aqui é ter uma rota global, mas como não criamos, vamos simular
+    // puxando os últimos pedidos globais usando o padrão do sistema.
+    // Para não quebrar, puxaremos os dados da tabela de clientes e pedidos do endpoint de admin.
+
+    const [resPedidos, resLogins] = await Promise.all([
+      fetch('/api/admin/metricas-pedidos'), // Vamos criar essa rota no backend
+      fetch('/api/admin/metricas-logins')   // Vamos criar essa rota no backend
+    ]);
+
+    const dataPedidos = await resPedidos.json();
+    const dataLogins = await resLogins.json();
+
+    if (!dataPedidos.ok || !dataLogins.ok) throw new Error('Falha ao carregar dados');
+
+    const pedidos = dataPedidos.pedidos || [];
+    const logins = dataLogins.logins || [];
+
+    processarMetricas(pedidos, logins);
+
+  } catch (e) {
+    console.error(e);
+    alert('Erro ao carregar métricas: ' + e.message);
+  }
+}
+
+function processarMetricas(pedidos, logins) {
+  let faturamento = 0;
+  const vendasPorVendedor = {};
+  const vendasPorUF = {};
+  
+  // Filtra apenas os finalizados
+  const finalizados = pedidos.filter(p => (p.status || '').toUpperCase() !== 'RASCUNHO');
+
+  finalizados.forEach(p => {
+    const valor = Number(p.total) || 0;
+    const vendedor = p.codigo_representante || 'Sem Vendedor';
+    const uf = p.uf || 'N/A';
+
+    faturamento += valor;
+
+    // Agrupa por Vendedor
+    if (!vendasPorVendedor[vendedor]) vendasPorVendedor[vendedor] = 0;
+    vendasPorVendedor[vendedor] += valor;
+
+    // Agrupa por UF
+    if (!vendasPorUF[uf]) vendasPorUF[uf] = 0;
+    vendasPorUF[uf] += valor;
+  });
+
+  const totalPedidos = finalizados.length;
+  const ticketMedio = totalPedidos > 0 ? (faturamento / totalPedidos) : 0;
+  const totalLogins = logins.length;
+
+  // Atualiza os KPIs
+  document.getElementById('kpiFaturamento').textContent = `R$ ${fmtMoeda(faturamento)}`;
+  document.getElementById('kpiPedidos').textContent = totalPedidos;
+  document.getElementById('kpiTicket').textContent = `R$ ${fmtMoeda(ticketMedio)}`;
+  document.getElementById('kpiLogins').textContent = totalLogins;
+
+  renderizarGraficoVendedores(vendasPorVendedor);
+  renderizarGraficoUFs(vendasPorUF);
+  renderizarUltimosPedidos(finalizados.slice(0, 10)); // Pega os 10 mais recentes
+  renderizarUltimosLogins(logins.slice(0, 10));
+}
+
+// ==========================================
+// RENDERIZAR GRÁFICOS (Chart.js)
+// ==========================================
+function renderizarGraficoVendedores(dados) {
+  const labels = Object.keys(dados);
+  const valores = Object.values(dados);
+
+  if (chartVendedores) chartVendedores.destroy();
+  
+  const ctx = document.getElementById('graficoVendedores').getContext('2d');
+  chartVendedores = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Faturamento (R$)',
+        data: valores,
+        backgroundColor: '#0d3b66',
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { callback: v => 'R$ ' + v } }
+      }
+    }
+  });
+}
+
+function renderizarGraficoUFs(dados) {
+  const labels = Object.keys(dados);
+  const valores = Object.values(dados);
+
+  if (chartUFs) chartUFs.destroy();
+
+  const ctx = document.getElementById('graficoUFs').getContext('2d');
+  chartUFs = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: valores,
+        backgroundColor: ['#0d3b66', '#2563eb', '#38bdf8', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'right' } }
+    }
+  });
+}
+
+// ==========================================
+// RENDERIZAR TABELAS
+// ==========================================
+function renderizarUltimosPedidos(pedidos) {
+  const tbody = document.getElementById('listaUltimosPedidos');
+  if (!pedidos.length) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Nenhum pedido recente.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = pedidos.map(p => `
+    <tr>
+      <td><strong>#${p.id}</strong></td>
+      <td>${p.nome_cliente || p.razao_social || 'Cliente'}</td>
+      <td><span class="badge-uf">${p.uf || '—'}</span></td>
+      <td style="font-weight:800; color:#10b981;">R$ ${fmtMoeda(p.total)}</td>
+    </tr>
+  `).join('');
+}
+
+function renderizarUltimosLogins(logins) {
+  const tbody = document.getElementById('listaUltimosLogins');
+  if (!logins.length) {
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Nenhum acesso recente.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = logins.map(l => {
+    const dataLogin = new Date(l.data_login);
+    const hora = dataLogin.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    return `
+      <tr>
+        <td><strong>${l.nome_cliente || l.cnpj}</strong></td>
+        <td><span class="badge-uf">${l.uf || '—'}</span></td>
+        <td>Hoje às ${hora}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// Permitir login com "Enter"
+document.getElementById('loginPass')?.addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') fazerLoginAdmin();
+});
+</script>
+</body>
+</html>
