@@ -619,6 +619,7 @@ function exportarPedidoExcel(pedidoId) {
   const pedido = pedidosCache.find(p => p.id === pedidoId);
   if (!pedido) return alert('Pedido não encontrado para exportação.');
 
+  const codCliente = pedido.codigo_cliente || '';
   const nomeCliente = (pedido.nome_fantasia || pedido.razao_social || 'Cliente').trim();
   const dataObj = new Date(pedido.data_criacao);
   
@@ -640,7 +641,16 @@ function exportarPedidoExcel(pedidoId) {
     const totalItem = unitario * qtd;
 
     dadosParaExcel.push([
-      String(it.codigo_produto || ''), 0, 0, 0, 0, String(it.descricao || ''), "", qtd, unitario, totalItem
+      String(it.codigo_produto || ''), // Coluna A
+      0,                               // Coluna B
+      0,                               // Coluna C
+      0,                               // Coluna D
+      "",                              // 👈 Coluna E agora está vazia
+      String(it.descricao || ''),      // Coluna F
+      "",                              // Coluna G
+      qtd,                             // Coluna H
+      unitario,                        // Coluna I
+      totalItem                        // Coluna J
     ]);
   });
 
