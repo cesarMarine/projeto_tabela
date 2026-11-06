@@ -1576,14 +1576,12 @@ function renderOfertas() {
     const imagem = of.imagem_oferta || cat.imagem_url || '';
     const marca = of.marca || cat.marca || '';
     const grupo = of.grupo || cat.grupo_scraping || cat.grupo || 'OUTROS';
-    const estoque = Number(cat.estoque) || 0; // Pega o estoque atual do catálogo
+    const estoque = Number(cat.estoque) || 0;
 
     return { ...of, subgrupo, preco_base: precoBase, imagem_oferta: imagem, marca, grupo, estoque };
   })
-  // 👇 AQUI ESTÁ A CORREÇÃO: Só deixa passar quem tem preço maior que zero E estoque maior que zero
   .filter(of => of.preco_base > 0 && of.estoque > 0);
 
-  // Filtros por grupo (só mostra os grupos que têm oferta)
   const gruposUnicos = Array.from(new Set(ofertasRender.map(o => (o.grupo || 'OUTROS').toUpperCase().trim()))).sort();
   const filtrosHtml = gruposUnicos.length > 1 ? `
     <div class="black-filtros">
@@ -1604,6 +1602,31 @@ function renderOfertas() {
       ? `<img src="${item.imagem_oferta}" alt="${escapeHtml(item.subgrupo)}" onerror="this.onerror=null; this.parentElement.innerHTML='🖼️';">`
       : '🖼️';
 
+    // 👇 AQUI ESTÁ A MÁGICA: Preparando o nome com a variação para a oferta
+    const itemBruto = todosItens.find(i => i.codigo === String(item.codigo));
+    let nomeOferta = item.subgrupo;
+
+    if (itemBruto) {
+      const grupoUpper = (itemBruto.grupo || '').toUpperCase();
+      if (grupoUpper.includes('CARRETILHA')) {
+        const info = analisarCarretilha(itemBruto);
+        if (info.ladoTag && !nomeOferta.toUpperCase().includes(info.ladoTag.toUpperCase())) {
+          nomeOferta += ` (${info.ladoTag})`;
+        }
+      } else if (grupoUpper.includes('MOLINETE')) {
+        const info = analisarMolinete(itemBruto);
+        if (info.modelo && !nomeOferta.toUpperCase().includes(info.modelo.toUpperCase())) {
+          nomeOferta += ` ${info.modelo}`;
+        }
+      } else if (grupoUpper.includes('VARA') || grupoUpper.includes('LINHA')) {
+        const info = analisarVara(itemBruto);
+        if (info.modeloJson && info.modeloJson !== item.subgrupo) {
+          nomeOferta += ` ${info.modeloJson}`;
+        }
+      }
+    }
+    // 👆 FIM DA MÁGICA 👆
+
     const qtdHtml = item.preco_base <= 0
       ? `<button class="btn-add-primeiro" disabled style="background:#cbd5e1; color:#94a3b8; cursor:not-allowed;">Indisponível</button>`
       : (q > 0
@@ -1612,7 +1635,7 @@ function renderOfertas() {
                <span class="num">${q}</span>
                <button onclick="mudarQtd('${item.codigo}', 1)">+</button>
              </div>`
-          : `<button class="btn-add-primeiro" onclick="mudarQtd('${item.codigo}', 1)">🛒 Adicionar</button>`);
+          : `<button class="btn-add-primeiro" onclick="adicionarOfertaComNome('${item.codigo}', '${escapeHtml(nomeOferta).replace(/'/g, "\\'")}', ${item.preco_base})">🛒 Adicionar</button>`);
 
     return `
       <div class="card-oferta">
@@ -1621,7 +1644,7 @@ function renderOfertas() {
         <div class="img-box">${imgHtml}</div>
         <div class="corpo-oferta">
           ${item.marca ? `<span class="marca-tag">${escapeHtml(item.marca)}</span>` : ''}
-          <div class="titulo-prod">${escapeHtml(item.subgrupo)}</div>
+          <div class="titulo-prod">${escapeHtml(nomeOferta)}</div> <!-- Usa o nome completo aqui também -->
           <div class="bloco-preco-balcao">
             <span class="txt-de">De: R$ ${fmtMoeda(calc.precoOriginal)}</span>
             <span class="txt-por">Por: R$ ${fmtMoeda(calc.precoFinal)}</span>
@@ -2699,8 +2722,6 @@ function setQtd(cod, valor) {
   let q = parseInt(valor) || 0; 
   const item = buscarItem(cod);
 
-  // Se o produto é de oferta mas não está em todosItens (ex: estoque 0 ou fora do grupo), 
-  // busca no catálogo bruto para pegar precoBase
   let precoBase = item ? item.precoBase : 0;
   let desc = item ? item.subgrupo : '';
   let img = item ? item.imagem_url : '';
@@ -2711,6 +2732,36 @@ function setQtd(cod, valor) {
     desc = cat.subgrupo_scraping || cat.descricao || `Produto ${cod}`;
     img = cat.imagem_url || '';
   }
+
+  // 👇 A MÁGICA ACONTECE AQUI: Adiciona a variação no nome do carrinho 👇
+  if (item && q > 0) {
+    const grupoUpper = (item.grupo || '').toUpperCase();
+    
+    // Se for Carretilha, adiciona o lado da manivela
+    if (grupoUpper.includes('CARRETILHA')) {
+      const info = analisarCarretilha(item);
+      if (info.ladoTag && !desc.toUpperCase().includes(info.ladoTag.toUpperCase())) {
+        desc += ` (${info.ladoTag})`;
+      }
+    }
+    
+    // Se for Molinete, adiciona o modelo (caso o nome base seja genérico)
+    else if (grupoUpper.includes('MOLINETE')) {
+      const info = analisarMolinete(item);
+      if (info.modelo && !desc.toUpperCase().includes(info.modelo.toUpperCase())) {
+        desc += ` ${info.modelo}`;
+      }
+    }
+    
+    // Se for Vara ou Linha (que usam medidas), adiciona a especificação curta
+    else if (grupoUpper.includes('VARA') || grupoUpper.includes('LINHA')) {
+      const info = analisarVara(item);
+      if (info.modeloJson && info.modeloJson !== item.subgrupo) {
+        desc += ` ${info.modeloJson}`;
+      }
+    }
+  }
+  // 👆 FIM DA MÁGICA 👆
 
   if (q > 0 && PRODUTOS_LOTE_10.includes(String(cod))) {
     const resto = q % 10;
@@ -2732,17 +2783,42 @@ function setQtd(cod, valor) {
     else { card.classList.remove('tem-qtd'); }
   }
 
-  // Se está na aba de ofertas, re-renderiza o encarte para refletir qtd
   if (grupoAtual === '__OFERTAS__') {
     renderOfertas();
   }
 
   atualizarCarrinho();
 }
-
 // Variáveis de controle do Autosave (coloque-as no topo do seu script, junto com as outras variáveis)
 let timerAutosave = null;
 let isAutosaving = false;
+
+function adicionarOfertaComNome(codigo, nomeCompleto, precoBase) {
+  const item = buscarItem(codigo);
+  let img = item ? item.imagem_url : '';
+  
+  if (!item && mapaCatalogoCache.has(String(codigo))) {
+    const cat = mapaCatalogoCache.get(String(codigo));
+    img = cat.imagem_url || '';
+  }
+
+  // Coloca no carrinho diretamente com o nome já formatado
+  const qtdAtual = carrinho[codigo] ? carrinho[codigo].qtd : 0;
+  carrinho[codigo] = { 
+    qtd: qtdAtual + 1, 
+    precoBase: precoBase, 
+    desc: nomeCompleto, 
+    img: img 
+  };
+
+  // Atualiza a tela e o autosave
+  atualizarCarrinho();
+  
+  // Re-renderiza a oferta para atualizar o botão para [- 1 +]
+  if (grupoAtual === '__OFERTAS__') {
+    renderOfertas();
+  }
+}
 
 
 function atualizarCarrinho() {
