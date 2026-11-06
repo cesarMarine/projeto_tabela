@@ -1590,60 +1590,98 @@ app.get('/api/vendedor/:codigo/clientes-logins', async (req, res) => {
   }
 });
 
-// Rota global de pedidos para o Dashboard Executivo
+// ==========================================
+// ROTAS DO DASHBOARD EXECUTIVO (MÉTRICAS)
+// ==========================================
+
 app.get('/api/admin/metricas-pedidos', async (req, res) => {
   try {
-    const { data: pedidos, error } = await supabase
+    // 1. Busca os pedidos
+    const { data: pedidos, error: errPed } = await supabase
       .from('pedidos02')
-      .select(`
-        id, total, status, data_criacao, cnpj_cliente, codigo_representante,
-        clientes ( nome_fantasia, razao_social, uf )
-      `)
+      .select('id, total, status, data_criacao, cnpj_cliente, codigo_representante')
       .order('id', { ascending: false });
 
-    if (error) throw error;
+    if (errPed) throw errPed;
 
-    // Achata o objeto para facilitar a leitura no frontend
-    const formatados = (pedidos || []).map(p => ({
-      id: p.id,
-      total: p.total,
-      status: p.status,
-      data_criacao: p.data_criacao,
-      cnpj_cliente: p.cnpj_cliente,
-      codigo_representante: p.codigo_representante,
-      nome_cliente: p.clientes?.nome_fantasia || p.clientes?.razao_social || 'Cliente',
-      uf: p.clientes?.uf || 'N/A'
-    }));
+    // 2. Busca os clientes para pegar o nome e a UF
+    const { data: clientes, error: errCli } = await supabase
+      .from('clientes')
+      .select('cnpj, nome_fantasia, razao_social, uf');
+
+    if (errCli) throw errCli;
+
+    // 3. Cria um mapa de clientes pelo CNPJ para busca rápida
+    const mapaClientes = {};
+    (clientes || []).forEach(c => {
+      const cnpjLimpo = String(c.cnpj || '').replace(/\D/g, '');
+      mapaClientes[cnpjLimpo] = c;
+    });
+
+    // 4. Junta os dados no JavaScript
+    const formatados = (pedidos || []).map(p => {
+      const cnpjLimpo = String(p.cnpj_cliente || '').replace(/\D/g, '');
+      const cli = mapaClientes[cnpjLimpo] || {};
+      
+      return {
+        id: p.id,
+        total: p.total,
+        status: p.status,
+        data_criacao: p.data_criacao,
+        cnpj_cliente: p.cnpj_cliente,
+        codigo_representante: p.codigo_representante,
+        nome_cliente: cli.nome_fantasia || cli.razao_social || 'Cliente',
+        uf: cli.uf || 'N/A'
+      };
+    });
 
     res.json({ ok: true, pedidos: formatados });
   } catch (e) {
+    console.error('Erro em metricas-pedidos:', e);
     res.status(500).json({ ok: false, erro: e.message });
   }
 });
 
-// Rota global de logins para o Dashboard Executivo
 app.get('/api/admin/metricas-logins', async (req, res) => {
   try {
-    const { data: logins, error } = await supabase
+    // 1. Busca os logins recentes
+    const { data: logins, error: errLog } = await supabase
       .from('logins_clientes')
-      .select(`
-        cnpj, data_login,
-        clientes ( nome_fantasia, uf )
-      `)
+      .select('cnpj, data_login')
       .order('data_login', { ascending: false })
-      .limit(50); // Apenas os últimos 50 para não pesar
+      .limit(50);
 
-    if (error) throw error;
+    if (errLog) throw errLog;
 
-    const formatados = (logins || []).map(l => ({
-      cnpj: l.cnpj,
-      data_login: l.data_login,
-      nome_cliente: l.clientes?.nome_fantasia || l.cnpj,
-      uf: l.clientes?.uf || 'N/A'
-    }));
+    // 2. Busca os clientes
+    const { data: clientes, error: errCli } = await supabase
+      .from('clientes')
+      .select('cnpj, nome_fantasia, razao_social, uf');
+
+    if (errCli) throw errCli;
+
+    // 3. Cruza os dados
+    const mapaClientes = {};
+    (clientes || []).forEach(c => {
+      const cnpjLimpo = String(c.cnpj || '').replace(/\D/g, '');
+      mapaClientes[cnpjLimpo] = c;
+    });
+
+    const formatados = (logins || []).map(l => {
+      const cnpjLimpo = String(l.cnpj || '').replace(/\D/g, '');
+      const cli = mapaClientes[cnpjLimpo] || {};
+      
+      return {
+        cnpj: l.cnpj,
+        data_login: l.data_login,
+        nome_cliente: cli.nome_fantasia || cli.razao_social || l.cnpj,
+        uf: cli.uf || 'N/A'
+      };
+    });
 
     res.json({ ok: true, logins: formatados });
   } catch (e) {
+    console.error('Erro em metricas-logins:', e);
     res.status(500).json({ ok: false, erro: e.message });
   }
 });
