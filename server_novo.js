@@ -1604,24 +1604,24 @@ app.get('/api/admin/metricas-pedidos', async (req, res) => {
 
     if (errPed) throw errPed;
 
-    // 2. Busca os clientes para pegar o nome e a UF
+    // 2. Busca os clientes
     const { data: clientes, error: errCli } = await supabase
       .from('clientes')
       .select('cnpj, nome_fantasia, razao_social, uf');
 
     if (errCli) throw errCli;
 
-    // 3. Cria um mapa de clientes pelo CNPJ para busca rápida
+    // 3. Cria um mapa de clientes limpando o CNPJ (tirando pontos, traços e espaços)
     const mapaClientes = {};
     (clientes || []).forEach(c => {
-      const cnpjLimpo = String(c.cnpj || '').replace(/\D/g, '');
+      const cnpjLimpo = String(c.cnpj || '').replace(/\D/g, ''); // Deixa só os números
       mapaClientes[cnpjLimpo] = c;
     });
 
-    // 4. Junta os dados no JavaScript
+    // 4. Junta os dados limpando o CNPJ do pedido também
     const formatados = (pedidos || []).map(p => {
-      const cnpjLimpo = String(p.cnpj_cliente || '').replace(/\D/g, '');
-      const cli = mapaClientes[cnpjLimpo] || {};
+      const cnpjLimpoPedido = String(p.cnpj_cliente || '').replace(/\D/g, '');
+      const cli = mapaClientes[cnpjLimpoPedido] || {};
       
       return {
         id: p.id,
@@ -1630,7 +1630,7 @@ app.get('/api/admin/metricas-pedidos', async (req, res) => {
         data_criacao: p.data_criacao,
         cnpj_cliente: p.cnpj_cliente,
         codigo_representante: p.codigo_representante,
-        nome_cliente: cli.nome_fantasia || cli.razao_social || 'Cliente',
+        nome_cliente: cli.nome_fantasia || cli.razao_social || 'Cliente Desconhecido',
         uf: cli.uf || 'N/A'
       };
     });
