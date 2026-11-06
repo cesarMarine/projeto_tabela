@@ -1464,7 +1464,8 @@ function filtrar() {
 function renderizar() {
   const cont = document.getElementById('conteudo');
 
-  if (grupoAtual === '__OFERTAS__') {
+  // 👇 A MÁGICA ACONTECE AQUI: Só renderiza ofertas se NÃO estiver buscando nada
+  if (grupoAtual === '__OFERTAS__' && !buscaAtual.trim()) {
     renderOfertas();
     return;
   }
@@ -2897,11 +2898,12 @@ document.getElementById('busca').addEventListener('input', e => {
   deb = setTimeout(() => { 
     buscaAtual = e.target.value; 
     
-    // 👇 SE O CLIENTE DIGITAR ALGO, ESCONDE A BARRA DE MARCAS
+    // Se o cliente digitou algo, esconde a barra de marcas
     if (buscaAtual.trim().length > 0) {
       document.getElementById('barramarcasWrap').style.display = 'none';
     } else {
-      montarBarraMarcas(); // Se apagar a busca, restaura a barra
+      // Se ele APAGOU a busca e estava na aba de ofertas, restaura a aba ofertas
+      montarBarraMarcas(); 
     }
     
     renderizar(); 
