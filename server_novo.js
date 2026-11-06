@@ -1700,7 +1700,14 @@ app.get('/api/admin/metricas-pedidos', async (req, res) => {
 
 app.get('/api/admin/metricas-logins', async (req, res) => {
   try {
-    // 1. Puxa os logins
+    // 1. Conta o TOTAL de logins no banco (para o card do topo)
+    const { count: totalLogins, error: errCount } = await supabase
+      .from('logins_clientes')
+      .select('*', { count: 'exact', head: true });
+      
+    if (errCount) throw errCount;
+
+    // 2. Busca APENAS os 50 mais recentes para o radar
     const { data: logins, error: errLog } = await supabase
       .from('logins_clientes')
       .select('cnpj, data_login')
@@ -1709,10 +1716,8 @@ app.get('/api/admin/metricas-logins', async (req, res) => {
 
     if (errLog) throw errLog;
 
-    // 2. Extrai os CNPJs únicos
     const cnpjsParaBuscar = [...new Set((logins || []).map(l => String(l.cnpj || '').replace(/\D/g, '')))];
 
-    // 3. Busca APENAS esses clientes
     const { data: clientes, error: errCli } = await supabase
       .from('clientes')
       .select('cnpj, nome_fantasia, razao_social, uf')
@@ -1738,7 +1743,8 @@ app.get('/api/admin/metricas-logins', async (req, res) => {
       };
     });
 
-    res.json({ ok: true, logins: formatados });
+    // 3. Retorna o total do count e a lista dos 50
+    res.json({ ok: true, total_logins: totalLogins, logins: formatados });
   } catch (e) {
     console.error('Erro em metricas-logins:', e);
     res.status(500).json({ ok: false, erro: e.message });
