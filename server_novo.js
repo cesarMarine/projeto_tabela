@@ -66,6 +66,9 @@ app.post('/api/importar/sistema', upload.single('arquivo'), async (req, res) => 
     let comEstoque = 0;
     let ordem = 0;
 
+    // Pega a data de hoje no formato YYYY-MM-DD (Fuso de Brasília)
+    const dataHoje = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"})).toISOString().split('T')[0];
+
     for (const r of linhas) {
       ordem++; // 👈 posição da linha no Excel: 1, 2, 3...
       
@@ -93,14 +96,63 @@ app.post('/api/importar/sistema', upload.single('arquivo'), async (req, res) => 
         atualizado_em: new Date().toISOString()
       };
       
+      // Atualiza a tabela principal (itens_sistema)
       const { error } = await supabase.from('itens_sistema').upsert(item, { onConflict: 'codigo' });
       if (!error) inseridos++;
+
+      // 👇 SALVA NO HISTÓRICO 👇
+      // Usa UPSERT para o caso de importar duas planilhas no mesmo dia (não duplica, apenas atualiza)
+      await supabase.from('historico_estoque').upsert({
+        data_importacao: dataHoje,
+        codigo_produto: item.codigo,
+        estoque: item.estoque,
+        preco_venda: item.preco_venda
+      }, { onConflict: 'data_importacao,codigo_produto' });
+      // 👆 FIM DO HISTÓRICO 👆
     }
     
     res.json({ ok: true, inseridos, comEstoque });
   } catch (e) { 
     console.error("Erro importação sistema:", e);
     res.status(500).json({ erro: e.message }); 
+  }
+});
+
+app.get('/api/admin/historico-estoque', async (req, res) => {
+  try {
+    const { busca, data_inicio, data_fim } = req.query;
+    
+    // 1. Busca as datas únicas que tiveram importação (pega as 10 mais recentes)
+    const { data: datasData } = await supabase
+      .from('historico_estoque')
+      .select('data_importacao')
+      .order('data_importacao', { ascending: false });
+      
+    // Remove datas duplicadas
+    const datasUnicas = [...new Set((datasData || []).map(d => d.data_importacao))].slice(0, 10).reverse();
+
+    // 2. Monta a query do histórico
+    let query = supabase
+      .from('historico_estoque')
+      .select('*')
+      .in('data_importacao', datasUnicas);
+
+    // 3. Se o admin buscou um produto específico, filtra (para não puxar 3.500 produtos de uma vez)
+    if (busca) {
+      query = query.ilike('codigo_produto', `%${busca}%`);
+    } else {
+      // Se não buscou nada, limita para não sobrecarregar (puxa os primeiros 100 produtos)
+      query = query.limit(1000); 
+    }
+
+    const { data: historico, error } = await query;
+
+    if (error) throw error;
+
+    res.json({ ok: true, datas: datasUnicas, historico: historico });
+  } catch (e) {
+    console.error('Erro no histórico:', e);
+    res.status(500).json({ ok: false, erro: e.message });
   }
 });
 

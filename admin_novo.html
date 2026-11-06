@@ -100,6 +100,7 @@
   <aside class="sidebar">
     <button class="active" data-page="importar">📥 Importar</button>
     <button data-page="estoque">📦 Produtos em Estoque</button>
+        <button data-page="historico">📈 Histórico de Estoque</button>
         <button data-page="scraping">🕷️ Scraping</button>
     <button data-page="auditoria">🔍 Auditoria de Produtos</button>
     <button data-page="ofertas">🔥 Ofertas</button>
@@ -275,10 +276,10 @@
     </section>
 
     <!-- PÁGINA: AUDITORIA DE PRODUTOS -->
+        <!-- PÁGINA: AUDITORIA DE PRODUTOS -->
     <section class="page" id="page-auditoria">
       <div class="painel">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
           <div>
             <h2>🔍 Auditoria: Produtos no Estoque x Scraping</h2>
             <p style="font-size:14px; color:#94a3b8;">Verifica quais produtos da tabela <code>itens_sistema</code> (com estoque) ficaram sem foto/descrição.</p>
@@ -287,8 +288,6 @@
             <button class="btn-primario" style="background:#10b981;" onclick="abrirModalManual()">➕ Cadastrar Manual</button>
             <button class="btn-primario" style="background:#38bdf8; color:#0f172a;" onclick="carregarAuditoria()">🔄 Gerar Relatório</button>
           </div>
-        </div>
-          <button class="btn-primario" style="background:#38bdf8; color:#0f172a;" onclick="carregarAuditoria()">🔄 Gerar Relatório</button>
         </div>
 
         <div id="resumoAuditoria" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-bottom:24px; display:none;">
@@ -308,21 +307,47 @@
 
         <div id="tabelaAuditoriaWrap" style="display:none; max-height: 600px; overflow-y: auto;">
           <table id="tabelaAuditoria">
-  <thead style="position:sticky; top:0; background:#1e293b; z-index:10;">
-    <tr>
-      <th>Código</th>
-      <th>Descrição (Sistema)</th>
-      <th style="text-align:center;">Estoque</th>
-      <th style="text-align:right;">Preço Venda</th>
-      <th style="text-align:center;">Ação</th> <!-- 👈 NOVA COLUNA -->
-    </tr>
-  </thead>
+            <thead style="position:sticky; top:0; background:#1e293b; z-index:10;">
+              <tr>
+                <th>Código</th>
+                <th>Descrição (Sistema)</th>
+                <th style="text-align:center;">Estoque</th>
+                <th style="text-align:right;">Preço Venda</th>
+                <th style="text-align:center;">Ação</th>
+              </tr>
+            </thead>
             <tbody></tbody>
           </table>
         </div>
       </div>
     </section>
 
+        <!-- PÁGINA: HISTÓRICO DE ESTOQUE -->
+    <section class="page" id="page-historico">
+      <div class="painel">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:20px;">
+          <div>
+            <h2>📈 Histórico de Estoque</h2>
+            <p style="font-size:14px; color:#94a3b8;">Acompanhe a evolução do estoque e preço dos produtos.</p>
+          </div>
+          <div style="display:flex; gap:12px; align-items:center;">
+            <input type="text" id="buscaHistorico" placeholder="🔍 Buscar código do produto (Ex: 1080)" oninput="debounceHistorico()" style="width:300px;">
+            <button class="btn-primario" onclick="carregarHistorico()">🔍 Buscar</button>
+          </div>
+        </div>
+
+        <div style="overflow-x:auto; max-height: 600px;">
+          <table id="tabelaHistorico" style="min-width: 800px;">
+            <thead id="headerHistorico" style="position:sticky; top:0; background:#1e293b; z-index:10;">
+              <tr><th>Carregando...</th></tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="10" style="text-align:center; padding:30px; color:#94a3b8;">Clique em buscar para carregar o histórico...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
     <!-- PÁGINA: GESTÃO DE OFERTAS -->
     <section class="page" id="page-ofertas">
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
@@ -990,6 +1015,7 @@ document.querySelectorAll('.sidebar button').forEach(b => {
 
     if (pageId === 'importar') carregarStatus();
     if (pageId === 'estoque') carregarEstoque();
+        if (pageId === 'historico') carregarHistorico();
     if (pageId === 'auditoria') carregarAuditoria();
         if (pageId === 'scraping') carregarScraping(1);
     if (pageId === 'ofertas') carregarOfertasAdmin();
@@ -1992,6 +2018,102 @@ async function criarVendedor() {
     alert('❌ Erro: ' + j.erro);
   }
 }
+
+// ==========================================
+// HISTÓRICO DE ESTOQUE
+// ==========================================
+let timeoutHistorico = null;
+
+function debounceHistorico() {
+  clearTimeout(timeoutHistorico);
+  timeoutHistorico = setTimeout(() => carregarHistorico(), 600);
+}
+
+async function carregarHistorico() {
+  const busca = document.getElementById('buscaHistorico').value.trim();
+  const thead = document.getElementById('headerHistorico');
+  const tbody = document.querySelector('#tabelaHistorico tbody');
+  
+  thead.innerHTML = '<tr><th>Carregando...</th></tr>';
+  tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:30px; color:#94a3b8;">Buscando dados...</td></tr>';
+
+  try {
+    const url = `/api/admin/historico-estoque?busca=${encodeURIComponent(busca)}`;
+    const r = await fetch(url);
+    const j = await r.json();
+
+    if (!j.ok) throw new Error(j.erro);
+
+    const datas = j.datas;
+    const registros = j.historico;
+
+    // Formata as datas para DD/MM
+    const datasFormatadas = datas.map(d => {
+      const [ano, mes, dia] = d.split('-');
+      return `${dia}/${mes}`;
+    });
+
+    // Monta o Cabeçalho
+    thead.innerHTML = `
+      <tr>
+        <th>Código</th>
+        ${datasFormatadas.map(d => `<th style="text-align:center;">Estoque<br>${d}</th>`).join('')}
+        <th style="text-align:center;">Variação</th>
+      </tr>
+    `;
+
+    if (registros.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="${datas.length + 2}" style="text-align:center; padding:30px; color:#94a3b8;">Nenhum registro encontrado.</td></tr>`;
+      return;
+    }
+
+    // Agrupa os registros por código de produto
+    const produtosMap = {};
+    registros.forEach(reg => {
+      if (!produtosMap[reg.codigo_produto]) {
+        produtosMap[reg.codigo_produto] = { codigo: reg.codigo_produto, historico: {} };
+      }
+      produtosMap[reg.codigo_produto].historico[reg.data_importacao] = reg.estoque;
+    });
+
+    // Monta as linhas
+    tbody.innerHTML = Object.values(produtosMap).map(prod => {
+      let estoqueAnterior = null;
+      let variacaoTotal = 0;
+
+      const celulas = datas.map(data => {
+        const valor = prod.historico[data] !== undefined ? prod.historico[data] : 0;
+        
+        if (estoqueAnterior !== null) {
+          variacaoTotal += (valor - estoqueAnterior);
+        }
+        estoqueAnterior = valor;
+
+        const cor = valor > 0 ? '#10b981' : '#ef4444';
+        return `<td style="text-align:center; font-weight:800; color:${cor};">${valor}</td>`;
+      }).join('');
+
+      let badgeVar = '<span style="color:#94a3b8;">—</span>';
+      if (variacaoTotal > 0) badgeVar = `<span style="color:#10b981; font-weight:800;">📈 +${variacaoTotal}</span>`;
+      else if (variacaoTotal < 0) badgeVar = `<span style="color:#ef4444; font-weight:800;">📉 ${variacaoTotal}</span>`;
+
+      return `
+        <tr>
+          <td><strong style="color:#38bdf8; font-family:monospace;">${prod.codigo}</strong></td>
+          ${celulas}
+          <td style="text-align:center;">${badgeVar}</td>
+        </tr>
+      `;
+    }).join('');
+
+  } catch (e) {
+    thead.innerHTML = '<tr><th>Erro</th></tr>';
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; color:#ef4444; padding:30px;">Erro: ${e.message}</td></tr>`;
+  }
+}
+
+// Adicione a chamada no menu lateral (junto com os outros if)
+// if (pageId === 'historico') carregarHistorico();
 
 carregarStatus();
 </script>
