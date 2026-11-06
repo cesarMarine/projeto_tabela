@@ -1189,8 +1189,13 @@ app.get('/api/vendedor/:codigo/pedidos', async (req, res) => {
     for (let p of pedidos) {
       const { data: itens } = await supabase.from('pedidos02_itens').select('*').eq('pedido_id', p.id);
       p.itens = itens || [];
-      const { data: cli } = await supabase.from('clientes').select('nome_fantasia, razao_social, uf').eq('cnpj', p.cnpj_cliente).single();
-      if (cli) { p.nome_fantasia = cli.nome_fantasia; p.razao_social = cli.razao_social; p.uf = cli.uf; }
+const { data: cli } = await supabase.from('clientes').select('codigo, nome_fantasia, razao_social, uf').eq('cnpj', p.cnpj_cliente).single();
+if (cli) { 
+  p.codigo_cliente = cli.codigo; // 👈 Adicionando o código aqui
+  p.nome_fantasia = cli.nome_fantasia; 
+  p.razao_social = cli.razao_social; 
+  p.uf = cli.uf; 
+}
     }
     res.json({ ok: true, pedidos });
   } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }

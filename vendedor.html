@@ -554,7 +554,7 @@ async function carregarPedidos() {
             <div class="pedido-info-main">
               <span class="pedido-id">Pedido #${p.id}</span>
               ${badgeStatus}
-              <span class="pedido-cliente-nome">👤 ${nomeCliente} (${p.uf || 'UF'})</span>
+              <span class="pedido-cliente-nome">👤 [${p.codigo_cliente || '—'}] ${nomeCliente} (${p.uf || 'UF'})</span>
               <span class="pedido-data">🕒 ${dataFormatada} às ${horaFormatada}</span>
             </div>
             <div class="pedido-acoes" onclick="event.stopPropagation()">
