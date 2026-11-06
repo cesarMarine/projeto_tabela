@@ -1421,6 +1421,25 @@ function trocarGrupo(grupo, btn) {
 
 function filtrar() {
   let lista = todosItens;
+
+  // 1. Se houver texto na busca, ele ignora a aba e faz busca global
+  if (buscaAtual) {
+    const q = buscaAtual.toLowerCase().trim();
+    
+    // Filtra por código, nome, marca ou grupo
+    lista = lista.filter(it => 
+      it.codigo.toLowerCase().includes(q) || 
+      (it.subgrupo || '').toLowerCase().includes(q) || 
+      (it.marca || '').toLowerCase().includes(q) ||
+      (it.grupo || '').toLowerCase().includes(q)
+    );
+
+    // Zera o filtro de marca e grupo para garantir que traga tudo
+    marcaAtual = '';
+    return lista;
+  }
+
+  // 2. Se não houver busca, segue a regra normal das abas
   if (grupoAtual !== '__TODOS__' && grupoAtual !== '__OFERTAS__') {
     const grupoSelUpper = grupoAtual.toUpperCase().trim();
     lista = lista.filter(it => {
@@ -1433,11 +1452,12 @@ function filtrar() {
       return grupoItemUpper === grupoSelUpper;
     });
   }
-  if (marcaAtual) lista = lista.filter(it => (it.marca || '').toUpperCase().trim() === marcaAtual.toUpperCase().trim());
-  if (buscaAtual) {
-    const q = buscaAtual.toLowerCase();
-    lista = lista.filter(it => it.codigo.includes(q) || it.subgrupo.toLowerCase().includes(q) || it.marca.toLowerCase().includes(q));
+  
+  // 3. Aplica o filtro de marca (se tiver clicado em alguma marca)
+  if (marcaAtual) {
+    lista = lista.filter(it => (it.marca || '').toUpperCase().trim() === marcaAtual.toUpperCase().trim());
   }
+  
   return lista;
 }
 
@@ -2873,7 +2893,19 @@ function fecharCarrinho() { document.getElementById('painelCarrinho').classList.
 
 let deb;
 document.getElementById('busca').addEventListener('input', e => {
-  clearTimeout(deb); deb = setTimeout(() => { buscaAtual = e.target.value; renderizar(); }, 150);
+  clearTimeout(deb); 
+  deb = setTimeout(() => { 
+    buscaAtual = e.target.value; 
+    
+    // 👇 SE O CLIENTE DIGITAR ALGO, ESCONDE A BARRA DE MARCAS
+    if (buscaAtual.trim().length > 0) {
+      document.getElementById('barramarcasWrap').style.display = 'none';
+    } else {
+      montarBarraMarcas(); // Se apagar a busca, restaura a barra
+    }
+    
+    renderizar(); 
+  }, 150);
 });
 
 document.getElementById('inputCnpj').addEventListener('input', function(e) {
