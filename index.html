@@ -2773,14 +2773,21 @@ function atualizarCarrinho() {
         <div class="item-dados">
           <span class="item-titulo">${escapeHtml(i.desc)}</span>
           
-          <div class="item-valores">
-            <span class="item-linha-valor">
-              <strong>${i.qtd}</strong> un × 
-              ${calc.temOferta 
-                ? `<span class="val-de">R$ ${fmtMoeda(calc.precoOriginal)}</span> <span class="val-unit-oferta">R$ ${fmtMoeda(subUnitario)}</span>` 
-                : `<span class="val-unit">R$ ${fmtMoeda(subUnitario)}</span>`}
-            </span>
-            <span class="item-linha-total">Total: <strong>R$ ${fmtMoeda(subTotal)}</strong></span>
+          <div class="item-valores" style="margin-top: 4px;">
+            <!-- 👇 NOVO CONTROLE DE QUANTIDADE AQUI NO CARRINHO 👇 -->
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div class="qtd-ctrl" style="height: 26px; display: inline-flex;">
+                <button onclick="event.stopPropagation(); mudarQtd('${cod}', -1)">−</button>
+                <input type="number" min="0" value="${i.qtd}" onchange="setQtd('${cod}', this.value)" style="width: 35px; height: 24px;">
+                <button onclick="event.stopPropagation(); mudarQtd('${cod}', 1)">+</button>
+              </div>
+              <span class="item-linha-valor">
+                ${calc.temOferta 
+                  ? `<span class="val-de">R$ ${fmtMoeda(calc.precoOriginal)}</span> <span class="val-unit-oferta">R$ ${fmtMoeda(subUnitario)}</span>` 
+                  : `<span class="val-unit">R$ ${fmtMoeda(subUnitario)}</span>`}
+              </span>
+            </div>
+            <span class="item-linha-total" style="margin-top: 4px;">Total: <strong>R$ ${fmtMoeda(subTotal)}</strong></span>
           </div>
 
           ${calc.temOferta ? `
@@ -2790,7 +2797,8 @@ function atualizarCarrinho() {
           ` : ''}
         </div>
 
-        <button class="item-remover" onclick="setQtd('${cod}', 0)" title="Remover">✕</button>
+        <!-- 👇 O BOTÃO DE DELETAR AGORA CHAMA UMA FUNÇÃO ESPECÍFICA 👇 -->
+        <button class="item-remover" onclick="deletarItemCarrinho('${cod}')" title="Remover">✕</button>
       </div>`;
   }).join('');
 
@@ -2816,16 +2824,34 @@ function atualizarCarrinho() {
   }
   rodapeEcoEl.innerHTML = rodapeEconomia;
 
-  // ==========================================
-  // INÍCIO DO GATILHO DE AUTOSAVE
-  // ==========================================
+  // Mantém o autosave rodando
   clearTimeout(timerAutosave);
-  
-  // Só dispara o salvamento se o carrinho tiver itens
   if (Object.keys(carrinho).length > 0) {
     timerAutosave = setTimeout(() => {
       autosaveCarrinho();
-    }, 2000); // Aguarda 2 segundos de inatividade para salvar
+    }, 2000);
+  }
+}
+
+async function deletarItemCarrinho(codigo) {
+  // 1. Remove o item da memória
+  setQtd(codigo, 0);
+
+  // 2. Verifica se o carrinho ficou vazio
+  if (Object.keys(carrinho).length === 0) {
+    // Se ficou vazio, e temos um rascunho salvo no banco, apaga ele
+    if (pedidoEmEdicaoId) {
+      try {
+        await fetch(`/api/pedidos/${pedidoEmEdicaoId}`, { method: 'DELETE' });
+        pedidoEmEdicaoId = null; // Limpa a variável
+        console.log('Rascunho vazio excluído do banco com sucesso.');
+      } catch (e) {
+        console.error('Erro ao excluir rascunho vazio do banco:', e);
+      }
+    }
+    
+    // Para o autosave para não criar um rascunho vazio de novo
+    clearTimeout(timerAutosave);
   }
 }
 
