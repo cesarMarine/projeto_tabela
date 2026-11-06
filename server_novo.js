@@ -1590,6 +1590,64 @@ app.get('/api/vendedor/:codigo/clientes-logins', async (req, res) => {
   }
 });
 
+// Rota global de pedidos para o Dashboard Executivo
+app.get('/api/admin/metricas-pedidos', async (req, res) => {
+  try {
+    const { data: pedidos, error } = await supabase
+      .from('pedidos02')
+      .select(`
+        id, total, status, data_criacao, cnpj_cliente, codigo_representante,
+        clientes ( nome_fantasia, razao_social, uf )
+      `)
+      .order('id', { ascending: false });
+
+    if (error) throw error;
+
+    // Achata o objeto para facilitar a leitura no frontend
+    const formatados = (pedidos || []).map(p => ({
+      id: p.id,
+      total: p.total,
+      status: p.status,
+      data_criacao: p.data_criacao,
+      cnpj_cliente: p.cnpj_cliente,
+      codigo_representante: p.codigo_representante,
+      nome_cliente: p.clientes?.nome_fantasia || p.clientes?.razao_social || 'Cliente',
+      uf: p.clientes?.uf || 'N/A'
+    }));
+
+    res.json({ ok: true, pedidos: formatados });
+  } catch (e) {
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
+
+// Rota global de logins para o Dashboard Executivo
+app.get('/api/admin/metricas-logins', async (req, res) => {
+  try {
+    const { data: logins, error } = await supabase
+      .from('logins_clientes')
+      .select(`
+        cnpj, data_login,
+        clientes ( nome_fantasia, uf )
+      `)
+      .order('data_login', { ascending: false })
+      .limit(50); // Apenas os últimos 50 para não pesar
+
+    if (error) throw error;
+
+    const formatados = (logins || []).map(l => ({
+      cnpj: l.cnpj,
+      data_login: l.data_login,
+      nome_cliente: l.clientes?.nome_fantasia || l.cnpj,
+      uf: l.clientes?.uf || 'N/A'
+    }));
+
+    res.json({ ok: true, logins: formatados });
+  } catch (e) {
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
+
 // Enviar mensagem
 app.post('/api/mensagens', async (req, res) => {
   try {
