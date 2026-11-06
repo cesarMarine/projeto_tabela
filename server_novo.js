@@ -1604,24 +1604,33 @@ app.get('/api/admin/metricas-pedidos', async (req, res) => {
 
     if (errPed) throw errPed;
 
-    // 2. Busca os clientes
+    // 2. Busca todos os clientes (pode ter muitos, mas é rápido)
     const { data: clientes, error: errCli } = await supabase
       .from('clientes')
       .select('cnpj, nome_fantasia, razao_social, uf');
 
     if (errCli) throw errCli;
 
-    // 3. Cria um mapa de clientes limpando o CNPJ (tirando pontos, traços e espaços)
+    // 3. Cria um mapa com o CNPJ de TODAS as formas possíveis (com e sem zeros)
     const mapaClientes = {};
     (clientes || []).forEach(c => {
-      const cnpjLimpo = String(c.cnpj || '').replace(/\D/g, ''); // Deixa só os números
-      mapaClientes[cnpjLimpo] = c;
+      let cnpj = String(c.cnpj || '').replace(/\D/g, ''); // Só números
+      
+      // Salva no mapa de várias formas para garantir o match
+      mapaClientes[cnpj] = c; // Como está
+      mapaClientes[cnpj.padStart(14, '0')] = c; // Com zero à esquerda
+      mapaClientes[cnpj.replace(/^0+/, '')] = c; // Sem zero à esquerda
     });
 
-    // 4. Junta os dados limpando o CNPJ do pedido também
+    // 4. Junta os dados
     const formatados = (pedidos || []).map(p => {
-      const cnpjLimpoPedido = String(p.cnpj_cliente || '').replace(/\D/g, '');
-      const cli = mapaClientes[cnpjLimpoPedido] || {};
+      let cnpjPedido = String(p.cnpj_cliente || '').replace(/\D/g, '');
+      
+      // Tenta achar o cliente de todas as formas
+      const cli = mapaClientes[cnpjPedido] 
+               || mapaClientes[cnpjPedido.padStart(14, '0')] 
+               || mapaClientes[cnpjPedido.replace(/^0+/, '')]
+               || {};
       
       return {
         id: p.id,
@@ -1630,7 +1639,7 @@ app.get('/api/admin/metricas-pedidos', async (req, res) => {
         data_criacao: p.data_criacao,
         cnpj_cliente: p.cnpj_cliente,
         codigo_representante: p.codigo_representante,
-        nome_cliente: cli.nome_fantasia || cli.razao_social || 'Cliente Desconhecido',
+        nome_cliente: cli.nome_fantasia || cli.razao_social || 'Cliente não cadastrado',
         uf: cli.uf || 'N/A'
       };
     });
