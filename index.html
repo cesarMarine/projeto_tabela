@@ -2733,41 +2733,43 @@ function setQtd(cod, valor) {
     img = cat.imagem_url || '';
   }
 
-  // 👇 A MÁGICA ACONTECE AQUI: Adiciona a variação no nome do carrinho 👇
+  // 👇 MÁGICA DA VARIAÇÃO PRIMEIRO 👇
   if (item && q > 0) {
     const grupoUpper = (item.grupo || '').toUpperCase();
     
-    // Se for Carretilha, adiciona o lado da manivela
     if (grupoUpper.includes('CARRETILHA')) {
       const info = analisarCarretilha(item);
       if (info.ladoTag && !desc.toUpperCase().includes(info.ladoTag.toUpperCase())) {
         desc += ` (${info.ladoTag})`;
       }
-    }
-    
-    // Se for Molinete, adiciona o modelo (caso o nome base seja genérico)
-    else if (grupoUpper.includes('MOLINETE')) {
+    } else if (grupoUpper.includes('MOLINETE')) {
       const info = analisarMolinete(item);
       if (info.modelo && !desc.toUpperCase().includes(info.modelo.toUpperCase())) {
         desc += ` ${info.modelo}`;
       }
-    }
-    
-    // Se for Vara ou Linha (que usam medidas), adiciona a especificação curta
-    else if (grupoUpper.includes('VARA') || grupoUpper.includes('LINHA')) {
+    } else if (grupoUpper.includes('VARA') || grupoUpper.includes('LINHA')) {
       const info = analisarVara(item);
       if (info.modeloJson && info.modeloJson !== item.subgrupo) {
         desc += ` ${info.modeloJson}`;
       }
     }
   }
-  // 👆 FIM DA MÁGICA 👆
+  // 👆 FIM DA VARIAÇÃO 👆
 
+  // Regra do lote de 10
   if (q > 0 && PRODUTOS_LOTE_10.includes(String(cod))) {
     const resto = q % 10;
     if (resto !== 0) q = Math.ceil(q / 10) * 10;
   }
 
+  // 👇 AGORA SIM, VERIFICA SE DIMINUIU (APÓS AS REGRAS) 👇
+  const qtdAtual = carrinho[cod] ? carrinho[cod].qtd : 0;
+  if (q > 0 && q < qtdAtual) {
+    registrarAcaoLog(cod, 'DIMINUIU', qtdAtual, desc); // Passamos o nome completo
+  }
+  // 👆 FIM DA VERIFICAÇÃO 👆
+
+  // Salva no carrinho
   if (q <= 0) {
     delete carrinho[cod];
   } else {
@@ -2818,6 +2820,25 @@ function adicionarOfertaComNome(codigo, nomeCompleto, precoBase) {
   if (grupoAtual === '__OFERTAS__') {
     renderOfertas();
   }
+}
+
+function registrarAcaoLog(codigo, acao, qtdAnterior) {
+  if (!clienteLogado) return;
+  const item = buscarItem(codigo);
+  const desc = item ? item.subgrupo : (carrinho[codigo] ? carrinho[codigo].desc : '');
+  
+  // Dispara sem esperar resposta (não trava o carrinho)
+  fetch('/api/log-acao', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      cnpj: clienteLogado.cnpj,
+      codigo: codigo,
+      descricao: desc,
+      acao: acao,
+      qtd_anterior: qtdAnterior
+    })
+  }).catch(() => {});
 }
 
 
@@ -2910,23 +2931,21 @@ function atualizarCarrinho() {
 }
 
 async function deletarItemCarrinho(codigo) {
+  // 👇 Registra no log antes de deletar
+  const qtdAnterior = carrinho[codigo] ? carrinho[codigo].qtd : 0;
+  if (qtdAnterior > 0) registrarAcaoLog(codigo, 'REMOVEU', qtdAnterior);
+
   // 1. Remove o item da memória
   setQtd(codigo, 0);
 
   // 2. Verifica se o carrinho ficou vazio
   if (Object.keys(carrinho).length === 0) {
-    // Se ficou vazio, e temos um rascunho salvo no banco, apaga ele
     if (pedidoEmEdicaoId) {
       try {
         await fetch(`/api/pedidos/${pedidoEmEdicaoId}`, { method: 'DELETE' });
-        pedidoEmEdicaoId = null; // Limpa a variável
-        console.log('Rascunho vazio excluído do banco com sucesso.');
-      } catch (e) {
-        console.error('Erro ao excluir rascunho vazio do banco:', e);
-      }
+        pedidoEmEdicaoId = null;
+      } catch (e) { console.error(e); }
     }
-    
-    // Para o autosave para não criar um rascunho vazio de novo
     clearTimeout(timerAutosave);
   }
 }

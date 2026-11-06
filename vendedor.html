@@ -85,12 +85,13 @@
   .pedido-data { font-size:.8rem; color:#94a3b8; font-weight:600; }
   .pedido-valor-destaque { font-size:1.1rem; font-weight:900; color:#10b981; }
   
-  .pedido-acoes { display:flex; align-items:center; gap:10px; }
+  .pedido-acoes { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
   .btn-export-excel { background:#16a34a; color:white; border:none; padding:8px 14px; border-radius:8px; font-weight:800; font-size:.8rem; cursor:pointer; display:flex; align-items:center; gap:6px; transition:.2s; }
   .btn-export-excel:hover { background:#15803d; }
   .btn-deletar { background:#fee2e2; color:#ef4444; border:none; padding:8px 12px; border-radius:8px; font-weight:800; font-size:.8rem; cursor:pointer; transition:.2s; }
   .btn-deletar:hover { background:#fca5a5; }
   .btn-toggle-detalhe { background:#f1f5f9; color:#0d3b66; border:1px solid #cbd5e1; padding:8px 12px; border-radius:8px; font-weight:800; font-size:.8rem; cursor:pointer; }
+  .btn-intencoes { background:#f3e8ff; color:#8b5cf6; border:1px solid #d8b4fe; padding:8px 12px; border-radius:8px; font-weight:800; font-size:.8rem; cursor:pointer; }
 
   /* PAINEL EXPANSÍVEL DO PEDIDO */
   .pedido-corpo-expansivel { display:none; padding:0 20px 20px 20px; border-top:1px dashed #e2e8f0; background:#fafafa; }
@@ -106,31 +107,6 @@
   .modal-bg.on { display:flex !important; }
 </style>
 </head>
-
-<!-- MODAL DE QUEM LOGOU -->
-<div class="modal-bg" id="modalLogins" style="position:fixed; inset:0; background:rgba(0,0,0,0.7); display:none; align-items:center; justify-content:center; z-index:2000; padding:20px;" onclick="fecharModalLogins(event)">
-  <div style="background:white; border-radius:12px; width:100%; max-width:600px; max-height:80vh; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,0.3);" onclick="event.stopPropagation()">
-    
-    <div style="padding:16px 20px; background:#0d3b66; color:white; border-radius:12px 12px 0 0; display:flex; justify-content:space-between; align-items:center;">
-      <h3 style="margin:0; font-size:1.1rem;">👥 Quem acessou nos últimos 7 dias</h3>
-      <button onclick="fecharModalLogins()" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">✕</button>
-    </div>
-
-    <div style="padding:16px; overflow-y:auto;">
-      <table style="width:100%; border-collapse:collapse;">
-        <thead>
-          <tr style="background:#f1f5f9; text-align:left;">
-            <th style="padding:10px; font-size:0.75rem; color:#475569; text-transform:uppercase;">Cliente</th>
-            <th style="padding:10px; font-size:0.75rem; color:#475569; text-transform:uppercase;">CNPJ</th>
-            <th style="padding:10px; font-size:0.75rem; color:#475569; text-transform:uppercase;">Quando</th>
-          </tr>
-        </thead>
-        <tbody id="listaLoginsTbody"></tbody>
-      </table>
-    </div>
-
-  </div>
-</div>
 <body>
 
 <!-- TELA DE LOGIN -->
@@ -171,7 +147,7 @@
         <h3>Total de Clientes</h3>
         <div class="value" id="dashTotalClientes">0</div>
       </div>
-            <div class="dash-card acesso" onclick="abrirModalLogins()" style="cursor:pointer;" title="Clique para ver a lista">
+      <div class="dash-card acesso" onclick="abrirModalLogins()" style="cursor:pointer;" title="Clique para ver a lista">
         <h3>Acessaram nos Últimos 7 Dias 🔍</h3>
         <div class="value" id="dashAcessos">0</div>
       </div>
@@ -253,6 +229,57 @@
 
 </div>
 
+<!-- MODAL DE QUEM LOGOU -->
+<div class="modal-bg" id="modalLogins" style="position:fixed; inset:0; background:rgba(0,0,0,0.7); display:none; align-items:center; justify-content:center; z-index:2000; padding:20px;" onclick="fecharModalLogins(event)">
+  <div style="background:white; border-radius:12px; width:100%; max-width:600px; max-height:80vh; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,0.3);" onclick="event.stopPropagation()">
+    
+    <div style="padding:16px 20px; background:#0d3b66; color:white; border-radius:12px 12px 0 0; display:flex; justify-content:space-between; align-items:center;">
+      <h3 style="margin:0; font-size:1.1rem;">👥 Quem acessou nos últimos 7 dias</h3>
+      <button onclick="fecharModalLogins()" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">✕</button>
+    </div>
+
+    <div style="padding:16px; overflow-y:auto;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr style="background:#f1f5f9; text-align:left;">
+            <th style="padding:10px; font-size:0.75rem; color:#475569; text-transform:uppercase;">Cliente</th>
+            <th style="padding:10px; font-size:0.75rem; color:#475569; text-transform:uppercase;">CNPJ</th>
+            <th style="padding:10px; font-size:0.75rem; color:#475569; text-transform:uppercase;">Quando</th>
+          </tr>
+        </thead>
+        <tbody id="listaLoginsTbody"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL DE INTENÇÕES DO CLIENTE -->
+<div id="modalIntencoes" style="position:fixed; inset:0; background:rgba(0,0,0,0.7); display:none; align-items:center; justify-content:center; z-index:2000; padding:20px;" onclick="fecharModalIntencoes(event)">
+  <div style="background:white; border-radius:12px; width:100%; max-width:600px; max-height:80vh; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,0.3);" onclick="event.stopPropagation()">
+    
+    <div style="padding:16px 20px; background:#8b5cf6; color:white; border-radius:12px 12px 0 0; display:flex; justify-content:space-between; align-items:center;">
+      <h3 style="margin:0; font-size:1.1rem;">🕵️ Histórico de Intenções</h3>
+      <button onclick="fecharModalIntencoes()" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">✕</button>
+    </div>
+
+    <div style="padding:16px; overflow-y:auto;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr style="background:#f1f5f9; text-align:left;">
+            <th style="padding:10px; font-size:0.75rem; color:#475569; text-transform:uppercase;">Ação</th>
+            <th style="padding:10px; font-size:0.75rem; color:#475569; text-transform:uppercase;">Produto</th>
+            <th style="padding:10px; font-size:0.75rem; color:#475569; text-transform:uppercase;">Qtd Antiga</th>
+            <th style="padding:10px; font-size:0.75rem; color:#475569; text-transform:uppercase;">Quando</th>
+          </tr>
+        </thead>
+        <tbody id="listaIntencoesTbody"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
 <script>
 let vendedorLogado = null;
 let pedidosCache = [];
@@ -295,14 +322,12 @@ async function fazerLogin() {
 // MODAL DE QUEM LOGOU
 // ==========================================
 function abrirModalLogins() {
-  // Filtra os clientes que acessaram nos últimos 7 dias
   const logados = clientesCache.filter(c => {
     if (!c.ultimo_login) return false;
     const diffDias = Math.floor((new Date() - new Date(c.ultimo_login)) / (1000 * 60 * 60 * 24));
     return diffDias <= 7;
   });
 
-  // Ordena do mais recente para o mais antigo
   logados.sort((a, b) => new Date(b.ultimo_login) - new Date(a.ultimo_login));
 
   const tbody = document.getElementById('listaLoginsTbody');
@@ -337,6 +362,49 @@ function abrirModalLogins() {
 function fecharModalLogins(event) {
   if (!event || event.target.id === 'modalLogins' || event === undefined) {
     document.getElementById('modalLogins').style.display = 'none';
+  }
+}
+
+// ==========================================
+// MODAL DE INTENÇÕES
+// ==========================================
+async function abrirLogAcoes(cnpj) {
+  const tbody = document.getElementById('listaIntencoesTbody');
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Buscando histórico...</td></tr>';
+  document.getElementById('modalIntencoes').style.display = 'flex';
+
+  try {
+    const r = await fetch('/api/vendedor/acoes/' + cnpj);
+    const j = await r.json();
+
+    if (!j.ok || !j.acoes.length) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#94a3b8;">O cliente não removeu ou diminuiu nenhum item deste carrinho.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = j.acoes.map(a => {
+      const data = new Date(a.data_acao).toLocaleString('pt-BR');
+      const cor = a.acao === 'REMOVEU' ? '#ef4444' : '#f59e0b';
+      const textoAcao = a.acao === 'REMOVEU' ? '🗑️ Removeu' : '📉 Diminuiu';
+      
+      return `
+        <tr style="border-bottom:1px solid #f1f5f9;">
+          <td style="padding:10px; font-weight:800; color:${cor}; font-size:0.8rem;">${textoAcao}</td>
+          <td style="padding:10px; font-size:0.85rem;">${a.descricao_produto} <small style="color:#94a3b8;">(${a.codigo_produto})</small></td>
+          <td style="padding:10px; text-align:center; font-weight:700;">${a.quantidade_anterior || '—'}</td>
+          <td style="padding:10px; font-size:0.8rem; color:#64748b;">${data}</td>
+        </tr>
+      `;
+    }).join('');
+
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#ef4444; padding:20px;">Erro: ${e.message}</td></tr>`;
+  }
+}
+
+function fecharModalIntencoes(event) {
+  if (!event || event.target.id === 'modalIntencoes') {
+    document.getElementById('modalIntencoes').style.display = 'none';
   }
 }
 
@@ -452,7 +520,6 @@ async function carregarClientes() {
       `;
     }).join('');
     
-    // Atualiza os cards do Dashboard
     document.getElementById('dashTotalClientes').textContent = j.clientes.length;
     
     const qtdAcessos = j.clientes.filter(c => {
@@ -491,7 +558,7 @@ async function toggleAcesso(cnpj, liberado) {
 }
 
 // ==========================================
-// RESUMO E PEDIDOS (Visão Resumida, Expansão, Exclusão e Exportação)
+// RESUMO E PEDIDOS
 // ==========================================
 async function carregarResumoPedidos() {
   try {
@@ -562,6 +629,7 @@ async function carregarPedidos() {
                 R$ ${fmtMoeda(p.total)}
               </span>
               ${!isRascunho ? `<button class="btn-export-excel" onclick="exportarPedidoExcel(${p.id})">📊 Baixar Excel</button>` : ''}
+              <button class="btn-intencoes" onclick="abrirLogAcoes('${p.cnpj_cliente}')">🕵️ Intenções</button>
               <button class="btn-deletar" onclick="deletarPedido(${p.id})">🗑️ Excluir</button>
               <button class="btn-toggle-detalhe" onclick="toggleDetalhesPedido(${p.id})">👁️ Detalhes</button>
             </div>
@@ -619,7 +687,6 @@ function exportarPedidoExcel(pedidoId) {
   const pedido = pedidosCache.find(p => p.id === pedidoId);
   if (!pedido) return alert('Pedido não encontrado para exportação.');
 
-  const codCliente = pedido.codigo_cliente || '';
   const nomeCliente = (pedido.nome_fantasia || pedido.razao_social || 'Cliente').trim();
   const dataObj = new Date(pedido.data_criacao);
   
@@ -645,7 +712,7 @@ function exportarPedidoExcel(pedidoId) {
       0,                               // Coluna B
       0,                               // Coluna C
       0,                               // Coluna D
-      "",                              // 👈 Coluna E agora está vazia
+      "",                              // Coluna E vazia
       String(it.descricao || ''),      // Coluna F
       "",                              // Coluna G
       qtd,                             // Coluna H

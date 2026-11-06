@@ -1201,6 +1201,45 @@ if (cli) {
   } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
 
+// 1. Rota para o cliente registrar a ação (Chamada silenciosa do index.html)
+app.post('/api/log-acao', async (req, res) => {
+  try {
+    const { cnpj, codigo, descricao, acao, qtd_anterior } = req.body;
+    
+    await supabase.from('log_acoes_cliente').insert({
+      cnpj_cliente: String(cnpj).replace(/\D/g, ''),
+      codigo_produto: String(codigo),
+      descricao_produto: descricao,
+      acao: acao, // 'REMOVEU' ou 'DIMINUIU'
+      quantidade_anterior: qtd_anterior
+    });
+    
+    res.json({ ok: true });
+  } catch (e) {
+    // Retorna 200 mesmo se der erro, para não travar a tela do cliente
+    res.json({ ok: false, erro: e.message }); 
+  }
+});
+
+// 2. Rota para o vendedor buscar as ações do cliente
+app.get('/api/vendedor/acoes/:cnpj', async (req, res) => {
+  try {
+    const { cnpj } = req.params;
+    
+    const { data, error } = await supabase
+      .from('log_acoes_cliente')
+      .select('*')
+      .eq('cnpj_cliente', String(cnpj).replace(/\D/g, ''))
+      .order('data_acao', { ascending: false })
+      .limit(50);
+      
+    if (error) throw error;
+    res.json({ ok: true, acoes: data || [] });
+  } catch (e) {
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
+
 // VINCULAÇÃO MANUAL
 app.post('/api/vincular', async (req, res) => {
   try {
