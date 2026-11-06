@@ -247,12 +247,13 @@ async function carregarMetricas() {
     const dataPedidos = await resPedidos.json();
     const dataLogins = await resLogins.json();
 
-    if (!dataPedidos.ok || !dataLogins.ok) throw new Error('Falha ao carregar dados');
+        if (!dataPedidos.ok || !dataLogins.ok) throw new Error('Falha ao carregar dados');
 
     const pedidos = dataPedidos.pedidos || [];
     const logins = dataLogins.logins || [];
+    const totalLogins = dataLogins.total_logins || 0; // 👈 Pegando o total do backend
 
-    processarMetricas(pedidos, logins);
+    processarMetricas(pedidos, logins, totalLogins);
 
   } catch (e) {
     console.error(e);
@@ -260,7 +261,7 @@ async function carregarMetricas() {
   }
 }
 
-function processarMetricas(pedidos, logins) {
+function processarMetricas(pedidos, logins, totalLogins) {
   let faturamento = 0;
   const vendasPorVendedor = {};
   const vendasPorUF = {};
@@ -286,13 +287,14 @@ function processarMetricas(pedidos, logins) {
 
   const totalPedidos = finalizados.length;
   const ticketMedio = totalPedidos > 0 ? (faturamento / totalPedidos) : 0;
-  const totalLogins = logins.length;
 
   // Atualiza os KPIs
   document.getElementById('kpiFaturamento').textContent = `R$ ${fmtMoeda(faturamento)}`;
   document.getElementById('kpiPedidos').textContent = totalPedidos;
   document.getElementById('kpiTicket').textContent = `R$ ${fmtMoeda(ticketMedio)}`;
-  document.getElementById('kpiLogins').textContent = totalLogins;
+  
+  // 👇 AQUI ESTÁ A CORREÇÃO: Usa o totalLogins que vem do backend em vez de contar a lista
+  document.getElementById('kpiLogins').textContent = totalLogins; 
 
   renderizarGraficoVendedores(vendasPorVendedor);
   renderizarGraficoUFs(vendasPorUF);
