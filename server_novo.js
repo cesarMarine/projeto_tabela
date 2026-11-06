@@ -1596,6 +1596,7 @@ app.get('/api/vendedor/:codigo/clientes-logins', async (req, res) => {
 
 app.get('/api/admin/metricas-pedidos', async (req, res) => {
   try {
+    // 1. Puxa APENAS os pedidos
     const { data: pedidos, error: errPed } = await supabase
       .from('pedidos02')
       .select('id, total, status, data_criacao, cnpj_cliente, codigo_representante')
@@ -1603,19 +1604,25 @@ app.get('/api/admin/metricas-pedidos', async (req, res) => {
 
     if (errPed) throw errPed;
 
+    // 2. Extrai apenas os CNPJs únicos dos pedidos
+    const cnpjsParaBuscar = [...new Set((pedidos || []).map(p => String(p.cnpj_cliente || '').replace(/\D/g, '')))];
+    
+    // 3. Busca no banco APENAS os clientes que estão nessa lista de pedidos
     const { data: clientes, error: errCli } = await supabase
       .from('clientes')
-      .select('cnpj, nome_fantasia, razao_social, uf');
+      .select('cnpj, nome_fantasia, razao_social, uf')
+      .in('cnpj', cnpjsParaBuscar); // Filtra apenas os CNPJs que importam
 
     if (errCli) throw errCli;
 
-    // Cria o mapa limpando TUDO que não for número
+    // 4. Cria o mapa
     const mapaClientes = {};
     (clientes || []).forEach(c => {
       const cnpjLimpo = String(c.cnpj || '').replace(/\D/g, '');
       mapaClientes[cnpjLimpo] = c;
     });
 
+    // 5. Junta os dados
     const formatados = (pedidos || []).map(p => {
       const cnpjLimpoPedido = String(p.cnpj_cliente || '').replace(/\D/g, '');
       const cli = mapaClientes[cnpjLimpoPedido] || {};
@@ -1641,7 +1648,7 @@ app.get('/api/admin/metricas-pedidos', async (req, res) => {
 
 app.get('/api/admin/metricas-logins', async (req, res) => {
   try {
-    // 1. Busca os logins recentes
+    // 1. Puxa os logins
     const { data: logins, error: errLog } = await supabase
       .from('logins_clientes')
       .select('cnpj, data_login')
@@ -1650,14 +1657,17 @@ app.get('/api/admin/metricas-logins', async (req, res) => {
 
     if (errLog) throw errLog;
 
-    // 2. Busca os clientes
+    // 2. Extrai os CNPJs únicos
+    const cnpjsParaBuscar = [...new Set((logins || []).map(l => String(l.cnpj || '').replace(/\D/g, '')))];
+
+    // 3. Busca APENAS esses clientes
     const { data: clientes, error: errCli } = await supabase
       .from('clientes')
-      .select('cnpj, nome_fantasia, razao_social, uf');
+      .select('cnpj, nome_fantasia, razao_social, uf')
+      .in('cnpj', cnpjsParaBuscar);
 
     if (errCli) throw errCli;
 
-    // 3. Cruza os dados
     const mapaClientes = {};
     (clientes || []).forEach(c => {
       const cnpjLimpo = String(c.cnpj || '').replace(/\D/g, '');
