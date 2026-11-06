@@ -1596,7 +1596,6 @@ app.get('/api/vendedor/:codigo/clientes-logins', async (req, res) => {
 
 app.get('/api/admin/metricas-pedidos', async (req, res) => {
   try {
-    // 1. Busca os pedidos
     const { data: pedidos, error: errPed } = await supabase
       .from('pedidos02')
       .select('id, total, status, data_criacao, cnpj_cliente, codigo_representante')
@@ -1604,33 +1603,22 @@ app.get('/api/admin/metricas-pedidos', async (req, res) => {
 
     if (errPed) throw errPed;
 
-    // 2. Busca todos os clientes (pode ter muitos, mas é rápido)
     const { data: clientes, error: errCli } = await supabase
       .from('clientes')
       .select('cnpj, nome_fantasia, razao_social, uf');
 
     if (errCli) throw errCli;
 
-    // 3. Cria um mapa com o CNPJ de TODAS as formas possíveis (com e sem zeros)
+    // Cria o mapa limpando TUDO que não for número
     const mapaClientes = {};
     (clientes || []).forEach(c => {
-      let cnpj = String(c.cnpj || '').replace(/\D/g, ''); // Só números
-      
-      // Salva no mapa de várias formas para garantir o match
-      mapaClientes[cnpj] = c; // Como está
-      mapaClientes[cnpj.padStart(14, '0')] = c; // Com zero à esquerda
-      mapaClientes[cnpj.replace(/^0+/, '')] = c; // Sem zero à esquerda
+      const cnpjLimpo = String(c.cnpj || '').replace(/\D/g, '');
+      mapaClientes[cnpjLimpo] = c;
     });
 
-    // 4. Junta os dados
     const formatados = (pedidos || []).map(p => {
-      let cnpjPedido = String(p.cnpj_cliente || '').replace(/\D/g, '');
-      
-      // Tenta achar o cliente de todas as formas
-      const cli = mapaClientes[cnpjPedido] 
-               || mapaClientes[cnpjPedido.padStart(14, '0')] 
-               || mapaClientes[cnpjPedido.replace(/^0+/, '')]
-               || {};
+      const cnpjLimpoPedido = String(p.cnpj_cliente || '').replace(/\D/g, '');
+      const cli = mapaClientes[cnpjLimpoPedido] || {};
       
       return {
         id: p.id,
@@ -1639,7 +1627,7 @@ app.get('/api/admin/metricas-pedidos', async (req, res) => {
         data_criacao: p.data_criacao,
         cnpj_cliente: p.cnpj_cliente,
         codigo_representante: p.codigo_representante,
-        nome_cliente: cli.nome_fantasia || cli.razao_social || 'Cliente não cadastrado',
+        nome_cliente: cli.nome_fantasia || cli.razao_social || 'Não encontrado',
         uf: cli.uf || 'N/A'
       };
     });
