@@ -1569,7 +1569,7 @@ function renderOfertas() {
     return;
   }
 
-   const ofertasRender = ofertasCache.map(of => {
+  const ofertasRender = ofertasCache.map(of => {
     const cat = mapaCatalogoCache.get(String(of.codigo)) || {};
     const subgrupo = of.subgrupo || cat.subgrupo_scraping || cat.descricao_sistema || `Produto ${of.codigo}`;
     const precoBase = Number(of.preco_base || cat.preco_venda || 0);
@@ -1602,27 +1602,41 @@ function renderOfertas() {
       ? `<img src="${item.imagem_oferta}" alt="${escapeHtml(item.subgrupo)}" onerror="this.onerror=null; this.parentElement.innerHTML='🖼️';">`
       : '🖼️';
 
-    // 👇 AQUI ESTÁ A MÁGICA: Preparando o nome com a variação para a oferta
+    // 👇 MÁGICA: BUSCA O PRODUTO E AS VARIAÇÕES PARA A OFERTA 👇
     const itemBruto = todosItens.find(i => i.codigo === String(item.codigo));
     let nomeOferta = item.subgrupo;
+    let detalheOferta = '';
 
     if (itemBruto) {
       const grupoUpper = (itemBruto.grupo || '').toUpperCase();
+      
       if (grupoUpper.includes('CARRETILHA')) {
         const info = analisarCarretilha(itemBruto);
-        if (info.ladoTag && !nomeOferta.toUpperCase().includes(info.ladoTag.toUpperCase())) {
-          nomeOferta += ` (${info.ladoTag})`;
-        }
-      } else if (grupoUpper.includes('MOLINETE')) {
+        detalheOferta = info.ladoTag || '';
+      } 
+      else if (grupoUpper.includes('MOLINETE')) {
         const info = analisarMolinete(itemBruto);
-        if (info.modelo && !nomeOferta.toUpperCase().includes(info.modelo.toUpperCase())) {
-          nomeOferta += ` ${info.modelo}`;
-        }
-      } else if (grupoUpper.includes('VARA') || grupoUpper.includes('LINHA')) {
+        detalheOferta = info.modelo || '';
+      } 
+      else if (grupoUpper.includes('VARA')) {
         const info = analisarVara(itemBruto);
-        if (info.modeloJson && info.modeloJson !== item.subgrupo) {
-          nomeOferta += ` ${info.modeloJson}`;
-        }
+        detalheOferta = info.modeloJson || '';
+      }
+      else if (grupoUpper.includes('ISCA')) {
+        const info = analisarIsca(itemBruto);
+        detalheOferta = info.cor ? `Cor: ${info.cor}` : '';
+      }
+      else if (grupoUpper.includes('LINHA')) {
+        const info = analisarLinha(itemBruto);
+        detalheOferta = info.bitola ? `Bitola: ${info.bitola}` : '';
+      }
+      else if (grupoUpper.includes('VESTUARIO') || grupoUpper.includes('ACESSORIO')) {
+        const info = analisarVestuario(itemBruto);
+        detalheOferta = info.tamanho ? `Tam: ${info.tamanho}` : '';
+      }
+      else if (grupoUpper.includes('ANZOL') || grupoUpper.includes('GARAT')) {
+        const info = analisarAnzol(itemBruto);
+        detalheOferta = info.numero ? `Nº ${info.numero}` : '';
       }
     }
     // 👆 FIM DA MÁGICA 👆
@@ -1632,7 +1646,7 @@ function renderOfertas() {
       : (q > 0
           ? `<div class="qtd-oferta-wrap" onclick="event.stopPropagation()">
                <button onclick="mudarQtd('${item.codigo}', -1)">−</button>
-               <span class="num">${q}</span>
+              <span class="num">${q}</span>
                <button onclick="mudarQtd('${item.codigo}', 1)">+</button>
              </div>`
           : `<button class="btn-add-primeiro" onclick="adicionarOfertaComNome('${item.codigo}', '${escapeHtml(nomeOferta).replace(/'/g, "\\'")}', ${item.preco_base})">🛒 Adicionar</button>`);
@@ -1644,7 +1658,12 @@ function renderOfertas() {
         <div class="img-box">${imgHtml}</div>
         <div class="corpo-oferta">
           ${item.marca ? `<span class="marca-tag">${escapeHtml(item.marca)}</span>` : ''}
-          <div class="titulo-prod">${escapeHtml(nomeOferta)}</div> <!-- Usa o nome completo aqui também -->
+          
+          <div class="titulo-prod" style="min-height: 2.8em;">
+            ${escapeHtml(nomeOferta)}
+            ${detalheOferta ? `<div style="font-size: 0.65rem; color: #64748b; font-weight: 700; margin-top: 4px;">${escapeHtml(detalheOferta)}</div>` : ''}
+          </div>
+
           <div class="bloco-preco-balcao">
             <span class="txt-de">De: R$ ${fmtMoeda(calc.precoOriginal)}</span>
             <span class="txt-por">Por: R$ ${fmtMoeda(calc.precoFinal)}</span>
@@ -1671,7 +1690,6 @@ function renderOfertas() {
 
   iniciarContadorBlack();
 }
-
 function setFiltroOferta(grupo) {
   filtroOfertaAtual = grupo;
   renderOfertas();
