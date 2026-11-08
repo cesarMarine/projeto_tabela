@@ -1602,7 +1602,7 @@ function renderOfertas() {
       ? `<img src="${item.imagem_oferta}" alt="${escapeHtml(item.subgrupo)}" onerror="this.onerror=null; this.parentElement.innerHTML='🖼️';">`
       : '🖼️';
 
-    // 👇 MÁGICA: BUSCA O PRODUTO E AS VARIAÇÕES PARA A OFERTA 👇
+    // 👇 AQUI ESTÁ A MÁGICA: Puxa as variações exatamente como na vitrine 👇
     const itemBruto = todosItens.find(i => i.codigo === String(item.codigo));
     let nomeOferta = item.subgrupo;
     let detalheOferta = '';
@@ -1620,23 +1620,31 @@ function renderOfertas() {
       } 
       else if (grupoUpper.includes('VARA')) {
         const info = analisarVara(itemBruto);
-        detalheOferta = info.modeloJson || '';
+        // Pega o tamanho que está no nome ou nas specs
+        const specs = info.especificacoes || {};
+        const tamanho = specs['Tamanho (cm)'] || specs['Comprimento'] || specs['TAMANHO'] || '';
+        detalheOferta = tamanho ? `Tam: ${tamanho}` : info.modeloJson;
       }
       else if (grupoUpper.includes('ISCA')) {
         const info = analisarIsca(itemBruto);
-        detalheOferta = info.cor ? `Cor: ${info.cor}` : '';
+        detalheOferta = info.especificacoes || (info.cor ? `Cor: ${info.cor}` : '');
       }
       else if (grupoUpper.includes('LINHA')) {
         const info = analisarLinha(itemBruto);
         detalheOferta = info.bitola ? `Bitola: ${info.bitola}` : '';
       }
-      else if (grupoUpper.includes('VESTUARIO') || grupoUpper.includes('ACESSORIO')) {
+      else if (grupoUpper.includes('VESTUARIO')) {
         const info = analisarVestuario(itemBruto);
         detalheOferta = info.tamanho ? `Tam: ${info.tamanho}` : '';
       }
       else if (grupoUpper.includes('ANZOL') || grupoUpper.includes('GARAT')) {
         const info = analisarAnzol(itemBruto);
         detalheOferta = info.numero ? `Nº ${info.numero}` : '';
+      }
+      else {
+        // 👇 O SEGREDO ESTÁ AQUI: Para Bolsas e Caixas, usa a função de acessório 👇
+        const info = analisarAcessorio(itemBruto);
+        detalheOferta = info.medida || '';
       }
     }
     // 👆 FIM DA MÁGICA 👆
@@ -1693,6 +1701,30 @@ function renderOfertas() {
 function setFiltroOferta(grupo) {
   filtroOfertaAtual = grupo;
   renderOfertas();
+}
+
+function analisarAcessorio(it) {
+  const attrs = it.atributos || {};
+  
+  // Tenta pegar do JSON
+  let medida = attrs['Dimensões(cm)'] || attrs['Dimensões'] || attrs['Volume (L)'] || attrs['Capacidade'] || '';
+  
+  // Se não achar, tenta extrair do nome do produto
+  if (!medida) {
+    const desc = (it.subgrupo || it.descricao_longa || '').toUpperCase();
+    
+    // Procura padrão de centímetros (ex: 32x20x27cm)
+    const matchCm = desc.match(/(\d+[\.,]?\d*\s*[xX]\s*\d+[\.,]?\d*(?:\s*[xX]\s*\d+[\.,]?\d*)?\s*CM)/i);
+    if (matchCm) {
+      medida = matchCm[1];
+    } else {
+      // Procura litragem (ex: 5L)
+      const matchLitros = desc.match(/\b(\d+[\.,]?\d*\s*(L|LITROS|LT))\b/i);
+      if (matchLitros) medida = matchLitros[1];
+    }
+  }
+
+  return { medida: medida };
 }
 
 function iniciarContadorBlack() {
