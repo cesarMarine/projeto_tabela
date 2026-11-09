@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Painel Executivo - Marine</title>
-<!-- Biblioteca de Gráficos -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter','Segoe UI',system-ui,sans-serif; }
@@ -59,6 +58,8 @@
   .kpi-card.laranja .value { color:#d97706; }
   .kpi-card.roxo { border-top-color: #8b5cf6; }
   .kpi-card.roxo .value { color:#8b5cf6; }
+  .kpi-card.rascunho { border-top-color: #f97316; }
+  .kpi-card.rascunho .value { color:#f97316; }
 
   /* GRÁFICOS */
   .charts-grid { display:grid; grid-template-columns: 1fr 1fr; gap:24px; margin-bottom:24px; }
@@ -67,7 +68,7 @@
   .chart-container { position: relative; height: 300px; width: 100%; }
 
   /* LISTAS */
-  .listas-grid { display:grid; grid-template-columns: 1fr 1fr; gap:24px; }
+  .listas-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:24px; }
   .lista-card { background:white; border-radius:12px; padding:24px; box-shadow:0 2px 12px rgba(0,0,0,.04); }
   .lista-card h3 { font-size:1rem; color:#0f172a; margin-bottom:16px; font-weight:800; border-bottom:1px solid #f1f5f9; padding-bottom:10px; }
   .tabela-mini { width:100%; border-collapse:collapse; }
@@ -76,7 +77,7 @@
   .badge-uf { background:#dbeafe; color:#1e40af; padding:2px 6px; border-radius:4px; font-weight:800; font-size:0.7rem; }
 
   @media(max-width: 900px) {
-    .charts-grid, .listas-grid { grid-template-columns: 1fr; }
+    .charts-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -121,6 +122,10 @@
         <h3>Ticket Médio</h3>
         <div class="value" id="kpiTicket">R$ 0,00</div>
       </div>
+      <div class="kpi-card rascunho">
+        <h3>Rascunhos em Aberto</h3>
+        <div class="value" id="kpiRascunhos">0</div>
+      </div>
       <div class="kpi-card laranja">
         <h3>Clientes Únicos</h3>
         <div class="value" id="kpiLogins">0</div>
@@ -147,7 +152,7 @@
       </div>
     </div>
 
-    <div class="charts-grid" style="grid-template-columns: 1fr;">
+    <div class="charts-grid" style="grid-template-columns: 1fr; margin-bottom:24px;">
       <div class="chart-card">
         <h3>📈 Acessos por Dia (Últimos 7 Dias)</h3>
         <div class="chart-container">
@@ -176,6 +181,22 @@
       </div>
 
       <div class="lista-card">
+        <h3>⏳ Rascunhos em Aberto (Recentes)</h3>
+        <table class="tabela-mini">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Valor</th>
+              <th>Desde quando</th>
+            </tr>
+          </thead>
+          <tbody id="listaRascunhosRecentes">
+            <tr><td colspan="3" style="text-align:center; color:#94a3b8;">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="lista-card">
         <h3>👀 Radar de Clientes (Últimos Logins)</h3>
         <table class="tabela-mini">
           <thead>
@@ -198,7 +219,7 @@
 <script>
 let chartVendedores = null;
 let chartUFs = null;
-let chartAcessos = null; // 👈 Variável do novo gráfico
+let chartAcessos = null;
 
 const fmtMoeda = v => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -225,7 +246,6 @@ function sairAdmin() {
   window.location.reload();
 }
 
-// Verifica se já estava logado
 window.onload = () => {
   if (localStorage.getItem('adminLogadoMarine') === 'true') {
     document.getElementById('telaLogin').style.display = 'none';
@@ -268,7 +288,9 @@ function processarMetricas(pedidos, logins, totalLogins) {
   const vendasPorVendedor = {};
   const vendasPorUF = {};
   
+  // Separa finalizados e rascunhos
   const finalizados = pedidos.filter(p => (p.status || '').toUpperCase() !== 'RASCUNHO');
+  const rascunhos = pedidos.filter(p => (p.status || '').toUpperCase() === 'RASCUNHO');
 
   finalizados.forEach(p => {
     const valor = Number(p.total) || 0;
@@ -287,26 +309,31 @@ function processarMetricas(pedidos, logins, totalLogins) {
   const totalPedidos = finalizados.length;
   const ticketMedio = totalPedidos > 0 ? (faturamento / totalPedidos) : 0;
 
+  // Atualiza os KPIs
   document.getElementById('kpiFaturamento').textContent = `R$ ${fmtMoeda(faturamento)}`;
   document.getElementById('kpiPedidos').textContent = totalPedidos;
   document.getElementById('kpiTicket').textContent = `R$ ${fmtMoeda(ticketMedio)}`;
   document.getElementById('kpiLogins').textContent = totalLogins; 
+  
+  // 👇 NOVO: Contagem de Rascunhos
+  document.getElementById('kpiRascunhos').textContent = rascunhos.length;
 
   renderizarGraficoVendedores(vendasPorVendedor);
   renderizarGraficoUFs(vendasPorUF);
   renderizarUltimosPedidos(finalizados.slice(0, 10));
   renderizarUltimosLogins(logins.slice(0, 10));
+  
+  // 👇 NOVO: Renderiza a tabela de rascunhos
+  renderizarRascunhosRecentes(rascunhos.slice(0, 10));
 }
 
 // ==========================================
-// LÓGICA DE ACESSOS (NOVO)
+// LÓGICA DE ACESSOS (Gráfico de Linha)
 // ==========================================
 function processarAcessos(logins) {
-  // Total de acessos
   const totalAcessos = logins.length;
   document.getElementById('kpiAcessosTotal').textContent = totalAcessos;
 
-  // Prepara os dados dos últimos 7 dias
   const contagemPorDia = {};
   const dias = [];
   
@@ -425,6 +452,36 @@ function renderizarUltimosPedidos(pedidos) {
       <td style="font-weight:800; color:#10b981;">R$ ${fmtMoeda(p.total)}</td>
     </tr>
   `).join('');
+}
+
+function renderizarRascunhosRecentes(rascunhos) {
+  const tbody = document.getElementById('listaRascunhosRecentes');
+  if (!rascunhos.length) {
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Nenhum rascunho em aberto.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = rascunhos.map(p => {
+    const dataCriacao = new Date(p.data_criacao);
+    const hoje = new Date();
+    const diffHoras = Math.floor((hoje - dataCriacao) / (1000 * 60 * 60));
+    
+    let tempoStr = '';
+    if (diffHoras < 1) tempoStr = 'Agora há pouco';
+    else if (diffHoras < 24) tempoStr = `Há ${diffHoras} horas`;
+    else {
+      const diffDias = Math.floor(diffHoras / 24);
+      tempoStr = `Há ${diffDias} dia(s)`;
+    }
+
+    return `
+      <tr>
+        <td><strong>${p.nome_cliente || p.razao_social || 'Cliente'}</strong></td>
+        <td style="font-weight:800; color:#f97316;">R$ ${fmtMoeda(p.total)}</td>
+        <td style="font-size:0.8rem; color:#64748b;">${tempoStr}</td>
+      </tr>
+    `;
+  }).join('');
 }
 
 function renderizarUltimosLogins(logins) {
