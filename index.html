@@ -639,7 +639,34 @@ let ofertasCache = [];
 let mapaCatalogoCache = new Map();
 let filtroOfertaAtual = '';
 let contadorBlackInterval = null;
-const PRODUTOS_LOTE_10 = ['5795', '5796'];
+const PRODUTOS_LOTE_10 = [
+  '5795', '5796', '5797', '5798', '5799', '5800', '5801', '5802', '5803', 
+  '6697', 
+  '1544', '1545', '1546', '1547', '1548', '1549', '1550', '1551', 
+  
+  '1629', '1630', '1631', 
+  '2047', '2048', '2049', 
+  '1632', '1633', '1634', '1635', '1636', '1637', 
+  '2050', '1638', 
+  '1559', 
+  '2051', '2052', '2053', '2054', 
+  '1553', 
+  '2055', '2056', '2057', 
+  '1624', '1628', '1625', '1626', '1627', 
+  '1554', 
+  '7338', '7339', '7340', '7341', '7342', '7343', 
+  '3268', '3269', '3270', '3271', '3274', 
+  '10873', '10874', '10875', '10876', '10877', '10878', '10879', '10880', '10881', 
+  '10427', 
+  '10443', '10444', 
+  '10334', '10335', '10336', '10337', '10338', '10339', '10340', '10341', '10342', 
+  '10445', '10446', '10447', '10448', 
+  '10300', '10301', '10302', '10303', '10304', '10305', '10306', '10307', 
+  '10449', '10450', '10451'
+];
+
+// Lista de produtos com lote de 12
+const PRODUTOS_LOTE_12 = ['3', '5', '6', '7', '8', '10', '11', '14'];
 
 const BUCKET_ICONIS = 'https://gpzqzwrqndawhhglycat.supabase.co/storage/v1/object/public/icones_area_trabalho/';
 
@@ -650,17 +677,30 @@ function getFimBlackNovember() {
   return new Date(ano, 10, 30, 23, 59, 59); // mês 10 = novembro (0-indexed)
 }
 
+// 👇 NOVO: Função que descobre qual é o lote de cada produto
 function calcularQtdComLote(codigoProduto, quantidadeInserida) {
   const qtd = parseInt(quantidadeInserida, 10) || 0;
   if (qtd <= 0) return 0;
-  if (PRODUTOS_LOTE_10.includes(String(codigoProduto))) {
-    const resto = qtd % 10;
-    if (resto === 0) return qtd;
-    return Math.ceil(qtd / 10) * 10;
-  }
-  return qtd;
-}
+  
+  const codStr = String(codigoProduto);
+  let lote = 0; // Se for 0, significa que o produto é vendido unitário
 
+  if (PRODUTOS_LOTE_10.includes(codStr)) {
+    lote = 10;
+  } else if (PRODUTOS_LOTE_12.includes(codStr)) {
+    lote = 12;
+  }
+
+  // Se tiver lote definido, faz o arredondamento
+  if (lote > 1) {
+    const resto = qtd % lote;
+    if (resto !== 0) {
+      return Math.ceil(qtd / lote) * lote;
+    }
+  }
+
+  return qtd; // Se não tiver lote (ou for múltiplo exato), retorna a quantidade normal
+}
 function montarBarraMarcas() {
   const wrap = document.getElementById('barramarcasWrap');
   const container = document.getElementById('barramarcas');
@@ -2794,8 +2834,16 @@ function fecharModal(ev, force) {
 function buscarItem(codigo) { return todosItens.find(i => i.codigo === codigo); }
 function mudarQtd(cod, delta) { 
   const a = carrinho[cod] ? carrinho[cod].qtd : 0;
-  if (PRODUTOS_LOTE_10.includes(String(cod))) {
-    setQtd(cod, a + (delta > 0 ? 10 : -10));
+  
+  const codStr = String(cod);
+  let lote = 1;
+  
+  if (PRODUTOS_LOTE_10.includes(codStr)) lote = 10;
+  else if (PRODUTOS_LOTE_12.includes(codStr)) lote = 12;
+
+  // Se for um produto de lote, o botão + ou - avança o lote inteiro
+  if (lote > 1) {
+    setQtd(cod, a + (delta > 0 ? lote : -lote));
   } else {
     setQtd(cod, a + delta);
   }
