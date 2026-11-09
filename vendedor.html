@@ -105,9 +105,29 @@
   .btn-whats { background:#25D366; color:white; border:none; padding:6px 10px; border-radius:6px; font-weight:800; font-size:0.75rem; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:4px; }
 
   .modal-bg.on { display:flex !important; }
+
+  /* BANNER DE NOVO PEDIDO */
+  .alerta-novo-pedido {
+    display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+    background: #ef4444; color: white; padding: 12px 24px; border-radius: 30px;
+    font-weight: 800; font-size: 1rem; z-index: 9999;
+    box-shadow: 0 10px 25px rgba(239,68,68,0.4); cursor: pointer;
+    align-items: center; gap: 10px;
+    animation: pulse-alerta 1.5s infinite;
+  }
+  @keyframes pulse-alerta {
+    0% { transform: translateX(-50%) scale(1); }
+    50% { transform: translateX(-50%) scale(1.05); }
+    100% { transform: translateX(-50%) scale(1); }
+  }
 </style>
 </head>
 <body>
+
+<!-- BANNER DE NOVO PEDIDO -->
+<div id="alertaPedido" class="alerta-novo-pedido" onclick="abrirPedidosDoAlerta()">
+  🔔 Novo Pedido Recebido! Clique aqui para ver.
+</div>
 
 <!-- TELA DE LOGIN -->
 <div id="telaLogin">
@@ -315,7 +335,80 @@ async function fazerLogin() {
 
     await carregarClientes();
     carregarResumoPedidos();
+    
+    // 👇 INICIA A VERIFICAÇÃO DE NOVOS PEDIDOS A CADA 30 SEGUNDOS 👇
+    setInterval(verificarNovosPedidos, 30000);
+    
   } catch (e) { erro.textContent = 'Erro de conexão com o servidor.'; erro.style.display = 'block'; }
+}
+
+// ==========================================
+// VIGIA DE NOVOS PEDIDOS (ALERTA NO NAVEGADOR)
+// ==========================================
+let qtdPedidosAnterior = -1;
+let alertaPiscando = null;
+let tituloOriginalAba = document.title;
+
+async function verificarNovosPedidos() {
+  if (!vendedorLogado) return;
+
+  try {
+    const r = await fetch('/api/vendedor/' + vendedorLogado.codigo + '/pedidos');
+    const j = await r.json();
+    
+    if (!j.ok) return;
+
+    const pedidosFinalizados = j.pedidos.filter(p => (p.status || '').toUpperCase() !== 'RASCUNHO');
+    const qtdAtual = pedidosFinalizados.length;
+
+    // Se for a primeira vez, apenas salva a quantidade
+    if (qtdPedidosAnterior === -1) {
+      qtdPedidosAnterior = qtdAtual;
+      return;
+    }
+
+    // Se a quantidade aumentou, é porque entrou pedido novo!
+    if (qtdAtual > qtdPedidosAnterior) {
+      qtdPedidosAnterior = qtdAtual;
+      
+      const alerta = document.getElementById('alertaPedido');
+      if (alerta) alerta.style.display = 'flex';
+
+      if (alertaPiscando) clearInterval(alertaPiscando);
+      let pisca = true;
+      alertaPiscando = setInterval(() => {
+        document.title = pisca ? `🔔 (${qtdAtual}) Novo Pedido!` : tituloOriginalAba;
+        pisca = !pisca;
+      }, 1000);
+      
+      // Tenta tocar um bip
+      try {
+        const context = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = context.createOscillator();
+        const gainNode = context.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(context.destination);
+        oscillator.type = 'sine';
+        oscillator.frequency.value = 880;
+        gainNode.gain.value = 0.1;
+        oscillator.start();
+        oscillator.stop(context.currentTime + 0.2);
+      } catch(e) { /* ignora */ }
+    }
+
+  } catch (e) {
+    console.error('Erro ao verificar novos pedidos:', e);
+  }
+}
+
+function abrirPedidosDoAlerta() {
+  const alerta = document.getElementById('alertaPedido');
+  if (alerta) alerta.style.display = 'none';
+  
+  if (alertaPiscando) clearInterval(alertaPiscando);
+  document.title = tituloOriginalAba;
+
+  mudarAba('pedidos');
 }
 
 // ==========================================
@@ -567,6 +660,9 @@ async function carregarResumoPedidos() {
     if (j.ok) {
       const qtdFinalizados = j.pedidos.filter(p => (p.status || '').toUpperCase() !== 'RASCUNHO').length;
       document.getElementById('dashPedidos').textContent = qtdFinalizados;
+      
+      // Inicializa a contagem para o vigia de novos pedidos
+      if (qtdPedidosAnterior === -1) qtdPedidosAnterior = qtdFinalizados;
     }
   } catch (e) { console.error(e); }
 }
