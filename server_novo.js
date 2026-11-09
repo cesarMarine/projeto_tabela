@@ -1744,14 +1744,14 @@ app.get('/api/admin/metricas-pedidos', async (req, res) => {
 
 app.get('/api/admin/metricas-logins', async (req, res) => {
   try {
-    // 1. Conta o TOTAL de logins no banco (para o card do topo)
-    const { count: totalLogins, error: errCount } = await supabase
+    // 1. Conta o TOTAL de registros (Acessos Totais)
+    const { count: totalAcessosGeral, error: errCount } = await supabase
       .from('logins_clientes')
       .select('*', { count: 'exact', head: true });
       
     if (errCount) throw errCount;
 
-    // 2. Busca APENAS os 50 mais recentes para o radar
+    // 2. Busca APENAS os 50 mais recentes para o radar e para a tabela
     const { data: loginsRecentes, error: errLog } = await supabase
       .from('logins_clientes')
       .select('cnpj, data_login')
@@ -1760,7 +1760,7 @@ app.get('/api/admin/metricas-logins', async (req, res) => {
 
     if (errLog) throw errLog;
 
-    // 👇 NOVO: Busca TODOS os acessos dos últimos 30 dias (para o gráfico) 👇
+    // 3. Busca TODOS os acessos dos últimos 30 dias para o gráfico
     const dataLimite = new Date();
     dataLimite.setDate(dataLimite.getDate() - 30);
     
@@ -1772,7 +1772,17 @@ app.get('/api/admin/metricas-logins', async (req, res) => {
 
     if (errHist) throw errHist;
 
-    // 3. Pega os nomes dos clientes que estão no radar (50 últimos)
+    // 4. Calcula os Clientes Únicos (CNPJs diferentes em toda a base)
+    const { data: todosLogins, error: errUnicos } = await supabase
+      .from('logins_clientes')
+      .select('cnpj');
+      
+    if (errUnicos) throw errUnicos;
+
+    const cnpjsUnicos = new Set((todosLogins || []).map(l => String(l.cnpj || '').replace(/\D/g, '')));
+    const totalClientesUnicos = cnpjsUnicos.size;
+
+    // 5. Pega os nomes dos clientes que estão no radar (50 últimos)
     const cnpjsParaBuscar = [...new Set((loginsRecentes || []).map(l => String(l.cnpj || '').replace(/\D/g, '')))];
 
     const { data: clientes, error: errCli } = await supabase
@@ -1800,12 +1810,13 @@ app.get('/api/admin/metricas-logins', async (req, res) => {
       };
     });
 
-    // 4. Retorna tudo o que o frontend precisa
+    // 6. Retorna tudo mastigado
     res.json({ 
       ok: true, 
-      total_logins: totalLogins, 
-      logins: formatados,
-      logins_historico: loginsHistorico || [] // 👈 NOVO AQUI
+      total_logins: totalClientesUnicos,   // Card Laranja
+      total_acessos: totalAcessosGeral,    // Card Roxo
+      logins: formatados,                  // Radar
+      logins_historico: loginsHistorico || [] // Gráfico
     });
   } catch (e) {
     console.error('Erro em metricas-logins:', e);

@@ -273,9 +273,11 @@ async function carregarMetricas() {
     const logins = dataLogins.logins || [];
     const totalLogins = dataLogins.total_logins || 0;
     const loginsHistorico = dataLogins.logins_historico || [];
+    const totalAcessos = dataLogins.total_acessos || 0; // 👈 Adicione esta linha
 
     processarMetricas(pedidos, logins, totalLogins);
     processarAcessos(loginsHistorico);
+       processarAcessos(loginsHistorico, totalAcessos); // 👈 Passe como 2º parâmetro
 
   } catch (e) {
     console.error(e);
@@ -330,8 +332,8 @@ function processarMetricas(pedidos, logins, totalLogins) {
 // ==========================================
 // LÓGICA DE ACESSOS (Gráfico de Linha)
 // ==========================================
-function processarAcessos(logins) {
-  const totalAcessos = logins.length;
+function processarAcessos(logins, totalAcessos) {
+  // 👇 AQUI ESTÁ A CORREÇÃO: Usa o total exato que veio do backend
   document.getElementById('kpiAcessosTotal').textContent = totalAcessos;
 
   const contagemPorDia = {};
