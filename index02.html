@@ -2,8 +2,8 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Tabela de Preços B2B</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marine | Catálogo do lojista</title>
 <style>
   /* BADGE DE LANÇAMENTO FLUTUANTE NA FOTO PRINCIPAL */
   .tarja-lancamento-foto {
@@ -537,118 +537,196 @@
 }
 
 
-
-/* ============================================================
-   MARINE B2B | REFINAMENTO VISUAL 2026
-   Apenas apresentacao. Sem alteracoes nas regras ou funcoes JS.
-   ============================================================ */
-:root {
-  --azul-900:#102b46; --azul-800:#173d60; --azul-700:#235679;
-  --azul-500:#3179a5; --azul-100:#e0edf5; --azul-50:#f0f6fa;
-  --cinza-50:#f5f7fa; --cinza-100:#edf1f5; --cinza-200:#dfe6ed;
-  --cinza-300:#cbd5df; --cinza-500:#657789; --texto:#203448;
-  --verde:#15856b; --verde-hover:#0d7159;
+/* Apresentação alternativa; regras comerciais mantidas. */
+:root { --azul-900:#102c43; --azul-800:#153d59; --azul-700:#245674; --azul-500:#28749b; --verde:#168267; --verde-hover:#106b53; --texto:#24394b; --nav-top:80px; --brands-top:176px; }
+body { background:#f4f6f8; line-height:1.5; padding-bottom:100px; }
+button,input { font:inherit; }
+button,a,input { touch-action:manipulation; }
+button:focus-visible,a:focus-visible,input:focus-visible { outline:3px solid #d79938; outline-offset:3px; }
+.topo { background:#102c43; box-shadow:none; }
+.topo-inner { min-height:82px; max-width:1600px; padding:16px 28px; gap:24px; flex-wrap:wrap; }
+.identidade { display:flex; flex-direction:column; line-height:1.15; flex-shrink:0; text-decoration:none; }
+.identidade strong { font-size:24px; font-weight:800; letter-spacing:3px; color:#fff; }
+.identidade small { font-size:10px; letter-spacing:1.6px; text-transform:uppercase; color:#b7cbd9; margin-top:5px; }
+.busca-wrap { order:1; flex:1; min-width:180px; }
+.busca-wrap input { min-height:46px; background:white; color:var(--texto); border:1px solid #d9e2e8; border-radius:8px; font-size:14px; padding:12px 16px; }
+.busca-wrap input::placeholder { color:#6b7d8b; }
+.busca-wrap input:focus { background:#fff; }
+.info-cliente { order:2; gap:10px; background:transparent; border-radius:0; padding:0; font-size:12px; flex-wrap:wrap; max-width:390px; }
+#nomeCliente { max-width:180px; overflow:hidden; text-overflow:ellipsis; }
+.btn-topo-acao,.btn-topo-sair { padding:9px 12px; min-height:40px; font-size:12px; font-weight:600; border:1px solid #547084; border-radius:6px; background:transparent; }
+.btn-topo-sair { color:#cddce6; }
+#barraAvisoTabela { font-weight:500!important; }
+.chips-wrap { top:var(--nav-top); padding:12px 28px; background:#fff; }
+.chips { gap:8px; }
+.chip { width:auto; min-width:100px; height:70px; flex-direction:column; gap:5px; padding:6px 12px; border:1px solid transparent; background:white; border-radius:8px; overflow:visible; }
+.chip-img { width:32px; height:32px; border-radius:4px; }
+.chip-label { font-size:11px; line-height:1.2; font-weight:600; color:#526778; white-space:nowrap; }
+.chip.ativo { background:#eaf1f6; border-color:#c4d6e2; box-shadow:none; }
+.chip.ativo .chip-label { color:#153d59; }
+.chip:hover { transform:none; background:#f2f6f9; }
+.chip.chip-oferta,.chip.chip-oferta.ativo { background:#fff7e8; color:#a56c15; border-color:#f0dfbd; box-shadow:none; font-size:23px; }
+.chip.chip-oferta::after { display:none; }
+.chip.chip-oferta .chip-label { color:#8b601e; }
+#barramarcasWrap { top:var(--brands-top)!important; background:#f4f6f8!important; padding:10px 28px!important; }
+.catalogo-layout { max-width:1600px; margin:0 auto; padding:28px; gap:28px; }
+.catalogo-coluna { min-width:0; }
+.catalogo-intro { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:24px; }
+.eyebrow { display:block; font-size:10px; font-weight:700; letter-spacing:1.8px; text-transform:uppercase; color:#7c6a48; margin-bottom:6px; }
+.catalogo-intro h1 { font-size:clamp(24px,3vw,32px); line-height:1.2; font-weight:700; letter-spacing:-.8px; color:#102c43; margin-bottom:8px; }
+.catalogo-intro p { color:#647788; font-size:14px; }
+.intro-link { white-space:nowrap; border:1px solid #d4dfe7; background:#fff; padding:10px 14px; border-radius:8px; color:#153d59; font-size:13px; font-weight:600; }
+.conteudo { width:100%; }
+.familia-bloco { margin:0 0 28px; }
+.familia-head { padding:0 0 12px; margin-bottom:14px; border-bottom:1px solid #dce5eb; }
+.familia-head h2 { font-size:19px; font-weight:700; }
+.familia-card,.isca-card,.anzol-card,.molinete-card { border-radius:12px; box-shadow:none; padding:20px; gap:24px; }
+.familia-foto-principal { background:#fff; padding:14px; max-width:240px; }
+.btn-detalhes { font-size:11px; padding:9px 12px; font-weight:600; }
+.linha-filho-container { border-color:#e3e9ee; margin-bottom:8px; }
+.linha-filho { padding:12px; gap:12px; }
+.l-info-main { gap:8px; }
+.l-nome { font-size:13px; font-weight:600; line-height:1.5; }
+.l-cod { font-size:11px; font-weight:500; }
+.l-preco { font-size:16px; font-weight:700; color:#153d59; }
+.l-direita-wrap { gap:12px; }
+.qtd-ctrl button,.isca-qtd-ctrl button,.anzol-qtd-ctrl button,.molinete-qtd-ctrl button { width:34px; height:36px; font-size:17px; background:#f4f7f9; }
+.qtd-ctrl input,.isca-qtd-ctrl input,.anzol-qtd-ctrl input,.molinete-qtd-ctrl input { width:48px; min-width:40px; height:36px; font-size:14px; }
+.qtd-ctrl { flex-shrink:0; }
+.item-carrinho .qtd-ctrl { height:36px!important; }
+.item-carrinho .qtd-ctrl input { height:34px!important; }
+.isca-grade,.anzol-grade,.molinete-grade { grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; }
+.isca-cor-card,.anzol-numero-card,.molinete-numero-card { padding:12px; border-radius:10px; gap:5px; }
+.cor-nome,.anzol-numero,.molinete-numero { font-size:13px; font-weight:600; }
+.cor-preco,.anzol-preco,.molinete-preco { font-size:15px; color:#153d59; }
+.isca-modelo-btn,.anzol-tab,.molinete-tab { padding:9px 13px; font-size:12px; font-weight:600; }
+.mini-nome { font-size:10px; font-weight:600; }
+.filho-mini { width:80px; min-width:80px; padding:6px; }
+.grade-soltos { grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:16px; }
+.card-solto { padding:14px; }
+.card-solto .nome { font-size:13px; margin:10px 0; }
+.card-solto .preco { font-size:17px; color:#153d59; }
+.black-hero { background:#e8eff4; border:1px solid #d6e2ea; border-radius:12px; margin:0 0 20px; padding:24px; text-align:left; color:#153d59; display:flex; flex-direction:column; align-items:flex-start; }
+.black-hero::before { display:none; }
+.black-hero .tag-black { background:#153d59; color:white; box-shadow:none; border-radius:4px; font-size:10px; letter-spacing:1.4px; font-weight:600; }
+.black-hero h1 { background:none; -webkit-text-fill-color:initial; color:#153d59; text-transform:none; font-size:26px; font-weight:700; }
+.black-hero p { font-size:13px; font-weight:400; }
+.black-contador { gap:6px; }
+.black-contador .bloco-tempo { background:#fff; border:1px solid #d5e1e9; min-width:46px; padding:7px; }
+.black-contador .num-tempo { color:#153d59; font-size:17px; font-weight:600; }
+.black-contador .label-tempo { color:#657b8c; font-size:9px; }
+.black-filtros { padding:0 0 16px; }
+.black-filtro-btn { font-size:12px; font-weight:600; border-width:1px; padding:9px 15px; border-radius:7px; }
+.black-filtro-btn.ativo { background:#153d59; color:#fff; border-color:#153d59; box-shadow:none; }
+.grade-ofertas { padding:0; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:18px; }
+.card-oferta { border:1px solid #dce4ea; box-shadow:none; border-radius:12px; }
+.card-oferta:hover { transform:translateY(-2px); border-color:#abc2d2; box-shadow:0 8px 24px #102c430a; }
+.card-oferta .selo-desconto { background:#fff5e5; border:1px solid #f0dfbd; color:#8b601e; box-shadow:none; font-size:12px; font-weight:700; }
+.card-oferta .selo-black { background:#f0f4f7; color:#526b7e; font-size:9px; font-weight:600; }
+.card-oferta .img-box { padding:24px; }
+.card-oferta .corpo-oferta { padding:16px; background:white; }
+.card-oferta .marca-tag { font-size:10px; font-weight:600; padding:4px 8px; }
+.card-oferta .titulo-prod { font-size:14px; font-weight:600; line-height:1.5; min-height:3em; margin:6px 0 12px; }
+.card-oferta .bloco-preco-balcao { background:transparent; border:0; padding:0; text-align:left; margin-bottom:14px; }
+.card-oferta .txt-de { font-size:12px; font-weight:400; }
+.card-oferta .txt-por { color:#153d59; font-size:23px; font-weight:700; line-height:1.5; }
+.card-oferta .btn-add-primeiro { background:#168267; font-size:13px; font-weight:600; min-height:44px; border-radius:7px; }
+.card-oferta .btn-add-primeiro:hover { transform:none; background:#106b53; box-shadow:none; }
+.card-oferta .qtd-oferta-wrap { border-width:1px; border-radius:7px; }
+.card-oferta .qtd-oferta-wrap button { min-width:38px; min-height:36px; }
+.painel-carrinho { border-radius:12px; box-shadow:0 12px 48px #102c4326; max-width:460px; bottom:92px; }
+.painel-head { background:white; color:#153d59; padding:18px; border-bottom:1px solid #e2e8ed; font-size:16px; font-weight:700; }
+.painel-head button { color:#153d59!important; min-width:36px; min-height:36px; }
+.painel-lista { padding:12px; max-height:45vh; }
+.item-carrinho { background:#f5f7f9; padding:12px; }
+.item-titulo { font-size:13px; font-weight:600; }
+.item-selo-economia { background:#e9f5ef; color:#216449; box-shadow:none; text-transform:none; font-weight:600; }
+.painel-foot { padding:18px; }
+.painel-foot button { font-size:12px!important; font-weight:600!important; min-height:44px; }
+.rodape-economia { background:#edf7f1; color:#28664d; border:1px solid #d3e8db; font-weight:400; }
+.rodape-economia strong { color:#216449; }
+.fab-carrinho { display:none!important; }
+.resumo-mobile { display:none; }
+#btnWhatsVendedor { border-radius:8px!important; box-shadow:none!important; padding:10px 14px!important; font-weight:600!important; font-size:12px!important; bottom:20px!important; }
+#telaLogin { background:#102c43; }
+.login-box { max-width:440px; padding:40px; border-radius:16px; box-shadow:0 24px 80px #0003; text-align:left; }
+.login-marca { color:#153d59; font-size:26px; font-weight:800; letter-spacing:4px; margin-bottom:30px; }
+.login-box h1 { font-size:24px; font-weight:700; letter-spacing:-.5px; }
+.login-box p { line-height:1.7; font-size:14px; }
+.login-label { display:block; font-size:13px; font-weight:600; color:#40566a; margin-bottom:8px; }
+.login-box input { font-size:16px; text-align:left; letter-spacing:0; font-weight:500; border-width:1px; }
+.login-box button { font-size:14px; font-weight:600; border-radius:8px; }
+.login-nota { margin:18px 0 0!important; color:#82919d!important; font-size:12px!important; }
+.revisao-dialog { border:1px solid #d9e3ea; border-radius:16px; padding:0; margin:auto; width:min(620px,calc(100% - 32px)); max-height:85vh; color:#24394b; box-shadow:0 24px 80px #0003; }
+.revisao-dialog::backdrop { background:#102c43aa; }
+.revisao-dialog form { display:flex; flex-direction:column; max-height:85vh; }
+.revisao-topo { padding:24px; border-bottom:1px solid #e2e8ed; }
+.revisao-topo h2 { color:#153d59; font-size:22px; margin-bottom:6px; }
+.revisao-topo p { color:#647788; font-size:13px; }
+.revisao-itens { overflow:auto; padding:8px 24px; }
+.revisao-item { padding:14px 0; border-bottom:1px solid #e8edf1; display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; font-size:14px; }
+.revisao-item small { display:block; color:#647788; margin-top:4px; }
+.revisao-rodape { padding:24px; border-top:1px solid #e2e8ed; }
+.revisao-total { display:flex; justify-content:space-between; font-size:20px; margin-bottom:20px; color:#153d59; }
+.revisao-acoes { display:flex; justify-content:flex-end; gap:10px; }
+.revisao-acoes button { min-height:44px; border-radius:8px; padding:10px 18px; border:1px solid #d4dfe7; background:#fff; color:#153d59; font-size:14px; font-weight:600; }
+.revisao-acoes .confirmar { color:white; background:#168267; border-color:#168267; }
+@media(min-width:1280px) {
+ body { padding-bottom:28px; }
+ .catalogo-layout { display:grid; grid-template-columns:minmax(0,1fr) 330px; align-items:start; }
+ .painel-carrinho,.painel-carrinho.on { display:flex; position:sticky; top:calc(var(--brands-top) + 64px); bottom:auto; left:auto; right:auto; width:100%; max-width:none; margin:0; box-shadow:0 4px 18px #102c4305; }
+ .painel-carrinho .painel-head button { display:none; }
+ .painel-lista { max-height:calc(100vh - var(--brands-top) - 330px); min-height:100px; }
 }
-body {background:#f5f7fa; color:var(--texto); line-height:1.45; letter-spacing:-.008em;}
-button,input {font:inherit;}
-button {transition:background-color .18s ease,border-color .18s ease,box-shadow .18s ease,transform .18s ease;}
-button:focus-visible, input:focus-visible, a:focus-visible {outline:3px solid #7cc0e8; outline-offset:2px;}
-.topo {background:#102b46; box-shadow:0 3px 16px rgba(14,38,62,.14);}
-.topo-inner {padding:12px 20px; gap:16px;}
-.info-cliente {background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.13); border-radius:9px; padding:7px 10px; font-size:.78rem; gap:8px;}
-.info-cliente span.uf {background:#157d70; border-radius:5px;}
-.btn-topo-acao,.btn-topo-sair {font-size:.75rem; padding:7px 11px; border-radius:7px;}
-.btn-topo-acao {background:#2a638a;}.btn-topo-sair {background:#a9414b;}
-.busca-wrap input {background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.15); border-radius:9px; padding:11px 15px; font-size:.88rem;}
-.busca-wrap input:focus {background:rgba(255,255,255,.2); border-color:#90c5e6;}
-.chips-wrap {top:0; position:relative; padding:10px 20px; background:#fff; border-bottom:1px solid #e3eaf0; box-shadow:0 2px 8px rgba(20,48,72,.035);}
-.chips {gap:9px;}
-.chip {width:52px; height:52px; background:#f7f9fb; border:1px solid #e0e7ed; border-radius:11px; padding:5px;}
-.chip:hover {transform:translateY(-1px); border-color:#81a8c3; box-shadow:0 3px 10px rgba(15,52,80,.1);}
-.chip.ativo {background:#e8f2f8; border:2px solid #2a668c; box-shadow:0 0 0 2px rgba(42,102,140,.09);}
-.chip.chip-oferta.ativo {background:#382a24;}
-#barramarcasWrap {position:relative !important; top:auto !important; background:#f7f9fb !important; padding:9px 20px !important;}
-.conteudo {padding:12px 8px 40px;}
-.familia-bloco {margin:16px 12px 24px;}
-.familia-head {padding:0 2px 11px; margin-bottom:10px; border-bottom:1px solid #dbe5ed;}
-.familia-head h2 {font-size:1.15rem; font-weight:750; letter-spacing:-.025em; color:#163c5b;}
-.familia-head .marca-badge {border-radius:6px; padding:5px 10px;}
-.sub-grupo-header {background:#e9f2f8; border-left:3px solid #397ca5; border-radius:5px; padding:7px 12px; font-size:.73rem;}
-.familia-card,.isca-card,.anzol-card,.molinete-card {border:1px solid #e1e8ef; border-radius:13px; box-shadow:0 3px 16px rgba(22,51,75,.045); gap:17px; padding:16px;}
-.familia-foto-principal {background:#fafcfd; border:1px solid #e7edf2; border-radius:11px; max-width:235px; padding:12px;}
-.btn-detalhes {background:#f0f5f9; border:1px solid #dbe7ef; color:#285d80; border-radius:7px; padding:8px 12px; font-size:.7rem; margin-bottom:11px;}
-.btn-detalhes:hover {background:#e3eff7;}
-.topo-miniaturas {gap:8px; padding-bottom:12px;}
-.filho-mini {border:1px solid #dde6ed; border-radius:8px; padding:5px; width:72px; min-width:72px;}
-.filho-mini.ativa {border:2px solid #2e6c93; background:#edf5fa;}
-.mini-nome {font-size:.59rem;}
-.isca-modelos-tabs,.anzol-tabs,.molinete-tabs {gap:7px; padding-bottom:10px;}
-.isca-modelo-btn,.anzol-tab,.molinete-tab {border-radius:7px; padding:8px 12px; background:#f6f9fb; border:1px solid #dce6ee; font-size:.76rem;}
-.isca-modelo-btn.ativo,.anzol-tab.ativo,.molinete-tab.ativo {background:#1c4b6e; border-color:#1c4b6e;}
-.isca-grade,.anzol-grade,.molinete-grade {gap:10px; grid-template-columns:repeat(auto-fill,minmax(145px,1fr));}
-.isca-cor-card,.anzol-numero-card,.molinete-numero-card {border:1px solid #e0e7ee; border-radius:10px; padding:10px 8px; gap:3px; box-shadow:0 1px 4px rgba(20,45,70,.025);}
-.isca-cor-card.tem-qtd,.anzol-numero-card.tem-qtd,.molinete-numero-card.tem-qtd {background:#f1faf7; border-color:#74b7a5; box-shadow:0 0 0 1px rgba(21,133,107,.1);}
-.cor-nome,.anzol-numero,.molinete-numero {font-size:.79rem; line-height:1.35;}
-.cor-preco,.anzol-preco,.molinete-preco,.l-preco {color:#147b62; font-size:.85rem;}
-.isca-qtd-ctrl,.anzol-qtd-ctrl,.molinete-qtd-ctrl {gap:4px; margin-top:8px;}
-.isca-qtd-ctrl button,.anzol-qtd-ctrl button,.molinete-qtd-ctrl button {width:30px; height:30px; border:1px solid #d7e2ea; border-radius:7px; background:#f3f7fa; color:#1b4b70;}
-.isca-qtd-ctrl input,.anzol-qtd-ctrl input,.molinete-qtd-ctrl input {height:30px; border-radius:7px; border-color:#d7e2ea;}
-.linha-filho-container {border-color:#e0e7ee; border-radius:9px;}
-.linha-filho {padding:9px 11px; gap:9px;}
-.linha-filho + .linha-filho {border-top:1px solid #f0f3f6;}
-.l-cod {font-size:.73rem; padding:4px 6px; background:#f1f5f8;}
-.l-nome {font-size:.81rem; line-height:1.35;}
-.qtd-ctrl {border-radius:7px; border-color:#d6e1e9;}
-.qtd-ctrl button {width:30px; height:30px; background:#f2f6f9;}
-.qtd-ctrl input {height:30px;}
-.grade-soltos {grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px;}
-.card-solto {border:1px solid #e0e7ee; border-radius:11px; padding:11px; box-shadow:0 2px 9px rgba(25,53,76,.035);}
-.card-solto .img {border-radius:8px; background:#f8fafc;}
-.card-solto .nome {font-size:.78rem;}
-.card-solto .preco {font-size:.88rem; color:#147b62;}
-.fab-carrinho {background:#174969; width:60px; height:60px; box-shadow:0 7px 22px rgba(15,49,77,.26);}
-.painel-carrinho {border:1px solid #dce5ec; border-radius:14px; box-shadow:0 18px 55px rgba(17,42,64,.2);}
-.painel-head {background:#153c5a; padding:15px 17px; font-size:.95rem;}
-.painel-lista {gap:9px; padding:13px;}
-.item-carrinho {border-radius:9px; padding:11px;}
-.painel-foot {padding:16px;}
-.total-linha {font-size:1.08rem;}
-.btn-finalizar {background:#15856b; border-radius:8px; padding:12px;}
-.btn-finalizar:hover {background:#0d7159;}
-.modal-bg {background:rgba(13,31,48,.7);}
-.modal {border-radius:15px; box-shadow:0 25px 70px rgba(9,29,48,.25);}
-.modal-head {background:#153c5a; padding:15px 18px;}
-.modal-body {padding:19px;}
-.login-box {border-radius:18px; padding:32px 27px; box-shadow:0 25px 70px rgba(0,0,0,.2);}
-#telaLogin {background:linear-gradient(140deg,#102b46,#235679);}
-.login-box h1 {font-size:1.65rem; letter-spacing:-.03em;}
-.login-box input {border-radius:9px;}
-.login-box button {background:#174969; border-radius:9px;}
-.black-hero {border-radius:14px; box-shadow:0 8px 24px rgba(0,0,0,.16);}
-.card-oferta {border:1px solid #dfe6ec; border-radius:12px; box-shadow:0 3px 13px rgba(19,44,64,.06);}
-.card-oferta:hover {border-color:#d5a93d; box-shadow:0 8px 22px rgba(19,44,64,.1);}
-.card-oferta .corpo-oferta {background:#fff;}
-.card-oferta .titulo-prod {font-size:.84rem;}
-@media(min-width:768px) {
-  .familia-card,.isca-card,.anzol-card,.molinete-card {grid-template-columns:195px minmax(0,1fr); padding:19px;}
+@media(max-width:1279px) {
+ .resumo-mobile { position:fixed; bottom:14px; right:20px; left:20px; z-index:160; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:13px 18px; border:1px solid #31556e; border-radius:12px; background:#153d59; color:white; box-shadow:0 6px 24px #102c4333; cursor:pointer; }
+ .resumo-mobile[hidden] { display:none; }
+ .resumo-mobile strong { font-size:16px; font-weight:600; }
+ .resumo-mobile small { display:block; font-size:11px; color:#c2d3df; text-align:left; }
+ .resumo-mobile .resumo-acao { font-size:13px; font-weight:600; }
+ #btnWhatsVendedor { bottom:94px!important; }
 }
 @media(max-width:767px) {
-  .topo-inner {padding:10px 12px; gap:8px; flex-wrap:wrap;}
-  .info-cliente {max-width:100%; overflow-x:auto; font-size:.7rem;}
-  .busca-wrap {flex-basis:100%;}
-  .chips-wrap {padding:9px 12px;}
-  #barramarcasWrap {padding:8px 12px !important;}
-  .conteudo {padding:5px 0 28px;}
-  .familia-bloco {margin:13px 9px 20px;}
-  .familia-card,.isca-card,.anzol-card,.molinete-card {padding:12px; gap:12px;}
-  .familia-head h2 {font-size:1.04rem;}
-  .familia-foto-principal {max-width:185px;}
-  .isca-grade,.anzol-grade,.molinete-grade {grid-template-columns:repeat(auto-fill,minmax(125px,1fr)); gap:8px;}
-  .grade-soltos {grid-template-columns:repeat(auto-fill,minmax(135px,1fr));}
-  .painel-carrinho {bottom:90px;}
-  .fab-carrinho {bottom:16px; right:16px;}
+ .topo-inner { padding:12px 16px; gap:12px; }
+ .identidade strong { font-size:19px; }
+ .identidade small { font-size:8px; }
+ .info-cliente { margin-left:auto; max-width:calc(100% - 110px); font-size:10px; gap:6px; justify-content:flex-end; }
+ #nomeCliente { max-width:110px; }
+ .info-cliente .uf { display:none; }
+ .btn-topo-acao,.btn-topo-sair { padding:6px 8px; min-height:34px; font-size:11px; }
+ .busca-wrap { order:3; flex-basis:100%; }
+ .busca-wrap input { font-size:14px; min-height:44px; }
+ .chips-wrap { padding:9px 12px; }
+ .chip { min-width:83px; height:64px; padding:6px 8px; }
+ .chip-label { font-size:10px; }
+ #barramarcasWrap { padding:8px 16px!important; }
+ .catalogo-layout { padding:20px 14px; }
+ .catalogo-intro { align-items:flex-start; }
+ .catalogo-intro p { font-size:12px; }
+ .intro-link { display:none; }
+ .familia-card,.isca-card,.anzol-card,.molinete-card { padding:14px; gap:16px; }
+ .familia-head h2 { font-size:17px; }
+ .familia-foto-principal { max-width:200px; }
+ .linha-filho { padding:12px 10px; }
+ .l-info-main { min-width:100%; }
+ .l-direita-wrap { width:100%; justify-content:space-between; }
+ .grade-ofertas { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+ .card-oferta .img-box { padding:12px; }
+ .card-oferta .corpo-oferta { padding:10px; }
+ .card-oferta .titulo-prod { font-size:12px; }
+ .card-oferta .txt-por { font-size:19px; }
+ .card-oferta .selo-black { display:none; }
+ .card-oferta .selo-desconto { top:6px; left:6px; font-size:10px; padding:3px 6px; }
+ .card-oferta .btn-add-primeiro { font-size:11px; padding:10px 6px; }
+ .black-hero { padding:20px; }
+ .black-hero h1 { font-size:23px; }
+ .isca-grade,.anzol-grade,.molinete-grade { grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:8px; }
+ .login-box { padding:28px; }
+ .resumo-mobile { left:12px; right:12px; bottom:12px; }
+ .revisao-acoes { flex-direction:column-reverse; }
+ .revisao-topo,.revisao-rodape { padding:20px; }
 }
-@media(prefers-reduced-motion:reduce) {button,.chip,.card-oferta {transition:none !important; animation:none !important;}}
+@media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }
 
 </style>
 </head>
@@ -660,16 +738,20 @@ button:focus-visible, input:focus-visible, a:focus-visible {outline:3px solid #7
 </a>
 <div id="telaLogin">
   <div class="login-box">
-    <h1>Catálogo B2B</h1>
+    <div class="login-marca">MARINE</div>
+    <h1>O próximo pedido da sua loja começa aqui.</h1>
     <p>Digite o seu CNPJ para acessar a tabela de preços.</p>
     <div class="login-erro" id="loginErro">CNPJ não encontrado ou inativo.</div>
-    <input type="text" id="inputCnpj" placeholder="00.000.000/0000-00" autocomplete="off">
-    <button onclick="fazerLogin()">Acessar Catálogo</button>
+    <label class="login-label" for="inputCnpj">CNPJ da sua empresa</label>
+    <input inputmode="numeric" type="text" id="inputCnpj" placeholder="00.000.000/0000-00" autocomplete="off">
+    <button onclick="fazerLogin()">Acessar catálogo →</button>
+    <p class="login-nota">Produtos, preços e pedidos em um só lugar.</p>
   </div>
 </div>
 
 <header class="topo">
   <div class="topo-inner">
+    <a class="identidade" href="#conteudo" aria-label="Marine, início do catálogo"><strong>MARINE</strong><small>Portal do lojista</small></a>
     <div class="info-cliente" id="infoCliente" style="display:none;">
       👤 <span id="nomeCliente">—</span>
       <span class="uf" id="badgeUf">—</span>
@@ -678,7 +760,7 @@ button:focus-visible, input:focus-visible, a:focus-visible {outline:3px solid #7
     </div>
 
     <div class="busca-wrap">
-      <input type="search" id="busca" placeholder="🔍 Buscar produto por código, nome ou palavra-chave..." autocomplete="off">
+      <input type="search" id="busca" aria-label="Buscar produtos" placeholder="Buscar por produto, código ou palavra-chave…" autocomplete="off">
     </div>
   </div>
 </header>
@@ -694,9 +776,16 @@ button:focus-visible, input:focus-visible, a:focus-visible {outline:3px solid #7
   <div id="barramarcas" style="max-width:1600px; margin:0 auto; display:flex; gap:8px; align-items:center;"></div>
 </div>
 
+<div class="catalogo-layout">
+<div class="catalogo-coluna">
+<section class="catalogo-intro" aria-label="Catálogo do lojista">
+  <div><span class="eyebrow">Seu negócio, bem abastecido</span><h1>Catálogo do lojista</h1><p>Encontre os produtos da sua loja e monte seu próximo pedido.</p></div>
+  <button type="button" class="intro-link" onclick="abrirMeusPedidos()">Meus pedidos ↗</button>
+</section>
 <main class="conteudo" id="conteudo">
   <div class="loading">Carregando catálogo…</div>
 </main>
+</div>
 
 <div class="fab-carrinho" id="btnCarrinho" onclick="toggleCarrinho()" style="display:none;">
   🛒
@@ -726,6 +815,19 @@ button:focus-visible, input:focus-visible, a:focus-visible {outline:3px solid #7
 </div>
 </div>
 
+</div><!-- /catalogo-layout -->
+<button type="button" class="resumo-mobile" id="resumoMobile" onclick="toggleCarrinho()" aria-controls="painelCarrinho" aria-expanded="false" hidden>
+  <span><small id="resumoQuantidade">Seu pedido está vazio</small><strong id="resumoTotal">R$ 0,00</strong></span>
+  <span class="resumo-acao">Ver pedido →</span>
+</button>
+<dialog class="revisao-dialog" id="revisaoPedido" aria-labelledby="revisaoTitulo">
+  <form method="dialog">
+    <div class="revisao-topo"><span class="eyebrow">Última conferência</span><h2 id="revisaoTitulo">Revise seu pedido</h2><p>Confira os produtos e as quantidades antes de enviar.</p></div>
+    <div class="revisao-itens" id="revisaoItens"></div>
+    <div class="revisao-rodape"><div class="revisao-total"><span>Total do pedido</span><strong id="revisaoTotal"></strong></div>
+    <div class="revisao-acoes"><button value="cancelar">Continuar comprando</button><button class="confirmar" value="enviar">Confirmar e enviar pedido</button></div></div>
+  </form>
+</dialog>
 <div class="modal-bg" id="modalBg" onclick="fecharModal(event)">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-head">
@@ -753,7 +855,34 @@ let ofertasCache = [];
 let mapaCatalogoCache = new Map();
 let filtroOfertaAtual = '';
 let contadorBlackInterval = null;
-const PRODUTOS_LOTE_10 = ['5795', '5796'];
+const PRODUTOS_LOTE_10 = [
+  '5795', '5796', '5797', '5798', '5799', '5800', '5801', '5802', '5803', 
+  '6697', 
+  '1544', '1545', '1546', '1547', '1548', '1549', '1550', '1551', 
+  
+  '1629', '1630', '1631', 
+  '2047', '2048', '2049', 
+  '1632', '1633', '1634', '1635', '1636', '1637', 
+  '2050', '1638', 
+  '1559', 
+  '2051', '2052', '2053', '2054', 
+  '1553', 
+  '2055', '2056', '2057', 
+  '1624', '1628', '1625', '1626', '1627', 
+  '1554', 
+  '7338', '7339', '7340', '7341', '7342', '7343', 
+  '3268', '3269', '3270', '3271', '3274', 
+  '10873', '10874', '10875', '10876', '10877', '10878', '10879', '10880', '10881', 
+  '10427', 
+  '10443', '10444', 
+  '10334', '10335', '10336', '10337', '10338', '10339', '10340', '10341', '10342', 
+  '10445', '10446', '10447', '10448', 
+  '10300', '10301', '10302', '10303', '10304', '10305', '10306', '10307', 
+  '10449', '10450', '10451'
+];
+
+// Lista de produtos com lote de 12
+const PRODUTOS_LOTE_12 = ['3', '5', '6', '7', '8', '10', '11', '14'];
 
 const BUCKET_ICONIS = 'https://gpzqzwrqndawhhglycat.supabase.co/storage/v1/object/public/icones_area_trabalho/';
 
@@ -764,17 +893,30 @@ function getFimBlackNovember() {
   return new Date(ano, 10, 30, 23, 59, 59); // mês 10 = novembro (0-indexed)
 }
 
+// 👇 NOVO: Função que descobre qual é o lote de cada produto
 function calcularQtdComLote(codigoProduto, quantidadeInserida) {
   const qtd = parseInt(quantidadeInserida, 10) || 0;
   if (qtd <= 0) return 0;
-  if (PRODUTOS_LOTE_10.includes(String(codigoProduto))) {
-    const resto = qtd % 10;
-    if (resto === 0) return qtd;
-    return Math.ceil(qtd / 10) * 10;
-  }
-  return qtd;
-}
+  
+  const codStr = String(codigoProduto);
+  let lote = 0; // Se for 0, significa que o produto é vendido unitário
 
+  if (PRODUTOS_LOTE_10.includes(codStr)) {
+    lote = 10;
+  } else if (PRODUTOS_LOTE_12.includes(codStr)) {
+    lote = 12;
+  }
+
+  // Se tiver lote definido, faz o arredondamento
+  if (lote > 1) {
+    const resto = qtd % lote;
+    if (resto !== 0) {
+      return Math.ceil(qtd / lote) * lote;
+    }
+  }
+
+  return qtd; // Se não tiver lote (ou for múltiplo exato), retorna a quantidade normal
+}
 function montarBarraMarcas() {
   const wrap = document.getElementById('barramarcasWrap');
   const container = document.getElementById('barramarcas');
@@ -1038,30 +1180,55 @@ function carregarPedidoParaEdicao(idPedido, jsonItensStr) {
     const itens = JSON.parse(jsonItensStr);
     carrinho = {};
     pedidoEmEdicaoId = idPedido;
+    
     itens.forEach(it => {
       const prodEncontrado = todosItens.find(i => i.codigo === String(it.codigo_produto));
+      
+      // 👇 AQUI ESTÁ A MÁGICA: Pega o preço atualizado do catálogo (prodEncontrado)
+      // Se por algum motivo o produto não estiver mais no catálogo, usa o 0.
+      const precoAtualizado = prodEncontrado ? prodEncontrado.precoBase : 0;
+
       carrinho[it.codigo_produto] = {
         qtd: it.quantidade,
-        precoBase: it.preco_unitario || (prodEncontrado ? prodEncontrado.precoBase : 0),
-        desc: it.descricao,
+        precoBase: precoAtualizado, 
+        desc: prodEncontrado ? prodEncontrado.subgrupo : it.descricao, // Pega a descrição nova tbm se tiver
         img: prodEncontrado ? prodEncontrado.imagem_url : ''
       };
     });
+    
     atualizarCarrinho();
     fecharModal(null, true);
     toggleCarrinho();
-    alert(`Pedido #${idPedido} carregado no carrinho! Você já pode alterar as quantidades.`);
-  } catch (e) { alert('Erro ao carregar o pedido para edição.'); }
+    alert(`Pedido #${idPedido} carregado no carrinho! Os preços foram atualizados para a tabela de hoje.`);
+  } catch (e) { 
+    console.error("Erro ao carregar pedido:", e);
+    alert('Erro ao carregar o pedido para edição.'); 
+  }
 }
 
 async function salvarRascunho() {
   const itens = Object.keys(carrinho).map(cod => {
     const item = carrinho[cod];
     const calc = calcularValoresProduto(item.precoBase, cod);
-    return { codigo: cod, desc: item.desc, qtd: item.qtd, precoBase: item.precoBase, precoFinal: calc.precoFinal };
+    return { 
+      codigo: cod, 
+      desc: item.desc, 
+      qtd: item.qtd, 
+      precoBase: item.precoBase, 
+      precoFinal: calc.precoFinal 
+    };
   });
+
   if (itens.length === 0) { alert('Seu carrinho está vazio.'); return; }
   const total = itens.reduce((acc, it) => acc + (it.precoFinal * it.qtd), 0);
+
+  // Desabilita o botão para não clicar 2 vezes enquanto salva
+  const btnSalvar = document.querySelector('button[onclick="salvarRascunho()"]');
+  const textoOriginal = btnSalvar ? btnSalvar.innerHTML : 'Salvar';
+  if (btnSalvar) {
+    btnSalvar.innerHTML = '⏳ Salvando...';
+    btnSalvar.disabled = true;
+  }
 
   try {
     const r = await fetch('/api/pedidos', {
@@ -1077,11 +1244,22 @@ async function salvarRascunho() {
       })
     });
     const j = await r.json();
+
     if (j.ok) {
       pedidoEmEdicaoId = j.id;
       alert('💾 Rascunho salvo no banco com sucesso!');
-    } else { alert('❌ Erro ao salvar rascunho: ' + j.erro); }
-  } catch (e) { alert('❌ Erro de conexão ao salvar rascunho.'); }
+    } else {
+      alert('❌ Erro ao salvar rascunho: ' + j.erro);
+    }
+  } catch (e) {
+    alert('❌ Erro de conexão ao salvar o rascunho. O pedido é muito grande, aguarde um momento e tente novamente.');
+  } finally {
+    // Devolve o botão ao normal após terminar
+    if (btnSalvar) {
+      btnSalvar.innerHTML = textoOriginal;
+      btnSalvar.disabled = false;
+    }
+  }
 }
 
 function abrirZoomImagem(elemento) {
@@ -1256,17 +1434,28 @@ function analisarCarretilha(it) {
   if (velMax) partesVar.push(velMax);
   return { modelo, ladoTag: ladoManivela, variacaoExtra: partesVar.join(' • ') };
 }
-
 function analisarMotor(it) {
-  let attrs = it.atributos || {};
-  if (typeof attrs === 'string') { try { attrs = JSON.parse(attrs); } catch (e) { attrs = {}; } }
-  let detalhe = attrs['Potência'] || attrs['Libragem'] || attrs['LBS'] || attrs['Modelo'] || '';
-  if (!detalhe) {
-    const texto = (it.subgrupo || it.descricao_longa || '').toUpperCase();
-    const match = texto.match(/\b(\d+\s*LBS?|\d+\s*LB|\d+\s*HP)\b/i);
-    if (match) detalhe = match[1];
+  let nome = it.subgrupo || 'Padrão';
+  
+  // Remove "MOTOR ELÉTRICO" ou "MOTOR ELETRICO"
+  nome = nome.replace(/MOTOR\s+EL[EÉ]TRICO\s*/gi, '').trim();
+
+  // 👇 NOVO: Remove "PHANTOM" do nome
+  nome = nome.replace(/PHANTOM\s*/gi, '').trim();
+
+  // Deixa a primeira letra maiúscula
+  if (nome.length > 0) {
+    nome = nome.charAt(0).toUpperCase() + nome.slice(1);
   }
-  return { variacao: detalhe || it.subgrupo || 'Padrão' };
+
+  // Pega a libragem (ex: 34 lb)
+  let libragem = it.atributos?.['Potência'] || it.atributos?.['Libragem'] || '';
+  if (!libragem) {
+    const match = nome.match(/(\d+\s*(?:lb|LBS?))/i);
+    if (match) libragem = match[1];
+  }
+
+  return { variacao: nome, libragem: libragem };
 }
 
 function analisarVara(it) {
@@ -1331,6 +1520,17 @@ porcentagemAcrescimo = parseFloat(
 ) || 0;
 
     localStorage.setItem('clienteLogadoB2B', JSON.stringify(j.cliente));
+
+     // 👇 ADICIONE ESTA LINHA 👇
+    fetch('/api/registrar-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cnpj: j.cliente.cnpj, nome: j.cliente.nome })
+    }).catch(() => {});
+
+    carregar();
+
+
     localStorage.setItem('acrescimoB2B', porcentagemAcrescimo);
     configurarWhatsAppVendedor();
 
@@ -1364,7 +1564,7 @@ async function finalizarPedido() {
   }
 
   const total = itens.reduce((acc, it) => acc + (it.precoFinal * it.qtd), 0);
-  if (!confirm(`Deseja finalizar e enviar este pedido no valor de R$ ${fmtMoeda(total)}?`)) return;
+  if (!await confirmarEnvioVisual(total)) return;
 
   try {
     const r = await fetch('/api/pedidos', {
@@ -1412,9 +1612,66 @@ async function carregar() {
     montarChips(); 
     montarBarraMarcas();
     renderizar();
+
+    // 👇 NOVO: Registra o acesso se o cliente já estiver logado e deu F5
+    registrarAcessoDiario();
+
+    // 👇 Verifica se o cliente deixou algum rascunho salvo ao sair
+    await verificarRascunhoPendente();
+
   } catch (e) { document.getElementById('conteudo').innerHTML = '<div class="loading">Erro ao carregar.</div>'; }
 }
 
+async function registrarAcessoDiario() {
+  if (!clienteLogado) return;
+  
+  const agora = new Date().getTime();
+  const ultimoAcesso = localStorage.getItem('ultimo_acesso_registrado');
+  
+  // Se nunca acessou ou se já passou 1 hora (3600000 ms) desde o último registro
+  if (!ultimoAcesso || (agora - parseInt(ultimoAcesso)) > 3600000) {
+    try {
+      // Grava no banco de dados (rota de login já existente)
+      await fetch('/api/registrar-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          cnpj: clienteLogado.cnpj, 
+          nome: clienteLogado.nome 
+        })
+      });
+      
+      // Atualiza a hora no navegador para não gravar de novo por 1 hora
+      localStorage.setItem('ultimo_acesso_registrado', agora);
+      
+    } catch (e) {
+      console.error('Erro ao registrar acesso:', e);
+    }
+  }
+}
+
+
+async function verificarRascunhoPendente() {
+  if (!clienteLogado) return;
+  
+  try {
+    const r = await fetch(`/api/cliente/${encodeURIComponent(clienteLogado.cnpj)}/pedidos`);
+    const j = await r.json();
+    
+    // Procura se existe algum pedido com status RASCUNHO
+    const rascunho = j.pedidos?.find(p => (p.status || '').toUpperCase() === 'RASCUNHO');
+    
+    if (rascunho && rascunho.itens && rascunho.itens.length > 0) {
+      const continuar = confirm(`Você tem um pedido em aberto (#${rascunho.id}) no valor de R$ ${fmtMoeda(rascunho.total)}.\n\nDeseja continuar de onde parou?`);
+      
+      if (continuar) {
+        carregarPedidoParaEdicao(rascunho.id, JSON.stringify(rascunho.itens));
+      }
+    }
+  } catch (e) {
+    console.error("Erro ao verificar rascunho pendente:", e);
+  }
+}
 function montarChips() {
   const contagem = {};
   todosItens.forEach(it => { contagem[it.grupo] = (contagem[it.grupo] || 0) + 1; });
@@ -1436,10 +1693,10 @@ function montarChips() {
   });
 
   document.getElementById('chips').innerHTML = `
-    <button class="chip chip-oferta ativo" onclick="trocarGrupo('__OFERTAS__', this)" title="Black November - Ofertas">🔥</button>
+    <button class="chip chip-oferta ativo" onclick="trocarGrupo('__OFERTAS__', this)" title="Black November - Ofertas"><span aria-hidden="true">♢</span><span class="chip-label">Ofertas</span></button>
     ${todosGrupos.map(g => {
       const iconeUrl = getIconeUrl(g);
-      return `<button class="chip" onclick="trocarGrupo('${g}', this)" title="${g}"><img src="${iconeUrl}" class="chip-img" alt="${g}" onerror="this.onerror=null; this.src='${BUCKET_ICONIS}ACESSORIOS.jpg';"></button>`;
+      return `<button class="chip" onclick="trocarGrupo('${g}', this)" title="${g}"><img src="${iconeUrl}" class="chip-img" alt="" onerror="this.onerror=null; this.src='${BUCKET_ICONIS}ACESSORIOS.jpg';"><span class="chip-label">${escapeHtml(g)}</span></button>`;
     }).join('')}
   `;
 }
@@ -1456,6 +1713,25 @@ function trocarGrupo(grupo, btn) {
 
 function filtrar() {
   let lista = todosItens;
+
+  // 1. Se houver texto na busca, ele ignora a aba e faz busca global
+  if (buscaAtual) {
+    const q = buscaAtual.toLowerCase().trim();
+    
+    // Filtra por código, nome, marca ou grupo
+    lista = lista.filter(it => 
+      it.codigo.toLowerCase().includes(q) || 
+      (it.subgrupo || '').toLowerCase().includes(q) || 
+      (it.marca || '').toLowerCase().includes(q) ||
+      (it.grupo || '').toLowerCase().includes(q)
+    );
+
+    // Zera o filtro de marca e grupo para garantir que traga tudo
+    marcaAtual = '';
+    return lista;
+  }
+
+  // 2. Se não houver busca, segue a regra normal das abas
   if (grupoAtual !== '__TODOS__' && grupoAtual !== '__OFERTAS__') {
     const grupoSelUpper = grupoAtual.toUpperCase().trim();
     lista = lista.filter(it => {
@@ -1468,18 +1744,20 @@ function filtrar() {
       return grupoItemUpper === grupoSelUpper;
     });
   }
-  if (marcaAtual) lista = lista.filter(it => (it.marca || '').toUpperCase().trim() === marcaAtual.toUpperCase().trim());
-  if (buscaAtual) {
-    const q = buscaAtual.toLowerCase();
-    lista = lista.filter(it => it.codigo.includes(q) || it.subgrupo.toLowerCase().includes(q) || it.marca.toLowerCase().includes(q));
+  
+  // 3. Aplica o filtro de marca (se tiver clicado em alguma marca)
+  if (marcaAtual) {
+    lista = lista.filter(it => (it.marca || '').toUpperCase().trim() === marcaAtual.toUpperCase().trim());
   }
+  
   return lista;
 }
 
 function renderizar() {
   const cont = document.getElementById('conteudo');
 
-  if (grupoAtual === '__OFERTAS__') {
+  // 👇 A MÁGICA ACONTECE AQUI: Só renderiza ofertas se NÃO estiver buscando nada
+  if (grupoAtual === '__OFERTAS__' && !buscaAtual.trim()) {
     renderOfertas();
     return;
   }
@@ -1590,10 +1868,12 @@ function renderOfertas() {
     const imagem = of.imagem_oferta || cat.imagem_url || '';
     const marca = of.marca || cat.marca || '';
     const grupo = of.grupo || cat.grupo_scraping || cat.grupo || 'OUTROS';
-    return { ...of, subgrupo, preco_base: precoBase, imagem_oferta: imagem, marca, grupo };
-  });
+    const estoque = Number(cat.estoque) || 0;
 
-  // Filtros por grupo (só mostra os grupos que têm oferta)
+    return { ...of, subgrupo, preco_base: precoBase, imagem_oferta: imagem, marca, grupo, estoque };
+  })
+  .filter(of => of.preco_base > 0 && of.estoque > 0);
+
   const gruposUnicos = Array.from(new Set(ofertasRender.map(o => (o.grupo || 'OUTROS').toUpperCase().trim()))).sort();
   const filtrosHtml = gruposUnicos.length > 1 ? `
     <div class="black-filtros">
@@ -1614,13 +1894,62 @@ function renderOfertas() {
       ? `<img src="${item.imagem_oferta}" alt="${escapeHtml(item.subgrupo)}" onerror="this.onerror=null; this.parentElement.innerHTML='🖼️';">`
       : '🖼️';
 
-    const qtdHtml = q > 0
-      ? `<div class="qtd-oferta-wrap" onclick="event.stopPropagation()">
-           <button onclick="mudarQtd('${item.codigo}', -1)">−</button>
-           <span class="num">${q}</span>
-           <button onclick="mudarQtd('${item.codigo}', 1)">+</button>
-         </div>`
-      : `<button class="btn-add-primeiro" onclick="mudarQtd('${item.codigo}', 1)">🛒 Adicionar</button>`;
+    // 👇 AQUI ESTÁ A MÁGICA: Puxa as variações exatamente como na vitrine 👇
+    const itemBruto = todosItens.find(i => i.codigo === String(item.codigo));
+    let nomeOferta = item.subgrupo;
+    let detalheOferta = '';
+
+    if (itemBruto) {
+      const grupoUpper = (itemBruto.grupo || '').toUpperCase();
+      
+      if (grupoUpper.includes('CARRETILHA')) {
+        const info = analisarCarretilha(itemBruto);
+        detalheOferta = info.ladoTag || '';
+      } 
+      else if (grupoUpper.includes('MOLINETE')) {
+        const info = analisarMolinete(itemBruto);
+        detalheOferta = info.modelo || '';
+      } 
+      else if (grupoUpper.includes('VARA')) {
+        const info = analisarVara(itemBruto);
+        // Pega o tamanho que está no nome ou nas specs
+        const specs = info.especificacoes || {};
+        const tamanho = specs['Tamanho (cm)'] || specs['Comprimento'] || specs['TAMANHO'] || '';
+        detalheOferta = tamanho ? `Tam: ${tamanho}` : info.modeloJson;
+      }
+      else if (grupoUpper.includes('ISCA')) {
+        const info = analisarIsca(itemBruto);
+        detalheOferta = info.especificacoes || (info.cor ? `Cor: ${info.cor}` : '');
+      }
+      else if (grupoUpper.includes('LINHA')) {
+        const info = analisarLinha(itemBruto);
+        detalheOferta = info.bitola ? `Bitola: ${info.bitola}` : '';
+      }
+      else if (grupoUpper.includes('VESTUARIO')) {
+        const info = analisarVestuario(itemBruto);
+        detalheOferta = info.tamanho ? `Tam: ${info.tamanho}` : '';
+      }
+      else if (grupoUpper.includes('ANZOL') || grupoUpper.includes('GARAT')) {
+        const info = analisarAnzol(itemBruto);
+        detalheOferta = info.numero ? `Nº ${info.numero}` : '';
+      }
+      else {
+        // 👇 O SEGREDO ESTÁ AQUI: Para Bolsas e Caixas, usa a função de acessório 👇
+        const info = analisarAcessorio(itemBruto);
+        detalheOferta = info.medida || '';
+      }
+    }
+    // 👆 FIM DA MÁGICA 👆
+
+    const qtdHtml = item.preco_base <= 0
+      ? `<button class="btn-add-primeiro" disabled style="background:#cbd5e1; color:#94a3b8; cursor:not-allowed;">Indisponível</button>`
+      : (q > 0
+          ? `<div class="qtd-oferta-wrap" onclick="event.stopPropagation()">
+               <button onclick="mudarQtd('${item.codigo}', -1)">−</button>
+              <span class="num">${q}</span>
+               <button onclick="mudarQtd('${item.codigo}', 1)">+</button>
+             </div>`
+          : `<button class="btn-add-primeiro" onclick="adicionarOfertaComNome('${item.codigo}', '${escapeHtml(nomeOferta).replace(/'/g, "\\'")}', ${item.preco_base})">🛒 Adicionar</button>`);
 
     return `
       <div class="card-oferta">
@@ -1629,7 +1958,12 @@ function renderOfertas() {
         <div class="img-box">${imgHtml}</div>
         <div class="corpo-oferta">
           ${item.marca ? `<span class="marca-tag">${escapeHtml(item.marca)}</span>` : ''}
-          <div class="titulo-prod">${escapeHtml(item.subgrupo)}</div>
+          
+          <div class="titulo-prod" style="min-height: 2.8em;">
+            ${escapeHtml(nomeOferta)}
+            ${detalheOferta ? `<div style="font-size: 0.65rem; color: #64748b; font-weight: 700; margin-top: 4px;">${escapeHtml(detalheOferta)}</div>` : ''}
+          </div>
+
           <div class="bloco-preco-balcao">
             <span class="txt-de">De: R$ ${fmtMoeda(calc.precoOriginal)}</span>
             <span class="txt-por">Por: R$ ${fmtMoeda(calc.precoFinal)}</span>
@@ -1656,10 +1990,33 @@ function renderOfertas() {
 
   iniciarContadorBlack();
 }
-
 function setFiltroOferta(grupo) {
   filtroOfertaAtual = grupo;
   renderOfertas();
+}
+
+function analisarAcessorio(it) {
+  const attrs = it.atributos || {};
+  
+  // Tenta pegar do JSON
+  let medida = attrs['Dimensões(cm)'] || attrs['Dimensões'] || attrs['Volume (L)'] || attrs['Capacidade'] || '';
+  
+  // Se não achar, tenta extrair do nome do produto
+  if (!medida) {
+    const desc = (it.subgrupo || it.descricao_longa || '').toUpperCase();
+    
+    // Procura padrão de centímetros (ex: 32x20x27cm)
+    const matchCm = desc.match(/(\d+[\.,]?\d*\s*[xX]\s*\d+[\.,]?\d*(?:\s*[xX]\s*\d+[\.,]?\d*)?\s*CM)/i);
+    if (matchCm) {
+      medida = matchCm[1];
+    } else {
+      // Procura litragem (ex: 5L)
+      const matchLitros = desc.match(/\b(\d+[\.,]?\d*\s*(L|LITROS|LT))\b/i);
+      if (matchLitros) medida = matchLitros[1];
+    }
+  }
+
+  return { medida: medida };
 }
 
 function iniciarContadorBlack() {
@@ -1947,8 +2304,13 @@ function renderFamiliaMotor(fam, itens) {
         <span class="isca-badge">${q}</span>
         ${it.imagem_url ? `<img src="${it.imagem_url}" style="height: 65px; object-fit: contain; margin-bottom:4px;">` : ''}
         
-        <div class="cor-nome" style="font-size: 0.65rem; font-weight: 700; color: var(--cinza-400);">CÓD: ${escapeHtml(it.codigo)}</div>
-        <div style="font-size: .7rem; color: var(--azul-800); font-weight: 800; text-align: center; margin: 2px 0 4px 0; line-height: 1.1;">
+        <div class="cor-nome" style="font-size: 0.6rem; font-weight: 700; color: var(--cinza-400);">CÓD: ${escapeHtml(it.codigo)}</div>
+        
+        <!-- 👇 NOVO: Libragem em destaque e Nome embaixo -->
+        <div style="font-size: 0.95rem; font-weight: 900; color: var(--azul-800); text-align: center; margin: 4px 0 2px 0; text-transform: uppercase;">
+          ${escapeHtml(infoMotor.libragem || '')}
+        </div>
+        <div style="font-size: 0.65rem; color: var(--cinza-500); font-weight: 700; text-align: center; margin-bottom: 6px; line-height: 1.1; min-height: 2.2em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
           ${escapeHtml(infoMotor.variacao)}
         </div>
         
@@ -2692,8 +3054,16 @@ function fecharModal(ev, force) {
 function buscarItem(codigo) { return todosItens.find(i => i.codigo === codigo); }
 function mudarQtd(cod, delta) { 
   const a = carrinho[cod] ? carrinho[cod].qtd : 0;
-  if (PRODUTOS_LOTE_10.includes(String(cod))) {
-    setQtd(cod, a + (delta > 0 ? 10 : -10));
+  
+  const codStr = String(cod);
+  let lote = 1;
+  
+  if (PRODUTOS_LOTE_10.includes(codStr)) lote = 10;
+  else if (PRODUTOS_LOTE_12.includes(codStr)) lote = 12;
+
+  // Se for um produto de lote, o botão + ou - avança o lote inteiro
+  if (lote > 1) {
+    setQtd(cod, a + (delta > 0 ? lote : -lote));
   } else {
     setQtd(cod, a + delta);
   }
@@ -2702,8 +3072,6 @@ function setQtd(cod, valor) {
   let q = parseInt(valor) || 0; 
   const item = buscarItem(cod);
 
-  // Se o produto é de oferta mas não está em todosItens (ex: estoque 0 ou fora do grupo), 
-  // busca no catálogo bruto para pegar precoBase
   let precoBase = item ? item.precoBase : 0;
   let desc = item ? item.subgrupo : '';
   let img = item ? item.imagem_url : '';
@@ -2715,11 +3083,43 @@ function setQtd(cod, valor) {
     img = cat.imagem_url || '';
   }
 
+  // 👇 MÁGICA DA VARIAÇÃO PRIMEIRO 👇
+  if (item && q > 0) {
+    const grupoUpper = (item.grupo || '').toUpperCase();
+    
+    if (grupoUpper.includes('CARRETILHA')) {
+      const info = analisarCarretilha(item);
+      if (info.ladoTag && !desc.toUpperCase().includes(info.ladoTag.toUpperCase())) {
+        desc += ` (${info.ladoTag})`;
+      }
+    } else if (grupoUpper.includes('MOLINETE')) {
+      const info = analisarMolinete(item);
+      if (info.modelo && !desc.toUpperCase().includes(info.modelo.toUpperCase())) {
+        desc += ` ${info.modelo}`;
+      }
+    } else if (grupoUpper.includes('VARA') || grupoUpper.includes('LINHA')) {
+      const info = analisarVara(item);
+      if (info.modeloJson && info.modeloJson !== item.subgrupo) {
+        desc += ` ${info.modeloJson}`;
+      }
+    }
+  }
+  // 👆 FIM DA VARIAÇÃO 👆
+
+  // Regra do lote de 10
   if (q > 0 && PRODUTOS_LOTE_10.includes(String(cod))) {
     const resto = q % 10;
     if (resto !== 0) q = Math.ceil(q / 10) * 10;
   }
 
+  // 👇 AGORA SIM, VERIFICA SE DIMINUIU (APÓS AS REGRAS) 👇
+  const qtdAtual = carrinho[cod] ? carrinho[cod].qtd : 0;
+  if (q > 0 && q < qtdAtual) {
+    registrarAcaoLog(cod, 'DIMINUIU', qtdAtual, desc); // Passamos o nome completo
+  }
+  // 👆 FIM DA VERIFICAÇÃO 👆
+
+  // Salva no carrinho
   if (q <= 0) {
     delete carrinho[cod];
   } else {
@@ -2735,18 +3135,67 @@ function setQtd(cod, valor) {
     else { card.classList.remove('tem-qtd'); }
   }
 
-  // Se está na aba de ofertas, re-renderiza o encarte para refletir qtd
   if (grupoAtual === '__OFERTAS__') {
     renderOfertas();
   }
 
   atualizarCarrinho();
 }
+// Variáveis de controle do Autosave (coloque-as no topo do seu script, junto com as outras variáveis)
+let timerAutosave = null;
+let isAutosaving = false;
+
+function adicionarOfertaComNome(codigo, nomeCompleto, precoBase) {
+  const item = buscarItem(codigo);
+  let img = item ? item.imagem_url : '';
+  
+  if (!item && mapaCatalogoCache.has(String(codigo))) {
+    const cat = mapaCatalogoCache.get(String(codigo));
+    img = cat.imagem_url || '';
+  }
+
+  // Coloca no carrinho diretamente com o nome já formatado
+  const qtdAtual = carrinho[codigo] ? carrinho[codigo].qtd : 0;
+  carrinho[codigo] = { 
+    qtd: qtdAtual + 1, 
+    precoBase: precoBase, 
+    desc: nomeCompleto, 
+    img: img 
+  };
+
+  // Atualiza a tela e o autosave
+  atualizarCarrinho();
+  
+  // Re-renderiza a oferta para atualizar o botão para [- 1 +]
+  if (grupoAtual === '__OFERTAS__') {
+    renderOfertas();
+  }
+}
+
+function registrarAcaoLog(codigo, acao, qtdAnterior) {
+  if (!clienteLogado) return;
+  const item = buscarItem(codigo);
+  const desc = item ? item.subgrupo : (carrinho[codigo] ? carrinho[codigo].desc : '');
+  
+  // Dispara sem esperar resposta (não trava o carrinho)
+  fetch('/api/log-acao', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      cnpj: clienteLogado.cnpj,
+      codigo: codigo,
+      descricao: desc,
+      acao: acao,
+      qtd_anterior: qtdAnterior
+    })
+  }).catch(() => {});
+}
+
 
 function atualizarCarrinho() {
   const itens = Object.keys(carrinho); 
   let total = 0, qtdTotal = 0;
-  let economiaTotal = 0; // NOVO: acumula quanto o cliente está economizando
+  let economiaTotal = 0; 
   
   const html = itens.map(cod => {
     const i = carrinho[cod];
@@ -2755,7 +3204,6 @@ function atualizarCarrinho() {
     const subUnitario = calc.precoFinal;
     const subTotal = subUnitario * i.qtd;
     
-    // Economia = (preço original - preço final) * qtd
     const economiaItem = calc.temOferta ? (calc.precoOriginal - calc.precoFinal) * i.qtd : 0;
     economiaTotal += economiaItem;
 
@@ -2772,14 +3220,21 @@ function atualizarCarrinho() {
         <div class="item-dados">
           <span class="item-titulo">${escapeHtml(i.desc)}</span>
           
-          <div class="item-valores">
-            <span class="item-linha-valor">
-              <strong>${i.qtd}</strong> un × 
-              ${calc.temOferta 
-                ? `<span class="val-de">R$ ${fmtMoeda(calc.precoOriginal)}</span> <span class="val-unit-oferta">R$ ${fmtMoeda(subUnitario)}</span>` 
-                : `<span class="val-unit">R$ ${fmtMoeda(subUnitario)}</span>`}
-            </span>
-            <span class="item-linha-total">Total: <strong>R$ ${fmtMoeda(subTotal)}</strong></span>
+          <div class="item-valores" style="margin-top: 4px;">
+            <!-- 👇 NOVO CONTROLE DE QUANTIDADE AQUI NO CARRINHO 👇 -->
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div class="qtd-ctrl" style="height: 26px; display: inline-flex;">
+                <button onclick="event.stopPropagation(); mudarQtd('${cod}', -1)">−</button>
+                <input type="number" min="0" value="${i.qtd}" onchange="setQtd('${cod}', this.value)" style="width: 35px; height: 24px;">
+                <button onclick="event.stopPropagation(); mudarQtd('${cod}', 1)">+</button>
+              </div>
+              <span class="item-linha-valor">
+                ${calc.temOferta 
+                  ? `<span class="val-de">R$ ${fmtMoeda(calc.precoOriginal)}</span> <span class="val-unit-oferta">R$ ${fmtMoeda(subUnitario)}</span>` 
+                  : `<span class="val-unit">R$ ${fmtMoeda(subUnitario)}</span>`}
+              </span>
+            </div>
+            <span class="item-linha-total" style="margin-top: 4px;">Total: <strong>R$ ${fmtMoeda(subTotal)}</strong></span>
           </div>
 
           ${calc.temOferta ? `
@@ -2789,7 +3244,8 @@ function atualizarCarrinho() {
           ` : ''}
         </div>
 
-        <button class="item-remover" onclick="setQtd('${cod}', 0)" title="Remover">✕</button>
+        <!-- 👇 O BOTÃO DE DELETAR AGORA CHAMA UMA FUNÇÃO ESPECÍFICA 👇 -->
+        <button class="item-remover" onclick="deletarItemCarrinho('${cod}')" title="Remover">✕</button>
       </div>`;
   }).join('');
 
@@ -2799,16 +3255,14 @@ function atualizarCarrinho() {
   if (qtdTotal > 0) { btnFab.style.display = 'flex'; badgeFab.textContent = qtdTotal; } 
   else { btnFab.style.display = 'none'; fecharCarrinho(); }
 
-  // Bloco de economia total acima do Total (só aparece se houver economia)
   const rodapeEconomia = economiaTotal > 0 
     ? `<div class="rodape-economia">🎉 Você está economizando <strong>R$ ${fmtMoeda(economiaTotal)}</strong> nesta compra!</div>` 
     : '';
 
-  // Atualiza apenas o texto do total e a lista (o rodapé fica num div separado)
   document.getElementById('carrinhoTotal').textContent = `R$ ${fmtMoeda(total)}`;
+  atualizarResumoVisual(total, qtdTotal, itens.length);
   document.getElementById('listaCarrinho').innerHTML = html || '<div style="text-align:center;color:#94a3b8;padding:20px;">Vazio</div>';
 
-  // Atualiza (ou cria) o bloco de economia dentro do .painel-foot
   let rodapeEcoEl = document.getElementById('rodapeEconomiaCarrinho');
   if (!rodapeEcoEl) {
     rodapeEcoEl = document.createElement('div');
@@ -2817,14 +3271,115 @@ function atualizarCarrinho() {
     if (foot) foot.insertBefore(rodapeEcoEl, foot.firstChild);
   }
   rodapeEcoEl.innerHTML = rodapeEconomia;
+
+  // Mantém o autosave rodando
+  clearTimeout(timerAutosave);
+  if (Object.keys(carrinho).length > 0) {
+    timerAutosave = setTimeout(() => {
+      autosaveCarrinho();
+    }, 2000);
+  }
 }
 
-function toggleCarrinho() { document.getElementById('painelCarrinho').classList.toggle('on'); }
-function fecharCarrinho() { document.getElementById('painelCarrinho').classList.remove('on'); }
+async function deletarItemCarrinho(codigo) {
+  // 👇 Registra no log antes de deletar
+  const qtdAnterior = carrinho[codigo] ? carrinho[codigo].qtd : 0;
+  if (qtdAnterior > 0) registrarAcaoLog(codigo, 'REMOVEU', qtdAnterior);
+
+  // 1. Remove o item da memória
+  setQtd(codigo, 0);
+
+  // 2. Verifica se o carrinho ficou vazio
+  if (Object.keys(carrinho).length === 0) {
+    if (pedidoEmEdicaoId) {
+      try {
+        await fetch(`/api/pedidos/${pedidoEmEdicaoId}`, { method: 'DELETE' });
+        pedidoEmEdicaoId = null;
+      } catch (e) { console.error(e); }
+    }
+    clearTimeout(timerAutosave);
+  }
+}
+
+async function autosaveCarrinho() {
+  // Proteções iniciais
+  if (!clienteLogado) return;
+  if (isAutosaving) return; 
+  
+  // 👇 AQUI ESTÁ A CORREÇÃO: Garante que a variável existe no sistema
+  if (typeof pedidoEmEdicaoId === 'undefined') {
+    console.warn('pedidoEmEdicaoId não declarado. O autosave será ignorado.');
+    return;
+  }
+  
+  isAutosaving = true;
+
+  const itens = Object.keys(carrinho).map(cod => {
+    const item = carrinho[cod];
+    const calc = calcularValoresProduto(item.precoBase, cod);
+    return { codigo: cod, desc: item.desc, qtd: item.qtd, precoBase: item.precoBase, precoFinal: calc.precoFinal };
+  });
+  
+  const total = itens.reduce((acc, it) => acc + (it.precoFinal * it.qtd), 0);
+
+  const painelHead = document.querySelector('#painelCarrinho .painel-head span');
+  const textoOriginal = painelHead ? painelHead.textContent : 'Seu Pedido';
+
+  if (painelHead) painelHead.innerHTML = 'Seu Pedido <span style="font-size:0.7rem; color:#6ee7b7;">(salvando auto...)</span>';
+
+  try {
+    const r = await fetch('/api/pedidos/autosave', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: pedidoEmEdicaoId, // Agora temos certeza que essa variável existe
+        cnpj_cliente: clienteLogado.cnpj,
+        codigo_representante: clienteLogado.representante,
+        total,
+        itens
+      })
+    });
+    
+    const j = await r.json();
+    
+    if (j.ok) {
+      pedidoEmEdicaoId = j.id; // Atualiza a variável com o ID que o backend devolveu
+      if (painelHead) painelHead.innerHTML = 'Seu Pedido <span style="font-size:0.7rem; color:#6ee7b7;">(✓ salvo)</span>';
+    } else {
+      if (painelHead) painelHead.innerHTML = textoOriginal;
+    }
+  } catch (e) {
+    console.error("Erro no autosave:", e);
+    if (painelHead) painelHead.innerHTML = textoOriginal;
+  } finally {
+    isAutosaving = false;
+    setTimeout(() => {
+      if (painelHead && painelHead.innerHTML.includes('salvo')) {
+        painelHead.innerHTML = 'Seu Pedido';
+      }
+    }, 2000);
+  }
+}
+
+function toggleCarrinho() { const aberto = document.getElementById('painelCarrinho').classList.toggle('on'); document.getElementById('resumoMobile').setAttribute('aria-expanded', String(aberto)); }
+function fecharCarrinho() { document.getElementById('painelCarrinho').classList.remove('on'); document.getElementById('resumoMobile').setAttribute('aria-expanded', 'false'); }
 
 let deb;
 document.getElementById('busca').addEventListener('input', e => {
-  clearTimeout(deb); deb = setTimeout(() => { buscaAtual = e.target.value; renderizar(); }, 150);
+  clearTimeout(deb); 
+  deb = setTimeout(() => { 
+    buscaAtual = e.target.value; 
+    
+    // Se o cliente digitou algo, esconde a barra de marcas
+    if (buscaAtual.trim().length > 0) {
+      document.getElementById('barramarcasWrap').style.display = 'none';
+    } else {
+      // Se ele APAGOU a busca e estava na aba de ofertas, restaura a aba ofertas
+      montarBarraMarcas(); 
+    }
+    
+    renderizar(); 
+  }, 150);
 });
 
 document.getElementById('inputCnpj').addEventListener('input', function(e) {
@@ -2853,6 +3408,40 @@ document.addEventListener('input', function(e) {
     }
   }
 });
+
+
+// Componentes visuais da alternativa index02.
+function atualizarResumoVisual(total, quantidade, produtos) {
+  document.getElementById('resumoMobile').hidden = quantidade <= 0;
+  document.getElementById('resumoQuantidade').textContent = `${produtos} produto${produtos === 1 ? '' : 's'} · ${quantidade} unidade${quantidade === 1 ? '' : 's'}`;
+  document.getElementById('resumoTotal').textContent = `R$ ${fmtMoeda(total)}`;
+}
+function confirmarEnvioVisual(total) {
+  const dialog = document.getElementById('revisaoPedido');
+  document.getElementById('revisaoTotal').textContent = `R$ ${fmtMoeda(total)}`;
+  document.getElementById('revisaoItens').innerHTML = Object.entries(carrinho).map(([codigo, item]) => {
+    const preco = calcularValoresProduto(item.precoBase, codigo).precoFinal;
+    return `<div class="revisao-item"><div>${escapeHtml(item.desc)}<small>Cód. ${escapeHtml(String(codigo))} · ${item.qtd} un. × R$ ${fmtMoeda(preco)}</small></div><strong>R$ ${fmtMoeda(preco * item.qtd)}</strong></div>`;
+  }).join('');
+  dialog.returnValue = '';
+  return new Promise(resolve => {
+    dialog.addEventListener('close', () => resolve(dialog.returnValue === 'enviar'), {once:true});
+    dialog.showModal();
+  });
+}
+function atualizarPosicoesNavegacao() {
+  const topo = document.querySelector('.topo').getBoundingClientRect().height;
+  const categorias = document.querySelector('.chips-wrap').getBoundingClientRect().height;
+  document.documentElement.style.setProperty('--nav-top', `${topo}px`);
+  document.documentElement.style.setProperty('--brands-top', `${topo + categorias}px`);
+}
+const observadorLayout = new ResizeObserver(atualizarPosicoesNavegacao);
+observadorLayout.observe(document.querySelector('.topo'));
+observadorLayout.observe(document.querySelector('.chips-wrap'));
+atualizarPosicoesNavegacao();
+document.getElementById('listaCarrinho').innerHTML = '<div style="padding:28px 12px;text-align:center;color:#647788;font-size:13px;">Seu pedido começa aqui.<br>Escolha os produtos e informe as quantidades.</div>';
+document.addEventListener('keydown', event => { if (event.key === 'Escape') fecharCarrinho(); });
+
 </script>
 </body>
 </html>
