@@ -1224,6 +1224,10 @@ function analisarMotor(it) {
   // Remove "MOTOR ELÉTRICO" ou "MOTOR ELETRICO"
   nome = nome.replace(/MOTOR\s+EL[EÉ]TRICO\s*/gi, '').trim();
 
+  // 👇 NOVO: Remove "PHANTOM" do nome
+  nome = nome.replace(/PHANTOM\s*/gi, '').trim();
+
+  // Deixa a primeira letra maiúscula
   if (nome.length > 0) {
     nome = nome.charAt(0).toUpperCase() + nome.slice(1);
   }
