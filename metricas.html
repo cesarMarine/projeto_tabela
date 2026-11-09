@@ -47,16 +47,18 @@
   .container { max-width:1400px; margin:0 auto; padding:24px; }
 
   /* CARDS KPI */
-  .kpi-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:24px; }
+  .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:24px; }
   .kpi-card { background:white; border-radius:12px; padding:24px; box-shadow:0 2px 12px rgba(0,0,0,.04); border-top:4px solid #0d3b66; }
   .kpi-card h3 { font-size:0.8rem; color:#64748b; text-transform:uppercase; font-weight:800; margin-bottom:8px; }
-  .kpi-card .value { font-size:2.2rem; font-weight:900; color:#0d3b66; }
+  .kpi-card .value { font-size:2rem; font-weight:900; color:#0d3b66; }
   .kpi-card.verde { border-top-color: #10b981; }
   .kpi-card.verde .value { color:#10b981; }
   .kpi-card.azul { border-top-color: #38bdf8; }
   .kpi-card.azul .value { color:#0284c7; }
   .kpi-card.laranja { border-top-color: #f59e0b; }
   .kpi-card.laranja .value { color:#d97706; }
+  .kpi-card.roxo { border-top-color: #8b5cf6; }
+  .kpi-card.roxo .value { color:#8b5cf6; }
 
   /* GRÁFICOS */
   .charts-grid { display:grid; grid-template-columns: 1fr 1fr; gap:24px; margin-bottom:24px; }
@@ -74,11 +76,7 @@
   .badge-uf { background:#dbeafe; color:#1e40af; padding:2px 6px; border-radius:4px; font-weight:800; font-size:0.7rem; }
 
   @media(max-width: 900px) {
-    .kpi-grid { grid-template-columns: 1fr 1fr; }
     .charts-grid, .listas-grid { grid-template-columns: 1fr; }
-  }
-  @media(max-width: 600px) {
-    .kpi-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -124,8 +122,12 @@
         <div class="value" id="kpiTicket">R$ 0,00</div>
       </div>
       <div class="kpi-card laranja">
-        <h3>Clientes que Acessaram</h3>
+        <h3>Clientes Únicos</h3>
         <div class="value" id="kpiLogins">0</div>
+      </div>
+      <div class="kpi-card roxo">
+        <h3>Total de Acessos</h3>
+        <div class="value" id="kpiAcessosTotal">0</div>
       </div>
     </div>
 
@@ -141,6 +143,15 @@
         <h3>📍 Vendas por Estado (UF)</h3>
         <div class="chart-container">
           <canvas id="graficoUFs"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="charts-grid" style="grid-template-columns: 1fr;">
+      <div class="chart-card">
+        <h3>📈 Acessos por Dia (Últimos 7 Dias)</h3>
+        <div class="chart-container">
+          <canvas id="graficoAcessos"></canvas>
         </div>
       </div>
     </div>
@@ -187,6 +198,7 @@
 <script>
 let chartVendedores = null;
 let chartUFs = null;
+let chartAcessos = null; // 👈 Variável do novo gráfico
 
 const fmtMoeda = v => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -240,12 +252,10 @@ async function carregarMetricas() {
     const pedidos = dataPedidos.pedidos || [];
     const logins = dataLogins.logins || [];
     const totalLogins = dataLogins.total_logins || 0;
-    const loginsHistorico = dataLogins.logins_historico || []; // 👈 NOVO
+    const loginsHistorico = dataLogins.logins_historico || [];
 
     processarMetricas(pedidos, logins, totalLogins);
-    
-    // 👇 NOVO: Passa o histórico completo para o gráfico
-    processarAcessos(loginsHistorico); 
+    processarAcessos(loginsHistorico);
 
   } catch (e) {
     console.error(e);
@@ -258,7 +268,6 @@ function processarMetricas(pedidos, logins, totalLogins) {
   const vendasPorVendedor = {};
   const vendasPorUF = {};
   
-  // Filtra apenas os finalizados
   const finalizados = pedidos.filter(p => (p.status || '').toUpperCase() !== 'RASCUNHO');
 
   finalizados.forEach(p => {
@@ -268,11 +277,9 @@ function processarMetricas(pedidos, logins, totalLogins) {
 
     faturamento += valor;
 
-    // Agrupa por Vendedor
     if (!vendasPorVendedor[vendedor]) vendasPorVendedor[vendedor] = 0;
     vendasPorVendedor[vendedor] += valor;
 
-    // Agrupa por UF
     if (!vendasPorUF[uf]) vendasPorUF[uf] = 0;
     vendasPorUF[uf] += valor;
   });
@@ -280,18 +287,69 @@ function processarMetricas(pedidos, logins, totalLogins) {
   const totalPedidos = finalizados.length;
   const ticketMedio = totalPedidos > 0 ? (faturamento / totalPedidos) : 0;
 
-  // Atualiza os KPIs
   document.getElementById('kpiFaturamento').textContent = `R$ ${fmtMoeda(faturamento)}`;
   document.getElementById('kpiPedidos').textContent = totalPedidos;
   document.getElementById('kpiTicket').textContent = `R$ ${fmtMoeda(ticketMedio)}`;
-  
-  // 👇 AQUI ESTÁ A CORREÇÃO: Usa o totalLogins que vem do backend em vez de contar a lista
   document.getElementById('kpiLogins').textContent = totalLogins; 
 
   renderizarGraficoVendedores(vendasPorVendedor);
   renderizarGraficoUFs(vendasPorUF);
-  renderizarUltimosPedidos(finalizados.slice(0, 10)); // Pega os 10 mais recentes
+  renderizarUltimosPedidos(finalizados.slice(0, 10));
   renderizarUltimosLogins(logins.slice(0, 10));
+}
+
+// ==========================================
+// LÓGICA DE ACESSOS (NOVO)
+// ==========================================
+function processarAcessos(logins) {
+  // Total de acessos
+  const totalAcessos = logins.length;
+  document.getElementById('kpiAcessosTotal').textContent = totalAcessos;
+
+  // Prepara os dados dos últimos 7 dias
+  const contagemPorDia = {};
+  const dias = [];
+  
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const diaStr = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+    dias.push(diaStr);
+    contagemPorDia[diaStr] = 0;
+  }
+
+  logins.forEach(l => {
+    const dataAcesso = new Date(l.data_login);
+    const diaStr = dataAcesso.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+    if (contagemPorDia[diaStr] !== undefined) {
+      contagemPorDia[diaStr]++;
+    }
+  });
+
+  if (chartAcessos) chartAcessos.destroy();
+  
+  const ctx = document.getElementById('graficoAcessos').getContext('2d');
+  chartAcessos = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: dias,
+      datasets: [{
+        label: 'Acessos',
+        data: dias.map(d => contagemPorDia[d]),
+        borderColor: '#8b5cf6',
+        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 5,
+        pointBackgroundColor: '#8b5cf6'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+  });
 }
 
 // ==========================================
