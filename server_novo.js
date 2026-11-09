@@ -1752,7 +1752,7 @@ app.get('/api/admin/metricas-logins', async (req, res) => {
     if (errCount) throw errCount;
 
     // 2. Busca APENAS os 50 mais recentes para o radar
-    const { data: logins, error: errLog } = await supabase
+    const { data: loginsRecentes, error: errLog } = await supabase
       .from('logins_clientes')
       .select('cnpj, data_login')
       .order('data_login', { ascending: false })
@@ -1760,7 +1760,20 @@ app.get('/api/admin/metricas-logins', async (req, res) => {
 
     if (errLog) throw errLog;
 
-    const cnpjsParaBuscar = [...new Set((logins || []).map(l => String(l.cnpj || '').replace(/\D/g, '')))];
+    // 👇 NOVO: Busca TODOS os acessos dos últimos 30 dias (para o gráfico) 👇
+    const dataLimite = new Date();
+    dataLimite.setDate(dataLimite.getDate() - 30);
+    
+    const { data: loginsHistorico, error: errHist } = await supabase
+      .from('logins_clientes')
+      .select('cnpj, data_login')
+      .gte('data_login', dataLimite.toISOString())
+      .order('data_login', { ascending: false });
+
+    if (errHist) throw errHist;
+
+    // 3. Pega os nomes dos clientes que estão no radar (50 últimos)
+    const cnpjsParaBuscar = [...new Set((loginsRecentes || []).map(l => String(l.cnpj || '').replace(/\D/g, '')))];
 
     const { data: clientes, error: errCli } = await supabase
       .from('clientes')
@@ -1775,7 +1788,7 @@ app.get('/api/admin/metricas-logins', async (req, res) => {
       mapaClientes[cnpjLimpo] = c;
     });
 
-    const formatados = (logins || []).map(l => {
+    const formatados = (loginsRecentes || []).map(l => {
       const cnpjLimpo = String(l.cnpj || '').replace(/\D/g, '');
       const cli = mapaClientes[cnpjLimpo] || {};
       
@@ -1787,14 +1800,18 @@ app.get('/api/admin/metricas-logins', async (req, res) => {
       };
     });
 
-    // 3. Retorna o total do count e a lista dos 50
-    res.json({ ok: true, total_logins: totalLogins, logins: formatados });
+    // 4. Retorna tudo o que o frontend precisa
+    res.json({ 
+      ok: true, 
+      total_logins: totalLogins, 
+      logins: formatados,
+      logins_historico: loginsHistorico || [] // 👈 NOVO AQUI
+    });
   } catch (e) {
     console.error('Erro em metricas-logins:', e);
     res.status(500).json({ ok: false, erro: e.message });
   }
 });
-
 // Enviar mensagem
 app.post('/api/mensagens', async (req, res) => {
   try {

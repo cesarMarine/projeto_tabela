@@ -1353,11 +1353,43 @@ async function carregar() {
     montarBarraMarcas();
     renderizar();
 
-    // 👇 NOVO: Verifica se o cliente deixou algum rascunho salvo ao sair
+    // 👇 NOVO: Registra o acesso se o cliente já estiver logado e deu F5
+    registrarAcessoDiario();
+
+    // 👇 Verifica se o cliente deixou algum rascunho salvo ao sair
     await verificarRascunhoPendente();
 
   } catch (e) { document.getElementById('conteudo').innerHTML = '<div class="loading">Erro ao carregar.</div>'; }
 }
+
+async function registrarAcessoDiario() {
+  if (!clienteLogado) return;
+  
+  const agora = new Date().getTime();
+  const ultimoAcesso = localStorage.getItem('ultimo_acesso_registrado');
+  
+  // Se nunca acessou ou se já passou 1 hora (3600000 ms) desde o último registro
+  if (!ultimoAcesso || (agora - parseInt(ultimoAcesso)) > 3600000) {
+    try {
+      // Grava no banco de dados (rota de login já existente)
+      await fetch('/api/registrar-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          cnpj: clienteLogado.cnpj, 
+          nome: clienteLogado.nome 
+        })
+      });
+      
+      // Atualiza a hora no navegador para não gravar de novo por 1 hora
+      localStorage.setItem('ultimo_acesso_registrado', agora);
+      
+    } catch (e) {
+      console.error('Erro ao registrar acesso:', e);
+    }
+  }
+}
+
 
 async function verificarRascunhoPendente() {
   if (!clienteLogado) return;

@@ -227,33 +227,25 @@ window.onload = () => {
 // ==========================================
 async function carregarMetricas() {
   try {
-    // 1. Puxa os dados de todos os pedidos e clientes
-    // Como o admin precisa de uma visão macro, vamos puxar tudo de uma vez
-    // e fazer as contas aqui na tela.
-    
-    // Como a API de pedidos é por vendedor, e queremos todos, precisamos
-    // de uma rota que retorne tudo. Se não tiver, usamos o catálogo de clientes
-    // e puxamos os pedidos via query total.
-    
-    // O ideal aqui é ter uma rota global, mas como não criamos, vamos simular
-    // puxando os últimos pedidos globais usando o padrão do sistema.
-    // Para não quebrar, puxaremos os dados da tabela de clientes e pedidos do endpoint de admin.
-
     const [resPedidos, resLogins] = await Promise.all([
-      fetch('/api/admin/metricas-pedidos'), // Vamos criar essa rota no backend
-      fetch('/api/admin/metricas-logins')   // Vamos criar essa rota no backend
+      fetch('/api/admin/metricas-pedidos'),
+      fetch('/api/admin/metricas-logins')
     ]);
 
     const dataPedidos = await resPedidos.json();
     const dataLogins = await resLogins.json();
 
-        if (!dataPedidos.ok || !dataLogins.ok) throw new Error('Falha ao carregar dados');
+    if (!dataPedidos.ok || !dataLogins.ok) throw new Error('Falha ao carregar dados');
 
     const pedidos = dataPedidos.pedidos || [];
     const logins = dataLogins.logins || [];
-    const totalLogins = dataLogins.total_logins || 0; // 👈 Pegando o total do backend
+    const totalLogins = dataLogins.total_logins || 0;
+    const loginsHistorico = dataLogins.logins_historico || []; // 👈 NOVO
 
     processarMetricas(pedidos, logins, totalLogins);
+    
+    // 👇 NOVO: Passa o histórico completo para o gráfico
+    processarAcessos(loginsHistorico); 
 
   } catch (e) {
     console.error(e);
