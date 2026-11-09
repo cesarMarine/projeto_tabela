@@ -46,10 +46,10 @@
   .container { max-width:1400px; margin:0 auto; padding:24px; }
 
   /* CARDS KPI */
-  .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:24px; }
-  .kpi-card { background:white; border-radius:12px; padding:24px; box-shadow:0 2px 12px rgba(0,0,0,.04); border-top:4px solid #0d3b66; }
-  .kpi-card h3 { font-size:0.8rem; color:#64748b; text-transform:uppercase; font-weight:800; margin-bottom:8px; }
-  .kpi-card .value { font-size:2rem; font-weight:900; color:#0d3b66; }
+  .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:16px; margin-bottom:24px; }
+  .kpi-card { background:white; border-radius:12px; padding:20px; box-shadow:0 2px 12px rgba(0,0,0,.04); border-top:4px solid #0d3b66; }
+  .kpi-card h3 { font-size:0.75rem; color:#64748b; text-transform:uppercase; font-weight:800; margin-bottom:8px; }
+  .kpi-card .value { font-size:1.8rem; font-weight:900; color:#0d3b66; }
   .kpi-card.verde { border-top-color: #10b981; }
   .kpi-card.verde .value { color:#10b981; }
   .kpi-card.azul { border-top-color: #38bdf8; }
@@ -64,17 +64,17 @@
   /* GRÁFICOS */
   .charts-grid { display:grid; grid-template-columns: 1fr 1fr; gap:24px; margin-bottom:24px; }
   .chart-card { background:white; border-radius:12px; padding:24px; box-shadow:0 2px 12px rgba(0,0,0,.04); }
-  .chart-card h3 { font-size:1rem; color:#0f172a; margin-bottom:20px; font-weight:800; border-bottom:1px solid #f1f5f9; padding-bottom:10px; }
-  .chart-container { position: relative; height: 300px; width: 100%; }
+  .chart-card h3 { font-size:0.95rem; color:#0f172a; margin-bottom:20px; font-weight:800; border-bottom:1px solid #f1f5f9; padding-bottom:10px; }
+  .chart-container { position: relative; height: 280px; width: 100%; }
 
   /* LISTAS */
   .listas-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:24px; }
-  .lista-card { background:white; border-radius:12px; padding:24px; box-shadow:0 2px 12px rgba(0,0,0,.04); }
-  .lista-card h3 { font-size:1rem; color:#0f172a; margin-bottom:16px; font-weight:800; border-bottom:1px solid #f1f5f9; padding-bottom:10px; }
+  .lista-card { background:white; border-radius:12px; padding:20px; box-shadow:0 2px 12px rgba(0,0,0,.04); }
+  .lista-card h3 { font-size:0.95rem; color:#0f172a; margin-bottom:16px; font-weight:800; border-bottom:1px solid #f1f5f9; padding-bottom:10px; }
   .tabela-mini { width:100%; border-collapse:collapse; }
-  .tabela-mini th { text-align:left; font-size:0.7rem; color:#64748b; text-transform:uppercase; padding-bottom:8px; border-bottom:1px solid #e2e8f0; }
-  .tabela-mini td { padding:10px 0; font-size:0.85rem; border-bottom:1px solid #f1f5f9; color:#334155; }
-  .badge-uf { background:#dbeafe; color:#1e40af; padding:2px 6px; border-radius:4px; font-weight:800; font-size:0.7rem; }
+  .tabela-mini th { text-align:left; font-size:0.65rem; color:#64748b; text-transform:uppercase; padding-bottom:8px; border-bottom:1px solid #e2e8f0; }
+  .tabela-mini td { padding:8px 0; font-size:0.8rem; border-bottom:1px solid #f1f5f9; color:#334155; }
+  .badge-uf { background:#dbeafe; color:#1e40af; padding:2px 6px; border-radius:4px; font-weight:800; font-size:0.65rem; }
 
   @media(max-width: 900px) {
     .charts-grid { grid-template-columns: 1fr; }
@@ -273,11 +273,11 @@ async function carregarMetricas() {
     const logins = dataLogins.logins || [];
     const totalLogins = dataLogins.total_logins || 0;
     const loginsHistorico = dataLogins.logins_historico || [];
-    const totalAcessos = dataLogins.total_acessos || 0; // 👈 Adicione esta linha
+    const totalAcessos = dataLogins.total_acessos || 0;
 
+    // 👇 CORREÇÃO AQUI: Chamada única e limpa para cada função
     processarMetricas(pedidos, logins, totalLogins);
-    processarAcessos(loginsHistorico);
-       processarAcessos(loginsHistorico, totalAcessos); // 👈 Passe como 2º parâmetro
+    processarAcessos(loginsHistorico, totalAcessos); 
 
   } catch (e) {
     console.error(e);
@@ -316,16 +316,12 @@ function processarMetricas(pedidos, logins, totalLogins) {
   document.getElementById('kpiPedidos').textContent = totalPedidos;
   document.getElementById('kpiTicket').textContent = `R$ ${fmtMoeda(ticketMedio)}`;
   document.getElementById('kpiLogins').textContent = totalLogins; 
-  
-  // 👇 NOVO: Contagem de Rascunhos
   document.getElementById('kpiRascunhos').textContent = rascunhos.length;
 
   renderizarGraficoVendedores(vendasPorVendedor);
   renderizarGraficoUFs(vendasPorUF);
   renderizarUltimosPedidos(finalizados.slice(0, 10));
   renderizarUltimosLogins(logins.slice(0, 10));
-  
-  // 👇 NOVO: Renderiza a tabela de rascunhos
   renderizarRascunhosRecentes(rascunhos.slice(0, 10));
 }
 
@@ -333,8 +329,7 @@ function processarMetricas(pedidos, logins, totalLogins) {
 // LÓGICA DE ACESSOS (Gráfico de Linha)
 // ==========================================
 function processarAcessos(logins, totalAcessos) {
-  // 👇 AQUI ESTÁ A CORREÇÃO: Usa o total exato que veio do backend
-  document.getElementById('kpiAcessosTotal').textContent = totalAcessos;
+  document.getElementById('kpiAcessosTotal').textContent = totalAcessos || 0;
 
   const contagemPorDia = {};
   const dias = [];
@@ -470,17 +465,17 @@ function renderizarRascunhosRecentes(rascunhos) {
     
     let tempoStr = '';
     if (diffHoras < 1) tempoStr = 'Agora há pouco';
-    else if (diffHoras < 24) tempoStr = `Há ${diffHoras} horas`;
+    else if (diffHoras < 24) tempoStr = `Há ${diffHoras}h`;
     else {
       const diffDias = Math.floor(diffHoras / 24);
-      tempoStr = `Há ${diffDias} dia(s)`;
+      tempoStr = `Há ${diffDias}d`;
     }
 
     return `
       <tr>
         <td><strong>${p.nome_cliente || p.razao_social || 'Cliente'}</strong></td>
         <td style="font-weight:800; color:#f97316;">R$ ${fmtMoeda(p.total)}</td>
-        <td style="font-size:0.8rem; color:#64748b;">${tempoStr}</td>
+        <td style="font-size:0.75rem; color:#64748b;">${tempoStr}</td>
       </tr>
     `;
   }).join('');
