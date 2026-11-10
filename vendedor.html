@@ -120,6 +120,34 @@
     50% { transform: translateX(-50%) scale(1.05); }
     100% { transform: translateX(-50%) scale(1); }
   }
+  .dash-card.pedidos { text-align:left; cursor:pointer; font:inherit; width:100%; border:1px solid #e2e8f0; border-left:4px solid #2563eb; transition:box-shadow .2s, transform .2s; }
+  .dash-card.pedidos:hover { transform:translateY(-2px); box-shadow:0 8px 24px #0d3b661a; }
+  .dash-card.pedidos small { display:block; margin-top:8px; color:#2563eb; font-weight:700; }
+  .pedidos-resumo { display:flex; flex-wrap:wrap; gap:12px; margin:0 0 20px; }
+  .pedido-contador { padding:14px 20px; border:1px solid #e2e8f0; border-radius:12px; background:#f8fafc; flex:1; min-width:140px; color:#475569; }
+  .pedido-contador strong { display:block; font-size:1.65rem; color:#0d3b66; margin-top:4px; }
+  .pedido-contador.finalizados strong { color:#059669; }
+  .pedido-contador.rascunhos strong { color:#d97706; }
+  .pedido-summary { display:grid; grid-template-columns:minmax(0,1fr) 350px; gap:20px; align-items:start; }
+  .pedido-info-main { gap:8px; align-content:start; }
+  .pedido-cliente-nome, .pedido-data { width:100%; line-height:1.5; overflow-wrap:anywhere; }
+  .pedido-acoes { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .pedido-acoes .pedido-valor-destaque { grid-column:1 / -1; text-align:right; margin-bottom:4px; }
+  .pedido-acoes button { min-height:40px; display:flex; justify-content:center; align-items:center; gap:5px; line-height:1.35; font-size:.75rem; padding:9px; }
+  .pedido-acoes .btn-finalizar-pedido { background:#0d3b66; }
+  .pedido-acoes .btn-finalizar-pedido:hover { background:#1a5276; }
+  button:disabled { opacity:.55; cursor:wait; }
+  button:focus-visible, select:focus-visible { outline:3px solid #60a5fa; outline-offset:3px; }
+  .pedido-corpo-expansivel { overflow-x:auto; }
+  @media(max-width:800px) {
+    .dashboard-grid { grid-template-columns:1fr; }
+    .pedido-summary { grid-template-columns:1fr; padding:16px; }
+    .pedido-acoes { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .header { flex-wrap:wrap; gap:12px; padding:14px; }
+    .container { padding:14px; }
+    .card { padding:16px; }
+    .form-novo-cliente { grid-template-columns:1fr; }
+  }
 </style>
 </head>
 <body>
@@ -156,7 +184,6 @@
   <!-- NAVEGAÇÃO DE ABAS -->
   <div class="tabs">
     <button class="tab-btn active" id="btnTabClientes" onclick="mudarAba('clientes')">👥 Meus Clientes</button>
-    <button class="tab-btn" id="btnTabPedidos" onclick="mudarAba('pedidos')">📦 Pedidos Recebidos</button>
   </div>
 
   <!-- ABA CLIENTES -->
@@ -171,10 +198,11 @@
         <h3>Acessaram nos Últimos 7 Dias 🔍</h3>
         <div class="value" id="dashAcessos">0</div>
       </div>
-      <div class="dash-card pedidos">
-        <h3>Pedidos Finalizados</h3>
-        <div class="value" id="dashPedidos">0</div>
-      </div>
+      <button type="button" class="dash-card pedidos" onclick="mudarAba('pedidos')">
+        <h3>Finalizados / Rascunhos</h3>
+        <div class="value"><span id="dashPedidos">0</span> / <span id="dashRascunhos">0</span></div>
+        <small>Abrir pedidos recebidos →</small>
+      </button>
     </div>
 
     <!-- CARD: CADASTRAR NOVO CLIENTE -->
@@ -241,6 +269,11 @@
   <div id="abaPedidos" style="display:none;">
     <div class="card">
       <h2>Pedidos Recebidos</h2>
+      <div class="pedidos-resumo">
+        <div class="pedido-contador"><span>Pendentes de tratamento</span><strong id="totalPendentesVendedor">0</strong></div>
+        <div class="pedido-contador finalizados"><span>Finalizados pelo vendedor</span><strong id="totalFinalizadosVendedor">0</strong></div>
+        <div class="pedido-contador rascunhos"><span>Total de rascunhos</span><strong id="totalRascunhosVendedor">0</strong></div>
+      </div>
       <label style="display:block; margin-bottom:16px; font-weight:700;">Mostrar pedidos:
         <select id="filtroFinalizacao" onchange="carregarPedidos(true)" style="padding:8px; margin-left:8px; border:1px solid #cbd5e1; border-radius:8px;">
           <option value="pendentes">Pendentes</option>
@@ -364,6 +397,13 @@ async function verificarNovosPedidos() {
     const j = await r.json();
     
     if (!j.ok) return;
+
+    atualizarTotaisPedidos(j.pedidos);
+    const assinatura = pedidos => JSON.stringify(pedidos.map(p => [p.id, p.status, p.data_criacao, p.total, p.finalizado_vendedor, p.finalizado_vendedor_em]));
+    if (document.getElementById('abaPedidos').style.display !== 'none' && assinatura(pedidosCache) !== assinatura(j.pedidos)) {
+      pedidosCache = j.pedidos;
+      await carregarPedidos(true);
+    }
 
     const pedidosFinalizados = j.pedidos.filter(p => (p.status || '').toUpperCase() !== 'RASCUNHO');
     const qtdAtual = pedidosFinalizados.length;
@@ -520,7 +560,7 @@ function mudarAba(aba) {
     document.getElementById('btnTabClientes').classList.add('active');
     document.getElementById('abaClientes').style.display = 'block';
   } else {
-    document.getElementById('btnTabPedidos').classList.add('active');
+    document.getElementById('filtroFinalizacao').value = 'pendentes';
     document.getElementById('abaPedidos').style.display = 'block';
     carregarPedidos();
   }
@@ -667,11 +707,29 @@ async function carregarResumoPedidos() {
     if (j.ok) {
       const qtdFinalizados = j.pedidos.filter(p => (p.status || '').toUpperCase() !== 'RASCUNHO').length;
       document.getElementById('dashPedidos').textContent = qtdFinalizados;
+      atualizarTotaisPedidos(j.pedidos);
       
       // Inicializa a contagem para o vigia de novos pedidos
       if (qtdPedidosAnterior === -1) qtdPedidosAnterior = qtdFinalizados;
     }
   } catch (e) { console.error(e); }
+}
+
+function atualizarTotaisPedidos(pedidos) {
+  const rascunhos = pedidos.filter(p => (p.status || '').toUpperCase() === 'RASCUNHO').length;
+  const finalizados = pedidos.filter(p => p.finalizado_vendedor === true && (p.status || '').toUpperCase() !== 'RASCUNHO').length;
+  document.getElementById('dashPedidos').textContent = finalizados;
+  document.getElementById('dashRascunhos').textContent = rascunhos;
+  document.getElementById('totalPendentesVendedor').textContent = pedidos.length - finalizados - rascunhos;
+  document.getElementById('totalFinalizadosVendedor').textContent = finalizados;
+  document.getElementById('totalRascunhosVendedor').textContent = rascunhos;
+}
+
+function ordenarPedidosVendedor(pedidos) {
+  const rascunho = p => (p.status || '').toUpperCase() === 'RASCUNHO';
+  // O autosave atualiza data_criacao a cada alteração do rascunho.
+  const data = p => Date.parse(p.data_atualizacao || p.atualizado_em || p.data_criacao) || 0;
+  return [...pedidos].sort((a, b) => Number(rascunho(b)) - Number(rascunho(a)) || data(b) - data(a) || Number(b.id) - Number(a.id));
 }
 
 async function carregarPedidos(apenasRender = false) {
@@ -685,8 +743,9 @@ async function carregarPedidos(apenasRender = false) {
       if (!r.ok || !j.ok) throw new Error(j.erro || 'Falha ao carregar pedidos.');
       pedidosCache = j.pedidos;
     }
+    atualizarTotaisPedidos(pedidosCache);
     const filtro = document.getElementById('filtroFinalizacao').value;
-    const pedidosVisiveis = pedidosCache.filter(p => filtro === 'todos' ||
+    const pedidosVisiveis = ordenarPedidosVendedor(pedidosCache).filter(p => filtro === 'todos' ||
       (filtro === 'finalizados' ? p.finalizado_vendedor === true : p.finalizado_vendedor !== true));
     if (pedidosVisiveis.length === 0) {
       container.innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">Nenhum pedido neste filtro.</p>';
@@ -729,7 +788,7 @@ async function carregarPedidos(apenasRender = false) {
               <span class="pedido-id">Pedido #${p.id}</span>
               ${badgeStatus}
               <span class="pedido-cliente-nome">👤 Cliente nº ${escapeHtml(String(p.codigo_cliente ?? '—'))} — ${escapeHtml(nomeCliente)} (${escapeHtml(p.uf || 'UF')})</span>
-              <span class="pedido-data">🕒 ${dataFormatada} às ${horaFormatada}</span>
+              <span class="pedido-data">🕒 ${isRascunho ? 'Última alteração: ' : ''}${dataFormatada} às ${horaFormatada}</span>
               ${p.finalizado_vendedor && p.finalizado_vendedor_em ? `<span class="pedido-data">Concluído em ${escapeHtml(new Date(p.finalizado_vendedor_em).toLocaleString('pt-BR'))}</span>` : ''}
             </div>
             <div class="pedido-acoes" onclick="event.stopPropagation()">
@@ -737,7 +796,7 @@ async function carregarPedidos(apenasRender = false) {
                 R$ ${fmtMoeda(p.total)}
               </span>
               ${!isRascunho ? `<button class="btn-export-excel" onclick="exportarPedidoExcel(${p.id})">📊 Baixar Excel</button>` : ''}
-              ${!isRascunho ? `<button type="button" class="btn-export-excel" onclick="marcarFinalizacaoPedido(${p.id}, ${p.finalizado_vendedor !== true}, this)">${p.finalizado_vendedor ? '↩ Desfazer finalização' : '✓ Marcar como finalizado'}</button>` : ''}
+              ${!isRascunho ? `<button type="button" class="btn-export-excel btn-finalizar-pedido" onclick="marcarFinalizacaoPedido(${p.id}, ${p.finalizado_vendedor !== true}, this)">${p.finalizado_vendedor ? '↩ Desfazer finalização' : '✓ Marcar como finalizado'}</button>` : ''}
               <button class="btn-intencoes" onclick="abrirLogAcoes('${p.cnpj_cliente}')">🕵️ Intenções</button>
               <button class="btn-deletar" onclick="deletarPedido(${p.id})">🗑️ Excluir</button>
               <button class="btn-toggle-detalhe" onclick="toggleDetalhesPedido(${p.id})">👁️ Detalhes</button>
