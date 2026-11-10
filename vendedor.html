@@ -617,6 +617,11 @@ async function carregarClientes() {
 
     if (!j.ok) throw new Error(j.erro);
 
+    j.clientes.sort((a, b) => {
+      const acessoA = Date.parse(a.ultimo_login) || 0;
+      const acessoB = Date.parse(b.ultimo_login) || 0;
+      return acessoB - acessoA;
+    });
     clientesCache = j.clientes;
 
     if (j.clientes.length === 0) {
