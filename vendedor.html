@@ -221,7 +221,7 @@
       <table id="tabClientes">
         <thead>
           <tr>
-            <th>Código</th>
+            <th>Nº do cliente</th>
             <th>CNPJ</th>
             <th>Cliente / Razão Social</th>
             <th>UF</th>
@@ -717,7 +717,7 @@ async function carregarPedidos() {
             <div class="pedido-info-main">
               <span class="pedido-id">Pedido #${p.id}</span>
               ${badgeStatus}
-              <span class="pedido-cliente-nome">👤 [${p.codigo_cliente || '—'}] ${nomeCliente} (${p.uf || 'UF'})</span>
+              <span class="pedido-cliente-nome">👤 Cliente nº ${escapeHtml(String(p.codigo_cliente ?? '—'))} — ${escapeHtml(nomeCliente)} (${escapeHtml(p.uf || 'UF')})</span>
               <span class="pedido-data">🕒 ${dataFormatada} às ${horaFormatada}</span>
             </div>
             <div class="pedido-acoes" onclick="event.stopPropagation()">
@@ -779,20 +779,23 @@ async function deletarPedido(id) {
 // ==========================================
 // EXPORTAÇÃO EXCEL
 // ==========================================
+function escapeHtml(valor) {
+  return String(valor ?? '').replace(/[&<>"']/g, caractere => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[caractere]));
+}
+
 function exportarPedidoExcel(pedidoId) {
   const pedido = pedidosCache.find(p => p.id === pedidoId);
   if (!pedido) return alert('Pedido não encontrado para exportação.');
 
-  const nomeCliente = (pedido.nome_fantasia || pedido.razao_social || 'Cliente').trim();
-  const dataObj = new Date(pedido.data_criacao);
-  
-  const dia = String(dataObj.getDate()).padStart(2, '0');
-  const mes = String(dataObj.getMonth() + 1).padStart(2, '0');
-  const ano = dataObj.getFullYear();
-  const dataFormatadaStr = `${dia}-${mes}-${ano}`;
-
-  const nomeClienteLimpo = nomeCliente.replace(/[^a-zA-Z0-9]/g, '_');
-  const nomeArquivo = `Pedido_${pedido.id}_${nomeClienteLimpo}_${dataFormatadaStr}.xlsx`;
+  const limparNomeArquivo = valor => String(valor ?? '')
+    .replace(/[<>:"/\\|?*\u0000-\u001f]/g, ' ')
+    .replace(/\s+/g, ' ').trim().replace(/[. ]+$/, '');
+  const numeroCliente = limparNomeArquivo(pedido.codigo_cliente) || 'Sem número';
+  const razaoSocial = limparNomeArquivo(pedido.razao_social)
+    || limparNomeArquivo(pedido.nome_fantasia) || 'Cliente';
+  const nomeArquivo = `${numeroCliente} - ${razaoSocial}`.slice(0, 180).replace(/[. ]+$/, '') + '.xlsx';
 
   const dadosParaExcel = [
     ["CÓDIGO", "COLUNA_B", "COLUNA_C", "COLUNA_D", "COLUNA_E", "DESCRIÇÃO", "", "QUANTIDADE", "PREÇO UNIT.", "VALOR TOTAL"]
