@@ -1197,6 +1197,40 @@ app.delete('/api/pedidos/:id', async (req, res) => {
   }
 });
 
+app.patch('/api/vendedor/:codigo/pedidos/:id/finalizacao', async (req, res) => {
+  try {
+    const { finalizado, senha } = req.body || {};
+    if (typeof finalizado !== 'boolean' || !/^\d+$/.test(req.params.id)) {
+      return res.status(400).json({ ok: false, erro: 'Pedido ou marcação inválida.' });
+    }
+    const { data: vendedor, error: erroVendedor } = await supabase.from('vendedores')
+      .select('id').eq('codigo_representante', req.params.codigo).eq('ativo', 1).single();
+    if (erroVendedor || !vendedor) return res.status(401).json({ ok: false, erro: 'Acesso inválido.' });
+    const { data: acesso, error: erroAcesso } = await supabase.from('vendedores_acesso')
+      .select('senha').eq('vendedor_id', vendedor.id).single();
+    if (erroAcesso || !acesso || typeof senha !== 'string' || !senha || acesso.senha !== senha) {
+      return res.status(401).json({ ok: false, erro: 'Acesso inválido. Entre novamente.' });
+    }
+    const { data: pedido, error: erroPedido } = await supabase.from('pedidos02')
+      .select('id,status').eq('id', req.params.id).eq('codigo_representante', req.params.codigo).maybeSingle();
+    if (erroPedido) throw erroPedido;
+    if (!pedido) return res.status(404).json({ ok: false, erro: 'Pedido não encontrado para este vendedor.' });
+    if (String(pedido.status || '').toUpperCase() === 'RASCUNHO') {
+      return res.status(400).json({ ok: false, erro: 'Rascunhos ainda não podem ser finalizados.' });
+    }
+    const { data, error } = await supabase.from('pedidos02').update({
+      finalizado_vendedor: finalizado,
+      finalizado_vendedor_em: finalizado ? new Date().toISOString() : null
+    }).eq('id', req.params.id).eq('codigo_representante', req.params.codigo)
+      .eq('status', pedido.status).select('id,finalizado_vendedor,finalizado_vendedor_em').maybeSingle();
+    if (error) throw error;
+    if (!data) return res.status(409).json({ ok: false, erro: 'O pedido mudou. Atualize a lista e tente novamente.' });
+    res.json({ ok: true, pedido: data });
+  } catch (e) {
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
+
 app.get('/api/vendedor/:codigo/pedidos', async (req, res) => {
   try {
     const { data: pedidos, error } = await supabase.from('pedidos02').select('*').eq('codigo_representante', req.params.codigo).order('id', { ascending: false });

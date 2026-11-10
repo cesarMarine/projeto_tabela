@@ -241,6 +241,13 @@
   <div id="abaPedidos" style="display:none;">
     <div class="card">
       <h2>Pedidos Recebidos</h2>
+      <label style="display:block; margin-bottom:16px; font-weight:700;">Mostrar pedidos:
+        <select id="filtroFinalizacao" onchange="carregarPedidos(true)" style="padding:8px; margin-left:8px; border:1px solid #cbd5e1; border-radius:8px;">
+          <option value="pendentes">Pendentes</option>
+          <option value="finalizados">Finalizados</option>
+          <option value="todos">Todos</option>
+        </select>
+      </label>
       <div id="listaPedidos">
         <p style="text-align:center; color:#94a3b8; padding:20px;">Clique na aba para carregar os pedidos.</p>
       </div>
@@ -667,24 +674,26 @@ async function carregarResumoPedidos() {
   } catch (e) { console.error(e); }
 }
 
-async function carregarPedidos() {
+async function carregarPedidos(apenasRender = false) {
   const container = document.getElementById('listaPedidos');
   container.innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">Buscando pedidos...</p>';
 
   try {
-    const r = await fetch('/api/vendedor/' + vendedorLogado.codigo + '/pedidos');
-    const j = await r.json();
-
-    if (!j.ok) throw new Error(j.erro);
-
-    pedidosCache = j.pedidos;
-
-    if (j.pedidos.length === 0) {
-      container.innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">Nenhum pedido recebido ainda.</p>';
+    if (!apenasRender) {
+      const r = await fetch('/api/vendedor/' + vendedorLogado.codigo + '/pedidos');
+      const j = await r.json();
+      if (!r.ok || !j.ok) throw new Error(j.erro || 'Falha ao carregar pedidos.');
+      pedidosCache = j.pedidos;
+    }
+    const filtro = document.getElementById('filtroFinalizacao').value;
+    const pedidosVisiveis = pedidosCache.filter(p => filtro === 'todos' ||
+      (filtro === 'finalizados' ? p.finalizado_vendedor === true : p.finalizado_vendedor !== true));
+    if (pedidosVisiveis.length === 0) {
+      container.innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">Nenhum pedido neste filtro.</p>';
       return;
     }
 
-    container.innerHTML = j.pedidos.map(p => {
+    container.innerHTML = pedidosVisiveis.map(p => {
       const nomeCliente = p.nome_fantasia || p.razao_social || 'Cliente';
       const dataObj = new Date(p.data_criacao);
       const dataFormatada = dataObj.toLocaleDateString('pt-BR');
@@ -693,7 +702,9 @@ async function carregarPedidos() {
       const isRascunho = (p.status || '').toUpperCase() === 'RASCUNHO';
       const badgeStatus = isRascunho 
         ? `<span style="background:#fef3c7; color:#d97706; padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:800;">📝 RASCUNHO</span>` 
-        : `<span style="background:#d1fae5; color:#059669; padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:800;">✅ FINALIZADO</span>`;
+        : p.finalizado_vendedor === true
+          ? `<span style="background:#d1fae5; color:#059669; padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:800;">✅ FINALIZADO PELO VENDEDOR</span>`
+          : `<span style="background:#dbeafe; color:#1d4ed8; padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:800;">📋 PENDENTE DE TRATAMENTO</span>`;
 
       const itensHtml = (p.itens || []).map(it => {
         const qtd = Number(it.quantidade) || 0;
@@ -719,12 +730,14 @@ async function carregarPedidos() {
               ${badgeStatus}
               <span class="pedido-cliente-nome">👤 Cliente nº ${escapeHtml(String(p.codigo_cliente ?? '—'))} — ${escapeHtml(nomeCliente)} (${escapeHtml(p.uf || 'UF')})</span>
               <span class="pedido-data">🕒 ${dataFormatada} às ${horaFormatada}</span>
+              ${p.finalizado_vendedor && p.finalizado_vendedor_em ? `<span class="pedido-data">Concluído em ${escapeHtml(new Date(p.finalizado_vendedor_em).toLocaleString('pt-BR'))}</span>` : ''}
             </div>
             <div class="pedido-acoes" onclick="event.stopPropagation()">
               <span class="pedido-valor-destaque" style="color: ${isRascunho ? '#f59e0b' : '#10b981'};">
                 R$ ${fmtMoeda(p.total)}
               </span>
               ${!isRascunho ? `<button class="btn-export-excel" onclick="exportarPedidoExcel(${p.id})">📊 Baixar Excel</button>` : ''}
+              ${!isRascunho ? `<button type="button" class="btn-export-excel" onclick="marcarFinalizacaoPedido(${p.id}, ${p.finalizado_vendedor !== true}, this)">${p.finalizado_vendedor ? '↩ Desfazer finalização' : '✓ Marcar como finalizado'}</button>` : ''}
               <button class="btn-intencoes" onclick="abrirLogAcoes('${p.cnpj_cliente}')">🕵️ Intenções</button>
               <button class="btn-deletar" onclick="deletarPedido(${p.id})">🗑️ Excluir</button>
               <button class="btn-toggle-detalhe" onclick="toggleDetalhesPedido(${p.id})">👁️ Detalhes</button>
@@ -750,6 +763,26 @@ async function carregarPedidos() {
     }).join('');
   } catch (e) {
     container.innerHTML = `<p style="text-align:center; color:#ef4444; padding:20px;">Erro: ${e.message}</p>`;
+  }
+}
+
+async function marcarFinalizacaoPedido(id, finalizado, botao) {
+  botao.disabled = true;
+  try {
+    const resposta = await fetch(`/api/vendedor/${encodeURIComponent(vendedorLogado.codigo)}/pedidos/${id}/finalizacao`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ finalizado, senha: document.getElementById('inputSenha').value.trim() })
+    });
+    const resultado = await resposta.json();
+    if (!resposta.ok || !resultado.ok) throw new Error(resultado.erro || 'Não foi possível salvar a marcação.');
+    const pedido = pedidosCache.find(p => p.id === id);
+    if (pedido) Object.assign(pedido, resultado.pedido);
+    await carregarPedidos(true);
+  } catch (e) {
+    alert(e.message);
+  } finally {
+    botao.disabled = false;
   }
 }
 
