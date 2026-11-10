@@ -201,6 +201,8 @@
       <button type="button" class="dash-card pedidos" onclick="mudarAba('pedidos')">
         <h3>Finalizados / Rascunhos</h3>
         <div class="value"><span id="dashPedidos">0</span> / <span id="dashRascunhos">0</span></div>
+        <small>Finalizados: <span id="dashValorFinalizados">R$ 0,00</span></small>
+        <small>Rascunhos: <span id="dashValorRascunhos">R$ 0,00</span></small>
         <small>Abrir pedidos recebidos →</small>
       </button>
     </div>
@@ -271,8 +273,8 @@
       <h2>Pedidos Recebidos</h2>
       <div class="pedidos-resumo">
         <div class="pedido-contador"><span>Pendentes de tratamento</span><strong id="totalPendentesVendedor">0</strong></div>
-        <div class="pedido-contador finalizados"><span>Finalizados pelo vendedor</span><strong id="totalFinalizadosVendedor">0</strong></div>
-        <div class="pedido-contador rascunhos"><span>Total de rascunhos</span><strong id="totalRascunhosVendedor">0</strong></div>
+        <div class="pedido-contador finalizados"><span>Finalizados pelo vendedor</span><strong id="totalFinalizadosVendedor">0</strong><span id="valorFinalizadosVendedor">R$ 0,00</span></div>
+        <div class="pedido-contador rascunhos"><span>Total de rascunhos</span><strong id="totalRascunhosVendedor">0</strong><span id="valorRascunhosVendedor">R$ 0,00</span></div>
       </div>
       <label style="display:block; margin-bottom:16px; font-weight:700;">Mostrar pedidos:
         <select id="filtroFinalizacao" onchange="carregarPedidos(true)" style="padding:8px; margin-left:8px; border:1px solid #cbd5e1; border-radius:8px;">
@@ -716,6 +718,18 @@ async function carregarResumoPedidos() {
 }
 
 function atualizarTotaisPedidos(pedidos) {
+  const somarValores = lista => lista.reduce((soma, pedido) => {
+    const valor = Number(pedido.total);
+    return soma + (Number.isFinite(valor) ? valor : 0);
+  }, 0);
+  const valorFinalizados = somarValores(pedidos.filter(p => p.finalizado_vendedor === true && (p.status || '').toUpperCase() !== 'RASCUNHO'));
+  const valorRascunhos = somarValores(pedidos.filter(p => (p.status || '').toUpperCase() === 'RASCUNHO'));
+  for (const id of ['dashValorFinalizados', 'valorFinalizadosVendedor']) {
+    document.getElementById(id).textContent = `R$ ${fmtMoeda(valorFinalizados)}`;
+  }
+  for (const id of ['dashValorRascunhos', 'valorRascunhosVendedor']) {
+    document.getElementById(id).textContent = `R$ ${fmtMoeda(valorRascunhos)}`;
+  }
   const rascunhos = pedidos.filter(p => (p.status || '').toUpperCase() === 'RASCUNHO').length;
   const finalizados = pedidos.filter(p => p.finalizado_vendedor === true && (p.status || '').toUpperCase() !== 'RASCUNHO').length;
   document.getElementById('dashPedidos').textContent = finalizados;
