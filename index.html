@@ -444,6 +444,15 @@
   font-size: .78rem; font-weight: 800; color: var(--azul-800);
   line-height: 1.2; word-break: break-word;
 }
+.item-codigo { font-size:.65rem; color:var(--cinza-500); overflow-wrap:anywhere; }
+.item-variacoes { margin:4px 0; display:grid; gap:3px; font-size:.72rem; line-height:1.45; color:var(--cinza-700); overflow-wrap:anywhere; }
+.item-variacoes div { display:block; }
+.item-variacoes dt, .item-variacoes dd { display:inline; margin:0; }
+.item-variacoes dt { font-weight:700; }
+#painelCarrinho { max-width:520px; max-height:calc(100dvh - 110px); }
+#painelCarrinho .painel-lista { min-height:0; flex:1; max-height:45vh; }
+#painelCarrinho .painel-foot { flex-shrink:0; max-height:50dvh; overflow-y:auto; }
+#painelCarrinho .item-valores > div { flex-wrap:wrap; }
 .item-valores { display: flex; flex-direction: column; gap: 1px; }
 .item-linha-valor { font-size: .7rem; color: var(--cinza-500); font-weight: 600; }
 .item-linha-valor strong { color: var(--azul-800); font-weight: 900; }
@@ -1110,7 +1119,7 @@ async function salvarRascunho() {
     const calc = calcularValoresProduto(item.precoBase, cod);
     return { 
       codigo: cod, 
-      desc: item.desc, 
+      desc: descricaoCompletaCarrinho(cod, item), 
       qtd: item.qtd, 
       precoBase: item.precoBase, 
       precoFinal: calc.precoFinal 
@@ -1445,7 +1454,7 @@ async function finalizarPedido() {
   const itens = Object.keys(carrinho).map(cod => {
     const item = carrinho[cod];
     const calc = calcularValoresProduto(item.precoBase, cod);
-    return { codigo: cod, desc: item.desc, qtd: item.qtd, precoBase: item.precoBase, precoFinal: calc.precoFinal };
+    return { codigo: cod, desc: descricaoCompletaCarrinho(cod, item), qtd: item.qtd, precoBase: item.precoBase, precoFinal: calc.precoFinal };
   });
   if (itens.length === 0) { alert('Seu carrinho está vazio.'); return; }
 
@@ -3090,6 +3099,45 @@ function registrarAcaoLog(codigo, acao, qtdAnterior) {
 }
 
 
+// Consulta os atributos do SKU, inclusive para ofertas e pedidos reabertos.
+function detalhesItemCarrinho(codigo, itemCarrinho) {
+  const cod = String(codigo);
+  const produto = todosItens.find(item => String(item.codigo) === cod)
+    || (mapaCatalogoCache.has(cod) ? normalizarItem(mapaCatalogoCache.get(cod)) : null);
+  const nome = itemCarrinho.desc || produto?.subgrupo || `Produto ${cod}`;
+  let atributos = produto?.atributos || {};
+  if (typeof atributos === 'string') atributos = parseAtributos(atributos);
+  const variacoes = [];
+  const chaves = new Set();
+  const normalizar = valor => String(valor).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().trim();
+  const adicionar = (rotulo, valor) => {
+    if (valor == null || typeof valor === 'object') return;
+    const texto = String(valor).trim();
+    const chave = normalizar(rotulo);
+    if (!texto || ['-', 'N/A', 'NULL', 'UNDEFINED'].includes(texto.toUpperCase()) || chaves.has(chave)) return;
+    chaves.add(chave);
+    variacoes.push([rotulo, texto]);
+  };
+  for (const [rotulo, valor] of Object.entries(atributos || {})) {
+    // Mantém as especificações do produto, sem repetir dados comerciais.
+    if (/^(PRECO|ESTOQUE|DESCRICAO|IMAGEM|URL|LINK|CODIGO|SKU|EAN|QTD|CX\/CT)$/.test(normalizar(rotulo))) continue;
+    adicionar(rotulo, valor);
+  }
+  if (produto && /CARRETILHA/i.test(produto.grupo || '') &&
+      !Object.keys(atributos).some(chave => /LADO|MANIVELA/i.test(chave))) {
+    adicionar('Lado da manivela', analisarCarretilha(produto).ladoTag);
+  }
+  // Preserva também o nome específico do SKU quando o carrinho veio de uma oferta.
+  if (produto?.subgrupo && normalizar(nome) !== normalizar(produto.subgrupo) &&
+      !normalizar(nome).includes(normalizar(produto.subgrupo))) adicionar('Variação', produto.subgrupo);
+  return { nome, variacoes };
+}
+
+function descricaoCompletaCarrinho(codigo, itemCarrinho) {
+  const { nome, variacoes } = detalhesItemCarrinho(codigo, itemCarrinho);
+  return [nome, ...variacoes.map(([rotulo, valor]) => `${rotulo}: ${valor}`)].join(' • ');
+}
+
 function atualizarCarrinho() {
   const itens = Object.keys(carrinho); 
   let total = 0, qtdTotal = 0;
@@ -3097,6 +3145,7 @@ function atualizarCarrinho() {
   
   const html = itens.map(cod => {
     const i = carrinho[cod];
+    const detalhes = detalhesItemCarrinho(cod, i);
     const calc = calcularValoresProduto(i.precoBase, cod);
     
     const subUnitario = calc.precoFinal;
@@ -3116,7 +3165,9 @@ function atualizarCarrinho() {
         </div>
 
         <div class="item-dados">
-          <span class="item-titulo">${escapeHtml(i.desc)}</span>
+          <span class="item-titulo">${escapeHtml(detalhes.nome)}</span>
+          <span class="item-codigo">Código: ${escapeHtml(String(cod))}</span>
+          ${detalhes.variacoes.length ? `<dl class="item-variacoes">${detalhes.variacoes.map(([rotulo, valor]) => `<div><dt>${escapeHtml(rotulo)}: </dt><dd>${escapeHtml(valor)}</dd></div>`).join('')}</dl>` : ''}
           
           <div class="item-valores" style="margin-top: 4px;">
             <!-- 👇 NOVO CONTROLE DE QUANTIDADE AQUI NO CARRINHO 👇 -->
@@ -3231,7 +3282,7 @@ async function autosaveCarrinho() {
   const itens = Object.keys(carrinho).map(cod => {
     const item = carrinho[cod];
     const calc = calcularValoresProduto(item.precoBase, cod);
-    return { codigo: cod, desc: item.desc, qtd: item.qtd, precoBase: item.precoBase, precoFinal: calc.precoFinal };
+    return { codigo: cod, desc: descricaoCompletaCarrinho(cod, item), qtd: item.qtd, precoBase: item.precoBase, precoFinal: calc.precoFinal };
   });
   
   const total = itens.reduce((acc, it) => acc + (it.precoFinal * it.qtd), 0);
