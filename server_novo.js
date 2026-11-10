@@ -1823,6 +1823,35 @@ app.get('/api/admin/metricas-logins', async (req, res) => {
     res.status(500).json({ ok: false, erro: e.message });
   }
 });
+
+// ROTA: Top Produtos Removidos/Diminuídos do Carrinho
+app.get('/api/admin/metricas-intencoes', async (req, res) => {
+  try {
+    const { data: acoes, error } = await supabase
+      .from('log_acoes_cliente')
+      .select('*');
+
+    if (error) throw error;
+
+    const contagem = {};
+    (acoes || []).forEach(a => {
+      const chave = `${a.codigo_produto}__${a.descricao_produto}`;
+      if (!contagem[chave]) {
+        contagem[chave] = { codigo: a.codigo_produto, descricao: a.descricao_produto, total: 0 };
+      }
+      contagem[chave].total++;
+    });
+
+    // Ordena do mais removido para o menos
+    const ranking = Object.values(contagem)
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 10); // Pega os Top 10
+
+    res.json({ ok: true, ranking });
+  } catch (e) {
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
 // Enviar mensagem
 app.post('/api/mensagens', async (req, res) => {
   try {
