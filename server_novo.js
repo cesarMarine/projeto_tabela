@@ -120,36 +120,52 @@ app.post('/api/importar/sistema', upload.single('arquivo'), async (req, res) => 
 
 app.get('/api/admin/historico-estoque', async (req, res) => {
   try {
-    const { busca, data_inicio, data_fim } = req.query;
-    
-    // 1. Busca as datas únicas que tiveram importação (pega as 10 mais recentes)
-    const { data: datasData } = await supabase
-      .from('historico_estoque')
-      .select('data_importacao')
-      .order('data_importacao', { ascending: false });
-      
-    // Remove datas duplicadas
-    const datasUnicas = [...new Set((datasData || []).map(d => d.data_importacao))].slice(0, 10).reverse();
-
-    // 2. Monta a query do histórico
-    let query = supabase
-      .from('historico_estoque')
-      .select('*')
-      .in('data_importacao', datasUnicas);
-
-    // 3. Se o admin buscou um produto específico, filtra (para não puxar 3.500 produtos de uma vez)
-    if (busca) {
-      query = query.ilike('codigo_produto', `%${busca}%`);
-    } else {
-      // Se não buscou nada, limita para não sobrecarregar (puxa os primeiros 100 produtos)
-      query = query.limit(1000); 
+    const busca = String(req.query.busca || '').trim().toLocaleLowerCase('pt-BR');
+    const paginaSolicitada = Math.max(1, parseInt(req.query.pagina, 10) || 1);
+    const porPagina = 50;
+    // Pagina também as leituras do Supabase para não perder linhas no limite padrão.
+    async function lerTodos(tabela, campos, ordenar) {
+      const resultado = [];
+      const lote = 200;
+      for (let inicio = 0; ; inicio += lote) {
+        let consulta = supabase.from(tabela).select(campos);
+        for (const campo of ordenar) consulta = consulta.order(campo, { ascending: true });
+        const { data, error } = await consulta.range(inicio, inicio + lote - 1);
+        if (error) throw error;
+        resultado.push(...(data || []));
+        if (!data || data.length < lote) break;
+      }
+      return resultado;
     }
-
-    const { data: historico, error } = await query;
-
-    if (error) throw error;
-
-    res.json({ ok: true, datas: datasUnicas, historico: historico });
+    const [registros, itens] = await Promise.all([
+      lerTodos('historico_estoque', 'codigo_produto,data_importacao,estoque', ['data_importacao', 'codigo_produto']),
+      lerTodos('itens_sistema', 'codigo,descricao', ['codigo'])
+    ]);
+    const descricoes = new Map(itens.map(item => [String(item.codigo), item.descricao || '']));
+    const datas = [...new Set(registros.map(reg => reg.data_importacao))].sort();
+    const produtos = new Map();
+    for (const reg of registros) {
+      const codigo = String(reg.codigo_produto);
+      const descricao = descricoes.get(codigo) || '';
+      if (busca && !codigo.toLowerCase().includes(busca) && !descricao.toLocaleLowerCase('pt-BR').includes(busca)) continue;
+      if (!produtos.has(codigo)) produtos.set(codigo, { codigo, descricao, historico: {} });
+      const valor = reg.estoque == null || String(reg.estoque).trim() === '' ? null : Number(reg.estoque);
+      produtos.get(codigo).historico[reg.data_importacao] = Number.isFinite(valor) ? valor : null;
+    }
+    let lista = [...produtos.values()].sort((a, b) => a.codigo.localeCompare(b.codigo, 'pt-BR', { numeric: true }));
+    if (req.query.apenas_zerados === '1') {
+      lista = lista.filter(prod => {
+        const ultimaData = Object.keys(prod.historico).sort().pop();
+        return prod.historico[ultimaData] === 0;
+      });
+    }
+    const total = lista.length;
+    const paginas = Math.max(1, Math.ceil(total / porPagina));
+    const pagina = Math.min(paginaSolicitada, paginas);
+    const selecionados = lista.slice((pagina - 1) * porPagina, pagina * porPagina);
+    return res.json({ ok: true, datas, produtos: selecionados, total, pagina, paginas,
+      historico: selecionados.flatMap(prod => Object.entries(prod.historico).map(([data_importacao, estoque]) => ({ codigo_produto: prod.codigo, data_importacao, estoque }))) });
+    
   } catch (e) {
     console.error('Erro no histórico:', e);
     res.status(500).json({ ok: false, erro: e.message });

@@ -336,12 +336,14 @@
             <input type="text" id="buscaHistorico" placeholder="🔍 Buscar código ou descrição..." oninput="debounceHistorico()" style="width:250px;">
             <label style="display:flex; align-items:center; gap:6px; font-weight:700; font-size:0.85rem; color:#38bdf8; cursor:pointer; background:#0f172a; padding:10px; border-radius:8px; border:1px solid #334155;">
               <input type="checkbox" id="chkApenasZerados" onchange="carregarHistorico()" style="width:16px; height:16px; cursor:pointer;"> 
-              Mostrar apenas o que zerou
+              Mostrar último saldo zero
             </label>
             <button class="btn-primario" onclick="carregarHistorico()">🔍 Filtrar</button>
           </div>
         </div>
 
+        <p style="color:#94a3b8; font-size:.8rem; margin-bottom:12px;">Uma coluna por dia importado. Zero = sem estoque; — = sem registro. A descrição corresponde ao cadastro atual.</p>
+        <div id="paginacaoHistorico" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:12px;"></div>
         <div style="overflow-x:auto; max-height: 600px;">
           <table id="tabelaHistorico" style="min-width: 800px;">
             <thead id="headerHistorico" style="position:sticky; top:0; background:#1e293b; z-index:10;">
@@ -2035,119 +2037,59 @@ function debounceHistorico() {
   timeoutHistorico = setTimeout(() => carregarHistorico(), 600);
 }
 
-async function carregarHistorico() {
+let paginaHistorico = 1;
+let requisicaoHistorico = 0;
+
+async function carregarHistorico(pagina = 1) {
+  const requisicao = ++requisicaoHistorico;
   const busca = document.getElementById('buscaHistorico').value.trim();
   const apenasZerados = document.getElementById('chkApenasZerados').checked;
-  
   const thead = document.getElementById('headerHistorico');
   const tbody = document.querySelector('#tabelaHistorico tbody');
-  
+  const navegacao = document.getElementById('paginacaoHistorico');
+  navegacao.textContent = '';
   thead.innerHTML = '<tr><th>Carregando...</th></tr>';
-  tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:30px; color:#94a3b8;">Buscando dados...</td></tr>';
-
+  tbody.innerHTML = '<tr><td>Buscando histórico...</td></tr>';
   try {
-    // 1. Pega o histórico do banco
-    const url = `/api/admin/historico-estoque?busca=${encodeURIComponent(busca)}`;
-    const r = await fetch(url);
-    const j = await r.json();
-
-    if (!j.ok) throw new Error(j.erro);
-
-    const datas = j.datas;
-    const registros = j.historico;
-
-    // 2. Pega o catálogo completo para ter as descrições
-    const rCat = await fetch('/api/catalogo');
-    const jCat = await rCat.json();
-    const mapaCatalogo = new Map();
-    if (jCat.ok) {
-      jCat.itens.forEach(it => mapaCatalogo.set(String(it.codigo), it));
-    }
-
-    // Agrupa os registros por produto
-    const produtosMap = {};
-    registros.forEach(reg => {
-      if (!produtosMap[reg.codigo_produto]) {
-        produtosMap[reg.codigo_produto] = { codigo: reg.codigo_produto, historico: {} };
-      }
-      produtosMap[reg.codigo_produto].historico[reg.data_importacao] = reg.estoque;
-    });
-
-    // 3. Aplica o filtro de "Apenas Zerados" se estiver marcado
-    let listaProdutos = Object.values(produtosMap);
-    if (apenasZerados) {
-      listaProdutos = listaProdutos.filter(prod => {
-        // Pega a data mais recente que tem registro
-        const datasDoProd = Object.keys(prod.historico).sort();
-        const ultimaData = datasDoProd[datasDoProd.length - 1];
-        return prod.historico[ultimaData] === 0;
-      });
-    }
-
-    // Formata as datas para DD/MM
-    const datasFormatadas = datas.map(d => {
-      const [ano, mes, dia] = d.split('-');
-      return `${dia}/${mes}`;
-    });
-
-    // Monta o Cabeçalho
-    thead.innerHTML = `
-      <tr>
-        <th style="min-width: 250px;">Produto</th>
-        ${datasFormatadas.map(d => `<th style="text-align:center;">Estoque<br>${d}</th>`).join('')}
-        <th style="text-align:center;">Status</th>
-      </tr>
-    `;
-
-    if (listaProdutos.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="${datas.length + 2}" style="text-align:center; padding:30px; color:#10b981; font-weight:bold;">Nenhuma ruptura encontrada com esses filtros.</td></tr>`;
+    const parametros = new URLSearchParams({ busca, pagina: String(pagina), apenas_zerados: apenasZerados ? '1' : '0' });
+    const resposta = await fetch('/api/admin/historico-estoque?' + parametros);
+    const j = await resposta.json();
+    if (requisicao !== requisicaoHistorico) return;
+    if (!resposta.ok || !j.ok) throw new Error(j.erro || 'Falha ao consultar histórico');
+    const datas = j.datas || [];
+    const produtos = j.produtos || [];
+    paginaHistorico = j.pagina;
+    const formatarData = data => data.split('-').reverse().join('/');
+    thead.innerHTML = `<tr><th>Código</th><th style="min-width:250px;">Descrição</th>${datas.map(data => `<th style="text-align:center; white-space:nowrap;">${escapeHtml(formatarData(data))}</th>`).join('')}<th>Status</th></tr>`;
+    navegacao.innerHTML = `<button type="button" class="btn-primario" onclick="carregarHistorico(paginaHistorico - 1)" ${j.pagina <= 1 ? 'disabled' : ''}>Anterior</button><span>${j.total} produto(s) · Página ${j.pagina} de ${j.paginas} · ${datas.length} dia(s)</span><button type="button" class="btn-primario" onclick="carregarHistorico(paginaHistorico + 1)" ${j.pagina >= j.paginas ? 'disabled' : ''}>Próxima</button>`;
+    if (!produtos.length) {
+      tbody.innerHTML = `<tr><td colspan="${datas.length + 3}" style="text-align:center; padding:30px;">Nenhum registro encontrado para esses filtros.</td></tr>`;
       return;
     }
-
-    // Monta as linhas
-    tbody.innerHTML = listaProdutos.map(prod => {
-      const cat = mapaCatalogo.get(prod.codigo) || {};
-      const descricao = cat.descricao_sistema || cat.subgrupo_scraping || cat.descricao || 'Produto Desconhecido';
-
-      let estoqueAnterior = null;
-      let variacaoTotal = 0;
-      let zerou = false;
-
+    tbody.innerHTML = produtos.map(prod => {
+      let anterior = null;
+      let ultimo = null;
+      const eventos = [];
       const celulas = datas.map(data => {
-        const valor = prod.historico[data] !== undefined ? prod.historico[data] : null;
-        
-        if (valor === null) return `<td style="text-align:center; color:#475569;">-</td>`;
-
-        if (estoqueAnterior !== null) variacaoTotal += (valor - estoqueAnterior);
-        estoqueAnterior = valor;
-
-        if (valor === 0) zerou = true;
-
+        const bruto = prod.historico[data];
+        const valor = bruto == null || String(bruto).trim() === '' ? null : Number(bruto);
+        if (valor === null || !Number.isFinite(valor)) return '<td style="text-align:center; color:#94a3b8;" title="Sem registro nesta importação">—</td>';
+        let evento = '';
+        if (anterior > 0 && valor === 0) evento = 'Zerou';
+        else if (anterior !== null && anterior <= 0 && valor > 0) evento = 'Voltou a ter estoque';
+        if (evento) eventos.push(`${evento} em ${formatarData(data)}`);
+        anterior = valor;
+        ultimo = valor;
         const cor = valor > 0 ? '#10b981' : '#ef4444';
-        const bg = valor === 0 ? 'background: rgba(239, 68, 68, 0.1);' : '';
-        
-        return `<td style="text-align:center; font-weight:800; color:${cor}; ${bg}">${valor}</td>`;
+        return `<td style="text-align:center; font-weight:800; color:${cor}; ${valor === 0 ? 'background:rgba(239,68,68,.1);' : ''}" title="${escapeHtml(evento || 'Saldo importado')}">${valor}${evento ? `<div style="font-size:.65rem;">${escapeHtml(evento)}</div>` : ''}</td>`;
       }).join('');
-
-      let badgeVar = '<span style="color:#94a3b8;">—</span>';
-      if (variacaoTotal > 0) badgeVar = `<span style="color:#10b981; font-weight:800;">📈 +${variacaoTotal}</span>`;
-      else if (variacaoTotal < 0) badgeVar = `<span style="color:#ef4444; font-weight:800;">📉 ${variacaoTotal}</span>`;
-
-      return `
-        <tr>
-          <td>
-            <div style="font-family:monospace; font-size:0.7rem; color:#38bdf8; font-weight:800;">#${prod.codigo}</div>
-            <div style="font-size:0.8rem; color:#e2e8f0; font-weight:600;">${escapeHtml(descricao)}</div>
-          </td>
-          ${celulas}
-          <td style="text-align:center;">${badgeVar}</td>
-        </tr>
-      `;
+      const status = eventos.length ? eventos.join(' · ') : ultimo === 0 ? 'Sem estoque' : ultimo > 0 ? 'Com estoque' : ultimo !== null ? 'Saldo negativo' : 'Sem registro';
+      return `<tr><td style="color:#38bdf8; font-weight:800;">${escapeHtml(String(prod.codigo))}</td><td>${escapeHtml(prod.descricao || 'Descrição indisponível')}</td>${celulas}<td style="min-width:180px; font-size:.75rem;">${escapeHtml(status)}</td></tr>`;
     }).join('');
-
   } catch (e) {
+    if (requisicao !== requisicaoHistorico) return;
     thead.innerHTML = '<tr><th>Erro</th></tr>';
-    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; color:#ef4444; padding:30px;">Erro: ${e.message}</td></tr>`;
+    tbody.innerHTML = `<tr><td style="color:#ef4444; padding:30px;">${escapeHtml(e.message)}</td></tr>`;
   }
 }
 
