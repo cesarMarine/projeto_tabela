@@ -639,6 +639,8 @@ let ofertasCache = [];
 let mapaCatalogoCache = new Map();
 let filtroOfertaAtual = '';
 let contadorBlackInterval = null;
+let dataValidadeTabela = "";
+
 const PRODUTOS_LOTE_10 = [
   '5795', '5796', '5797', '5798', '5799', '5800', '5801', '5802', '5803', 
   '6697', 
@@ -789,6 +791,10 @@ async function verificarValidadeTabela() {
     const r = await fetch('/api/regras');
     const j = await r.json();
     if (!j.ok || !j.regras || !j.regras.tabela_data_fim) return;
+
+     // 👇 NOVO: Salva a data para o carrinho usar 👇
+    dataValidadeTabela = j.regras.tabela_data_fim;
+    // 👆 FIM DO NOVO 👆
 
     const barra = document.getElementById('barraAvisoTabela');
     const hoje = new Date();
@@ -3043,8 +3049,24 @@ function atualizarCarrinho() {
     ? `<div class="rodape-economia">🎉 Você está economizando <strong>R$ ${fmtMoeda(economiaTotal)}</strong> nesta compra!</div>` 
     : '';
 
+  // 👇 AVISO DE RASCUNHO + VALIDADE 👇
+  let textoValidade = '';
+  if (dataValidadeTabela) {
+    const [ano, mes, dia] = dataValidadeTabela.split('-');
+    textoValidade = ` Preços válidos até <strong>${dia}/${mes}/${ano}</strong>.`;
+  }
+
+  const rodapeAviso = Object.keys(carrinho).length > 0
+    ? `<div style="background:#fef3c7; border:1px dashed #f59e0b; color:#92400e; padding:8px 10px; border-radius:8px; font-size:0.7rem; font-weight:600; text-align:center; margin-bottom:10px; line-height:1.3;">
+         ⚠️ <strong>Atenção:</strong> Este é um rascunho e <strong>não reserva estoque</strong> (atualizado diariamente).${textoValidade}
+       </div>` 
+    : '';
+  // 👆 FIM DO NOVO 👆
+
   document.getElementById('carrinhoTotal').textContent = `R$ ${fmtMoeda(total)}`;
   document.getElementById('listaCarrinho').innerHTML = html || '<div style="text-align:center;color:#94a3b8;padding:20px;">Vazio</div>';
+
+   
 
   let rodapeEcoEl = document.getElementById('rodapeEconomiaCarrinho');
   if (!rodapeEcoEl) {
@@ -3053,7 +3075,8 @@ function atualizarCarrinho() {
     const foot = document.querySelector('#painelCarrinho .painel-foot');
     if (foot) foot.insertBefore(rodapeEcoEl, foot.firstChild);
   }
-  rodapeEcoEl.innerHTML = rodapeEconomia;
+    // 👇 JUNTA OS DOIS AVISOS AQUI 👇
+  rodapeEcoEl.innerHTML = rodapeAviso + rodapeEconomia;
 
   // Mantém o autosave rodando
   clearTimeout(timerAutosave);
