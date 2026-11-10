@@ -536,6 +536,28 @@
   }
 }
 
+  /* Apresentação e informações comerciais na entrada */
+  #telaLogin { overflow-y:auto; align-items:flex-start; }
+  #telaLogin .login-box { margin:auto; max-width:460px; }
+  .login-marca-logo { display:block; width:220px; max-width:100%; height:auto; margin:0 auto 18px; }
+  .login-box .login-apresentacao { margin-bottom:18px; line-height:1.5; }
+  .login-box .login-ipi { margin:14px 0 0; color:var(--azul-800); font-size:.75rem; font-weight:800; letter-spacing:.4px; }
+  .login-politicas { margin-top:22px; padding-top:18px; border-top:1px solid var(--cinza-200); text-align:left; }
+  .login-politicas h2 { font-size:.85rem; color:var(--azul-800); margin-bottom:10px; }
+  .login-box .btn-politica { display:block; margin-top:8px; padding:12px; background:var(--cinza-50); border:1px solid var(--cinza-200); color:var(--azul-800); text-align:left; font-size:.72rem; line-height:1.5; font-weight:700; }
+  .login-box .btn-politica:hover { background:var(--azul-50); border-color:var(--azul-500); }
+  .btn-politica:focus-visible, .politica-fechar:focus-visible { outline:3px solid var(--azul-500); outline-offset:3px; }
+  .politica-dialog { position:fixed; inset:0; margin:auto; padding:0; width:calc(100% - 32px); max-width:760px; max-height:85vh; max-height:85dvh; border:none; border-radius:14px; color:var(--texto); background:white; box-shadow:0 25px 80px rgba(0,0,0,.4); overflow:hidden; }
+  .politica-dialog::backdrop { background:rgba(0,15,30,.8); }
+  .politica-dialog[open] { display:flex; flex-direction:column; }
+  .politica-head { display:flex; align-items:center; gap:16px; padding:18px 20px; background:var(--azul-800); color:white; flex-shrink:0; }
+  .politica-head h2 { flex:1; font-size:.95rem; line-height:1.5; }
+  .politica-fechar { flex-shrink:0; width:36px; height:36px; border:1px solid rgba(255,255,255,.5); border-radius:8px; background:transparent; color:white; font-size:1.25rem; }
+  .politica-texto { padding:20px; overflow-y:auto; overscroll-behavior:contain; font-size:.88rem; line-height:1.7; }
+  .politica-texto p { margin-bottom:16px; }
+  .politica-texto h3 { font-size:.95rem; color:var(--azul-800); margin:22px 0 12px; }
+  .politica-texto a { color:var(--azul-700); overflow-wrap:anywhere; }
+  .aviso-frete { margin:0 0 10px; color:var(--cinza-500); font-size:.7rem; line-height:1.5; text-align:center; }
 </style>
 </head>
 <body>
@@ -546,11 +568,20 @@
 </a>
 <div id="telaLogin">
   <div class="login-box">
+    <img class="login-marca-logo" src="https://gpzqzwrqndawhhglycat.supabase.co/storage/v1/object/public/PECAS/logo--marine-rgb-png.png" alt="Marine Sports" width="220" decoding="async">
+    <p class="login-apresentacao">Marine Sports — produtos para pesca.<br>Conheça nosso catálogo e consulte as informações comerciais para sua loja.</p>
     <h1>Catálogo B2B</h1>
     <p>Digite o seu CNPJ para acessar a tabela de preços.</p>
     <div class="login-erro" id="loginErro">CNPJ não encontrado ou inativo.</div>
     <input type="text" id="inputCnpj" placeholder="00.000.000/0000-00" autocomplete="off">
     <button onclick="fazerLogin()">Acessar Catálogo</button>
+    <p class="login-ipi">VALORES COM IPI INCLUSO</p>
+    <section class="login-politicas" aria-labelledby="tituloInformacoesComerciais">
+      <h2 id="tituloInformacoesComerciais">Informações comerciais</h2>
+      <button type="button" class="btn-politica" data-politica="trocas" aria-haspopup="dialog" aria-controls="dialogPolitica">POLÍTICA DE TROCAS E DEVOLUÇÕES</button>
+      <button type="button" class="btn-politica" data-politica="revendedores" aria-haspopup="dialog" aria-controls="dialogPolitica">POLÍTICA DE GARANTIA PARA REVENDEDORES E LOJISTAS</button>
+      <button type="button" class="btn-politica" data-politica="consumidor" aria-haspopup="dialog" aria-controls="dialogPolitica">POLÍTICA DE GARANTIA PARA CONSUMIDOR FINAL</button>
+    </section>
   </div>
 </div>
 
@@ -600,6 +631,7 @@
     <span>Total:</span>
     <span id="carrinhoTotal">R$ 0,00</span>
   </div>
+  <p class="aviso-frete">O frete é grátis para pedidos acima de R$ 4.000,00</p>
   <div style="display:flex; gap:8px;">
     <button type="button" onclick="salvarRascunho()" 
             style="flex:1; background:#003366; color:white; border:none; padding:10px; border-radius:8px; font-weight:800; font-size:0.85rem; cursor:pointer;">
@@ -628,6 +660,82 @@
     <img id="zoomModalImg" src="" alt="Imagem ampliada">
   </div>
 </div>
+
+<dialog id="dialogPolitica" class="politica-dialog" aria-labelledby="tituloPolitica">
+  <div class="politica-head">
+    <h2 id="tituloPolitica"></h2>
+    <button type="button" class="politica-fechar" aria-label="Fechar política" autofocus>✕</button>
+  </div>
+  <div id="textoPolitica" class="politica-texto" tabindex="0" role="region" aria-labelledby="tituloPolitica"></div>
+</dialog>
+
+<template id="politica-trocas">
+  <p>1- Assim que receber sua compra <strong>Marine</strong>, verifique se a embalagem está devidamente lacrada, se os produtos estão intactos e se o pedido está de acordo com a nota fiscal.</p>
+  <p>1.1- Recuse o recebimento da encomenda no ato da entrega caso identifique qualquer irregularidade. Na hipótese de algum desses itens se encontrar em desacordo, entre em contato imediatamente com um de nossos colaboradores.</p>
+  <h3>2- Equívoco no envio de mercadoria:</h3>
+  <p>2.1- O prazo para detectar o envio incorreto de mercadoria é de, no máximo, 07 (sete) dias, a contar do recebimento do(s) produto(s). Caso haja o recebimento de produto(s) diverso(s) daquele(s) que fora(m) confirmado(s) para envio, o revendedor/lojista deverá entrar em contato com um de nossos colaboradores, comunicar o ocorrido, para, então, a troca ser concretizada sem custos.</p>
+  <h3>3- Desistência:</h3>
+  <p>3.1- O prazo para desistência é de no máximo 07 (sete) dias, a contar do recebimento da mercadoria. O(s) produto(s) deverá(ão) estar na embalagem original, sem indícios de violação e acompanhado(s) de sua respectiva nota fiscal. Após o retorno do(s) produtos(s), se este(s) se apresentar(em) em perfeitas condições, será gerado o crédito em favor do revendedor lojista para utilização em próxima compra. Em caso de desistência, os custos de devolução serão por conta do desistente.</p>
+</template>
+
+<template id="politica-revendedores">
+  <p>1- Os produtos Marine Sports são cobertos pela garantia contra defeito de fabricação (que não se confunde com defeito por mau uso, exposição ou armazenamento pelo revendedor/lojista) nos seguintes termos e condições</p>
+  <p>1.1- <strong>VARAS:</strong> A garantia é de 07 (sete) dias, contados a partir do recebimento dos produtos pelo revendedor/lojista, ficando este totalmente responsável pela conferência da integridade das varas dentro do referido prazo, e está condicionada a análise técnica.</p>
+  <p>1.2. <strong>DEMAIS PRODUTOS:</strong> A garantia é de 30 (trinta) dias, contados a partir do recebimento dos produtos pelo revendedor/lojista, ficando este totalmente responsável pela conferência da integridade daqueles dentro do referido prazo, exceto os de embalagens lacradas, e está condicionada a análise técnica.</p>
+  <p>1.3- É imprescindível a apresentação da Nota Fiscal da compra, a fim de comprovar a origem do produto e o respectivo período de garantia.</p>
+  <p>1.4- O Revendedor/Lojista assume a total e irrevogável responsabilidade pela conferência da integridade dos produtos adquiridos, exceto os de embalagens lacradas, dentro dos prazos retro estipulados (vara, 07 dias; demais produtos, 30 dias), contados a partir da data do recebimento destes em seu estabelecimento. Não solicitada a garantia pelo Revendedor/Lojista à Marine Sports dentro dos prazos pertinentes, considerar-se-á expirada tal prerrogativa.</p>
+  <h3>2- O que a Garantia não cobre:</h3>
+  <p>2.1- Danos oriundos do uso inadequado do produto, modificações não autorizadas, consertos não autorizados, negligência ou abuso.</p>
+  <p>2.3- Falhas no funcionamento normal do produto decorrentes do mal armazenamento pelo revendedor/lojista em seu estoque.</p>
+  <p>2.4- Todas as superfícies plásticas e todas as outras partes expostas externamente arranhadas ou danificadas devido à utilização imprópria ou exposição inadequada.</p>
+  <p>2.5 - Deterioração relacionada ao desgaste natural do produto, como, a título exemplificativo, bem como danos causados por agentes da natureza (chuva, sol, raios, enchentes, maresia, etc).</p>
+  <p>2.6- Produtos operados em desacordo com as especificações indicadas no site da Marine Sports (<a href="https://www.marinesportsfishing.com" target="_blank" rel="noopener noreferrer">www.marinesportsfishing.com</a>), manual ou na etiqueta (“TAG”) anexada ao produto.</p>
+  <p>2.7- Danos causados por agentes da natureza ou ocorridos devido a acidente, incêndio, dano intencional, dano por embalagem ou acondicionamento inadequado para transporte, manutenção imprópria, ou qualquer outro tipo de ocorrência de força maior.</p>
+  <p>2.8 - Defeitos e danos decorrentes da utilização de componentes não compatíveis e não originais.</p>
+  <p>3- A Marine Sports não pode fornecer qualquer outra garantia, de qualquer tipo, seja expressa ou implícita, relativa aos seus produtos.</p>
+  <p>4- A presente política de garantia pactuada entre a Marine Sports e o Revendedor/Lojista (relação não abrangida pelo Código de Defesa do Consumidor) não interfere no direito de garantia estabelecido pela legislação consumerista entre a Marine Sports e o consumidor final do produto.</p>
+</template>
+
+<template id="politica-consumidor">
+  <p>1- Os produtos Marine Sports adquiridos por consumidor final são cobertos pela garantia contra defeito de fabricação (que não se confunde com defeito por mau uso do consumidor) nos seguintes termos e condições:</p>
+  <p>1.1- A garantia é de 90 (noventa) dias (garantia legal - CDC), contados a partir da data da compra do produto ou da data de entrega deste ao consumidor final, e está condicionada a análise técnica.</p>
+  <p>1.2- É terminantemente imprescindível a apresentação da Nota Fiscal da compra, a fim de comprovar a origem do produto e o respectivo período de garantia.</p>
+  <p>1.3- Os consumidores finais deverão solicitar a garantia à Loja em que a compra foi efetuada. Quem efetuará a solicitação de garantia com a Marine Sports serão os lojistas e não os consumidores finais.</p>
+  <h3>2- O que a Garantia não cobre:</h3>
+  <p>2.1- Danos oriundos do uso inadequado do produto, modificações não autorizadas, consertos não autorizados, negligência ou abuso.</p>
+  <p>2.3- Falhas no funcionamento normal do produto decorrentes da falta de limpeza e excesso de resíduo, ou, ainda, decorrentes da existência de objetos em seu interior que sejam estranhos ao seu funcionamento e finalidade de utilização.</p>
+  <p>2.4- Todas as superfícies plásticas e todas as outras partes expostas externamente arranhadas ou danificadas devido à utilização imprópria pelo usuário.</p>
+  <p>2.5 - Deterioração relacionada ao desgaste natural do produto, bem como complicações decorrentes da falta de manutenção especializada.</p>
+  <p>2.6- Produtos operados em desacordo com as especificações indicadas no site da Marine Sports (<a href="https://www.marinesportsfishing.com" target="_blank" rel="noopener noreferrer">www.marinesportsfishing.com</a>), manual ou na etiqueta ("TAG") anexada ao produto.</p>
+  <p>2.7- Danos causados por agentes da natureza (chuva, sol, raios, enchentes, maresia, etc.).</p>
+  <p>2.8- Danos ao produto que tenham ocorrido devido a acidente, incêndio, dano intencional, dano por embalagem ou acondicionamento inadequado para transporte, manutenção imprópria, ou qualquer outro tipo de ocorrência de força maior.</p>
+  <p>2.9 - Defeitos e danos decorrentes da utilização de componentes não compatíveis e não originais.</p>
+  <p>3 - Nem a Marine Sports, nem qualquer um de seus revendedores e distribuidores, podem fornecer qualquer outra garantia, de qualquer tipo, seja expressa ou implícita, relativa aos produtos Marine Sports.</p>
+  <p>4 - A presente política de garantia estabelecida nos exatos termos da legislação consumerista entre a Marine Sports e o consumidor final do produto não interfere na política de garantia pactuada entre a Marine Sports e os Revendedores/Lojistas (relação não abrangida pelo Código de Defesa do Consumidor).</p>
+</template>
+
+<script>
+(() => {
+  const dialog = document.getElementById('dialogPolitica');
+  const texto = document.getElementById('textoPolitica');
+  document.querySelectorAll('[data-politica]').forEach(botao => {
+    botao.addEventListener('click', () => {
+      const modelo = document.getElementById('politica-' + botao.dataset.politica);
+      document.getElementById('tituloPolitica').textContent = botao.textContent;
+      texto.replaceChildren(modelo.content.cloneNode(true));
+      dialog.showModal();
+      texto.scrollTop = 0;
+    });
+  });
+  dialog.querySelector('.politica-fechar').addEventListener('click', () => dialog.close());
+  dialog.addEventListener('click', evento => {
+    if (evento.target !== dialog) return;
+    const limites = dialog.getBoundingClientRect();
+    if (evento.clientX < limites.left || evento.clientX > limites.right ||
+        evento.clientY < limites.top || evento.clientY > limites.bottom) dialog.close();
+  });
+})();
+</script>
 
 <script>
 let todosItens = [], todasFamilias = [], grupoAtual = '__OFERTAS__', buscaAtual = '', carrinho = {};
