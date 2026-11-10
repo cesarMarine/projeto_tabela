@@ -2,8 +2,8 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Marine | Catálogo do lojista</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Tabela de Preços B2B</title>
 <style>
   /* BADGE DE LANÇAMENTO FLUTUANTE NA FOTO PRINCIPAL */
   .tarja-lancamento-foto {
@@ -444,6 +444,15 @@
   font-size: .78rem; font-weight: 800; color: var(--azul-800);
   line-height: 1.2; word-break: break-word;
 }
+.item-codigo { font-size:.65rem; color:var(--cinza-500); overflow-wrap:anywhere; }
+.item-variacoes { margin:4px 0; display:grid; gap:3px; font-size:.72rem; line-height:1.45; color:var(--cinza-700); overflow-wrap:anywhere; }
+.item-variacoes div { display:block; }
+.item-variacoes dt, .item-variacoes dd { display:inline; margin:0; }
+.item-variacoes dt { font-weight:700; }
+#painelCarrinho { max-width:520px; max-height:calc(100dvh - 110px); }
+#painelCarrinho .painel-lista { min-height:0; flex:1; max-height:45vh; }
+#painelCarrinho .painel-foot { flex-shrink:0; max-height:50dvh; overflow-y:auto; }
+#painelCarrinho .item-valores > div { flex-wrap:wrap; }
 .item-valores { display: flex; flex-direction: column; gap: 1px; }
 .item-linha-valor { font-size: .7rem; color: var(--cinza-500); font-weight: 600; }
 .item-linha-valor strong { color: var(--azul-800); font-weight: 900; }
@@ -536,198 +545,28 @@
   }
 }
 
-
-/* Apresentação alternativa; regras comerciais mantidas. */
-:root { --azul-900:#102c43; --azul-800:#153d59; --azul-700:#245674; --azul-500:#28749b; --verde:#168267; --verde-hover:#106b53; --texto:#24394b; --nav-top:80px; --brands-top:176px; }
-body { background:#f4f6f8; line-height:1.5; padding-bottom:100px; }
-button,input { font:inherit; }
-button,a,input { touch-action:manipulation; }
-button:focus-visible,a:focus-visible,input:focus-visible { outline:3px solid #d79938; outline-offset:3px; }
-.topo { background:#102c43; box-shadow:none; }
-.topo-inner { min-height:82px; max-width:1600px; padding:16px 28px; gap:24px; flex-wrap:wrap; }
-.identidade { display:flex; flex-direction:column; line-height:1.15; flex-shrink:0; text-decoration:none; }
-.identidade strong { font-size:24px; font-weight:800; letter-spacing:3px; color:#fff; }
-.identidade small { font-size:10px; letter-spacing:1.6px; text-transform:uppercase; color:#b7cbd9; margin-top:5px; }
-.busca-wrap { order:1; flex:1; min-width:180px; }
-.busca-wrap input { min-height:46px; background:white; color:var(--texto); border:1px solid #d9e2e8; border-radius:8px; font-size:14px; padding:12px 16px; }
-.busca-wrap input::placeholder { color:#6b7d8b; }
-.busca-wrap input:focus { background:#fff; }
-.info-cliente { order:2; gap:10px; background:transparent; border-radius:0; padding:0; font-size:12px; flex-wrap:wrap; max-width:390px; }
-#nomeCliente { max-width:180px; overflow:hidden; text-overflow:ellipsis; }
-.btn-topo-acao,.btn-topo-sair { padding:9px 12px; min-height:40px; font-size:12px; font-weight:600; border:1px solid #547084; border-radius:6px; background:transparent; }
-.btn-topo-sair { color:#cddce6; }
-#barraAvisoTabela { font-weight:500!important; }
-.chips-wrap { top:var(--nav-top); padding:12px 28px; background:#fff; }
-.chips { gap:8px; }
-.chip { width:auto; min-width:100px; height:70px; flex-direction:column; gap:5px; padding:6px 12px; border:1px solid transparent; background:white; border-radius:8px; overflow:visible; }
-.chip-img { width:32px; height:32px; border-radius:4px; }
-.chip-label { font-size:11px; line-height:1.2; font-weight:600; color:#526778; white-space:nowrap; }
-.chip.ativo { background:#eaf1f6; border-color:#c4d6e2; box-shadow:none; }
-.chip.ativo .chip-label { color:#153d59; }
-.chip:hover { transform:none; background:#f2f6f9; }
-.chip.chip-oferta,.chip.chip-oferta.ativo { background:#fff7e8; color:#a56c15; border-color:#f0dfbd; box-shadow:none; font-size:23px; }
-.chip.chip-oferta::after { display:none; }
-.chip.chip-oferta .chip-label { color:#8b601e; }
-#barramarcasWrap { top:var(--brands-top)!important; background:#f4f6f8!important; padding:10px 28px!important; }
-.catalogo-layout { max-width:1600px; margin:0 auto; padding:28px; gap:28px; }
-.catalogo-coluna { min-width:0; }
-.catalogo-intro { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:24px; }
-.eyebrow { display:block; font-size:10px; font-weight:700; letter-spacing:1.8px; text-transform:uppercase; color:#7c6a48; margin-bottom:6px; }
-.catalogo-intro h1 { font-size:clamp(24px,3vw,32px); line-height:1.2; font-weight:700; letter-spacing:-.8px; color:#102c43; margin-bottom:8px; }
-.catalogo-intro p { color:#647788; font-size:14px; }
-.intro-link { white-space:nowrap; border:1px solid #d4dfe7; background:#fff; padding:10px 14px; border-radius:8px; color:#153d59; font-size:13px; font-weight:600; }
-.conteudo { width:100%; }
-.familia-bloco { margin:0 0 28px; }
-.familia-head { padding:0 0 12px; margin-bottom:14px; border-bottom:1px solid #dce5eb; }
-.familia-head h2 { font-size:19px; font-weight:700; }
-.familia-card,.isca-card,.anzol-card,.molinete-card { border-radius:12px; box-shadow:none; padding:20px; gap:24px; }
-.familia-foto-principal { background:#fff; padding:14px; max-width:240px; }
-.btn-detalhes { font-size:11px; padding:9px 12px; font-weight:600; }
-.linha-filho-container { border-color:#e3e9ee; margin-bottom:8px; }
-.linha-filho { padding:12px; gap:12px; }
-.l-info-main { gap:8px; }
-.l-nome { font-size:13px; font-weight:600; line-height:1.5; }
-.l-cod { font-size:11px; font-weight:500; }
-.l-preco { font-size:16px; font-weight:700; color:#153d59; }
-.l-direita-wrap { gap:12px; }
-.qtd-ctrl button,.isca-qtd-ctrl button,.anzol-qtd-ctrl button,.molinete-qtd-ctrl button { width:34px; height:36px; font-size:17px; background:#f4f7f9; }
-.qtd-ctrl input,.isca-qtd-ctrl input,.anzol-qtd-ctrl input,.molinete-qtd-ctrl input { width:48px; min-width:40px; height:36px; font-size:14px; }
-.qtd-ctrl { flex-shrink:0; }
-.item-carrinho .qtd-ctrl { height:36px!important; }
-.item-carrinho .qtd-ctrl input { height:34px!important; }
-.isca-grade,.anzol-grade,.molinete-grade { grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; }
-.isca-cor-card,.anzol-numero-card,.molinete-numero-card { padding:12px; border-radius:10px; gap:5px; }
-.cor-nome,.anzol-numero,.molinete-numero { font-size:13px; font-weight:600; }
-.cor-preco,.anzol-preco,.molinete-preco { font-size:15px; color:#153d59; }
-.isca-modelo-btn,.anzol-tab,.molinete-tab { padding:9px 13px; font-size:12px; font-weight:600; }
-.mini-nome { font-size:10px; font-weight:600; }
-.filho-mini { width:80px; min-width:80px; padding:6px; }
-.grade-soltos { grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:16px; }
-.card-solto { padding:14px; }
-.card-solto .nome { font-size:13px; margin:10px 0; }
-.card-solto .preco { font-size:17px; color:#153d59; }
-.black-hero { background:#e8eff4; border:1px solid #d6e2ea; border-radius:12px; margin:0 0 20px; padding:24px; text-align:left; color:#153d59; display:flex; flex-direction:column; align-items:flex-start; }
-.black-hero::before { display:none; }
-.black-hero .tag-black { background:#153d59; color:white; box-shadow:none; border-radius:4px; font-size:10px; letter-spacing:1.4px; font-weight:600; }
-.black-hero h1 { background:none; -webkit-text-fill-color:initial; color:#153d59; text-transform:none; font-size:26px; font-weight:700; }
-.black-hero p { font-size:13px; font-weight:400; }
-.black-contador { gap:6px; }
-.black-contador .bloco-tempo { background:#fff; border:1px solid #d5e1e9; min-width:46px; padding:7px; }
-.black-contador .num-tempo { color:#153d59; font-size:17px; font-weight:600; }
-.black-contador .label-tempo { color:#657b8c; font-size:9px; }
-.black-filtros { padding:0 0 16px; }
-.black-filtro-btn { font-size:12px; font-weight:600; border-width:1px; padding:9px 15px; border-radius:7px; }
-.black-filtro-btn.ativo { background:#153d59; color:#fff; border-color:#153d59; box-shadow:none; }
-.grade-ofertas { padding:0; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:18px; }
-.card-oferta { border:1px solid #dce4ea; box-shadow:none; border-radius:12px; }
-.card-oferta:hover { transform:translateY(-2px); border-color:#abc2d2; box-shadow:0 8px 24px #102c430a; }
-.card-oferta .selo-desconto { background:#fff5e5; border:1px solid #f0dfbd; color:#8b601e; box-shadow:none; font-size:12px; font-weight:700; }
-.card-oferta .selo-black { background:#f0f4f7; color:#526b7e; font-size:9px; font-weight:600; }
-.card-oferta .img-box { padding:24px; }
-.card-oferta .corpo-oferta { padding:16px; background:white; }
-.card-oferta .marca-tag { font-size:10px; font-weight:600; padding:4px 8px; }
-.card-oferta .titulo-prod { font-size:14px; font-weight:600; line-height:1.5; min-height:3em; margin:6px 0 12px; }
-.card-oferta .bloco-preco-balcao { background:transparent; border:0; padding:0; text-align:left; margin-bottom:14px; }
-.card-oferta .txt-de { font-size:12px; font-weight:400; }
-.card-oferta .txt-por { color:#153d59; font-size:23px; font-weight:700; line-height:1.5; }
-.card-oferta .btn-add-primeiro { background:#168267; font-size:13px; font-weight:600; min-height:44px; border-radius:7px; }
-.card-oferta .btn-add-primeiro:hover { transform:none; background:#106b53; box-shadow:none; }
-.card-oferta .qtd-oferta-wrap { border-width:1px; border-radius:7px; }
-.card-oferta .qtd-oferta-wrap button { min-width:38px; min-height:36px; }
-.painel-carrinho { border-radius:12px; box-shadow:0 12px 48px #102c4326; max-width:460px; bottom:92px; }
-.painel-head { background:white; color:#153d59; padding:18px; border-bottom:1px solid #e2e8ed; font-size:16px; font-weight:700; }
-.painel-head button { color:#153d59!important; min-width:36px; min-height:36px; }
-.painel-lista { padding:12px; max-height:45vh; }
-.item-carrinho { background:#f5f7f9; padding:12px; }
-.item-titulo { font-size:13px; font-weight:600; }
-.item-selo-economia { background:#e9f5ef; color:#216449; box-shadow:none; text-transform:none; font-weight:600; }
-.painel-foot { padding:18px; }
-.painel-foot button { font-size:12px!important; font-weight:600!important; min-height:44px; }
-.rodape-economia { background:#edf7f1; color:#28664d; border:1px solid #d3e8db; font-weight:400; }
-.rodape-economia strong { color:#216449; }
-.fab-carrinho { display:none!important; }
-.resumo-mobile { display:none; }
-#btnWhatsVendedor { border-radius:8px!important; box-shadow:none!important; padding:10px 14px!important; font-weight:600!important; font-size:12px!important; bottom:20px!important; }
-#telaLogin { background:#102c43; }
-.login-box { max-width:440px; padding:40px; border-radius:16px; box-shadow:0 24px 80px #0003; text-align:left; }
-.login-marca { color:#153d59; font-size:26px; font-weight:800; letter-spacing:4px; margin-bottom:30px; }
-.login-box h1 { font-size:24px; font-weight:700; letter-spacing:-.5px; }
-.login-box p { line-height:1.7; font-size:14px; }
-.login-label { display:block; font-size:13px; font-weight:600; color:#40566a; margin-bottom:8px; }
-.login-box input { font-size:16px; text-align:left; letter-spacing:0; font-weight:500; border-width:1px; }
-.login-box button { font-size:14px; font-weight:600; border-radius:8px; }
-.login-nota { margin:18px 0 0!important; color:#82919d!important; font-size:12px!important; }
-.revisao-dialog { border:1px solid #d9e3ea; border-radius:16px; padding:0; margin:auto; width:min(620px,calc(100% - 32px)); max-height:85vh; color:#24394b; box-shadow:0 24px 80px #0003; }
-.revisao-dialog::backdrop { background:#102c43aa; }
-.revisao-dialog form { display:flex; flex-direction:column; max-height:85vh; }
-.revisao-topo { padding:24px; border-bottom:1px solid #e2e8ed; }
-.revisao-topo h2 { color:#153d59; font-size:22px; margin-bottom:6px; }
-.revisao-topo p { color:#647788; font-size:13px; }
-.revisao-itens { overflow:auto; padding:8px 24px; }
-.revisao-item { padding:14px 0; border-bottom:1px solid #e8edf1; display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; font-size:14px; }
-.revisao-item small { display:block; color:#647788; margin-top:4px; }
-.revisao-rodape { padding:24px; border-top:1px solid #e2e8ed; }
-.revisao-total { display:flex; justify-content:space-between; font-size:20px; margin-bottom:20px; color:#153d59; }
-.revisao-acoes { display:flex; justify-content:flex-end; gap:10px; }
-.revisao-acoes button { min-height:44px; border-radius:8px; padding:10px 18px; border:1px solid #d4dfe7; background:#fff; color:#153d59; font-size:14px; font-weight:600; }
-.revisao-acoes .confirmar { color:white; background:#168267; border-color:#168267; }
-@media(min-width:1280px) {
- body { padding-bottom:28px; }
- .catalogo-layout { display:grid; grid-template-columns:minmax(0,1fr) 330px; align-items:start; }
- .painel-carrinho,.painel-carrinho.on { display:flex; position:sticky; top:calc(var(--brands-top) + 64px); bottom:auto; left:auto; right:auto; width:100%; max-width:none; margin:0; box-shadow:0 4px 18px #102c4305; }
- .painel-carrinho .painel-head button { display:none; }
- .painel-lista { max-height:calc(100vh - var(--brands-top) - 330px); min-height:100px; }
-}
-@media(max-width:1279px) {
- .resumo-mobile { position:fixed; bottom:14px; right:20px; left:20px; z-index:160; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:13px 18px; border:1px solid #31556e; border-radius:12px; background:#153d59; color:white; box-shadow:0 6px 24px #102c4333; cursor:pointer; }
- .resumo-mobile[hidden] { display:none; }
- .resumo-mobile strong { font-size:16px; font-weight:600; }
- .resumo-mobile small { display:block; font-size:11px; color:#c2d3df; text-align:left; }
- .resumo-mobile .resumo-acao { font-size:13px; font-weight:600; }
- #btnWhatsVendedor { bottom:94px!important; }
-}
-@media(max-width:767px) {
- .topo-inner { padding:12px 16px; gap:12px; }
- .identidade strong { font-size:19px; }
- .identidade small { font-size:8px; }
- .info-cliente { margin-left:auto; max-width:calc(100% - 110px); font-size:10px; gap:6px; justify-content:flex-end; }
- #nomeCliente { max-width:110px; }
- .info-cliente .uf { display:none; }
- .btn-topo-acao,.btn-topo-sair { padding:6px 8px; min-height:34px; font-size:11px; }
- .busca-wrap { order:3; flex-basis:100%; }
- .busca-wrap input { font-size:14px; min-height:44px; }
- .chips-wrap { padding:9px 12px; }
- .chip { min-width:83px; height:64px; padding:6px 8px; }
- .chip-label { font-size:10px; }
- #barramarcasWrap { padding:8px 16px!important; }
- .catalogo-layout { padding:20px 14px; }
- .catalogo-intro { align-items:flex-start; }
- .catalogo-intro p { font-size:12px; }
- .intro-link { display:none; }
- .familia-card,.isca-card,.anzol-card,.molinete-card { padding:14px; gap:16px; }
- .familia-head h2 { font-size:17px; }
- .familia-foto-principal { max-width:200px; }
- .linha-filho { padding:12px 10px; }
- .l-info-main { min-width:100%; }
- .l-direita-wrap { width:100%; justify-content:space-between; }
- .grade-ofertas { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
- .card-oferta .img-box { padding:12px; }
- .card-oferta .corpo-oferta { padding:10px; }
- .card-oferta .titulo-prod { font-size:12px; }
- .card-oferta .txt-por { font-size:19px; }
- .card-oferta .selo-black { display:none; }
- .card-oferta .selo-desconto { top:6px; left:6px; font-size:10px; padding:3px 6px; }
- .card-oferta .btn-add-primeiro { font-size:11px; padding:10px 6px; }
- .black-hero { padding:20px; }
- .black-hero h1 { font-size:23px; }
- .isca-grade,.anzol-grade,.molinete-grade { grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:8px; }
- .login-box { padding:28px; }
- .resumo-mobile { left:12px; right:12px; bottom:12px; }
- .revisao-acoes { flex-direction:column-reverse; }
- .revisao-topo,.revisao-rodape { padding:20px; }
-}
-@media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }
-
+  /* Apresentação e informações comerciais na entrada */
+  #telaLogin { overflow-y:auto; align-items:flex-start; }
+  #telaLogin .login-box { margin:auto; max-width:460px; }
+  .login-marca-logo { display:block; width:220px; max-width:100%; height:auto; margin:0 auto 18px; }
+  .login-box .login-apresentacao { margin-bottom:18px; line-height:1.5; }
+  .login-box .login-ipi { margin:14px 0 0; color:var(--azul-800); font-size:.75rem; font-weight:800; letter-spacing:.4px; }
+  .login-politicas { margin-top:22px; padding-top:18px; border-top:1px solid var(--cinza-200); text-align:left; }
+  .login-politicas h2 { font-size:.85rem; color:var(--azul-800); margin-bottom:10px; }
+  .login-box .btn-politica { display:block; margin-top:8px; padding:12px; background:var(--cinza-50); border:1px solid var(--cinza-200); color:var(--azul-800); text-align:left; font-size:.72rem; line-height:1.5; font-weight:700; }
+  .login-box .btn-politica:hover { background:var(--azul-50); border-color:var(--azul-500); }
+  .btn-politica:focus-visible, .politica-fechar:focus-visible { outline:3px solid var(--azul-500); outline-offset:3px; }
+  .politica-dialog { position:fixed; inset:0; margin:auto; padding:0; width:calc(100% - 32px); max-width:760px; max-height:85vh; max-height:85dvh; border:none; border-radius:14px; color:var(--texto); background:white; box-shadow:0 25px 80px rgba(0,0,0,.4); overflow:hidden; }
+  .politica-dialog::backdrop { background:rgba(0,15,30,.8); }
+  .politica-dialog[open] { display:flex; flex-direction:column; }
+  .politica-head { display:flex; align-items:center; gap:16px; padding:18px 20px; background:var(--azul-800); color:white; flex-shrink:0; }
+  .politica-head h2 { flex:1; font-size:.95rem; line-height:1.5; }
+  .politica-fechar { flex-shrink:0; width:36px; height:36px; border:1px solid rgba(255,255,255,.5); border-radius:8px; background:transparent; color:white; font-size:1.25rem; }
+  .politica-texto { padding:20px; overflow-y:auto; overscroll-behavior:contain; font-size:.88rem; line-height:1.7; }
+  .politica-texto p { margin-bottom:16px; }
+  .politica-texto h3 { font-size:.95rem; color:var(--azul-800); margin:22px 0 12px; }
+  .politica-texto a { color:var(--azul-700); overflow-wrap:anywhere; }
+  .aviso-frete { margin:0 0 10px; color:var(--cinza-500); font-size:.7rem; line-height:1.5; text-align:center; }
 </style>
 </head>
 <body>
@@ -738,20 +577,25 @@ button:focus-visible,a:focus-visible,input:focus-visible { outline:3px solid #d7
 </a>
 <div id="telaLogin">
   <div class="login-box">
-    <div class="login-marca">MARINE</div>
-    <h1>O próximo pedido da sua loja começa aqui.</h1>
+    <img class="login-marca-logo" src="https://gpzqzwrqndawhhglycat.supabase.co/storage/v1/object/public/PECAS/logo--marine-rgb-png.png" alt="Marine Sports" width="220" decoding="async">
+    <p class="login-apresentacao">Marine Sports — produtos para pesca.<br>Conheça nosso catálogo e consulte as informações comerciais para sua loja.</p>
+    <h1>Catálogo B2B</h1>
     <p>Digite o seu CNPJ para acessar a tabela de preços.</p>
     <div class="login-erro" id="loginErro">CNPJ não encontrado ou inativo.</div>
-    <label class="login-label" for="inputCnpj">CNPJ da sua empresa</label>
-    <input inputmode="numeric" type="text" id="inputCnpj" placeholder="00.000.000/0000-00" autocomplete="off">
-    <button onclick="fazerLogin()">Acessar catálogo →</button>
-    <p class="login-nota">Produtos, preços e pedidos em um só lugar.</p>
+    <input type="text" id="inputCnpj" placeholder="00.000.000/0000-00" autocomplete="off">
+    <button onclick="fazerLogin()">Acessar Catálogo</button>
+    <p class="login-ipi">VALORES COM IPI INCLUSO</p>
+    <section class="login-politicas" aria-labelledby="tituloInformacoesComerciais">
+      <h2 id="tituloInformacoesComerciais">Informações comerciais</h2>
+      <button type="button" class="btn-politica" data-politica="trocas" aria-haspopup="dialog" aria-controls="dialogPolitica">POLÍTICA DE TROCAS E DEVOLUÇÕES</button>
+      <button type="button" class="btn-politica" data-politica="revendedores" aria-haspopup="dialog" aria-controls="dialogPolitica">POLÍTICA DE GARANTIA PARA REVENDEDORES E LOJISTAS</button>
+      <button type="button" class="btn-politica" data-politica="consumidor" aria-haspopup="dialog" aria-controls="dialogPolitica">POLÍTICA DE GARANTIA PARA CONSUMIDOR FINAL</button>
+    </section>
   </div>
 </div>
 
 <header class="topo">
   <div class="topo-inner">
-    <a class="identidade" href="#conteudo" aria-label="Marine, início do catálogo"><strong>MARINE</strong><small>Portal do lojista</small></a>
     <div class="info-cliente" id="infoCliente" style="display:none;">
       👤 <span id="nomeCliente">—</span>
       <span class="uf" id="badgeUf">—</span>
@@ -760,7 +604,7 @@ button:focus-visible,a:focus-visible,input:focus-visible { outline:3px solid #d7
     </div>
 
     <div class="busca-wrap">
-      <input type="search" id="busca" aria-label="Buscar produtos" placeholder="Buscar por produto, código ou palavra-chave…" autocomplete="off">
+      <input type="search" id="busca" placeholder="🔍 Buscar produto por código, nome ou palavra-chave..." autocomplete="off">
     </div>
   </div>
 </header>
@@ -776,16 +620,9 @@ button:focus-visible,a:focus-visible,input:focus-visible { outline:3px solid #d7
   <div id="barramarcas" style="max-width:1600px; margin:0 auto; display:flex; gap:8px; align-items:center;"></div>
 </div>
 
-<div class="catalogo-layout">
-<div class="catalogo-coluna">
-<section class="catalogo-intro" aria-label="Catálogo do lojista">
-  <div><span class="eyebrow">Seu negócio, bem abastecido</span><h1>Catálogo do lojista</h1><p>Encontre os produtos da sua loja e monte seu próximo pedido.</p></div>
-  <button type="button" class="intro-link" onclick="abrirMeusPedidos()">Meus pedidos ↗</button>
-</section>
 <main class="conteudo" id="conteudo">
   <div class="loading">Carregando catálogo…</div>
 </main>
-</div>
 
 <div class="fab-carrinho" id="btnCarrinho" onclick="toggleCarrinho()" style="display:none;">
   🛒
@@ -803,6 +640,7 @@ button:focus-visible,a:focus-visible,input:focus-visible { outline:3px solid #d7
     <span>Total:</span>
     <span id="carrinhoTotal">R$ 0,00</span>
   </div>
+  <p class="aviso-frete">O frete é grátis para pedidos acima de R$ 4.000,00</p>
   <div style="display:flex; gap:8px;">
     <button type="button" onclick="salvarRascunho()" 
             style="flex:1; background:#003366; color:white; border:none; padding:10px; border-radius:8px; font-weight:800; font-size:0.85rem; cursor:pointer;">
@@ -815,19 +653,6 @@ button:focus-visible,a:focus-visible,input:focus-visible { outline:3px solid #d7
 </div>
 </div>
 
-</div><!-- /catalogo-layout -->
-<button type="button" class="resumo-mobile" id="resumoMobile" onclick="toggleCarrinho()" aria-controls="painelCarrinho" aria-expanded="false" hidden>
-  <span><small id="resumoQuantidade">Seu pedido está vazio</small><strong id="resumoTotal">R$ 0,00</strong></span>
-  <span class="resumo-acao">Ver pedido →</span>
-</button>
-<dialog class="revisao-dialog" id="revisaoPedido" aria-labelledby="revisaoTitulo">
-  <form method="dialog">
-    <div class="revisao-topo"><span class="eyebrow">Última conferência</span><h2 id="revisaoTitulo">Revise seu pedido</h2><p>Confira os produtos e as quantidades antes de enviar.</p></div>
-    <div class="revisao-itens" id="revisaoItens"></div>
-    <div class="revisao-rodape"><div class="revisao-total"><span>Total do pedido</span><strong id="revisaoTotal"></strong></div>
-    <div class="revisao-acoes"><button value="cancelar">Continuar comprando</button><button class="confirmar" value="enviar">Confirmar e enviar pedido</button></div></div>
-  </form>
-</dialog>
 <div class="modal-bg" id="modalBg" onclick="fecharModal(event)">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-head">
@@ -845,6 +670,82 @@ button:focus-visible,a:focus-visible,input:focus-visible { outline:3px solid #d7
   </div>
 </div>
 
+<dialog id="dialogPolitica" class="politica-dialog" aria-labelledby="tituloPolitica">
+  <div class="politica-head">
+    <h2 id="tituloPolitica"></h2>
+    <button type="button" class="politica-fechar" aria-label="Fechar política" autofocus>✕</button>
+  </div>
+  <div id="textoPolitica" class="politica-texto" tabindex="0" role="region" aria-labelledby="tituloPolitica"></div>
+</dialog>
+
+<template id="politica-trocas">
+  <p>1- Assim que receber sua compra <strong>Marine</strong>, verifique se a embalagem está devidamente lacrada, se os produtos estão intactos e se o pedido está de acordo com a nota fiscal.</p>
+  <p>1.1- Recuse o recebimento da encomenda no ato da entrega caso identifique qualquer irregularidade. Na hipótese de algum desses itens se encontrar em desacordo, entre em contato imediatamente com um de nossos colaboradores.</p>
+  <h3>2- Equívoco no envio de mercadoria:</h3>
+  <p>2.1- O prazo para detectar o envio incorreto de mercadoria é de, no máximo, 07 (sete) dias, a contar do recebimento do(s) produto(s). Caso haja o recebimento de produto(s) diverso(s) daquele(s) que fora(m) confirmado(s) para envio, o revendedor/lojista deverá entrar em contato com um de nossos colaboradores, comunicar o ocorrido, para, então, a troca ser concretizada sem custos.</p>
+  <h3>3- Desistência:</h3>
+  <p>3.1- O prazo para desistência é de no máximo 07 (sete) dias, a contar do recebimento da mercadoria. O(s) produto(s) deverá(ão) estar na embalagem original, sem indícios de violação e acompanhado(s) de sua respectiva nota fiscal. Após o retorno do(s) produtos(s), se este(s) se apresentar(em) em perfeitas condições, será gerado o crédito em favor do revendedor lojista para utilização em próxima compra. Em caso de desistência, os custos de devolução serão por conta do desistente.</p>
+</template>
+
+<template id="politica-revendedores">
+  <p>1- Os produtos Marine Sports são cobertos pela garantia contra defeito de fabricação (que não se confunde com defeito por mau uso, exposição ou armazenamento pelo revendedor/lojista) nos seguintes termos e condições</p>
+  <p>1.1- <strong>VARAS:</strong> A garantia é de 07 (sete) dias, contados a partir do recebimento dos produtos pelo revendedor/lojista, ficando este totalmente responsável pela conferência da integridade das varas dentro do referido prazo, e está condicionada a análise técnica.</p>
+  <p>1.2. <strong>DEMAIS PRODUTOS:</strong> A garantia é de 30 (trinta) dias, contados a partir do recebimento dos produtos pelo revendedor/lojista, ficando este totalmente responsável pela conferência da integridade daqueles dentro do referido prazo, exceto os de embalagens lacradas, e está condicionada a análise técnica.</p>
+  <p>1.3- É imprescindível a apresentação da Nota Fiscal da compra, a fim de comprovar a origem do produto e o respectivo período de garantia.</p>
+  <p>1.4- O Revendedor/Lojista assume a total e irrevogável responsabilidade pela conferência da integridade dos produtos adquiridos, exceto os de embalagens lacradas, dentro dos prazos retro estipulados (vara, 07 dias; demais produtos, 30 dias), contados a partir da data do recebimento destes em seu estabelecimento. Não solicitada a garantia pelo Revendedor/Lojista à Marine Sports dentro dos prazos pertinentes, considerar-se-á expirada tal prerrogativa.</p>
+  <h3>2- O que a Garantia não cobre:</h3>
+  <p>2.1- Danos oriundos do uso inadequado do produto, modificações não autorizadas, consertos não autorizados, negligência ou abuso.</p>
+  <p>2.3- Falhas no funcionamento normal do produto decorrentes do mal armazenamento pelo revendedor/lojista em seu estoque.</p>
+  <p>2.4- Todas as superfícies plásticas e todas as outras partes expostas externamente arranhadas ou danificadas devido à utilização imprópria ou exposição inadequada.</p>
+  <p>2.5 - Deterioração relacionada ao desgaste natural do produto, como, a título exemplificativo, bem como danos causados por agentes da natureza (chuva, sol, raios, enchentes, maresia, etc).</p>
+  <p>2.6- Produtos operados em desacordo com as especificações indicadas no site da Marine Sports (<a href="https://www.marinesportsfishing.com" target="_blank" rel="noopener noreferrer">www.marinesportsfishing.com</a>), manual ou na etiqueta (“TAG”) anexada ao produto.</p>
+  <p>2.7- Danos causados por agentes da natureza ou ocorridos devido a acidente, incêndio, dano intencional, dano por embalagem ou acondicionamento inadequado para transporte, manutenção imprópria, ou qualquer outro tipo de ocorrência de força maior.</p>
+  <p>2.8 - Defeitos e danos decorrentes da utilização de componentes não compatíveis e não originais.</p>
+  <p>3- A Marine Sports não pode fornecer qualquer outra garantia, de qualquer tipo, seja expressa ou implícita, relativa aos seus produtos.</p>
+  <p>4- A presente política de garantia pactuada entre a Marine Sports e o Revendedor/Lojista (relação não abrangida pelo Código de Defesa do Consumidor) não interfere no direito de garantia estabelecido pela legislação consumerista entre a Marine Sports e o consumidor final do produto.</p>
+</template>
+
+<template id="politica-consumidor">
+  <p>1- Os produtos Marine Sports adquiridos por consumidor final são cobertos pela garantia contra defeito de fabricação (que não se confunde com defeito por mau uso do consumidor) nos seguintes termos e condições:</p>
+  <p>1.1- A garantia é de 90 (noventa) dias (garantia legal - CDC), contados a partir da data da compra do produto ou da data de entrega deste ao consumidor final, e está condicionada a análise técnica.</p>
+  <p>1.2- É terminantemente imprescindível a apresentação da Nota Fiscal da compra, a fim de comprovar a origem do produto e o respectivo período de garantia.</p>
+  <p>1.3- Os consumidores finais deverão solicitar a garantia à Loja em que a compra foi efetuada. Quem efetuará a solicitação de garantia com a Marine Sports serão os lojistas e não os consumidores finais.</p>
+  <h3>2- O que a Garantia não cobre:</h3>
+  <p>2.1- Danos oriundos do uso inadequado do produto, modificações não autorizadas, consertos não autorizados, negligência ou abuso.</p>
+  <p>2.3- Falhas no funcionamento normal do produto decorrentes da falta de limpeza e excesso de resíduo, ou, ainda, decorrentes da existência de objetos em seu interior que sejam estranhos ao seu funcionamento e finalidade de utilização.</p>
+  <p>2.4- Todas as superfícies plásticas e todas as outras partes expostas externamente arranhadas ou danificadas devido à utilização imprópria pelo usuário.</p>
+  <p>2.5 - Deterioração relacionada ao desgaste natural do produto, bem como complicações decorrentes da falta de manutenção especializada.</p>
+  <p>2.6- Produtos operados em desacordo com as especificações indicadas no site da Marine Sports (<a href="https://www.marinesportsfishing.com" target="_blank" rel="noopener noreferrer">www.marinesportsfishing.com</a>), manual ou na etiqueta ("TAG") anexada ao produto.</p>
+  <p>2.7- Danos causados por agentes da natureza (chuva, sol, raios, enchentes, maresia, etc.).</p>
+  <p>2.8- Danos ao produto que tenham ocorrido devido a acidente, incêndio, dano intencional, dano por embalagem ou acondicionamento inadequado para transporte, manutenção imprópria, ou qualquer outro tipo de ocorrência de força maior.</p>
+  <p>2.9 - Defeitos e danos decorrentes da utilização de componentes não compatíveis e não originais.</p>
+  <p>3 - Nem a Marine Sports, nem qualquer um de seus revendedores e distribuidores, podem fornecer qualquer outra garantia, de qualquer tipo, seja expressa ou implícita, relativa aos produtos Marine Sports.</p>
+  <p>4 - A presente política de garantia estabelecida nos exatos termos da legislação consumerista entre a Marine Sports e o consumidor final do produto não interfere na política de garantia pactuada entre a Marine Sports e os Revendedores/Lojistas (relação não abrangida pelo Código de Defesa do Consumidor).</p>
+</template>
+
+<script>
+(() => {
+  const dialog = document.getElementById('dialogPolitica');
+  const texto = document.getElementById('textoPolitica');
+  document.querySelectorAll('[data-politica]').forEach(botao => {
+    botao.addEventListener('click', () => {
+      const modelo = document.getElementById('politica-' + botao.dataset.politica);
+      document.getElementById('tituloPolitica').textContent = botao.textContent;
+      texto.replaceChildren(modelo.content.cloneNode(true));
+      dialog.showModal();
+      texto.scrollTop = 0;
+    });
+  });
+  dialog.querySelector('.politica-fechar').addEventListener('click', () => dialog.close());
+  dialog.addEventListener('click', evento => {
+    if (evento.target !== dialog) return;
+    const limites = dialog.getBoundingClientRect();
+    if (evento.clientX < limites.left || evento.clientX > limites.right ||
+        evento.clientY < limites.top || evento.clientY > limites.bottom) dialog.close();
+  });
+})();
+</script>
+
 <script>
 let todosItens = [], todasFamilias = [], grupoAtual = '__OFERTAS__', buscaAtual = '', carrinho = {};
 let clienteLogado = null;
@@ -855,6 +756,8 @@ let ofertasCache = [];
 let mapaCatalogoCache = new Map();
 let filtroOfertaAtual = '';
 let contadorBlackInterval = null;
+let dataValidadeTabela = "";
+
 const PRODUTOS_LOTE_10 = [
   '5795', '5796', '5797', '5798', '5799', '5800', '5801', '5802', '5803', 
   '6697', 
@@ -1005,6 +908,10 @@ async function verificarValidadeTabela() {
     const r = await fetch('/api/regras');
     const j = await r.json();
     if (!j.ok || !j.regras || !j.regras.tabela_data_fim) return;
+
+     // 👇 NOVO: Salva a data para o carrinho usar 👇
+    dataValidadeTabela = j.regras.tabela_data_fim;
+    // 👆 FIM DO NOVO 👆
 
     const barra = document.getElementById('barraAvisoTabela');
     const hoje = new Date();
@@ -1212,7 +1119,7 @@ async function salvarRascunho() {
     const calc = calcularValoresProduto(item.precoBase, cod);
     return { 
       codigo: cod, 
-      desc: item.desc, 
+      desc: descricaoCompletaCarrinho(cod, item), 
       qtd: item.qtd, 
       precoBase: item.precoBase, 
       precoFinal: calc.precoFinal 
@@ -1547,7 +1454,7 @@ async function finalizarPedido() {
   const itens = Object.keys(carrinho).map(cod => {
     const item = carrinho[cod];
     const calc = calcularValoresProduto(item.precoBase, cod);
-    return { codigo: cod, desc: item.desc, qtd: item.qtd, precoBase: item.precoBase, precoFinal: calc.precoFinal };
+    return { codigo: cod, desc: descricaoCompletaCarrinho(cod, item), qtd: item.qtd, precoBase: item.precoBase, precoFinal: calc.precoFinal };
   });
   if (itens.length === 0) { alert('Seu carrinho está vazio.'); return; }
 
@@ -1564,7 +1471,7 @@ async function finalizarPedido() {
   }
 
   const total = itens.reduce((acc, it) => acc + (it.precoFinal * it.qtd), 0);
-  if (!await confirmarEnvioVisual(total)) return;
+  if (!confirm(`Deseja finalizar e enviar este pedido no valor de R$ ${fmtMoeda(total)}?`)) return;
 
   try {
     const r = await fetch('/api/pedidos', {
@@ -1693,10 +1600,10 @@ function montarChips() {
   });
 
   document.getElementById('chips').innerHTML = `
-    <button class="chip chip-oferta ativo" onclick="trocarGrupo('__OFERTAS__', this)" title="Black November - Ofertas"><span aria-hidden="true">♢</span><span class="chip-label">Ofertas</span></button>
+    <button class="chip chip-oferta ativo" onclick="trocarGrupo('__OFERTAS__', this)" title="Black November - Ofertas">🔥</button>
     ${todosGrupos.map(g => {
       const iconeUrl = getIconeUrl(g);
-      return `<button class="chip" onclick="trocarGrupo('${g}', this)" title="${g}"><img src="${iconeUrl}" class="chip-img" alt="" onerror="this.onerror=null; this.src='${BUCKET_ICONIS}ACESSORIOS.jpg';"><span class="chip-label">${escapeHtml(g)}</span></button>`;
+      return `<button class="chip" onclick="trocarGrupo('${g}', this)" title="${g}"><img src="${iconeUrl}" class="chip-img" alt="${g}" onerror="this.onerror=null; this.src='${BUCKET_ICONIS}ACESSORIOS.jpg';"></button>`;
     }).join('')}
   `;
 }
@@ -3192,6 +3099,45 @@ function registrarAcaoLog(codigo, acao, qtdAnterior) {
 }
 
 
+// Consulta os atributos do SKU, inclusive para ofertas e pedidos reabertos.
+function detalhesItemCarrinho(codigo, itemCarrinho) {
+  const cod = String(codigo);
+  const produto = todosItens.find(item => String(item.codigo) === cod)
+    || (mapaCatalogoCache.has(cod) ? normalizarItem(mapaCatalogoCache.get(cod)) : null);
+  const nome = itemCarrinho.desc || produto?.subgrupo || `Produto ${cod}`;
+  let atributos = produto?.atributos || {};
+  if (typeof atributos === 'string') atributos = parseAtributos(atributos);
+  const variacoes = [];
+  const chaves = new Set();
+  const normalizar = valor => String(valor).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().trim();
+  const adicionar = (rotulo, valor) => {
+    if (valor == null || typeof valor === 'object') return;
+    const texto = String(valor).trim();
+    const chave = normalizar(rotulo);
+    if (!texto || ['-', 'N/A', 'NULL', 'UNDEFINED'].includes(texto.toUpperCase()) || chaves.has(chave)) return;
+    chaves.add(chave);
+    variacoes.push([rotulo, texto]);
+  };
+  for (const [rotulo, valor] of Object.entries(atributos || {})) {
+    // Mantém as especificações do produto, sem repetir dados comerciais.
+    if (/^(PRECO|ESTOQUE|DESCRICAO|IMAGEM|URL|LINK|CODIGO|SKU|EAN|QTD|CX\/CT)$/.test(normalizar(rotulo))) continue;
+    adicionar(rotulo, valor);
+  }
+  if (produto && /CARRETILHA/i.test(produto.grupo || '') &&
+      !Object.keys(atributos).some(chave => /LADO|MANIVELA/i.test(chave))) {
+    adicionar('Lado da manivela', analisarCarretilha(produto).ladoTag);
+  }
+  // Preserva também o nome específico do SKU quando o carrinho veio de uma oferta.
+  if (produto?.subgrupo && normalizar(nome) !== normalizar(produto.subgrupo) &&
+      !normalizar(nome).includes(normalizar(produto.subgrupo))) adicionar('Variação', produto.subgrupo);
+  return { nome, variacoes };
+}
+
+function descricaoCompletaCarrinho(codigo, itemCarrinho) {
+  const { nome, variacoes } = detalhesItemCarrinho(codigo, itemCarrinho);
+  return [nome, ...variacoes.map(([rotulo, valor]) => `${rotulo}: ${valor}`)].join(' • ');
+}
+
 function atualizarCarrinho() {
   const itens = Object.keys(carrinho); 
   let total = 0, qtdTotal = 0;
@@ -3199,6 +3145,7 @@ function atualizarCarrinho() {
   
   const html = itens.map(cod => {
     const i = carrinho[cod];
+    const detalhes = detalhesItemCarrinho(cod, i);
     const calc = calcularValoresProduto(i.precoBase, cod);
     
     const subUnitario = calc.precoFinal;
@@ -3218,7 +3165,9 @@ function atualizarCarrinho() {
         </div>
 
         <div class="item-dados">
-          <span class="item-titulo">${escapeHtml(i.desc)}</span>
+          <span class="item-titulo">${escapeHtml(detalhes.nome)}</span>
+          <span class="item-codigo">Código: ${escapeHtml(String(cod))}</span>
+          ${detalhes.variacoes.length ? `<dl class="item-variacoes">${detalhes.variacoes.map(([rotulo, valor]) => `<div><dt>${escapeHtml(rotulo)}: </dt><dd>${escapeHtml(valor)}</dd></div>`).join('')}</dl>` : ''}
           
           <div class="item-valores" style="margin-top: 4px;">
             <!-- 👇 NOVO CONTROLE DE QUANTIDADE AQUI NO CARRINHO 👇 -->
@@ -3259,9 +3208,24 @@ function atualizarCarrinho() {
     ? `<div class="rodape-economia">🎉 Você está economizando <strong>R$ ${fmtMoeda(economiaTotal)}</strong> nesta compra!</div>` 
     : '';
 
+  // 👇 AVISO DE RASCUNHO + CONFIRMAÇÃO DO VENDEDOR 👇
+  let textoValidade = '';
+  if (dataValidadeTabela) {
+    const [ano, mes, dia] = dataValidadeTabela.split('-');
+    textoValidade = ` Preços válidos até <strong>${dia}/${mes}/${ano}</strong>.`;
+  }
+
+  const rodapeAviso = Object.keys(carrinho).length > 0
+    ? `<div style="background:#fef3c7; border:1px dashed #f59e0b; color:#92400e; padding:10px 12px; border-radius:8px; font-size:0.72rem; font-weight:600; text-align:center; margin-bottom:10px; line-height:1.4;">
+         ⚠️ <strong>Atenção:</strong> Este é um rascunho e <strong>não reserva estoque</strong>.<br>
+         Ao clicar em <strong>Enviar Pedido</strong>, seu vendedor será notificado para confirmar a disponibilidade dos itens.${textoValidade}
+       </div>` 
+    : '';
+
   document.getElementById('carrinhoTotal').textContent = `R$ ${fmtMoeda(total)}`;
-  atualizarResumoVisual(total, qtdTotal, itens.length);
   document.getElementById('listaCarrinho').innerHTML = html || '<div style="text-align:center;color:#94a3b8;padding:20px;">Vazio</div>';
+
+   
 
   let rodapeEcoEl = document.getElementById('rodapeEconomiaCarrinho');
   if (!rodapeEcoEl) {
@@ -3270,7 +3234,8 @@ function atualizarCarrinho() {
     const foot = document.querySelector('#painelCarrinho .painel-foot');
     if (foot) foot.insertBefore(rodapeEcoEl, foot.firstChild);
   }
-  rodapeEcoEl.innerHTML = rodapeEconomia;
+    // 👇 JUNTA OS DOIS AVISOS AQUI 👇
+  rodapeEcoEl.innerHTML = rodapeAviso + rodapeEconomia;
 
   // Mantém o autosave rodando
   clearTimeout(timerAutosave);
@@ -3317,7 +3282,7 @@ async function autosaveCarrinho() {
   const itens = Object.keys(carrinho).map(cod => {
     const item = carrinho[cod];
     const calc = calcularValoresProduto(item.precoBase, cod);
-    return { codigo: cod, desc: item.desc, qtd: item.qtd, precoBase: item.precoBase, precoFinal: calc.precoFinal };
+    return { codigo: cod, desc: descricaoCompletaCarrinho(cod, item), qtd: item.qtd, precoBase: item.precoBase, precoFinal: calc.precoFinal };
   });
   
   const total = itens.reduce((acc, it) => acc + (it.precoFinal * it.qtd), 0);
@@ -3361,8 +3326,8 @@ async function autosaveCarrinho() {
   }
 }
 
-function toggleCarrinho() { const aberto = document.getElementById('painelCarrinho').classList.toggle('on'); document.getElementById('resumoMobile').setAttribute('aria-expanded', String(aberto)); }
-function fecharCarrinho() { document.getElementById('painelCarrinho').classList.remove('on'); document.getElementById('resumoMobile').setAttribute('aria-expanded', 'false'); }
+function toggleCarrinho() { document.getElementById('painelCarrinho').classList.toggle('on'); }
+function fecharCarrinho() { document.getElementById('painelCarrinho').classList.remove('on'); }
 
 let deb;
 document.getElementById('busca').addEventListener('input', e => {
@@ -3408,40 +3373,6 @@ document.addEventListener('input', function(e) {
     }
   }
 });
-
-
-// Componentes visuais da alternativa index02.
-function atualizarResumoVisual(total, quantidade, produtos) {
-  document.getElementById('resumoMobile').hidden = quantidade <= 0;
-  document.getElementById('resumoQuantidade').textContent = `${produtos} produto${produtos === 1 ? '' : 's'} · ${quantidade} unidade${quantidade === 1 ? '' : 's'}`;
-  document.getElementById('resumoTotal').textContent = `R$ ${fmtMoeda(total)}`;
-}
-function confirmarEnvioVisual(total) {
-  const dialog = document.getElementById('revisaoPedido');
-  document.getElementById('revisaoTotal').textContent = `R$ ${fmtMoeda(total)}`;
-  document.getElementById('revisaoItens').innerHTML = Object.entries(carrinho).map(([codigo, item]) => {
-    const preco = calcularValoresProduto(item.precoBase, codigo).precoFinal;
-    return `<div class="revisao-item"><div>${escapeHtml(item.desc)}<small>Cód. ${escapeHtml(String(codigo))} · ${item.qtd} un. × R$ ${fmtMoeda(preco)}</small></div><strong>R$ ${fmtMoeda(preco * item.qtd)}</strong></div>`;
-  }).join('');
-  dialog.returnValue = '';
-  return new Promise(resolve => {
-    dialog.addEventListener('close', () => resolve(dialog.returnValue === 'enviar'), {once:true});
-    dialog.showModal();
-  });
-}
-function atualizarPosicoesNavegacao() {
-  const topo = document.querySelector('.topo').getBoundingClientRect().height;
-  const categorias = document.querySelector('.chips-wrap').getBoundingClientRect().height;
-  document.documentElement.style.setProperty('--nav-top', `${topo}px`);
-  document.documentElement.style.setProperty('--brands-top', `${topo + categorias}px`);
-}
-const observadorLayout = new ResizeObserver(atualizarPosicoesNavegacao);
-observadorLayout.observe(document.querySelector('.topo'));
-observadorLayout.observe(document.querySelector('.chips-wrap'));
-atualizarPosicoesNavegacao();
-document.getElementById('listaCarrinho').innerHTML = '<div style="padding:28px 12px;text-align:center;color:#647788;font-size:13px;">Seu pedido começa aqui.<br>Escolha os produtos e informe as quantidades.</div>';
-document.addEventListener('keydown', event => { if (event.key === 'Escape') fecharCarrinho(); });
-
 </script>
 </body>
 </html>
