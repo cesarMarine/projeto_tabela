@@ -1742,24 +1742,32 @@ app.get('/api/vendedor/:codigo/clientes-logins', async (req, res) => {
 
 app.get('/api/admin/metricas-pedidos', async (req, res) => {
   try {
-    // 1. Puxa APENAS os pedidos
-    const { data: pedidos, error: errPed } = await supabase
-      .from('pedidos02')
-      .select('id, total, status, data_criacao, cnpj_cliente, codigo_representante')
-      .order('id', { ascending: false });
-
-    if (errPed) throw errPed;
+    // Lê todas as páginas para não omitir pedidos pelo limite do Supabase.
+    const pedidos = [];
+    for (let inicio = 0; ; inicio += 200) {
+      const { data, error } = await supabase.from('pedidos02')
+        .select('id, total, status, data_criacao, cnpj_cliente, codigo_representante')
+        .order('id', { ascending: false }).range(inicio, inicio + 199);
+      if (error) throw error;
+      pedidos.push(...(data || []));
+      if (!data || data.length < 200) break;
+    }
+    const { data: vendedores, error: erroVendedores } = await supabase.from('vendedores').select('codigo_representante,nome');
+    if (erroVendedores) throw erroVendedores;
+    const nomesVendedores = new Map((vendedores || []).map(v => [String(v.codigo_representante), v.nome]));
 
     // 2. Extrai apenas os CNPJs únicos dos pedidos
     const cnpjsParaBuscar = [...new Set((pedidos || []).map(p => String(p.cnpj_cliente || '').replace(/\D/g, '')))];
     
     // 3. Busca no banco APENAS os clientes que estão nessa lista de pedidos
-    const { data: clientes, error: errCli } = await supabase
-      .from('clientes')
-      .select('cnpj, nome_fantasia, razao_social, uf')
-      .in('cnpj', cnpjsParaBuscar); // Filtra apenas os CNPJs que importam
-
-    if (errCli) throw errCli;
+    const clientes = [];
+    for (let inicio = 0; inicio < cnpjsParaBuscar.length; inicio += 200) {
+      const { data, error } = await supabase.from('clientes')
+        .select('codigo, cnpj, nome_fantasia, razao_social, uf')
+        .in('cnpj', cnpjsParaBuscar.slice(inicio, inicio + 200));
+      if (error) throw error;
+      clientes.push(...(data || []));
+    }
 
     // 4. Cria o mapa
     const mapaClientes = {};
@@ -1780,6 +1788,9 @@ app.get('/api/admin/metricas-pedidos', async (req, res) => {
         data_criacao: p.data_criacao,
         cnpj_cliente: p.cnpj_cliente,
         codigo_representante: p.codigo_representante,
+        nome_vendedor: nomesVendedores.get(String(p.codigo_representante)) || '',
+        codigo_cliente: cli.codigo || '',
+        razao_social: cli.razao_social || '',
         nome_cliente: cli.nome_fantasia || cli.razao_social || 'Não encontrado',
         uf: cli.uf || 'N/A'
       };

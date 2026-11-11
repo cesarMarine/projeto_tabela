@@ -51,6 +51,27 @@
   .badge-uf { background:#dbeafe; color:#1e40af; padding:2px 6px; border-radius:4px; font-weight:800; font-size:0.65rem; }
 
   @media(max-width: 900px) { .charts-grid { grid-template-columns: 1fr; } }
+  .titulo-painel { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:24px; flex-wrap:wrap; }
+  .titulo-painel h1 { color:#0d3b66; font-size:1.5rem; margin-bottom:6px; }
+  .titulo-painel p, .texto-apoio { color:#64748b; font-size:.85rem; line-height:1.6; }
+  .btn-atualizar { border:0; background:#0d3b66; color:white; border-radius:9px; padding:11px 18px; font-weight:700; cursor:pointer; }
+  .pedidos-dia { margin-bottom:28px; border:1px solid #dbeafe; }
+  .filtros-dia { display:flex; flex-wrap:wrap; align-items:end; gap:14px; margin:16px 0; }
+  .filtros-dia label { display:grid; gap:6px; font-size:.8rem; font-weight:700; color:#475569; }
+  .filtros-dia input { padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px; font:inherit; color:#0f172a; min-height:42px; }
+  .filtros-dia .busca-dia { flex:1; min-width:210px; }
+  .resumo-dia { display:grid; grid-template-columns:repeat(auto-fit,minmax(155px,1fr)); gap:12px; margin-bottom:18px; }
+  .resumo-dia div { background:#f1f5f9; border-radius:10px; padding:14px; font-size:.78rem; color:#475569; }
+  .resumo-dia strong { display:block; font-size:1.25rem; color:#0d3b66; margin-top:6px; }
+  .tabela-scroll { overflow:auto; max-height:520px; }
+  .pedidos-dia table { min-width:780px; }
+  .pedidos-dia th { position:sticky; top:0; background:white; padding:12px 10px; }
+  .pedidos-dia td { padding:13px 10px; vertical-align:top; }
+  .pedidos-dia td small { display:block; margin-top:4px; color:#64748b; }
+  .status-dia { display:inline-block; padding:5px 8px; border-radius:6px; background:#dbeafe; color:#1d4ed8; font-size:.7rem; font-weight:800; white-space:nowrap; }
+  .status-dia.rascunho { background:#fff7ed; color:#c2410c; }
+  .secao-titulo { font-size:1.05rem; color:#0d3b66; margin:26px 0 14px; }
+  @media(max-width:600px) { .container { padding:14px; } .chart-card,.lista-card { padding:16px; } .listas-grid { grid-template-columns:minmax(0,1fr); } .header-dash { padding:12px; gap:12px; flex-wrap:wrap; } .kpi-card .value { font-size:1.4rem; } }
 </style>
 </head>
 <body>
@@ -77,6 +98,29 @@
   </div>
 
   <div class="container">
+    <div class="titulo-painel">
+      <div><h1>Visão comercial</h1><p>Pedidos, clientes e acompanhamento das vendas.</p><p id="atualizacaoMetricas" class="texto-apoio" role="status"></p></div>
+      <button type="button" class="btn-atualizar" onclick="carregarMetricas()">↻ Atualizar dados</button>
+    </div>
+    <section class="lista-card pedidos-dia" aria-labelledby="tituloPedidosDia">
+      <h3 id="tituloPedidosDia">Pedidos do dia</h3>
+      <p class="texto-apoio">Datas e horários de Brasília. Rascunhos aparecem pela última gravação; pedidos enviados, pela data registrada no envio.</p>
+      <div class="filtros-dia">
+        <label>Data<input type="date" id="dataPedidosDia" onchange="renderizarPedidosDia()"></label>
+        <label class="busca-dia">Buscar cliente ou vendedor<input type="search" id="buscaPedidosDia" placeholder="Código, nome, CNPJ ou pedido" oninput="renderizarPedidosDia()"></label>
+      </div>
+      <div class="resumo-dia">
+        <div>Pedidos enviados<strong id="qtdPedidosDia">0</strong></div>
+        <div>Valor dos pedidos enviados<strong id="valorPedidosDia">R$ 0,00</strong></div>
+        <div>Rascunhos<strong id="qtdRascunhosDia">0</strong></div>
+        <div>Valor em rascunhos<strong id="valorRascunhosDia">R$ 0,00</strong></div>
+      </div>
+      <div class="tabela-scroll"><table class="tabela-mini">
+        <thead><tr><th>Pedido / Hora</th><th>Cliente</th><th>Vendedor</th><th>UF</th><th>Situação</th><th>Valor</th></tr></thead>
+        <tbody id="listaPedidosDia"><tr><td colspan="6">Carregando pedidos...</td></tr></tbody>
+      </table></div>
+    </section>
+    <h2 class="secao-titulo">Totais acumulados</h2>
     
     <div class="kpi-grid">
       <div class="kpi-card verde"><h3>Faturamento</h3><div class="value" id="kpiFaturamento">R$ 0,00</div></div>
@@ -199,6 +243,7 @@ window.onload = () => {
 }
 
 async function carregarMetricas() {
+  document.getElementById('atualizacaoMetricas').textContent = 'Atualizando dados...';
   try {
     const [resPedidos, resLogins, resIntencoes] = await Promise.all([
       fetch('/api/admin/metricas-pedidos'),
@@ -213,6 +258,9 @@ async function carregarMetricas() {
     if (!dataPedidos.ok || !dataLogins.ok) throw new Error('Falha ao carregar dados');
 
     const pedidos = dataPedidos.pedidos || [];
+    pedidosMetricasCache = pedidos;
+    if (!document.getElementById('dataPedidosDia').value) document.getElementById('dataPedidosDia').value = diaBrasilia(new Date());
+    renderizarPedidosDia();
     const logins = dataLogins.logins || [];
     const totalLogins = dataLogins.total_logins || 0;
     const loginsHistorico = dataLogins.logins_historico || [];
@@ -220,15 +268,51 @@ async function carregarMetricas() {
 
     processarMetricas(pedidos, logins, totalLogins);
     processarAcessos(loginsHistorico, totalAcessos); 
+    document.getElementById('atualizacaoMetricas').textContent = 'Atualizado em ' + new Date().toLocaleString('pt-BR', { timeZone:'America/Sao_Paulo' });
     
     if (dataIntencoes.ok && dataIntencoes.ranking) {
       renderizarTopAbandonados(dataIntencoes.ranking);
     }
 
   } catch (e) {
+    document.getElementById('atualizacaoMetricas').textContent = 'Falha na atualização. Os dados anteriores podem estar desatualizados.';
     console.error(e);
     alert('Erro ao carregar métricas: ' + e.message);
   }
+}
+
+let pedidosMetricasCache = [];
+function escaparMetrica(valor) {
+  return String(valor ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function diaBrasilia(valor) {
+  const data = new Date(valor);
+  if (!Number.isFinite(data.getTime())) return '';
+  const partes = new Intl.DateTimeFormat('en-US', {timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(data);
+  const campo = tipo => partes.find(p => p.type === tipo).value;
+  return `${campo('year')}-${campo('month')}-${campo('day')}`;
+}
+function renderizarPedidosDia() {
+  const dia = document.getElementById('dataPedidosDia').value;
+  const normalizar = texto => String(texto ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  const busca = normalizar(document.getElementById('buscaPedidosDia').value.trim());
+  const pedidos = pedidosMetricasCache.filter(p => diaBrasilia(p.data_criacao) === dia &&
+    (!busca || normalizar([p.id,p.codigo_cliente,p.nome_cliente,p.razao_social,p.cnpj_cliente,p.codigo_representante,p.nome_vendedor].join(' ')).includes(busca)))
+    .sort((a,b) => new Date(b.data_criacao)-new Date(a.data_criacao));
+  const rascunho = p => (p.status || '').toUpperCase() === 'RASCUNHO';
+  const enviados = pedidos.filter(p => !rascunho(p));
+  const rascunhos = pedidos.filter(rascunho);
+  const soma = itens => itens.reduce((total,p) => total + (Number(p.total)||0),0);
+  document.getElementById('qtdPedidosDia').textContent = enviados.length;
+  document.getElementById('valorPedidosDia').textContent = `R$ ${fmtMoeda(soma(enviados))}`;
+  document.getElementById('qtdRascunhosDia').textContent = rascunhos.length;
+  document.getElementById('valorRascunhosDia').textContent = `R$ ${fmtMoeda(soma(rascunhos))}`;
+  document.getElementById('listaPedidosDia').innerHTML = pedidos.length ? pedidos.map(p => `<tr>
+    <td><strong>#${escaparMetrica(p.id)}</strong><small>${new Date(p.data_criacao).toLocaleTimeString('pt-BR',{timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit'})}</small></td>
+    <td><strong>${escaparMetrica(p.nome_cliente || p.razao_social || 'Cliente não localizado')}</strong><small>Cliente nº ${escaparMetrica(p.codigo_cliente || '—')} · ${escaparMetrica(p.cnpj_cliente || '')}</small></td>
+    <td>${escaparMetrica(p.nome_vendedor || 'Nome não disponível')}<small>Código: ${escaparMetrica(p.codigo_representante || '—')}</small></td>
+    <td>${escaparMetrica(p.uf || '—')}</td><td><span class="status-dia ${rascunho(p)?'rascunho':''}">${rascunho(p)?'Rascunho':'Enviado'}</span></td>
+    <td style="font-weight:800; white-space:nowrap;">R$ ${fmtMoeda(p.total)}</td></tr>`).join('') : '<tr><td colspan="6" style="text-align:center; padding:24px;">Nenhum pedido encontrado nesta data e busca.</td></tr>';
 }
 
 function processarMetricas(pedidos, logins, totalLogins) {
@@ -241,7 +325,7 @@ function processarMetricas(pedidos, logins, totalLogins) {
 
   finalizados.forEach(p => {
     const valor = Number(p.total) || 0;
-    const vendedor = p.codigo_representante || 'Sem Vendedor';
+    const vendedor = p.nome_vendedor ? `${p.codigo_representante} - ${p.nome_vendedor}` : p.codigo_representante || 'Sem Vendedor';
     const uf = p.uf || 'N/A';
 
     faturamento += valor;
