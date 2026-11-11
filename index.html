@@ -1751,6 +1751,12 @@ function renderizar() {
   if (soltos.length > 0) {
     html += `<div class="familia-bloco"><div class="familia-head"><h2>Outros Produtos</h2></div><div class="grade-soltos">${soltos.map(cardSoltos).join('')}</div></div>`;
   }
+  if ((grupoAtual || '').toUpperCase().includes('VARA')) {
+    html += `<aside aria-label="Observação sobre a venda de varas" style="margin:20px 12px; padding:16px; border:1px solid #cbd5e1; border-left:4px solid #003366; border-radius:8px; background:#eff6ff; color:#334155; font-size:.8rem; line-height:1.7;">
+      <strong>OBS: VARAS COM PASSADORES, VENDA MÍNIMA DE 10 UNIDADES POR PEDIDO, PODENDO SER SORTIDAS ENTRE TODOS OS MODELOS.</strong><br>
+      REGRA NÃO SE APLICA A VARAS TELESCÓPICAS.
+    </aside>`;
+  }
   cont.innerHTML = html;
 }
 
