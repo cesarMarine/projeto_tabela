@@ -1609,6 +1609,9 @@ function montarChips() {
 }
 
 function trocarGrupo(grupo, btn) {
+  clearTimeout(deb);
+  buscaAtual = '';
+  document.getElementById('busca').value = '';
   grupoAtual = grupo;
   marcaAtual = '';
   filtroOfertaAtual = '';
@@ -1622,7 +1625,7 @@ function filtrar() {
   let lista = todosItens;
 
   // 1. Se houver texto na busca, ele ignora a aba e faz busca global
-  if (buscaAtual) {
+  if (buscaAtual.trim()) {
     const q = buscaAtual.toLowerCase().trim();
     
     // Filtra por código, nome, marca ou grupo
@@ -3043,7 +3046,7 @@ function setQtd(cod, valor) {
   }
 
   if (grupoAtual === '__OFERTAS__') {
-    renderOfertas();
+    renderizar();
   }
 
   atualizarCarrinho();
@@ -3075,7 +3078,7 @@ function adicionarOfertaComNome(codigo, nomeCompleto, precoBase) {
   
   // Re-renderiza a oferta para atualizar o botão para [- 1 +]
   if (grupoAtual === '__OFERTAS__') {
-    renderOfertas();
+    renderizar();
   }
 }
 
@@ -3333,7 +3336,7 @@ let deb;
 document.getElementById('busca').addEventListener('input', e => {
   clearTimeout(deb); 
   deb = setTimeout(() => { 
-    buscaAtual = e.target.value; 
+    buscaAtual = e.target.value.trim();
     
     // Se o cliente digitou algo, esconde a barra de marcas
     if (buscaAtual.trim().length > 0) {

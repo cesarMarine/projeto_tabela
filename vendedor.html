@@ -189,7 +189,11 @@
   <!-- ABA CLIENTES -->
   <div id="abaClientes">
     <!-- DASHBOARD DE CLIENTES -->
-    <div class="dashboard-grid" id="dashboardCards">
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px;">
+      <button type="button" class="btn-toggle-detalhe" id="btnResumoVendedor" aria-expanded="false" aria-controls="dashboardCards" onclick="alternarResumoVendedor()">Mostrar resumo</button>
+      <button type="button" class="btn-toggle-detalhe" onclick="mudarAba('pedidos')">📦 Abrir pedidos</button>
+    </div>
+    <div class="dashboard-grid" id="dashboardCards" style="display:none;">
       <div class="dash-card">
         <h3>Total de Clientes</h3>
         <div class="value" id="dashTotalClientes">0</div>
@@ -554,6 +558,15 @@ function fecharModalIntencoes(event) {
 // ==========================================
 // NAVEGAÇÃO DE ABAS
 // ==========================================
+function alternarResumoVendedor() {
+  const painel = document.getElementById('dashboardCards');
+  const botao = document.getElementById('btnResumoVendedor');
+  const mostrar = botao.getAttribute('aria-expanded') !== 'true';
+  painel.style.display = mostrar ? 'grid' : 'none';
+  botao.setAttribute('aria-expanded', String(mostrar));
+  botao.textContent = mostrar ? 'Ocultar resumo' : 'Mostrar resumo';
+}
+
 function mudarAba(aba) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('abaClientes').style.display = 'none';
