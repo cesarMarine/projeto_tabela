@@ -1,3 +1,4 @@
+import { registrarAgrupados, composicaoPedido } from './agrupados-server.js';
 import express from 'express';
 import multer from 'multer';
 import XLSX from 'xlsx';
@@ -12,6 +13,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 app.use(express.json({ limit: '100mb' }));
 app.use(express.static('.'));
+registrarAgrupados(app, supabase);
 
 const soDigitos = (v) => String(v ?? '').replace(/\D/g, '');
 const num = (v) => {
@@ -1549,17 +1551,20 @@ app.post('/api/pedidos/autosave', async (req, res) => {
       return res.status(400).json({ ok: false, erro: 'Carrinho vazio.' });
     }
 
+    const composicao = composicaoPedido(req.body);
     let pedidoId = id;
 
     if (pedidoId) {
       // Atualiza o rascunho existente
-      await supabase.from('pedidos02').update({ total, status: 'RASCUNHO', data_criacao: new Date().toISOString() }).eq('id', pedidoId);
-      await supabase.from('pedidos02_itens').delete().eq('pedido_id', pedidoId);
+      const { error: erroCabecalho } = await supabase.from('pedidos02').update({ ...composicao, total, status: 'RASCUNHO', data_criacao: new Date().toISOString() }).eq('id', pedidoId);
+      if (erroCabecalho) throw erroCabecalho;
+      const { error: erroRemocao } = await supabase.from('pedidos02_itens').delete().eq('pedido_id', pedidoId);
+      if (erroRemocao) throw erroRemocao;
     } else {
       // Cria um rascunho novo
       const { data: novoPed, error: errInsert } = await supabase
         .from('pedidos02')
-        .insert([{ cnpj_cliente, codigo_representante, status: 'RASCUNHO', total, data_criacao: new Date().toISOString() }])
+        .insert([{ ...composicao, cnpj_cliente, codigo_representante, status: 'RASCUNHO', total, data_criacao: new Date().toISOString() }])
         .select().single();
       if (errInsert) throw errInsert;
       pedidoId = novoPed.id;
@@ -1578,7 +1583,8 @@ app.post('/api/pedidos/autosave', async (req, res) => {
     const TAMANHO_LOTE = 50;
     for (let i = 0; i < itensFormatados.length; i += TAMANHO_LOTE) {
       const lote = itensFormatados.slice(i, i + TAMANHO_LOTE);
-      await supabase.from('pedidos02_itens').insert(lote);
+      const { error: erroItens } = await supabase.from('pedidos02_itens').insert(lote);
+      if (erroItens) throw erroItens;
     }
 
     res.json({ ok: true, id: pedidoId });
@@ -1978,13 +1984,14 @@ app.post('/api/pedidos', async (req, res) => {
       return res.status(400).json({ ok: false, erro: 'Dados do pedido incompletos.' });
     }
 
+    const composicao = composicaoPedido(req.body);
     let pedidoId = id;
 
     if (pedidoId) {
       // Atualiza o rascunho / pedido existente
       const { error: errUpdate } = await supabase
         .from('pedidos02')
-        .update({ total, status, data_criacao: new Date().toISOString() })
+        .update({ ...composicao, total, status, data_criacao: new Date().toISOString() })
         .eq('id', pedidoId);
 
       if (errUpdate) throw errUpdate;
@@ -1996,6 +2003,7 @@ app.post('/api/pedidos', async (req, res) => {
       const { data: novoPed, error: errInsert } = await supabase
         .from('pedidos02')
         .insert([{ 
+          ...composicao,
           cnpj_cliente, 
           codigo_representante, 
           status, 

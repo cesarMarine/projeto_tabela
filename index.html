@@ -746,6 +746,7 @@
 })();
 </script>
 
+<script src="agrupados-cliente.js"></script>
 <script>
 let todosItens = [], todasFamilias = [], grupoAtual = '__OFERTAS__', buscaAtual = '', carrinho = {};
 let clienteLogado = null;
@@ -1031,7 +1032,7 @@ async function abrirMeusPedidos() {
           <td style="padding:4px 0; font-size:0.75rem; text-align:right;">R$ ${fmtMoeda(it.preco_final)}</td>
         </tr>
       `).join('');
-      const jsonItens = escapeHtml(JSON.stringify(p.itens || []));
+      const jsonItens = escapeHtml(JSON.stringify({ itens: p.itens || [], composicao: p.composicao_agrupados }));
 
       return `
         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px; margin-bottom:12px;">
@@ -1050,9 +1051,9 @@ async function abrirMeusPedidos() {
             <div style="display:flex; gap:6px;">
               ${isRascunho ? `
                 <button onclick="deletarRascunho(${p.id})" style="background:#ef4444; color:white; border:none; padding:6px 10px; border-radius:6px; font-size:0.75rem; font-weight:800; cursor:pointer;">🗑️ Excluir</button>
-                <button onclick="carregarPedidoParaEdicao(${p.id}, '${jsonItens}')" style="background:#2563eb; color:white; border:none; padding:6px 10px; border-radius:6px; font-size:0.75rem; font-weight:800; cursor:pointer;">✏️ Continuar Pedido</button>
+                <button data-itens="${jsonItens}" onclick="carregarPedidoParaEdicao(${p.id}, this.dataset.itens)" style="background:#2563eb; color:white; border:none; padding:6px 10px; border-radius:6px; font-size:0.75rem; font-weight:800; cursor:pointer;">✏️ Continuar Pedido</button>
               ` : `
-                <button onclick="carregarPedidoParaEdicao(null, '${jsonItens}')" style="background:#003366; color:white; border:none; padding:6px 10px; border-radius:6px; font-size:0.75rem; font-weight:800; cursor:pointer;">📋 Reutilizar Itens</button>
+                <button data-itens="${jsonItens}" onclick="carregarPedidoParaEdicao(null, this.dataset.itens)" style="background:#003366; color:white; border:none; padding:6px 10px; border-radius:6px; font-size:0.75rem; font-weight:800; cursor:pointer;">📋 Reutilizar Itens</button>
               `}
             </div>
           </div>
@@ -1082,13 +1083,16 @@ async function deletarRascunho(idPedido) {
   } catch (e) { alert('❌ Erro de conexão ao excluir rascunho.'); }
 }
 
-function carregarPedidoParaEdicao(idPedido, jsonItensStr) {
+function carregarPedidoParaEdicao(idPedido, jsonItensStr, composicao = null) {
   try {
-    const itens = JSON.parse(jsonItensStr);
+    const dados = JSON.parse(jsonItensStr);
+    const itens = Array.isArray(dados) ? dados : dados.itens;
+    composicao = composicao || dados.composicao;
+    carrinhoTemComposicao = false;
     carrinho = {};
     pedidoEmEdicaoId = idPedido;
     
-    itens.forEach(it => {
+    if (!restaurarComposicaoAgrupados(composicao)) itens.forEach(it => {
       const prodEncontrado = todosItens.find(i => i.codigo === String(it.codigo_produto));
       
       // 👇 AQUI ESTÁ A MÁGICA: Pega o preço atualizado do catálogo (prodEncontrado)
@@ -1114,17 +1118,7 @@ function carregarPedidoParaEdicao(idPedido, jsonItensStr) {
 }
 
 async function salvarRascunho() {
-  const itens = Object.keys(carrinho).map(cod => {
-    const item = carrinho[cod];
-    const calc = calcularValoresProduto(item.precoBase, cod);
-    return { 
-      codigo: cod, 
-      desc: descricaoCompletaCarrinho(cod, item), 
-      qtd: item.qtd, 
-      precoBase: item.precoBase, 
-      precoFinal: calc.precoFinal 
-    };
-  });
+  const itens = itensPedidoComAgrupados();
 
   if (itens.length === 0) { alert('Seu carrinho está vazio.'); return; }
   const total = itens.reduce((acc, it) => acc + (it.precoFinal * it.qtd), 0);
@@ -1142,6 +1136,7 @@ async function salvarRascunho() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        ...dadosComposicaoAgrupados(),
         id: pedidoEmEdicaoId,
         cnpj_cliente: clienteLogado.cnpj,
         codigo_representante: clienteLogado.representante,
@@ -1181,6 +1176,7 @@ function fecharZoomModal() {
 }
 
 function calcularValoresProduto(precoBase, codItem) {
+  if (carrinho[codItem]?.kit) return precoAgrupado(carrinho[codItem].kit);
   // Pega a taxa de acréscimo ativa
   const taxaUf = porcentagemAcrescimo || parseFloat(clienteLogado?.acrescimo) || 0;
   
@@ -1451,11 +1447,7 @@ porcentagemAcrescimo = parseFloat(
 }
 
 async function finalizarPedido() {
-  const itens = Object.keys(carrinho).map(cod => {
-    const item = carrinho[cod];
-    const calc = calcularValoresProduto(item.precoBase, cod);
-    return { codigo: cod, desc: descricaoCompletaCarrinho(cod, item), qtd: item.qtd, precoBase: item.precoBase, precoFinal: calc.precoFinal };
-  });
+  const itens = itensPedidoComAgrupados();
   if (itens.length === 0) { alert('Seu carrinho está vazio.'); return; }
 
   if (!pedidoEmEdicaoId) {
@@ -1478,6 +1470,7 @@ async function finalizarPedido() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        ...dadosComposicaoAgrupados(),
         id: pedidoEmEdicaoId,
         cnpj_cliente: clienteLogado.cnpj,
         codigo_representante: clienteLogado.representante,
@@ -1516,6 +1509,7 @@ async function carregar() {
     mapaCatalogoCache = new Map();
     j.itens.forEach(it => mapaCatalogoCache.set(String(it.codigo), it));
 
+    await carregarAgrupadosCliente();
     montarChips(); 
     montarBarraMarcas();
     renderizar();
@@ -1572,7 +1566,7 @@ async function verificarRascunhoPendente() {
       const continuar = confirm(`Você tem um pedido em aberto (#${rascunho.id}) no valor de R$ ${fmtMoeda(rascunho.total)}.\n\nDeseja continuar de onde parou?`);
       
       if (continuar) {
-        carregarPedidoParaEdicao(rascunho.id, JSON.stringify(rascunho.itens));
+        carregarPedidoParaEdicao(rascunho.id, JSON.stringify(rascunho.itens), rascunho.composicao_agrupados);
       }
     }
   } catch (e) {
@@ -1582,6 +1576,7 @@ async function verificarRascunhoPendente() {
 function montarChips() {
   const contagem = {};
   todosItens.forEach(it => { contagem[it.grupo] = (contagem[it.grupo] || 0) + 1; });
+  produtosAgrupados.forEach(p => { contagem[p.grupo] = (contagem[p.grupo] || 0) + 1; });
   const todosGrupos = Object.keys(contagem);
 
   const prioridadeGrupos = [
@@ -1673,10 +1668,11 @@ function renderizar() {
   }
 
   const lista = filtrar();
-  if (!lista.length) { cont.innerHTML = '<div class="loading">Nenhum produto encontrado.</div>'; return; }
+  const htmlAgrupados = renderizarAgrupados();
+  if (!lista.length && !htmlAgrupados) { cont.innerHTML = '<div class="loading">Nenhum produto encontrado.</div>'; return; }
   
   const processados = new Set(); 
-  let html = '';
+  let html = htmlAgrupados;
 
   let familiasOrdenadas = todasFamilias.map(f => {
     let rawItens = f.subgrupos || f.itens || [];
@@ -2968,7 +2964,12 @@ function fecharModal(ev, force) {
 }
 
 function buscarItem(codigo) { return todosItens.find(i => i.codigo === codigo); }
-function mudarQtd(cod, delta) { 
+function mudarQtd(cod, delta) {
+  if (String(cod).startsWith('kit:')) {
+    const item = carrinho[cod];
+    const qtd = item?.qtd || 0;
+    return definirQtdAgrupado(cod, delta < 0 && qtd <= item.kit.minimo ? 0 : qtd + delta);
+  }
   const a = carrinho[cod] ? carrinho[cod].qtd : 0;
   
   const codStr = String(cod);
@@ -2985,6 +2986,7 @@ function mudarQtd(cod, delta) {
   }
 }
 function setQtd(cod, valor) {
+  if (String(cod).startsWith('kit:')) return definirQtdAgrupado(cod, valor);
   let q = parseInt(valor) || 0; 
   const item = buscarItem(cod);
 
@@ -3110,6 +3112,7 @@ function registrarAcaoLog(codigo, acao, qtdAnterior) {
 
 // Consulta os atributos do SKU, inclusive para ofertas e pedidos reabertos.
 function detalhesItemCarrinho(codigo, itemCarrinho) {
+  if (itemCarrinho.kit) return { nome: itemCarrinho.kit.nome, variacoes: itemCarrinho.kit.componentes.map(c => [c.codigo, `${c.quantidade} × ${c.desc}`]) };
   const cod = String(codigo);
   const produto = todosItens.find(item => String(item.codigo) === cod)
     || (mapaCatalogoCache.has(cod) ? normalizarItem(mapaCatalogoCache.get(cod)) : null);
@@ -3288,11 +3291,7 @@ async function autosaveCarrinho() {
   
   isAutosaving = true;
 
-  const itens = Object.keys(carrinho).map(cod => {
-    const item = carrinho[cod];
-    const calc = calcularValoresProduto(item.precoBase, cod);
-    return { codigo: cod, desc: descricaoCompletaCarrinho(cod, item), qtd: item.qtd, precoBase: item.precoBase, precoFinal: calc.precoFinal };
-  });
+  const itens = itensPedidoComAgrupados();
   
   const total = itens.reduce((acc, it) => acc + (it.precoFinal * it.qtd), 0);
 
@@ -3306,6 +3305,7 @@ async function autosaveCarrinho() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        ...dadosComposicaoAgrupados(),
         id: pedidoEmEdicaoId, // Agora temos certeza que essa variável existe
         cnpj_cliente: clienteLogado.cnpj,
         codigo_representante: clienteLogado.representante,
