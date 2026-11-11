@@ -1475,6 +1475,27 @@ function filtrarTabelaEstoque() {
   renderizarTabelaEstoque(filtrados);
 }
 
+async function excluirProdutoAuditoria(botao) {
+  const codigo = botao.dataset.codigo;
+  if (!confirm(`Excluir o produto ${codigo} da base da tabela?\n\nPedidos e histórico serão preservados. Se o código vier em uma nova planilha, será cadastrado novamente.`)) return;
+  botao.disabled = true;
+  try {
+    const resposta = await fetch('/api/admin/auditoria-produtos/' + encodeURIComponent(codigo), {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ confirmar: codigo })
+    });
+    const resultado = await resposta.json();
+    if (!resposta.ok || !resultado.ok) throw new Error(resultado.erro || 'Não foi possível excluir.');
+    await carregarAuditoria();
+    await carregarStatus();
+  } catch (e) {
+    alert('Erro ao excluir produto: ' + e.message);
+  } finally {
+    botao.disabled = false;
+  }
+}
+
 async function carregarAuditoria() {
   const tbody = document.querySelector('#tabelaAuditoria tbody');
   const resumo = document.getElementById('resumoAuditoria');
@@ -1508,6 +1529,7 @@ async function carregarAuditoria() {
         <td style="text-align:right;">R$ ${Number(p.preco).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
         <td style="text-align:center;">
           <button class="btn-primario btn-mini" style="background:#10b981;" onclick="abrirModalManual('${p.codigo}', '${p.descricao}')">➕ Cadastrar</button>
+          <button type="button" class="btn-primario btn-mini" style="background:#dc2626; margin:4px;" data-codigo="${escapeHtml(String(p.codigo))}" onclick="excluirProdutoAuditoria(this)">Excluir</button>
         </td>
       </tr>
     `).join('');

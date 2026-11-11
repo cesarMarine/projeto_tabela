@@ -800,6 +800,23 @@ app.get('/api/login/:cnpj', async (req, res) => {
 // ==========================================
 // ROTA: AUDITORIA DE PRODUTOS (SEM SCRAPING)
 // ==========================================
+app.delete('/api/admin/auditoria-produtos/:codigo', async (req, res) => {
+  try {
+    const codigo = String(req.params.codigo || '').trim();
+    if (!codigo || req.body?.confirmar !== codigo) {
+      return res.status(400).json({ ok: false, erro: 'Confirme o código do produto para excluir.' });
+    }
+    // Exclui somente o cadastro comercial indicado; não apaga pedidos nem histórico.
+    const { data, error } = await supabase.from('itens_sistema').delete()
+      .eq('codigo', codigo).select('codigo');
+    if (error) throw error;
+    if (!data?.length) return res.status(404).json({ ok: false, erro: 'Produto não encontrado.' });
+    res.json({ ok: true, codigo });
+  } catch (e) {
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
+
 app.get('/api/admin/auditoria-scraping', async (req, res) => {
   try {
     // 1. Puxa todos os produtos com estoque > 0
