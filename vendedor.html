@@ -945,6 +945,12 @@ function exportarPedidoExcel(pedidoId) {
     ]);
   });
 
+  // Compatibilidade com o importador do sistema, que ignora a última linha.
+  // Duplica somente no arquivo exportado; não modifica os itens do pedido.
+  if (dadosParaExcel.length > 1) {
+    dadosParaExcel.push([...dadosParaExcel[dadosParaExcel.length - 1]]);
+  }
+
   const ws = XLSX.utils.aoa_to_sheet(dadosParaExcel);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "FILTRO");
