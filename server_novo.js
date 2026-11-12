@@ -1,3 +1,4 @@
+import { detectarDestaques, codigoNovidades } from './novidades-regras.js';
 import { registrarAgrupados, composicaoPedido } from './agrupados-server.js';
 import express from 'express';
 import multer from 'multer';
@@ -64,6 +65,18 @@ app.post('/api/importar/sistema', upload.single('arquivo'), async (req, res) => 
       console.log(`⚠️ Aba "Estoque" não encontrada. Usando coluna "Estoque" da aba GERAL.`);
     }
 
+    // Compara com o cadastro ANTES da importação; nunca com o saldo já atualizado.
+    const anteriores = new Map();
+    for (let inicio = 0; ; inicio += 200) {
+      const { data, error } = await supabase.from('itens_sistema')
+        .select('codigo,estoque,is_lancamento,is_chegou,lancamento_em,chegou_em')
+        .order('codigo', { ascending: true }).range(inicio, inicio + 199);
+      if (error) throw error;
+      (data || []).forEach(item => anteriores.set(codigoNovidades(item.codigo), item));
+      if (!data || data.length < 200) break;
+    }
+    const agoraImportacao = new Date().toISOString();
+    let novos = 0, chegaram = 0;
     let inseridos = 0;
     let comEstoque = 0;
     let ordem = 0;
@@ -88,19 +101,23 @@ app.post('/api/importar/sistema', upload.single('arquivo'), async (req, res) => 
       if (estoque > 0) comEstoque++;
       
       const item = {
-        codigo: codigoOriginal,
+        codigo: anteriores.get(codigoNovidades(codigoOriginal))?.codigo || codigoOriginal,
         cod_barras: soDigitos(r['Cod.Barra'] ?? r['cod_barras'] ?? ''),
         descricao: String(r['Descrição'] ?? r['descricao'] ?? '').trim(),
         estoque: estoque,
         preco_venda: num(r['P/Venda'] ?? r['preco_venda'] ?? 0),
         ordem_excel: ordem, // 👈 ordem da linha no Excel
         ativo: 1,
-        atualizado_em: new Date().toISOString()
+        atualizado_em: new Date().toISOString(),
+        ...detectarDestaques(anteriores.get(codigoNovidades(codigoOriginal)), estoque, anteriores.size > 0, agoraImportacao)
       };
       
       // Atualiza a tabela principal (itens_sistema)
       const { error } = await supabase.from('itens_sistema').upsert(item, { onConflict: 'codigo' });
-      if (!error) inseridos++;
+      if (error) throw error;
+      inseridos++;
+      if (item.lancamento_em === agoraImportacao) novos++;
+      if (item.chegou_em === agoraImportacao) chegaram++;
 
       // 👇 SALVA NO HISTÓRICO 👇
       // Usa UPSERT para o caso de importar duas planilhas no mesmo dia (não duplica, apenas atualiza)
@@ -113,7 +130,7 @@ app.post('/api/importar/sistema', upload.single('arquivo'), async (req, res) => 
       // 👆 FIM DO HISTÓRICO 👆
     }
     
-    res.json({ ok: true, inseridos, comEstoque });
+    res.json({ ok: true, inseridos, comEstoque, novos, chegaram });
   } catch (e) { 
     console.error("Erro importação sistema:", e);
     res.status(500).json({ erro: e.message }); 
@@ -432,6 +449,9 @@ app.get('/api/catalogo', async (req, res) => {
         imagem_url: scr.imagem_url || '',
         url_origem: scr.url_origem || '',
         atributos_json: scr.atributos_json || '{}',
+        is_chegou: Boolean(s.is_chegou),
+        lancamento_em: s.lancamento_em || null,
+        chegou_em: s.chegou_em || null,
         is_lancamento: Boolean(s.is_lancamento) // 👈 ADICIONADO AQUI!
       };
     });
@@ -512,25 +532,23 @@ app.post('/api/importar/clientes', upload.single('arquivo'), async (req, res) =>
 });
 
 app.post('/api/admin/produtos/lancamento', async (req, res) => {
-  const { codigo, is_lancamento } = req.body;
-
-  if (!codigo) {
-    return res.status(400).json({ ok: false, erro: 'Código do produto é obrigatório.' });
-  }
-
   try {
-    const { data, error } = await supabase
-      .from('itens_sistema')
-      .update({ is_lancamento: is_lancamento })
-      .eq('codigo', codigo);
-
+    const { codigo, is_lancamento, is_chegou } = req.body || {};
+    if (!codigo || (typeof is_lancamento !== 'boolean' && typeof is_chegou !== 'boolean')) return res.status(400).json({ ok:false, erro:'Informe código e marcação.' });
+    const alteracoes = {};
+    if (typeof is_lancamento === 'boolean') {
+      alteracoes.is_lancamento = is_lancamento;
+      alteracoes.lancamento_em = is_lancamento ? new Date().toISOString() : null;
+    }
+    if (typeof is_chegou === 'boolean') {
+      alteracoes.is_chegou = is_chegou;
+      alteracoes.chegou_em = is_chegou ? new Date().toISOString() : null;
+    }
+    const { data, error } = await supabase.from('itens_sistema').update(alteracoes).eq('codigo',codigo).select('codigo').maybeSingle();
     if (error) throw error;
-
-    res.json({ ok: true, mensagem: 'Status de lançamento atualizado com sucesso!' });
-  } catch (e) {
-    console.error('Erro ao salvar lançamento:', e);
-    res.status(500).json({ ok: false, erro: e.message });
-  }
+    if (!data) return res.status(404).json({ok:false,erro:'Produto não encontrado.'});
+    res.json({ok:true});
+  } catch(e) {res.status(500).json({ok:false,erro:e.message});}
 });
 
 // ==========================================
@@ -1518,20 +1536,18 @@ app.post('/api/vendedor/cliente', async (req, res) => {
 // ==========================================
 app.get('/api/admin/produtos-estoque', async (req, res) => {
   try {
-    // Adicionado 'is_lancamento' no .select()
-    const { data: itens, error } = await supabase
-      .from('itens_sistema')
-      .select('id, codigo, cod_barras, descricao, estoque, preco_venda, ativo, atualizado_em, is_lancamento')
-      .gt('estoque', 0)
-      .order('descricao', { ascending: true });
-
-    if (error) throw error;
-
+    const itens = [];
+    for (let inicio = 0; ; inicio += 200) {
+      const { data, error } = await supabase.from('itens_sistema')
+        .select('id,codigo,cod_barras,descricao,estoque,preco_venda,ativo,atualizado_em,is_lancamento,is_chegou')
+        .gt('estoque', 0).order('descricao', { ascending: true }).order('codigo', { ascending:true })
+        .range(inicio, inicio + 199);
+      if (error) throw error;
+      itens.push(...(data || []));
+      if (!data || data.length < 200) break;
+    }
     res.json({ ok: true, total: itens.length, itens });
-  } catch (e) {
-    console.error('Erro ao buscar produtos com estoque:', e);
-    res.status(500).json({ ok: false, erro: e.message });
-  }
+  } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
 
 // ROTA: PEDIDOS DO CLIENTE LOGADO

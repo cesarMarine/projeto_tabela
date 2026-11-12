@@ -603,6 +603,7 @@
       <button class="btn-topo-sair" onclick="sairCliente()">Sair</button>
     </div>
 
+    <a href="novidades.html" onclick="abrirPaginaNovidades(event)" style="color:white; font-size:.8rem; text-decoration:none; white-space:nowrap;">✨ Novidades</a>
     <div class="busca-wrap">
       <input type="search" id="busca" placeholder="🔍 Buscar produto por código, nome ou palavra-chave..." autocomplete="off">
     </div>
@@ -746,6 +747,7 @@
 })();
 </script>
 
+<script src="novidades-index.js"></script>
 <script src="agrupados-cliente.js"></script>
 <script>
 let todosItens = [], todasFamilias = [], grupoAtual = '__OFERTAS__', buscaAtual = '', carrinho = {};
@@ -1111,9 +1113,11 @@ function carregarPedidoParaEdicao(idPedido, jsonItensStr, composicao = null) {
     fecharModal(null, true);
     toggleCarrinho();
     alert(`Pedido #${idPedido} carregado no carrinho! Os preços foram atualizados para a tabela de hoje.`);
+    return true;
   } catch (e) { 
     console.error("Erro ao carregar pedido:", e);
-    alert('Erro ao carregar o pedido para edição.'); 
+    alert('Erro ao carregar o pedido para edição.');
+    return false; 
   }
 }
 
@@ -1206,6 +1210,7 @@ function normalizarItem(it) {
     estoque: Number(it.estoque) || 0,
     ordem_excel: Number(it.ordem_excel) || 999999,
     ordem_customizada_pos: 999999,
+    is_chegou: Boolean(it.is_chegou),
     is_lancamento: Boolean(it.is_lancamento)
   };
 }
@@ -1518,7 +1523,8 @@ async function carregar() {
     registrarAcessoDiario();
 
     // 👇 Verifica se o cliente deixou algum rascunho salvo ao sair
-    await verificarRascunhoPendente();
+    const rascunhoVerificado = await verificarRascunhoPendente();
+    if (rascunhoVerificado) await receberNovidadesNoCarrinho();
 
   } catch (e) { document.getElementById('conteudo').innerHTML = '<div class="loading">Erro ao carregar.</div>'; }
 }
@@ -1559,16 +1565,19 @@ async function verificarRascunhoPendente() {
     const r = await fetch(`/api/cliente/${encodeURIComponent(clienteLogado.cnpj)}/pedidos`);
     const j = await r.json();
     
+    if (!r.ok || !j.ok) throw new Error(j.erro || 'Não foi possível verificar o carrinho existente.');
     // Procura se existe algum pedido com status RASCUNHO
     const rascunho = j.pedidos?.find(p => (p.status || '').toUpperCase() === 'RASCUNHO');
     
     if (rascunho && rascunho.itens && rascunho.itens.length > 0) {
-      const continuar = confirm(`Você tem um pedido em aberto (#${rascunho.id}) no valor de R$ ${fmtMoeda(rascunho.total)}.\n\nDeseja continuar de onde parou?`);
+      const continuar = !!sessionStorage.getItem('novidadesParaCarrinho') || confirm(`Você tem um pedido em aberto (#${rascunho.id}) no valor de R$ ${fmtMoeda(rascunho.total)}.\n\nDeseja continuar de onde parou?`);
       
       if (continuar) {
-        carregarPedidoParaEdicao(rascunho.id, JSON.stringify(rascunho.itens), rascunho.composicao_agrupados);
+        const restaurado = carregarPedidoParaEdicao(rascunho.id, JSON.stringify(rascunho.itens), rascunho.composicao_agrupados);
+        if (!restaurado) throw new Error('Não foi possível restaurar o pedido existente.');
       }
     }
+    return true;
   } catch (e) {
     console.error("Erro ao verificar rascunho pendente:", e);
   }
@@ -2005,7 +2014,7 @@ function renderFamiliaCarretilha(fam, itens) {
       <div class="molinete-card" id="card-fam-${fam.id}">
         <div class="familia-side">
           <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)" style="position:relative;">
-            ${temLancamentoNaFamilia ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
+            ${renderTarjasNovidades(itensComEstoque)}
             ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
           </div>
         </div>
@@ -2032,7 +2041,7 @@ function montarCardCarretilha(it) {
 
   return `
     <div class="molinete-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" style="padding:8px;">
-      <span class="molinete-badge">${q}</span>
+      ${renderTarjasNovidades([it], true)}<span class="molinete-badge">${q}</span>
 
       <div style="width:100%; aspect-ratio:1; background:var(--cinza-50); border-radius:6px; display:flex; align-items:center; justify-content:center; overflow:hidden; margin-bottom:6px;">
         ${temImagem 
@@ -2102,7 +2111,7 @@ function renderFamiliaMolinete(fam, itens) {
 
     return `
       <div class="molinete-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}">
-        <span class="molinete-badge">${q}</span>
+        ${renderTarjasNovidades([it], true)}<span class="molinete-badge">${q}</span>
         <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700;">CÓD: ${escapeHtml(it.codigo)}</div>
         <div class="molinete-numero">${escapeHtml(info.modelo || it.subgrupo)}</div>
         
@@ -2140,7 +2149,7 @@ function renderFamiliaMolinete(fam, itens) {
       <div class="molinete-card" id="card-fam-${fam.id}">
         <div class="familia-side">
           <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)" style="position:relative;">
-            ${temLancamentoNaFamilia ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
+            ${renderTarjasNovidades(itensComEstoque)}
             ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
           </div>
         </div>
@@ -2171,7 +2180,7 @@ function trocarTipoMolinete(famId, subIndex) {
 
     return `
       <div class="molinete-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}">
-        <span class="molinete-badge">${q}</span>
+        ${renderTarjasNovidades([it], true)}<span class="molinete-badge">${q}</span>
         <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700;">CÓD: ${escapeHtml(it.codigo)}</div>
         <div class="molinete-numero">${escapeHtml(info.modelo || it.subgrupo)}</div>
         
@@ -2215,7 +2224,7 @@ function renderFamiliaMotor(fam, itens) {
            onclick="selecionarEquipamento('${fam.id}', '${it.codigo}', '${it.imagem_url}')" 
            style="position:relative; cursor:pointer;">
         
-        <span class="isca-badge">${q}</span>
+        ${renderTarjasNovidades([it], true)}<span class="isca-badge">${q}</span>
         ${it.imagem_url ? `<img src="${it.imagem_url}" style="height: 65px; object-fit: contain; margin-bottom:4px;">` : ''}
         
         <div class="cor-nome" style="font-size: 0.6rem; font-weight: 700; color: var(--cinza-400);">CÓD: ${escapeHtml(it.codigo)}</div>
@@ -2255,7 +2264,7 @@ function renderFamiliaMotor(fam, itens) {
       <div class="isca-card" id="card-fam-${fam.id}">
         <div class="familia-side">
           <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)" style="position:relative;">
-            ${temLancamentoNaFamilia ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
+            ${renderTarjasNovidades(itensComEstoque)}
             ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
           </div>
         </div>
@@ -2411,7 +2420,7 @@ function renderFamiliaVara(fam, itens) {
       <div class="molinete-card" id="card-fam-${fam.id}">
         <div class="familia-side">
           <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)" style="position:relative;">
-            ${temLancamentoNaFamilia ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
+            ${renderTarjasNovidades(itensComEstoque)}
             ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
           </div>
         </div>
@@ -2489,7 +2498,7 @@ function renderFamiliaLinha(fam, itens) {
       <div class="molinete-card" id="card-fam-${fam.id}">
         <div class="familia-side">
           <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)" style="position:relative;">
-            ${temLancamentoNaFamilia ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
+            ${renderTarjasNovidades(itensComEstoque)}
             ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
           </div>
         </div>
@@ -2541,7 +2550,7 @@ function renderFamiliaGrade(fam, itens) {
 
         return `
           <div class="anzol-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" style="min-width:100px; padding:10px 6px;">
-            <span class="anzol-badge">${q}</span>
+            ${renderTarjasNovidades([it], true)}<span class="anzol-badge">${q}</span>
             <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700; display:flex; align-items:center; justify-content:center; gap:4px; flex-wrap:wrap;">
               <span>CÓD: ${escapeHtml(it.codigo)}</span>
             </div>
@@ -2629,7 +2638,7 @@ function renderFamiliaGrade(fam, itens) {
       <div class="molinete-card" id="card-fam-${fam.id}">
         <div class="familia-side">
           <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)" style="position:relative;">
-            ${temLancamentoNaFamilia ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
+            ${renderTarjasNovidades(itensComEstoque)}
             ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
           </div>
           <button class="btn-detalhes" id="btn-detalhes-${fam.id}" data-titulo="${escapeHtml(primeiroItem.subgrupo || fam.nome)}" data-desc="${escapeHtml(descInicial)}" onclick="abrirModalPorBotao(this)" style="justify-content:center; width:100%;">🔍 Detalhes</button>
@@ -2669,7 +2678,7 @@ function renderFamiliaIsca(fam, itens) {
     const calc = it.calculoPreco;
     return `
       <div class="isca-cor-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" onclick="selecionarIsca('${fam.id}', '${it.codigo}', '${it.imagem_url}')">
-        <span class="isca-badge">${q}</span>
+        ${renderTarjasNovidades([it], true)}<span class="isca-badge">${q}</span>
         <img src="${it.imagem_url}">
         <div class="cor-nome">${escapeHtml(info.cor || 'Padrão')}</div>
         ${info.especificacoes ? `<div style="font-size:.6rem; color:var(--cinza-500); font-weight:600; text-align:center; margin-bottom:2px;">${info.especificacoes}</div>` : ''}
@@ -2701,7 +2710,7 @@ function renderFamiliaIsca(fam, itens) {
       <div class="isca-card" id="card-fam-${fam.id}">
         <div class="familia-side">
           <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)" style="position:relative;">
-            ${temLancamentoNaFamilia ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
+            ${renderTarjasNovidades(itensComEstoque)}
             ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
           </div>
         </div>
@@ -2729,7 +2738,7 @@ function trocarModeloIsca(famId, modeloNome) {
     const calc = it.calculoPreco;
     return `
       <div class="isca-cor-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}" onclick="selecionarIsca('${famId}', '${it.codigo}', '${it.imagem_url}')">
-        <span class="isca-badge">${q}</span>
+        ${renderTarjasNovidades([it], true)}<span class="isca-badge">${q}</span>
         <img src="${it.imagem_url}">
         <div class="cor-nome">${escapeHtml(info.cor || 'Padrão')}</div>
         ${info.especificacoes ? `<div style="font-size:.6rem; color:var(--cinza-500); font-weight:600; text-align:center; margin-bottom:2px;">${info.especificacoes}</div>` : ''}
@@ -2785,7 +2794,7 @@ function renderFamiliaAnzol(fam, itens) {
 
     return `
       <div class="anzol-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}">
-        <span class="anzol-badge">${q}</span>
+        ${renderTarjasNovidades([it], true)}<span class="anzol-badge">${q}</span>
         <div class="anzol-numero">${escapeHtml(info.numero)}</div>
         ${info.qtd ? `<div style="font-size:.6rem; color:var(--cinza-500); font-weight:700; margin-bottom:2px; text-align:center;">${escapeHtml(info.qtd)}</div>` : ''}
         
@@ -2823,7 +2832,7 @@ function renderFamiliaAnzol(fam, itens) {
       <div class="anzol-card" id="card-fam-${fam.id}">
         <div class="familia-side">
           <div class="familia-foto-principal" id="foto-pai-${fam.id}" onclick="abrirZoomImagem(this)" style="position:relative;">
-            ${temLancamentoNaFamilia ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
+            ${renderTarjasNovidades(itensComEstoque)}
             ${imgInicial ? `<img src="${imgInicial}">` : '🖼️'}
           </div>
         </div>
@@ -2854,7 +2863,7 @@ function trocarTipoAnzol(famId, subIndex) {
 
     return `
       <div class="anzol-numero-card ${q>0?'tem-qtd':''}" id="mini-${it.codigo}">
-        <span class="anzol-badge">${q}</span>
+        ${renderTarjasNovidades([it], true)}<span class="anzol-badge">${q}</span>
         <div class="anzol-numero">${escapeHtml(info.numero)}</div>
         ${info.qtd ? `<div style="font-size:.6rem; color:var(--cinza-500); font-weight:700; margin-bottom:2px; text-align:center;">${escapeHtml(info.qtd)}</div>` : ''}
         
@@ -2939,7 +2948,7 @@ function cardSoltos(it) {
   const calc = it.calculoPreco;
   return `
     <div class="card-solto" style="position:relative;">
-      ${it.is_lancamento ? `<span class="tarja-lancamento-foto">✨ NOVIDADE</span>` : ''}
+      ${renderTarjasNovidades([it])}
       ${calc.temOferta ? `<div style="position:absolute; top:4px; right:4px; background:#ef4444; color:white; font-size:8px; font-weight:800; padding:2px 4px; border-radius:4px;">-${calc.pctDesconto}%</div>` : ''}
       <div class="img" onclick="abrirZoomImagem(this)">${it.imagem_url ? `<img src="${it.imagem_url}">` : '🖼️'}</div>
       <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700; margin-bottom:2px;">CÓD: ${escapeHtml(it.codigo)}</div>
@@ -3324,6 +3333,7 @@ async function autosaveCarrinho() {
     if (j.ok) {
       pedidoEmEdicaoId = j.id; // Atualiza a variável com o ID que o backend devolveu
       if (painelHead) painelHead.innerHTML = 'Seu Pedido <span style="font-size:0.7rem; color:#6ee7b7;">(✓ salvo)</span>';
+      return true;
     } else {
       if (painelHead) painelHead.innerHTML = textoOriginal;
     }

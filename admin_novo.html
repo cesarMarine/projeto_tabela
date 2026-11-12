@@ -263,7 +263,7 @@
                 <th style="text-align:center;">Estoque</th>
                 <th style="text-align:right;">Preço Venda</th>
                 <th style="text-align:right;">Subtotal</th>
-                <th style="text-align:center;">Lançamento?</th>
+                <th style="text-align:center;">Tarjas</th>
                 <th style="text-align:center;">Atualizado Em</th>
               </tr>
             </thead>
@@ -1360,7 +1360,7 @@ async function upload(tipo) {
     const r = await fetch('/api/importar/' + tipo, { method: 'POST', body: fd });
     const j = await r.json();
     if (!r.ok || j.erro) throw new Error(j.erro);
-    msg.textContent = `Sucesso: ${j.inseridos} itens`;
+    msg.textContent = `Sucesso: ${j.inseridos} itens` + (tipo === 'sistema' ? ` · ${j.novos || 0} lançamentos · ${j.chegaram || 0} reposições` : '');
     carregarStatus(); 
     if (tipo === 'scraping') carregarDados();
   } catch(e) { 
@@ -1385,28 +1385,38 @@ async function carregarEstoque() {
   }
 }
 
-function renderizarTabelaEstoque(itens) {
+function renderizarTabelaEstoque(itens, pagina = 1) {
   const tbody = document.querySelector('#tabelaEstoqueAdmin tbody');
 
   if (!itens || itens.length === 0) {
     tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:30px; color:#94a3b8;">Nenhum produto encontrado com estoque.</td></tr>';
+    const navegacaoVazia = document.getElementById('paginacaoEstoque');
+    if (navegacaoVazia) navegacaoVazia.innerHTML = '';
     document.getElementById('resumoTotalItens').textContent = '0';
     document.getElementById('resumoTotalPecas').textContent = '0';
     document.getElementById('resumoValorEstoque').textContent = 'R$ 0,00';
     return;
   }
 
-  let totalPecas = 0;
-  let valorTotalEstoque = 0;
+  const totalPecas = (itens || []).reduce((s,i)=>s+(Number(i.estoque)||0),0);
+  const valorTotalEstoque = (itens || []).reduce((s,i)=>s+(Number(i.estoque)||0)*(Number(i.preco_venda)||0),0);
+  const paginas = Math.max(1, Math.ceil((itens || []).length / 100));
+  pagina = Math.max(1,Math.min(pagina,paginas));
+  let navegacao = document.getElementById('paginacaoEstoque');
+  if (!navegacao) {
+    navegacao = document.createElement('div'); navegacao.id='paginacaoEstoque';
+    navegacao.style.cssText='display:flex; gap:12px; align-items:center; margin:16px 0; flex-wrap:wrap;';
+    document.getElementById('tabelaEstoqueAdmin').parentElement.before(navegacao);
+  }
+  navegacao.innerHTML = `<button type="button" onclick="filtrarTabelaEstoque(${pagina-1})" ${pagina<=1?'disabled':''}>Anterior</button><span>${itens.length} produtos · Página ${pagina}/${paginas}</span><button type="button" onclick="filtrarTabelaEstoque(${pagina+1})" ${pagina>=paginas?'disabled':''}>Próxima</button>`;
 
-  const html = itens.map(item => {
+  const html = itens.slice((pagina-1)*100,pagina*100).map(item => {
     const est = Number(item.estoque) || 0;
     const preco = Number(item.preco_venda) || 0;
     const subtotal = est * preco;
     const isLanc = Boolean(item.is_lancamento);
 
-    totalPecas += est;
-    valorTotalEstoque += subtotal;
+
 
     const dataAtualizado = item.atualizado_em ? new Date(item.atualizado_em).toLocaleString('pt-BR') : '—';
 
@@ -1423,8 +1433,9 @@ function renderizarTabelaEstoque(itens) {
           <button class="btn-mini" 
                   style="background:${isLanc ? '#2563eb' : '#334155'}; color:white; border:none; cursor:pointer; font-weight:800; padding:4px 10px; border-radius:6px;"
                   onclick="toggleLancamentoAdmin('${item.codigo}', ${!isLanc})">
-            ${isLanc ? '✨ Lançamento' : '⚪ Normal'}
+            ${isLanc ? '✨ Lançamento ✓' : 'Lançamento'}
           </button>
+          <button type="button" class="btn-mini" style="margin:5px; background:${item.is_chegou ? '#059669' : '#334155'}; color:white;" data-codigo="${escapeHtml(String(item.codigo))}" data-ativo="${!!item.is_chegou}" onclick="toggleChegouAdmin(this)">${item.is_chegou ? 'Chegou ✓' : 'Chegou'}</button>
         </td>
 
         <td style="text-align:center; font-size:12px; color:#94a3b8;">${dataAtualizado}</td>
@@ -1437,6 +1448,19 @@ function renderizarTabelaEstoque(itens) {
   document.getElementById('resumoTotalItens').textContent = itens.length;
   document.getElementById('resumoTotalPecas').textContent = totalPecas.toLocaleString('pt-BR');
   document.getElementById('resumoValorEstoque').textContent = `R$ ${valorTotalEstoque.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+}
+
+async function toggleChegouAdmin(botao) {
+  const codigo = botao.dataset.codigo, ativo = botao.dataset.ativo !== 'true';
+  botao.disabled = true;
+  try {
+    const r = await fetch('/api/admin/produtos/lancamento', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({codigo,is_chegou:ativo})});
+    const j = await r.json();
+    if (!r.ok || !j.ok) throw new Error(j.erro || 'Falha ao atualizar tarja.');
+    const produto = listaEstoqueCache.find(p=>String(p.codigo)===codigo);
+    if (produto) produto.is_chegou=ativo;
+    filtrarTabelaEstoque();
+  } catch(e) { alert(e.message); } finally { botao.disabled=false; }
 }
 
 async function toggleLancamentoAdmin(codigoProduto, novoStatus) {
@@ -1460,10 +1484,10 @@ async function toggleLancamentoAdmin(codigoProduto, novoStatus) {
   }
 }
 
-function filtrarTabelaEstoque() {
+function filtrarTabelaEstoque(pagina = 1) {
   const q = document.getElementById('buscaEstoque').value.toLowerCase().trim();
   if (!q) {
-    renderizarTabelaEstoque(listaEstoqueCache);
+    renderizarTabelaEstoque(listaEstoqueCache, pagina);
     return;
   }
 
@@ -1473,7 +1497,7 @@ function filtrarTabelaEstoque() {
     String(item.descricao || '').toLowerCase().includes(q)
   );
 
-  renderizarTabelaEstoque(filtrados);
+  renderizarTabelaEstoque(filtrados, pagina);
 }
 
 async function excluirProdutoAuditoria(botao) {
