@@ -98,6 +98,7 @@
     try{
       await api('/api/admin/produtos-agrupados',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:editando,nome:el('nomeAgrupado').value.trim(),grupo:el('grupoAgrupado').value.trim(),imagem_url:el('imagemAgrupado').value.trim(),minimo,ordem,componentes})});
       await recarregar();limpar();mensagem('Produto agrupado salvo.');
+      await carregarDados();
     }catch(e){mensagem(e.message);}finally{el('salvarAgrupado').disabled=false;}
   });
 })();

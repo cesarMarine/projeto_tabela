@@ -1554,6 +1554,15 @@ async function carregarDados() {
       });
     }
 
+    // Um componente já vinculado a um agrupado também está organizado.
+    // Inclui os agrupados inativos: desativar a venda não desfaz o cadastro.
+    const respostaAgrupados = await fetch('/api/produtos-agrupados');
+    const dadosAgrupados = await respostaAgrupados.json();
+    if (!respostaAgrupados.ok || !dadosAgrupados.ok) throw new Error(dadosAgrupados.erro || 'Falha ao consultar os produtos agrupados.');
+    (dadosAgrupados.produtos || []).forEach(agrupado => {
+      (agrupado.componentes || []).forEach(componente => codigosOcupados.add(String(componente.codigo).trim()));
+    });
+
     const r = await fetch('/api/catalogo'); 
     const j = await r.json();
     todosOsProdutos = j.itens || [];
