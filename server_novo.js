@@ -855,6 +855,18 @@ app.get('/api/admin/auditoria-scraping', async (req, res) => {
     
     // Cria uma "lista negra" com todos os códigos que existem no scraping
     const codigosScrapingSet = new Set(itensScraping.map(s => normalizar(s.codigo)));
+    // Componentes de agrupados já estão organizados, mesmo sem scraping próprio.
+    const codigosAgrupados = new Set();
+    for (let inicio = 0; ; inicio += 200) {
+      const { data, error } = await supabase.from('produtos_agrupados').select('componentes')
+        .order('id', { ascending: true }).range(inicio, inicio + 199);
+      if (error) {
+        if (['42P01', 'PGRST205'].includes(error.code)) break;
+        throw error;
+      }
+      (data || []).forEach(p => (p.componentes || []).forEach(c => codigosAgrupados.add(normalizar(c.codigo))));
+      if (!data || data.length < 200) break;
+    }
 
     // 4. Separa o que deu match e o que não deu
     let comMatch = 0;
@@ -862,7 +874,7 @@ app.get('/api/admin/auditoria-scraping', async (req, res) => {
 
     itensSistema.forEach(item => {
       const codNorm = normalizar(item.codigo);
-      if (codigosScrapingSet.has(codNorm)) {
+      if (codigosScrapingSet.has(codNorm) || codigosAgrupados.has(codNorm)) {
         comMatch++;
       } else {
         // Adiciona na lista de "órfãos"

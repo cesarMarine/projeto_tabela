@@ -35,18 +35,29 @@ function definirQtdAgrupado(chave, valor) {
   if (!kit) return;
   let qtd = Number(valor);
   if (!Number.isSafeInteger(qtd) || qtd < 0) { alert('Informe uma quantidade inteira válida.'); atualizarCarrinho(); return; }
-  if (qtd > 0 && qtd < kit.minimo) qtd = kit.minimo;
+  const multiplicador = kit.multiplicador || kit.minimo;
+  if (qtd > 0) qtd = Math.ceil(qtd / multiplicador) * multiplicador;
   if (!qtd) delete carrinho[chave];
   else {
     try {
       const componentes = componentesAtuais(kit);
       carrinho[chave] = { qtd, precoBase: componentes.reduce((s,c) => s + c.precoBase * c.quantidade,0), desc: kit.nome,
-        img: kit.imagem_url || componentes[0].img, kit: { id: kit.id, nome: kit.nome, grupo: kit.grupo, minimo: kit.minimo, imagem_url: kit.imagem_url, componentes } };
+        img: kit.imagem_url || componentes[0].img, kit: { id: kit.id, nome: kit.nome, grupo: kit.grupo, minimo: kit.minimo, multiplicador, imagem_url: kit.imagem_url, componentes } };
     } catch (e) { alert(e.message); return; }
   }
   carrinhoTemComposicao = true;
   atualizarCarrinho();
   renderizar();
+}
+function definirLotesAgrupado(chave, valor) {
+  const kit = carrinho[chave]?.kit || produtosAgrupados.find(p => 'kit:' + p.id === chave);
+  const lotes = Number(valor);
+  if (!kit) return;
+  const multiplicador = kit.multiplicador || kit.minimo;
+  if (!Number.isSafeInteger(lotes) || lotes < 0 || !Number.isSafeInteger(lotes * multiplicador)) {
+    alert('Informe uma quantidade inteira de lotes.'); atualizarCarrinho(); renderizar(); return;
+  }
+  definirQtdAgrupado(chave, lotes * multiplicador);
 }
 function dadosComposicaoAgrupados() {
   return carrinhoTemComposicao || Object.values(carrinho).some(i => i.kit)
@@ -93,15 +104,17 @@ function renderizarAgrupados(emBlocos = false) {
     try { componentes = componentesAtuais(kit); preco = precoAgrupado(kit); } catch { return null; }
     const chave = 'kit:' + kit.id;
     const qtd = carrinho[chave]?.qtd || 0;
+    const multiplicador = carrinho[chave]?.kit.multiplicador || kit.minimo;
+    const lotes = qtd / multiplicador;
     const foto = kit.imagem_url || componentes[0].img;
     const html = `<section class="familia-bloco"><div class="familia-head"><h2>${escapeHtml(kit.nome)}</h2><span class="marca-badge">Produto agrupado</span></div>
       <div class="familia-card"><div class="familia-side">${foto ? `<img src="${escapeHtml(foto)}" alt="${escapeHtml(kit.nome)}" style="width:100%; max-width:180px; object-fit:contain;">` : ''}</div>
       <div><p style="font-size:.8rem; line-height:1.8;">${componentes.map(c => `${c.quantidade} × ${escapeHtml(c.desc)} — cód. ${escapeHtml(c.codigo)}`).join('<br>')}</p>
-      <p style="margin:12px 0; color:#003366; font-weight:800;">R$ ${fmtMoeda(preco.precoFinal)} por conjunto</p>
-      <p style="font-size:.75rem; margin-bottom:10px;">Venda mínima: ${kit.minimo} conjunto(s). Os componentes também podem ser comprados individualmente.</p>
-      <div class="qtd-ctrl"><button type="button" onclick="definirQtdAgrupado('${chave}', ${qtd <= kit.minimo ? 0 : qtd-1})">−</button>
-      <input aria-label="Quantidade de conjuntos" type="number" min="0" step="1" value="${qtd}" onchange="definirQtdAgrupado('${chave}', this.value)">
-      <button type="button" onclick="definirQtdAgrupado('${chave}', ${qtd ? qtd+1 : kit.minimo})">+</button></div></div></div></section>`;
+      <p style="margin:12px 0; color:#003366; font-weight:800;">R$ ${fmtMoeda(preco.precoFinal * multiplicador)} por lote</p>
+      <p style="font-size:.75rem; margin-bottom:10px;">Multiplicador: ${multiplicador}. Cada lote adiciona ${componentes.map(c => `${c.quantidade * multiplicador} unidade(s) do código ${escapeHtml(c.codigo)}`).join('; ')}. Digite o número de lotes (1, 2, 3...).</p>
+      <div class="qtd-ctrl"><button type="button" onclick="definirLotesAgrupado('${chave}', ${Math.max(0,Math.ceil(lotes)-1)})">−</button>
+      <input aria-label="Quantidade de lotes" type="number" min="0" step="1" value="${lotes}" onchange="definirLotesAgrupado('${chave}', this.value)">
+      <button type="button" onclick="definirLotesAgrupado('${chave}', ${Math.ceil(lotes)+1})">+</button></div></div></div></section>`;
     return { nome: kit.nome, ordem: kit.ordem ?? 9999, html, agrupado: true };
   }).filter(Boolean);
   return emBlocos ? blocos : blocos.map(b => b.html).join('');

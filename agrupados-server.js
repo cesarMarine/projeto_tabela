@@ -75,6 +75,8 @@ export function composicaoPedido(body) {
     if (codigo.startsWith('kit:')) {
       if (!item.kit || !Array.isArray(item.kit.componentes) || item.kit.componentes.length < 2 ||
           !Number.isSafeInteger(item.kit.minimo) || item.kit.minimo < 1 || item.qtd < item.kit.minimo) throw new Error('Agrupado inválido.');
+      if (item.kit.multiplicador != null && (!Number.isSafeInteger(item.kit.multiplicador) ||
+          item.kit.multiplicador < 1 || item.qtd % item.kit.multiplicador !== 0)) throw new Error('Quantidade fora do múltiplo do lote.');
       for (const c of item.kit.componentes) {
         if (typeof c.codigo !== 'string' || c.codigo.startsWith('kit:') || !Number.isSafeInteger(c.quantidade) || c.quantidade < 1) throw new Error('Componente inválido.');
         totais.set(c.codigo, (totais.get(c.codigo) || 0) + c.quantidade * item.qtd);

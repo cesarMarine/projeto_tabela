@@ -2970,7 +2970,8 @@ function mudarQtd(cod, delta) {
   if (String(cod).startsWith('kit:')) {
     const item = carrinho[cod];
     const qtd = item?.qtd || 0;
-    return definirQtdAgrupado(cod, delta < 0 && qtd <= item.kit.minimo ? 0 : qtd + delta);
+    const fator = item.kit.multiplicador || item.kit.minimo;
+    return definirLotesAgrupado(cod, Math.max(0, Math.ceil(qtd / fator) + delta));
   }
   const a = carrinho[cod] ? carrinho[cod].qtd : 0;
   
@@ -2988,7 +2989,7 @@ function mudarQtd(cod, delta) {
   }
 }
 function setQtd(cod, valor) {
-  if (String(cod).startsWith('kit:')) return definirQtdAgrupado(cod, valor);
+  if (String(cod).startsWith('kit:')) return definirLotesAgrupado(cod, valor);
   let q = parseInt(valor) || 0; 
   const item = buscarItem(cod);
 
@@ -3114,7 +3115,7 @@ function registrarAcaoLog(codigo, acao, qtdAnterior) {
 
 // Consulta os atributos do SKU, inclusive para ofertas e pedidos reabertos.
 function detalhesItemCarrinho(codigo, itemCarrinho) {
-  if (itemCarrinho.kit) return { nome: itemCarrinho.kit.nome, variacoes: itemCarrinho.kit.componentes.map(c => [c.codigo, `${c.quantidade} × ${c.desc}`]) };
+  if (itemCarrinho.kit) return { nome: itemCarrinho.kit.nome, variacoes: itemCarrinho.kit.componentes.map(c => [c.codigo, `${c.quantidade * (itemCarrinho.kit.multiplicador || itemCarrinho.kit.minimo)} por lote × ${c.desc}`]) };
   const cod = String(codigo);
   const produto = todosItens.find(item => String(item.codigo) === cod)
     || (mapaCatalogoCache.has(cod) ? normalizarItem(mapaCatalogoCache.get(cod)) : null);
@@ -3162,6 +3163,8 @@ function atualizarCarrinho() {
     const detalhes = detalhesItemCarrinho(cod, i);
     const calc = calcularValoresProduto(i.precoBase, cod);
     
+    const fatorLote = i.kit ? (i.kit.multiplicador || i.kit.minimo) : 1;
+    const qtdExibida = i.qtd / fatorLote;
     const subUnitario = calc.precoFinal;
     const subTotal = subUnitario * i.qtd;
     
@@ -3180,7 +3183,7 @@ function atualizarCarrinho() {
 
         <div class="item-dados">
           <span class="item-titulo">${escapeHtml(detalhes.nome)}</span>
-          <span class="item-codigo">Código: ${escapeHtml(String(cod))}</span>
+          <span class="item-codigo">Código: ${escapeHtml(String(cod))}${i.kit ? ` · Lotes de ${fatorLote}` : ''}</span>
           ${detalhes.variacoes.length ? `<dl class="item-variacoes">${detalhes.variacoes.map(([rotulo, valor]) => `<div><dt>${escapeHtml(rotulo)}: </dt><dd>${escapeHtml(valor)}</dd></div>`).join('')}</dl>` : ''}
           
           <div class="item-valores" style="margin-top: 4px;">
@@ -3188,13 +3191,13 @@ function atualizarCarrinho() {
             <div style="display: flex; align-items: center; gap: 8px;">
               <div class="qtd-ctrl" style="height: 26px; display: inline-flex;">
                 <button onclick="event.stopPropagation(); mudarQtd('${cod}', -1)">−</button>
-                <input type="number" min="0" value="${i.qtd}" onchange="setQtd('${cod}', this.value)" style="width: 35px; height: 24px;">
+                <input type="number" min="0" value="${qtdExibida}" onchange="setQtd('${cod}', this.value)" style="width: 35px; height: 24px;">
                 <button onclick="event.stopPropagation(); mudarQtd('${cod}', 1)">+</button>
               </div>
               <span class="item-linha-valor">
                 ${calc.temOferta 
-                  ? `<span class="val-de">R$ ${fmtMoeda(calc.precoOriginal)}</span> <span class="val-unit-oferta">R$ ${fmtMoeda(subUnitario)}</span>` 
-                  : `<span class="val-unit">R$ ${fmtMoeda(subUnitario)}</span>`}
+                  ? `<span class="val-de">R$ ${fmtMoeda(calc.precoOriginal * fatorLote)}</span> <span class="val-unit-oferta">R$ ${fmtMoeda(subUnitario * fatorLote)}</span>` 
+                  : `<span class="val-unit">R$ ${fmtMoeda(subUnitario * fatorLote)}</span>`}
               </span>
             </div>
             <span class="item-linha-total" style="margin-top: 4px;">Total: <strong>R$ ${fmtMoeda(subTotal)}</strong></span>

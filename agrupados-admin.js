@@ -12,13 +12,13 @@
       <div style="display:flex; gap:12px; flex-wrap:wrap;">
         <label>Nome<input id="nomeAgrupado" maxlength="160" placeholder="Ex.: Kit manivela" style="display:block;"></label>
         <label>Grupo de exibição<input id="grupoAgrupado" list="gruposAgrupados" maxlength="100" placeholder="Escolha ou digite um grupo" style="display:block;"><datalist id="gruposAgrupados"></datalist></label>
-        <label>Mínimo de conjuntos<input id="minimoAgrupado" type="number" min="1" step="1" value="1" style="display:block; width:140px;"></label>
+        <label>Mínimo / multiplicador do lote<input id="minimoAgrupado" type="number" min="1" step="1" value="1" style="display:block; width:140px;"></label>
         <label>Posição no grupo<input id="ordemAgrupado" type="number" min="0" step="1" value="9999" style="display:block; width:140px;"><small>Mesma ordem das famílias: menores primeiro.</small></label>
         <label>Imagem (URL opcional)<input id="imagemAgrupado" type="url" placeholder="https://..." style="display:block;"></label>
       </div>
       <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:18px; margin-top:18px;">
         <div><label for="buscaComponenteAgrupado">Buscar em todos os produtos (com ou sem família)</label><input id="buscaComponenteAgrupado" type="search" placeholder="Código ou descrição" style="width:100%; margin:10px 0;"><div id="produtosParaAgrupar" style="max-height:340px; overflow:auto;"></div></div>
-        <div><h3>Componentes do conjunto</h3><p style="font-size:.8rem; color:#94a3b8;">Quantidade de cada código para uma unidade do conjunto.</p><div id="componentesAgrupado"></div></div>
+        <div><h3>Componentes do conjunto</h3><p style="font-size:.8rem; color:#94a3b8;">Quantidade de cada código por conjunto. O multiplicador define quantos conjuntos vão em cada lote: com 10, o cliente digita 1 lote e recebe 10 de cada componente.</p><div id="componentesAgrupado"></div></div>
       </div>
       <div style="display:flex; gap:12px; margin:18px 0;"><button type="button" class="btn-primario" id="salvarAgrupado">Salvar produto agrupado</button><button type="button" class="btn-primario" id="limparAgrupado">Novo / cancelar edição</button></div>
       <h3>Conjuntos cadastrados</h3><div id="listaAgrupadosAdmin" style="margin-top:12px;"></div>
@@ -43,7 +43,7 @@
     }).join('') || '<p style="margin-top:12px;">Selecione pelo menos dois produtos.</p>';
   }
   function desenharLista() {
-    el('listaAgrupadosAdmin').innerHTML = agrupados.map(p => `<div style="padding:14px; border:1px solid #334155; border-radius:8px; margin-bottom:10px;"><strong>${texto(p.nome)}</strong> · Grupo: ${texto(p.grupo)} · Posição: ${p.ordem ?? 9999} · Mínimo: ${p.minimo} · ${p.ativo?'Ativo':'Inativo'}<p style="margin:8px 0;">${p.componentes.map(c => `${c.quantidade} × ${texto(c.codigo)}`).join(' · ')}</p><button type="button" data-editar="${p.id}">Editar</button> <button type="button" data-ativo="${p.id}">${p.ativo?'Desativar':'Ativar'}</button></div>`).join('') || 'Nenhum conjunto cadastrado.';
+    el('listaAgrupadosAdmin').innerHTML = agrupados.map(p => `<div style="padding:14px; border:1px solid #334155; border-radius:8px; margin-bottom:10px;"><strong>${texto(p.nome)}</strong> · Grupo: ${texto(p.grupo)} · Posição: ${p.ordem ?? 9999} · Multiplicador: ${p.minimo} · ${p.ativo?'Ativo':'Inativo'}<p style="margin:8px 0;">${p.componentes.map(c => `${c.quantidade} × ${texto(c.codigo)}`).join(' · ')}</p><button type="button" data-editar="${p.id}">Editar</button> <button type="button" data-ativo="${p.id}">${p.ativo?'Desativar':'Ativar'}</button></div>`).join('') || 'Nenhum conjunto cadastrado.';
   }
   function limpar() {
     editando=null;selecionados=new Map();
