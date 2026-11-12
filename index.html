@@ -1668,11 +1668,11 @@ function renderizar() {
   }
 
   const lista = filtrar();
-  const htmlAgrupados = renderizarAgrupados();
-  if (!lista.length && !htmlAgrupados) { cont.innerHTML = '<div class="loading">Nenhum produto encontrado.</div>'; return; }
+  const blocosAgrupados = renderizarAgrupados(true);
+  if (!lista.length && !blocosAgrupados.length) { cont.innerHTML = '<div class="loading">Nenhum produto encontrado.</div>'; return; }
   
   const processados = new Set(); 
-  let html = htmlAgrupados;
+  let html = "";
 
   let familiasOrdenadas = todasFamilias.map(f => {
     let rawItens = f.subgrupos || f.itens || [];
@@ -1689,6 +1689,7 @@ function renderizar() {
     return { ...f, itens: codigosLimpos, subdivisoes: rawSubs };
   });
 
+  familiasOrdenadas.push(...blocosAgrupados);
   familiasOrdenadas.sort((a, b) => {
     const ordemA = a.ordem !== undefined && a.ordem !== null && a.ordem !== '' ? Number(a.ordem) : 9999;
     const ordemB = b.ordem !== undefined && b.ordem !== null && b.ordem !== '' ? Number(b.ordem) : 9999;
@@ -1697,6 +1698,7 @@ function renderizar() {
   });
 
   familiasOrdenadas.forEach(fam => {
+    if (fam.agrupado) { html += fam.html; return; }
     const filhos = lista.filter(it => fam.itens.includes(String(it.codigo).trim()));
     if (filhos.length > 0) {
       if (fam.ordem_customizada && fam.ordem_customizada.length > 0) {

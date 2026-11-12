@@ -82,19 +82,19 @@ function restaurarComposicaoAgrupados(composicao) {
   carrinhoTemComposicao = true;
   return true;
 }
-function renderizarAgrupados() {
+function renderizarAgrupados(emBlocos = false) {
   const normalizar = v => String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
   const busca = normalizar(buscaAtual.trim());
   const lista = produtosAgrupados.filter(p => busca
     ? normalizar(p.nome + ' ' + p.grupo + ' ' + p.componentes.map(c => c.codigo).join(' ')).includes(busca)
     : grupoAtual === '__TODOS__' || normalizar(p.grupo) === normalizar(grupoAtual));
-  return lista.map(kit => {
+  const blocos = lista.map(kit => {
     let preco, componentes;
-    try { componentes = componentesAtuais(kit); preco = precoAgrupado(kit); } catch { return ''; }
+    try { componentes = componentesAtuais(kit); preco = precoAgrupado(kit); } catch { return null; }
     const chave = 'kit:' + kit.id;
     const qtd = carrinho[chave]?.qtd || 0;
     const foto = kit.imagem_url || componentes[0].img;
-    return `<section class="familia-bloco"><div class="familia-head"><h2>${escapeHtml(kit.nome)}</h2><span class="marca-badge">Produto agrupado</span></div>
+    const html = `<section class="familia-bloco"><div class="familia-head"><h2>${escapeHtml(kit.nome)}</h2><span class="marca-badge">Produto agrupado</span></div>
       <div class="familia-card"><div class="familia-side">${foto ? `<img src="${escapeHtml(foto)}" alt="${escapeHtml(kit.nome)}" style="width:100%; max-width:180px; object-fit:contain;">` : ''}</div>
       <div><p style="font-size:.8rem; line-height:1.8;">${componentes.map(c => `${c.quantidade} × ${escapeHtml(c.desc)} — cód. ${escapeHtml(c.codigo)}`).join('<br>')}</p>
       <p style="margin:12px 0; color:#003366; font-weight:800;">R$ ${fmtMoeda(preco.precoFinal)} por conjunto</p>
@@ -102,5 +102,7 @@ function renderizarAgrupados() {
       <div class="qtd-ctrl"><button type="button" onclick="definirQtdAgrupado('${chave}', ${qtd <= kit.minimo ? 0 : qtd-1})">−</button>
       <input aria-label="Quantidade de conjuntos" type="number" min="0" step="1" value="${qtd}" onchange="definirQtdAgrupado('${chave}', this.value)">
       <button type="button" onclick="definirQtdAgrupado('${chave}', ${qtd ? qtd+1 : kit.minimo})">+</button></div></div></div></section>`;
-  }).join('');
+    return { nome: kit.nome, ordem: kit.ordem ?? 9999, html, agrupado: true };
+  }).filter(Boolean);
+  return emBlocos ? blocos : blocos.map(b => b.html).join('');
 }

@@ -13,6 +13,7 @@
         <label>Nome<input id="nomeAgrupado" maxlength="160" placeholder="Ex.: Kit manivela" style="display:block;"></label>
         <label>Grupo de exibição<input id="grupoAgrupado" list="gruposAgrupados" maxlength="100" placeholder="Escolha ou digite um grupo" style="display:block;"><datalist id="gruposAgrupados"></datalist></label>
         <label>Mínimo de conjuntos<input id="minimoAgrupado" type="number" min="1" step="1" value="1" style="display:block; width:140px;"></label>
+        <label>Posição no grupo<input id="ordemAgrupado" type="number" min="0" step="1" value="9999" style="display:block; width:140px;"><small>Mesma ordem das famílias: menores primeiro.</small></label>
         <label>Imagem (URL opcional)<input id="imagemAgrupado" type="url" placeholder="https://..." style="display:block;"></label>
       </div>
       <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:18px; margin-top:18px;">
@@ -42,12 +43,12 @@
     }).join('') || '<p style="margin-top:12px;">Selecione pelo menos dois produtos.</p>';
   }
   function desenharLista() {
-    el('listaAgrupadosAdmin').innerHTML = agrupados.map(p => `<div style="padding:14px; border:1px solid #334155; border-radius:8px; margin-bottom:10px;"><strong>${texto(p.nome)}</strong> · Grupo: ${texto(p.grupo)} · Mínimo: ${p.minimo} · ${p.ativo?'Ativo':'Inativo'}<p style="margin:8px 0;">${p.componentes.map(c => `${c.quantidade} × ${texto(c.codigo)}`).join(' · ')}</p><button type="button" data-editar="${p.id}">Editar</button> <button type="button" data-ativo="${p.id}">${p.ativo?'Desativar':'Ativar'}</button></div>`).join('') || 'Nenhum conjunto cadastrado.';
+    el('listaAgrupadosAdmin').innerHTML = agrupados.map(p => `<div style="padding:14px; border:1px solid #334155; border-radius:8px; margin-bottom:10px;"><strong>${texto(p.nome)}</strong> · Grupo: ${texto(p.grupo)} · Posição: ${p.ordem ?? 9999} · Mínimo: ${p.minimo} · ${p.ativo?'Ativo':'Inativo'}<p style="margin:8px 0;">${p.componentes.map(c => `${c.quantidade} × ${texto(c.codigo)}`).join(' · ')}</p><button type="button" data-editar="${p.id}">Editar</button> <button type="button" data-ativo="${p.id}">${p.ativo?'Desativar':'Ativar'}</button></div>`).join('') || 'Nenhum conjunto cadastrado.';
   }
   function limpar() {
     editando=null;selecionados=new Map();
     for (const id of ['nomeAgrupado','grupoAgrupado','imagemAgrupado']) el(id).value='';
-    el('minimoAgrupado').value=1;desenharProdutos();desenharSelecionados();
+    el('minimoAgrupado').value=1;el('ordemAgrupado').value=9999;desenharProdutos();desenharSelecionados();
   }
   async function recarregar() {
     const dados=await api('/api/produtos-agrupados');
@@ -73,6 +74,7 @@
     if(botao.dataset.editar){
       const p=agrupados.find(p=>String(p.id)===botao.dataset.editar);editando=p.id;
       el('nomeAgrupado').value=p.nome;el('grupoAgrupado').value=p.grupo;el('imagemAgrupado').value=p.imagem_url;el('minimoAgrupado').value=p.minimo;
+      el('ordemAgrupado').value=p.ordem ?? 9999;
       selecionados=new Map(p.componentes.map(c=>[c.codigo,c.quantidade]));desenharProdutos();desenharSelecionados();mensagem('Editando: '+p.nome);
     }
     if(botao.dataset.ativo){
@@ -87,12 +89,14 @@
     if(!carregado){mensagem('Carregue o cadastro e execute o SQL antes de salvar.');return;}
     const componentes=[...selecionados].map(([codigo,quantidade])=>({codigo,quantidade}));
     const minimo=Number(el('minimoAgrupado').value);
+    const ordem=Number(el('ordemAgrupado').value);
+    if (!Number.isSafeInteger(ordem) || ordem < 0) { mensagem('Informe uma posição inteira a partir de zero.'); return; }
     if(!el('nomeAgrupado').value.trim()||!el('grupoAgrupado').value.trim()||!Number.isSafeInteger(minimo)||minimo<1||componentes.length<2||componentes.some(c=>!Number.isSafeInteger(c.quantidade)||c.quantidade<1)){
       mensagem('Informe nome, grupo, mínimo positivo e pelo menos dois componentes com quantidades inteiras positivas.');return;
     }
     el('salvarAgrupado').disabled=true;
     try{
-      await api('/api/admin/produtos-agrupados',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:editando,nome:el('nomeAgrupado').value.trim(),grupo:el('grupoAgrupado').value.trim(),imagem_url:el('imagemAgrupado').value.trim(),minimo,componentes})});
+      await api('/api/admin/produtos-agrupados',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:editando,nome:el('nomeAgrupado').value.trim(),grupo:el('grupoAgrupado').value.trim(),imagem_url:el('imagemAgrupado').value.trim(),minimo,ordem,componentes})});
       await recarregar();limpar();mensagem('Produto agrupado salvo.');
     }catch(e){mensagem(e.message);}finally{el('salvarAgrupado').disabled=false;}
   });

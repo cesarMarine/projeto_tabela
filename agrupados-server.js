@@ -19,10 +19,10 @@ export function registrarAgrupados(app, supabase) {
 
   app.post('/api/admin/produtos-agrupados', async (req, res) => {
     try {
-      const { id, nome, grupo, imagem_url = '', minimo, componentes } = req.body || {};
+      const { id, nome, grupo, imagem_url = '', minimo, componentes, ordem = 9999 } = req.body || {};
       if (typeof nome !== 'string' || !nome.trim() || nome.length > 160 ||
           typeof grupo !== 'string' || !grupo.trim() || grupo.length > 100 ||
-          !Number.isSafeInteger(minimo) || minimo < 1 ||
+          !Number.isSafeInteger(minimo) || minimo < 1 || !Number.isSafeInteger(ordem) || ordem < 0 ||
           !Array.isArray(componentes) || componentes.length < 2 || componentes.length > 100 ||
           (id != null && !/^\d+$/.test(String(id)))) {
         return res.status(400).json({ ok: false, erro: 'Informe nome, grupo, mínimo inteiro positivo e pelo menos dois produtos.' });
@@ -42,7 +42,7 @@ export function registrarAgrupados(app, supabase) {
         .select('codigo').in('codigo', [...codigos]);
       if (erroProdutos) throw erroProdutos;
       if ((encontrados || []).length !== codigos.size) return res.status(400).json({ ok: false, erro: 'Um dos códigos não existe mais no cadastro de produtos.' });
-      const registro = { nome: nome.trim(), grupo: grupo.trim(), imagem_url: imagem_url.trim(), minimo,
+      const registro = { nome: nome.trim(), grupo: grupo.trim(), imagem_url: imagem_url.trim(), minimo, ordem,
         componentes: componentes.map(c => ({ codigo: c.codigo, quantidade: c.quantidade })), atualizado_em: new Date().toISOString() };
       const consulta = id ? supabase.from('produtos_agrupados').update(registro).eq('id', id)
         : supabase.from('produtos_agrupados').insert(registro);
