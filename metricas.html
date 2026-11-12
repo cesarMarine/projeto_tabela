@@ -84,6 +84,8 @@
   .metricas-extras > summary { cursor:pointer; padding:16px 20px; background:white; border:1px solid #e2e8f0; border-radius:10px; font-weight:700; color:#0d3b66; }
   .metricas-extras > summary:focus-visible { outline:3px solid #60a5fa; }
   @media(max-width:480px) { .resumo-dia strong { font-size:1.15rem; } .resumo-dia div { padding:12px; } }
+.resumo-principal .kpi-card{padding:16px}.resumo-principal .value{font-size:1.45rem;overflow-wrap:anywhere}.kpi-card small{display:block;margin-top:8px;color:#64748b;font-size:.72rem;line-height:1.5}
+.dispositivos-resumo{background:white;border:1px solid #e2e8f0;border-radius:12px;padding:18px;margin-bottom:24px}.dispositivos-resumo h2{font-size:1rem;margin-bottom:6px}.dispositivos-contadores{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:14px}.dispositivos-contadores div{padding:12px;background:#f8fafc;border-radius:8px;display:grid;gap:6px}.dispositivos-contadores span{font-size:.8rem;color:#475569}.dispositivos-contadores strong{font-size:1.3rem;color:#003366}.dispositivos-contadores small{font-size:.7rem;color:#64748b}@media(max-width:600px){.dispositivos-contadores{grid-template-columns:repeat(2,minmax(0,1fr))}.resumo-principal{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}}
 </style>
 </head>
 <body>
@@ -114,6 +116,19 @@
       <div><h1>Painel de pedidos</h1><p id="atualizacaoMetricas" class="texto-apoio" role="status"></p></div>
       <button type="button" class="btn-atualizar" onclick="carregarMetricas()">↻ Atualizar dados</button>
     </div>
+    <h2 class="secao-titulo" style="margin-top:0;">Resumo comercial</h2>
+    <p class="texto-apoio" style="margin-bottom:14px;">Totais desde o início dos registros. Clientes são identificados por CNPJ; os acessos abaixo são entradas registradas, não visitantes anônimos.</p>
+    <div class="kpi-grid resumo-principal">
+      <div class="kpi-card laranja"><h3>Clientes que acessaram</h3><div class="value" id="kpiLogins">0</div><small>CNPJs distintos</small></div>
+      <div class="kpi-card verde"><h3>Valor dos pedidos enviados</h3><div class="value" id="kpiFaturamento">R$ 0,00</div><small>Pedidos enviados, não faturamento fiscal</small></div>
+      <div class="kpi-card rascunho"><h3>Clientes com rascunho</h3><div class="value" id="kpiClientesRascunhos">0</div><small>CNPJs com pedido em aberto</small></div>
+      <div class="kpi-card rascunho"><h3>Valor em rascunhos</h3><div class="value" id="kpiValorRascunhos">R$ 0,00</div><small>Soma dos rascunhos em aberto</small></div>
+      <div class="kpi-card roxo"><h3>Acessos registrados</h3><div class="value" id="kpiAcessosTotal">0</div><small>Inclui retornos do mesmo cliente</small></div>
+    </div>
+    <section class="dispositivos-resumo" aria-labelledby="tituloDispositivos">
+      <div><h2 id="tituloDispositivos">De onde os clientes acessam</h2><p class="texto-apoio">Últimos 30 dias · Classificação aproximada pelo navegador. Registros antigos podem não ter dispositivo.</p></div>
+      <div id="resumoDispositivos" class="dispositivos-contadores" aria-live="polite">Carregando...</div>
+    </section>
     <section class="lista-card pedidos-dia" aria-labelledby="tituloPedidosDia">
       <h3 id="tituloPedidosDia">Pedidos do dia</h3>
       <div class="filtros-dia">
@@ -134,12 +149,12 @@
     <h2 class="secao-titulo">Totais acumulados</h2>
     
     <div class="kpi-grid">
-      <div class="kpi-card verde"><h3>Faturamento</h3><div class="value" id="kpiFaturamento">R$ 0,00</div></div>
-      <div class="kpi-card"><h3>Pedidos</h3><div class="value" id="kpiPedidos">0</div></div>
+
+      <div class="kpi-card"><h3>Quantidade de pedidos enviados</h3><div class="value" id="kpiPedidos">0</div></div>
       <div class="kpi-card azul"><h3>Ticket Médio</h3><div class="value" id="kpiTicket">R$ 0,00</div></div>
       <div class="kpi-card rascunho"><h3>Rascunhos</h3><div class="value" id="kpiRascunhos">0</div></div>
-      <div class="kpi-card laranja"><h3>Clientes Únicos</h3><div class="value" id="kpiLogins">0</div></div>
-      <div class="kpi-card roxo"><h3>Total de Acessos</h3><div class="value" id="kpiAcessosTotal">0</div></div>
+
+
     </div>
 
     <div class="charts-grid">
@@ -211,7 +226,7 @@
       <div class="lista-card">
         <h3>👀 Radar de Clientes (Últimos Logins)</h3>
         <table class="tabela-mini">
-          <thead><tr><th>Cliente / CNPJ</th><th>UF</th><th>Horário</th></tr></thead>
+          <thead><tr><th>Cliente / CNPJ</th><th>UF</th><th>Dispositivo</th><th>Data e hora</th></tr></thead>
           <tbody id="listaUltimosLogins"><tr><td colspan="3" style="text-align:center; color:#94a3b8;">Carregando...</td></tr></tbody>
         </table>
       </div>
@@ -283,6 +298,7 @@ async function carregarMetricas() {
     const loginsHistorico = dataLogins.logins_historico || [];
     const totalAcessos = dataLogins.total_acessos || 0;
 
+    renderizarDispositivos(dataLogins.dispositivos || {});
     processarMetricas(pedidos, logins, totalLogins);
     processarAcessos(loginsHistorico, totalAcessos); 
     document.getElementById('atualizacaoMetricas').textContent = 'Atualizado em ' + new Date().toLocaleString('pt-BR', { timeZone:'America/Sao_Paulo' });
@@ -360,6 +376,8 @@ function processarMetricas(pedidos, logins, totalLogins) {
   document.getElementById('kpiTicket').textContent = `R$ ${fmtMoeda(ticketMedio)}`;
   document.getElementById('kpiLogins').textContent = totalLogins; 
   document.getElementById('kpiRascunhos').textContent = rascunhos.length;
+  document.getElementById('kpiClientesRascunhos').textContent = new Set(rascunhos.map(p=>String(p.cnpj_cliente||'').replace(/\D/g,'')).filter(Boolean)).size;
+  document.getElementById('kpiValorRascunhos').textContent = `R$ ${fmtMoeda(rascunhos.reduce((s,p)=>s+(Number(p.total)||0),0))}`;
 
   renderizarGraficoVendedores(vendasPorVendedor);
   renderizarGraficoUFs(vendasPorUF);
@@ -425,14 +443,14 @@ function processarAcessos(logins, totalAcessos) {
   for (let i = 6; i >= 0; i--) {
     const d = new Date();
     d.setDate(d.getDate() - i);
-    const diaStr = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+    const diaStr = d.toLocaleDateString('pt-BR', { timeZone:'America/Sao_Paulo', day: '2-digit', month: '2-digit' });
     dias.push(diaStr);
     contagemPorDia[diaStr] = 0;
   }
 
   logins.forEach(l => {
     const dataAcesso = new Date(l.data_login);
-    const diaStr = dataAcesso.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+    const diaStr = dataAcesso.toLocaleDateString('pt-BR', { timeZone:'America/Sao_Paulo', day: '2-digit', month: '2-digit' });
     if (contagemPorDia[diaStr] !== undefined) contagemPorDia[diaStr]++;
   });
 
@@ -509,18 +527,22 @@ function renderizarRascunhosRecentes(rascunhos) {
   }).join('');
 }
 
+function renderizarDispositivos(dispositivos) {
+  const nomes={celular:'📱 Celular',computador:'💻 Computador',tablet:'Tablet',nao_identificado:'Não identificado'};
+  const total=Object.values(dispositivos).reduce((s,v)=>s+Number(v||0),0);
+  document.getElementById('resumoDispositivos').innerHTML=Object.entries(nomes).map(([tipo,nome])=>{
+    const qtd=Number(dispositivos[tipo])||0;
+    return `<div><span>${nome}</span><strong>${qtd}</strong><small>${total?Math.round(qtd/total*100):0}% dos acessos</small></div>`;
+  }).join('');
+}
 function renderizarUltimosLogins(logins) {
   const tbody = document.getElementById('listaUltimosLogins');
-  if (!logins.length) { tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Nenhum acesso recente.</td></tr>'; return; }
+  const nomes={celular:'📱 Celular',computador:'💻 Computador',tablet:'Tablet',nao_identificado:'Não identificado'};
+  if (!logins.length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Nenhum acesso recente.</td></tr>'; return; }
   tbody.innerHTML = logins.map(l => {
-    const dataLogin = new Date(l.data_login);
-    const hora = dataLogin.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-    return `
-      <tr>
-        <td><strong>${l.nome_cliente || l.cnpj}</strong></td>
-        <td><span class="badge-uf">${l.uf || '—'}</span></td>
-        <td>Hoje às ${hora}</td>
-      </tr>`;
+    const data=new Date(l.data_login);
+    const quando=Number.isFinite(data.getTime())?data.toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',dateStyle:'short',timeStyle:'short'}):'—';
+    return `<tr><td><strong>${escaparMetrica(l.nome_cliente || l.cnpj)}</strong><small style="display:block;">${escaparMetrica(l.cnpj)}</small></td><td>${escaparMetrica(l.uf||'—')}</td><td>${nomes[l.dispositivo]||nomes.nao_identificado}</td><td>${escaparMetrica(quando)}</td></tr>`;
   }).join('');
 }
 

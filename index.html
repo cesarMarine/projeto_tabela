@@ -1433,7 +1433,7 @@ porcentagemAcrescimo = parseFloat(
     fetch('/api/registrar-login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cnpj: j.cliente.cnpj, nome: j.cliente.nome })
+      body: JSON.stringify({ cnpj: j.cliente.cnpj, nome: j.cliente.nome, touch_points: navigator.maxTouchPoints || 0 })
     }).catch(() => {});
 
     carregar();
@@ -1544,7 +1544,8 @@ async function registrarAcessoDiario() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           cnpj: clienteLogado.cnpj, 
-          nome: clienteLogado.nome 
+          nome: clienteLogado.nome,
+          touch_points: navigator.maxTouchPoints || 0
         })
       });
       

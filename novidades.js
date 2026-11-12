@@ -33,6 +33,7 @@
     try{
       if(cnpj.length!==14)throw new Error('Informe um CNPJ com 14 dígitos.');
       const r=await fetch('/api/login/'+cnpj);const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.erro||'CNPJ não encontrado.');
+      fetch('/api/registrar-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cnpj:j.cliente.cnpj,nome:j.cliente.nome,touch_points:navigator.maxTouchPoints||0})}).catch(()=>{});
       cliente=j.cliente;taxa=Number(j.regra_acrescimo?.porcentagem??j.regra_acrescimo?.acrescimo??cliente.acrescimo??0)||0;
       localStorage.setItem('clienteLogadoB2B',JSON.stringify(cliente));localStorage.setItem('acrescimoB2B',String(taxa));mostrarConta();desenhar();el('loginNovidades').close();
     }catch(erro){el('erroLogin').textContent=erro.message;}
@@ -48,6 +49,7 @@
       const [r,o]=await Promise.all([fetch('/api/catalogo'),fetch('/api/ofertas')]);const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.erro||'Falha ao carregar catálogo.');
       if(o.ok){const d=await o.json();(d.ofertas||[]).forEach(p=>ofertas[p.codigo]=p.desconto_porcentagem);}
       produtos=j.itens.filter(p=>(p.is_lancamento||p.is_chegou)&&Number(p.estoque)>0&&Number(p.preco_venda)>0).sort((a,b)=>Math.max(Date.parse(b.chegou_em)||0,Date.parse(b.lancamento_em)||0)-Math.max(Date.parse(a.chegou_em)||0,Date.parse(a.lancamento_em)||0));
+      if(cliente)fetch('/api/registrar-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cnpj:cliente.cnpj,nome:cliente.nome,touch_points:navigator.maxTouchPoints||0})}).catch(()=>{});
       mostrarConta();desenhar();
     }catch(e){el('statusNovidades').textContent=e.message;}
   }

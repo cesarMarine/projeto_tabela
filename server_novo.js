@@ -1,3 +1,4 @@
+import { identificarDispositivo } from './acessos-dispositivo.js';
 import { detectarDestaques, codigoNovidades } from './novidades-regras.js';
 import { registrarAgrupados, composicaoPedido } from './agrupados-server.js';
 import express from 'express';
@@ -1726,10 +1727,12 @@ app.post('/api/registrar-login', async (req, res) => {
     // Limpa o CNPJ (apenas números)
     const cnpjLimpo = String(cnpj || '').replace(/\D/g, '');
     
-    await supabase.from('logins_clientes').insert({ 
-      cnpj: cnpjLimpo, 
-      nome_cliente: nome 
+    if (!cnpjLimpo) return res.status(400).json({ok:false,erro:'CNPJ obrigatório.'});
+    const { error } = await supabase.from('logins_clientes').insert({
+      cnpj: cnpjLimpo, nome_cliente: nome,
+      dispositivo: identificarDispositivo(req.get('user-agent'), req.body.touch_points)
     });
+    if (error) throw error;
     
     res.json({ ok: true });
   } catch (e) {
@@ -1856,84 +1859,34 @@ app.get('/api/admin/metricas-pedidos', async (req, res) => {
 
 app.get('/api/admin/metricas-logins', async (req, res) => {
   try {
-    // 1. Conta o TOTAL de registros (Acessos Totais)
-    const { count: totalAcessosGeral, error: errCount } = await supabase
-      .from('logins_clientes')
-      .select('*', { count: 'exact', head: true });
-      
-    if (errCount) throw errCount;
-
-    // 2. Busca APENAS os 50 mais recentes para o radar e para a tabela
-    const { data: loginsRecentes, error: errLog } = await supabase
-      .from('logins_clientes')
-      .select('cnpj, data_login')
-      .order('data_login', { ascending: false })
-      .limit(50);
-
-    if (errLog) throw errLog;
-
-    // 3. Busca TODOS os acessos dos últimos 30 dias para o gráfico
-    const dataLimite = new Date();
-    dataLimite.setDate(dataLimite.getDate() - 30);
-    
-    const { data: loginsHistorico, error: errHist } = await supabase
-      .from('logins_clientes')
-      .select('cnpj, data_login')
-      .gte('data_login', dataLimite.toISOString())
-      .order('data_login', { ascending: false });
-
-    if (errHist) throw errHist;
-
-    // 4. Calcula os Clientes Únicos (CNPJs diferentes em toda a base)
-    const { data: todosLogins, error: errUnicos } = await supabase
-      .from('logins_clientes')
-      .select('cnpj');
-      
-    if (errUnicos) throw errUnicos;
-
-    const cnpjsUnicos = new Set((todosLogins || []).map(l => String(l.cnpj || '').replace(/\D/g, '')));
-    const totalClientesUnicos = cnpjsUnicos.size;
-
-    // 5. Pega os nomes dos clientes que estão no radar (50 últimos)
-    const cnpjsParaBuscar = [...new Set((loginsRecentes || []).map(l => String(l.cnpj || '').replace(/\D/g, '')))];
-
-    const { data: clientes, error: errCli } = await supabase
-      .from('clientes')
-      .select('cnpj, nome_fantasia, razao_social, uf')
-      .in('cnpj', cnpjsParaBuscar);
-
-    if (errCli) throw errCli;
-
-    const mapaClientes = {};
-    (clientes || []).forEach(c => {
-      const cnpjLimpo = String(c.cnpj || '').replace(/\D/g, '');
-      mapaClientes[cnpjLimpo] = c;
-    });
-
-    const formatados = (loginsRecentes || []).map(l => {
-      const cnpjLimpo = String(l.cnpj || '').replace(/\D/g, '');
-      const cli = mapaClientes[cnpjLimpo] || {};
-      
-      return {
-        cnpj: l.cnpj,
-        data_login: l.data_login,
-        nome_cliente: cli.nome_fantasia || cli.razao_social || l.cnpj,
-        uf: cli.uf || 'N/A'
-      };
-    });
-
-    // 6. Retorna tudo mastigado
-    res.json({ 
-      ok: true, 
-      total_logins: totalClientesUnicos,   // Card Laranja
-      total_acessos: totalAcessosGeral,    // Card Roxo
-      logins: formatados,                  // Radar
-      logins_historico: loginsHistorico || [] // Gráfico
-    });
-  } catch (e) {
-    console.error('Erro em metricas-logins:', e);
-    res.status(500).json({ ok: false, erro: e.message });
-  }
+    const todos = [];
+    for(let inicio=0; ;inicio+=200){
+      const {data,error}=await supabase.from('logins_clientes').select('cnpj,data_login,dispositivo')
+        .order('data_login',{ascending:false}).order('cnpj',{ascending:true}).range(inicio,inicio+199);
+      if(error)throw error;
+      todos.push(...(data||[]));if(!data||data.length<200)break;
+    }
+    const recentes=todos.slice(0,50);
+    const limite=Date.now()-30*24*60*60*1000;
+    const historico=todos.filter(l=>new Date(l.data_login).getTime()>=limite);
+    const dispositivos={celular:0,computador:0,tablet:0,nao_identificado:0};
+    historico.forEach(l=>{const tipo=Object.hasOwn(dispositivos,l.dispositivo)?l.dispositivo:'nao_identificado';dispositivos[tipo]++;});
+    const limpar=v=>String(v||'').replace(/\D/g,'');
+    const unicos=new Set(todos.map(l=>limpar(l.cnpj)).filter(Boolean));
+    const codigos=[...new Set(recentes.map(l=>limpar(l.cnpj)).filter(Boolean))];
+    const mapa=new Map();
+    if(codigos.length){
+      const {data,error}=await supabase.from('clientes').select('cnpj,nome_fantasia,razao_social,uf').in('cnpj',codigos);
+      if(error)throw error;
+      (data||[]).forEach(c=>mapa.set(limpar(c.cnpj),c));
+    }
+    const logins=recentes.map(l=>{const c=mapa.get(limpar(l.cnpj))||{};return {
+      cnpj:l.cnpj,data_login:l.data_login,dispositivo:l.dispositivo||'nao_identificado',
+      nome_cliente:c.nome_fantasia||c.razao_social||l.cnpj,uf:c.uf||'—'
+    }});
+    res.json({ok:true,total_logins:unicos.size,total_acessos:todos.length,logins,logins_historico:historico,
+      dispositivos,dispositivos_periodo_dias:30});
+  }catch(e){res.status(500).json({ok:false,erro:e.message});}
 });
 
 // ROTA: Top Produtos Removidos/Diminuídos do Carrinho
