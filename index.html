@@ -946,8 +946,9 @@ function getIconeUrl(grupo) {
   if (g.includes('VARA')) return BUCKET_ICONIS + 'VARA.jpg';
   if (g.includes('LINHA')) return BUCKET_ICONIS + 'LINHA.jpg';
   if (g.includes('MOTOR')) return BUCKET_ICONIS + 'MOTOR.jpg';
-  if (g.includes('PECAS')) return BUCKET_ICONIS + 'PECAS.jpg';
+  if (g.includes('PECAS') || g.includes('PEÇAS')) return BUCKET_ICONIS + 'PECAS.jpg';
   if (g.includes('ANZOL')) return BUCKET_ICONIS + 'ANZOL.jpg';
+  
   if (g.includes('GARAT')) return BUCKET_ICONIS + 'GARATEIAS.jpg';
   if (g.includes('GIRADOR') || g.includes('EMPATE') || g.includes('SNAP')) return BUCKET_ICONIS + 'GIRADORES.jpg';
   if (g.includes('VESTUARIO')) return BUCKET_ICONIS + 'VESTUARIO.jpg';
