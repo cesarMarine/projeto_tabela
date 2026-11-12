@@ -8,11 +8,21 @@
 .tarja{background:#dc2626}.tarja.chegou{background:#2563eb}
 .produto.novidade{border-top:4px solid #dc2626}.produto.chegou{border-top:4px solid #2563eb}.produto.novidade.chegou{border-top:4px solid #dc2626;border-bottom:4px solid #2563eb}
 .filtros [data-filtro="lancamento"]{background:#dc2626}.filtros [data-filtro="chegou"]{background:#2563eb}.filtros button.ativo{outline:3px solid #94a3b8;outline-offset:2px}
+header{padding:10px max(20px,calc((100% - 1160px)/2));gap:16px}
+header img{width:110px;height:42px;object-fit:contain;padding:5px;border-radius:5px}
+header a{margin-left:auto;font-size:.85rem}header button{padding:8px 12px;font-size:.8rem}
+main{padding-top:18px}
+.hero{background:none;color:#12304b;border-radius:0;padding:0;margin:0 0 18px;display:flex;align-items:center;justify-content:space-between;gap:10px 24px;flex-wrap:wrap}
+.hero h1{font-size:1.5rem;margin:0;line-height:1.3}
+.hero .conta{color:#61778b;font-size:.8rem;line-height:1.5}
+.filtros{margin-bottom:14px}.filtros button,.filtros input{padding:9px 12px;font-size:.85rem}
+#statusNovidades{font-size:.8rem;color:#61778b;margin:0 0 14px}
+@media(max-width:520px){header{flex-wrap:nowrap;gap:10px;padding:8px 14px}header img{width:88px;height:36px}header a{font-size:.75rem}header button{font-size:.75rem;padding:8px}main{padding:14px 14px 100px}.hero{padding:0;margin-bottom:14px;gap:6px}.hero h1{font-size:1.25rem}.hero .conta{width:100%}.filtros input{flex-basis:100%}}
 </style>
 </head>
 <body>
 <header><img src="https://gpzqzwrqndawhhglycat.supabase.co/storage/v1/object/public/PECAS/logo--marine-rgb-png.png" alt="Marine Sports"><a href="index.html">Abrir catálogo</a><button class="topo-login" id="botaoConta" type="button">Entrar com CNPJ</button></header>
-<main><section class="hero"><span class="eyebrow">Marine Sports · Atualizações do catálogo</span><h1>Novidades para sua loja.</h1><p>Conheça os lançamentos e os produtos que voltaram. Escolha suas quantidades e continue no carrinho do catálogo.</p><span class="conta" id="contaAtual"></span></section>
+<main><section class="hero"><h1>Novidades</h1><span class="conta" id="contaAtual"></span></section>
 <nav class="filtros" aria-label="Filtrar novidades"><button type="button" data-filtro="todos" class="ativo">Todos</button><button type="button" data-filtro="lancamento">Lançamentos</button><button type="button" data-filtro="chegou">Chegou</button><input type="search" id="buscaNovidades" placeholder="Buscar por código, produto ou marca" aria-label="Buscar novidades"></nav>
 <p id="statusNovidades" role="status">Carregando novidades...</p><div class="grade" id="gradeNovidades"></div></main>
 <div class="barra"><span id="resumoSelecao">Selecione os produtos</span><button type="button" id="adicionarCarrinho">Adicionar e abrir carrinho →</button></div>
