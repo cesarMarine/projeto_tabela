@@ -946,6 +946,7 @@ function getIconeUrl(grupo) {
   if (g.includes('VARA')) return BUCKET_ICONIS + 'VARA.jpg';
   if (g.includes('LINHA')) return BUCKET_ICONIS + 'LINHA.jpg';
   if (g.includes('MOTOR')) return BUCKET_ICONIS + 'MOTOR.jpg';
+  if (g.includes('PEÇAS')) return BUCKET_ICONIS + 'PEÇAS.jpg';
   if (g.includes('ANZOL')) return BUCKET_ICONIS + 'ANZOL.jpg';
   if (g.includes('GARAT')) return BUCKET_ICONIS + 'GARATEIAS.jpg';
   if (g.includes('GIRADOR') || g.includes('EMPATE') || g.includes('SNAP')) return BUCKET_ICONIS + 'GIRADORES.jpg';
@@ -1733,6 +1734,7 @@ function renderizar() {
       else if (nomeFam.includes('MOLINETE')) tipo = 'molinete';
       else if (nomeFam.includes('CARRETILHA')) tipo = 'carretilha';
       else if (nomeFam.includes('MOTOR') || grupoItem.includes('MOTOR')) tipo = 'motor';
+      else if (nomeFam.includes('PEÇAS') || grupoItem.includes('PEÇAS')) tipo = 'peças';
       else if (grupoItem.includes('VESTUARIO') || nomeFam.includes('VESTUARIO') ||
                grupoItem.includes('ACESSORIO') || nomeFam.includes('ACESSORIO') ||
                nomeFam.includes('ALICATE') || nomeFam.includes('TESOURA') || nomeFam.includes('BOLSA') || 
