@@ -2,7 +2,7 @@ function renderTarjasNovidades(itens, pequena = false) {
   const textos=[];
   if(itens.some(p=>p.is_lancamento)) textos.push('✨ LANÇAMENTO');
   if(itens.some(p=>p.is_chegou)) textos.push('CHEGOU');
-  return textos.length ? `<span class="${pequena ? 'tarja-novidade-sku' : 'tarja-lancamento-foto'}" style="${pequena?'display:block; border-radius:4px; padding:3px 5px; margin-bottom:4px; color:white; font-size:.5rem; font-weight:800;':''}background:${textos.length===1 && textos[0]==='CHEGOU'?'#059669':'#003366'};">${textos.join(' · ')}</span>` : '';
+  return textos.length ? `<span class="${pequena ? 'tarja-novidade-sku' : 'tarja-lancamento-foto'}" style="display:flex; flex-wrap:wrap; gap:3px; padding:0; background:transparent; border:0; box-shadow:none; ${pequena?'margin-bottom:4px; font-size:.5rem; font-weight:800;':''}">${textos.map(t=>`<span style="display:inline-block; color:white; padding:4px 6px; border-radius:4px; background:${t==='CHEGOU'?'#2563eb':'#dc2626'};">${t}</span>`).join('')}</span>` : '';
 }
 async function abrirPaginaNovidades(evento) {
   evento.preventDefault();

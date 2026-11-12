@@ -1431,11 +1431,11 @@ function renderizarTabelaEstoque(itens, pagina = 1) {
         
         <td style="text-align:center;">
           <button class="btn-mini" 
-                  style="background:${isLanc ? '#2563eb' : '#334155'}; color:white; border:none; cursor:pointer; font-weight:800; padding:4px 10px; border-radius:6px;"
-                  onclick="toggleLancamentoAdmin('${item.codigo}', ${!isLanc})">
+                  style="background:${isLanc ? '#dc2626' : '#334155'}; color:white; border:none; cursor:pointer; font-weight:800; padding:4px 10px; border-radius:6px;"
+                  type="button" data-codigo="${escapeHtml(String(item.codigo))}" data-ativo="${isLanc}" onclick="toggleLancamentoAdmin(this)">
             ${isLanc ? '✨ Lançamento ✓' : 'Lançamento'}
           </button>
-          <button type="button" class="btn-mini" style="margin:5px; background:${item.is_chegou ? '#059669' : '#334155'}; color:white;" data-codigo="${escapeHtml(String(item.codigo))}" data-ativo="${!!item.is_chegou}" onclick="toggleChegouAdmin(this)">${item.is_chegou ? 'Chegou ✓' : 'Chegou'}</button>
+          <button type="button" class="btn-mini" style="margin:5px; background:${item.is_chegou ? '#2563eb' : '#334155'}; color:white;" data-codigo="${escapeHtml(String(item.codigo))}" data-ativo="${!!item.is_chegou}" onclick="toggleChegouAdmin(this)">${item.is_chegou ? 'Chegou ✓' : 'Chegou'}</button>
         </td>
 
         <td style="text-align:center; font-size:12px; color:#94a3b8;">${dataAtualizado}</td>
@@ -1450,38 +1450,31 @@ function renderizarTabelaEstoque(itens, pagina = 1) {
   document.getElementById('resumoValorEstoque').textContent = `R$ ${valorTotalEstoque.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
 }
 
-async function toggleChegouAdmin(botao) {
-  const codigo = botao.dataset.codigo, ativo = botao.dataset.ativo !== 'true';
+async function atualizarTarjaEstoqueAdmin(botao, campo) {
+  const codigo = botao.dataset.codigo;
+  const ativo = botao.dataset.ativo !== 'true';
   botao.disabled = true;
   try {
-    const r = await fetch('/api/admin/produtos/lancamento', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({codigo,is_chegou:ativo})});
+    const r = await fetch('/api/admin/produtos/lancamento', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({codigo, [campo]:ativo})
+    });
     const j = await r.json();
     if (!r.ok || !j.ok) throw new Error(j.erro || 'Falha ao atualizar tarja.');
     const produto = listaEstoqueCache.find(p=>String(p.codigo)===codigo);
-    if (produto) produto.is_chegou=ativo;
-    filtrarTabelaEstoque();
+    if (produto) produto[campo]=ativo;
+    // Atualiza somente o botão clicado: mantém busca, página, rolagem e foco.
+    botao.dataset.ativo=String(ativo);
+    botao.style.background=ativo ? (campo==='is_lancamento'?'#dc2626':'#2563eb') : '#334155';
+    botao.textContent=(campo==='is_lancamento'?'✨ Lançamento':'Chegou')+(ativo?' ✓':'');
+    botao.setAttribute('aria-pressed', String(ativo));
   } catch(e) { alert(e.message); } finally { botao.disabled=false; }
 }
-
-async function toggleLancamentoAdmin(codigoProduto, novoStatus) {
-  try {
-    const r = await fetch('/api/admin/produtos/lancamento', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ codigo: codigoProduto, is_lancamento: novoStatus })
-    });
-    const j = await r.json();
-
-    if (j.ok) {
-      const prod = listaEstoqueCache.find(p => p.codigo === codigoProduto);
-      if (prod) prod.is_lancamento = novoStatus;
-      renderizarTabelaEstoque(listaEstoqueCache);
-    } else {
-      alert('❌ Erro ao atualizar lançamento: ' + j.erro);
-    }
-  } catch (e) {
-    alert('❌ Erro de comunicação com o servidor.');
-  }
+async function toggleChegouAdmin(botao) {
+  return atualizarTarjaEstoqueAdmin(botao,'is_chegou');
+}
+async function toggleLancamentoAdmin(botao) {
+  return atualizarTarjaEstoqueAdmin(botao,'is_lancamento');
 }
 
 function filtrarTabelaEstoque(pagina = 1) {
