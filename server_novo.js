@@ -1,3 +1,4 @@
+import { createHash as monitorPedidosHash, randomUUID as monitorPedidosUUID } from 'node:crypto';
 import { identificarDispositivo } from './acessos-dispositivo.js';
 import { detectarDestaques, codigoNovidades } from './novidades-regras.js';
 import { registrarAgrupados, composicaoPedido } from './agrupados-server.js';
@@ -1229,20 +1230,49 @@ app.put('/api/vendedor/cliente/:cnpj/acesso', async (req, res) => {
 // ==========================================
 
 
+// Diagnóstico apenas: não consulta nem altera dados e não interfere na resposta.
+function iniciarMonitoramentoPedido(req, operacao) {
+  const monitor = { etapa:'recebido', pedido_id:req.params?.id ?? req.body?.id ?? null };
+  try {
+    const cliente=String(req.body?.cnpj_cliente || '').replace(/\D/g,'');
+    let pagina='nao_informada';
+    try { pagina=new URL(req.get('referer') || '').pathname; } catch {}
+    const contexto={ requisicao:monitorPedidosUUID(), operacao,
+      id_recebido:monitor.pedido_id,
+      cliente_ref:cliente ? monitorPedidosHash('sha256').update(cliente).digest('hex').slice(0,16) : null,
+      quantidade_itens:Array.isArray(req.body?.itens) ? req.body.itens.length : null,
+      status_solicitado:req.body?.status || (operacao==='autosave'?'RASCUNHO':null),
+      pagina_informada:pagina, dispositivo:identificarDispositivo(req.get('user-agent'),req.body?.touch_points) };
+    const inicio=Date.now();
+    monitor.registrar=(evento,extra={})=>{
+      try { console.log('[PEDIDO_MONITOR]',JSON.stringify({...contexto,evento,etapa:monitor.etapa,
+        pedido_id:monitor.pedido_id,duracao_ms:Date.now()-inicio,...extra})); } catch {}
+    };
+    monitor.registrar('inicio');
+  } catch {}
+  if (!monitor.registrar) monitor.registrar=()=>{};
+  return monitor;
+}
+
 // DELETAR RASCUNHO/PEDIDO
 app.delete('/api/pedidos/:id', async (req, res) => {
+  const monitor = iniciarMonitoramentoPedido(req, 'exclusao');
   try {
     const { id } = req.params;
 
     // Remove primeiro os itens por conta da integridade/referência
+    monitor.etapa='excluir_itens';
     await supabase.from('pedidos02_itens').delete().eq('pedido_id', id);
     
     // Remove o cabeçalho do pedido
+    monitor.etapa='excluir_cabecalho';
     const { error } = await supabase.from('pedidos02').delete().eq('id', id);
     if (error) throw error;
 
+    monitor.registrar('concluido');
     res.json({ ok: true, mensagem: 'Rascunho excluído com sucesso!' });
   } catch (e) {
+    monitor.registrar('erro', { codigo_erro:e?.code || null, mensagem:String(e?.message || 'Erro').slice(0,400) });
     res.status(500).json({ ok: false, erro: e.message });
   }
 });
@@ -1573,16 +1603,19 @@ app.get('/api/cliente/:cnpj/pedidos', async (req, res) => {
 
 // Rota exclusiva para Autosave (Salvamento automático em segundo plano)
 app.post('/api/pedidos/autosave', async (req, res) => {
+  const monitor = iniciarMonitoramentoPedido(req, 'autosave');
   try {
     const { id, cnpj_cliente, codigo_representante, total, itens } = req.body;
 
     if (!cnpj_cliente || !itens || itens.length === 0) {
+      monitor.registrar('rejeitado', { motivo:'dados_incompletos' });
       return res.status(400).json({ ok: false, erro: 'Carrinho vazio.' });
     }
 
     const composicao = composicaoPedido(req.body);
     let pedidoId = id;
 
+    monitor.etapa=pedidoId ? 'atualizar_cabecalho' : 'criar_cabecalho';
     if (pedidoId) {
       // Atualiza o rascunho existente
       const { error: erroCabecalho } = await supabase.from('pedidos02').update({ ...composicao, total, status: 'RASCUNHO', data_criacao: new Date().toISOString() }).eq('id', pedidoId);
@@ -1599,6 +1632,9 @@ app.post('/api/pedidos/autosave', async (req, res) => {
       pedidoId = novoPed.id;
     }
 
+    monitor.pedido_id=pedidoId;
+    monitor.etapa='gravar_itens';
+    monitor.registrar('cabecalho_processado');
     const itensFormatados = itens.map(it => ({
       pedido_id: pedidoId,
       codigo_produto: String(it.codigo),
@@ -1612,12 +1648,15 @@ app.post('/api/pedidos/autosave', async (req, res) => {
     const TAMANHO_LOTE = 50;
     for (let i = 0; i < itensFormatados.length; i += TAMANHO_LOTE) {
       const lote = itensFormatados.slice(i, i + TAMANHO_LOTE);
+      monitor.etapa='gravar_itens_lote_' + Math.floor(i / TAMANHO_LOTE + 1);
       const { error: erroItens } = await supabase.from('pedidos02_itens').insert(lote);
       if (erroItens) throw erroItens;
     }
 
+    monitor.registrar('concluido');
     res.json({ ok: true, id: pedidoId });
   } catch (e) {
+    monitor.registrar('erro', { codigo_erro:e?.code || null, mensagem:String(e?.message || 'Erro').slice(0,400) });
     console.error("Erro no autosave:", e.message);
     res.status(500).json({ ok: false, erro: e.message });
   }
@@ -1958,16 +1997,19 @@ app.delete('/api/admin/scraping-produtos/:id', async (req, res) => {
 // 2. ROTA PARA CRIAR OU ATUALIZAR PEDIDO (RASCUNHO OU ENVIADO)
 // 2. SALVAR RASCUNHO OU FINALIZAR PEDIDO
 app.post('/api/pedidos', async (req, res) => {
+  const monitor = iniciarMonitoramentoPedido(req, 'salvar');
   try {
     const { id, cnpj_cliente, codigo_representante, status = 'ENVIADO', total, itens } = req.body;
 
     if (!cnpj_cliente || !itens || itens.length === 0) {
+      monitor.registrar('rejeitado', { motivo:'dados_incompletos' });
       return res.status(400).json({ ok: false, erro: 'Dados do pedido incompletos.' });
     }
 
     const composicao = composicaoPedido(req.body);
     let pedidoId = id;
 
+    monitor.etapa=pedidoId ? 'atualizar_cabecalho' : 'criar_cabecalho';
     if (pedidoId) {
       // Atualiza o rascunho / pedido existente
       const { error: errUpdate } = await supabase
@@ -1999,6 +2041,9 @@ app.post('/api/pedidos', async (req, res) => {
     }
 
     // Grava os itens vinculados ao ID do pedido
+    monitor.pedido_id=pedidoId;
+    monitor.etapa='gravar_itens';
+    monitor.registrar('cabecalho_processado');
     const itensFormatados = itens.map(it => ({
       pedido_id: pedidoId,
       codigo_produto: String(it.codigo),
@@ -2012,12 +2057,15 @@ app.post('/api/pedidos', async (req, res) => {
     const TAMANHO_LOTE = 50;
     for (let i = 0; i < itensFormatados.length; i += TAMANHO_LOTE) {
       const lote = itensFormatados.slice(i, i + TAMANHO_LOTE);
+      monitor.etapa='gravar_itens_lote_' + Math.floor(i / TAMANHO_LOTE + 1);
       const { error: errItens } = await supabase.from('pedidos02_itens').insert(lote);
       if (errItens) throw errItens;
     }
 
+    monitor.registrar('concluido');
     res.json({ ok: true, id: pedidoId, mensagem: 'Gravado com sucesso!' });
   } catch (e) {
+    monitor.registrar('erro', { codigo_erro:e?.code || null, mensagem:String(e?.message || 'Erro').slice(0,400) });
     console.error("ERRO AO SALVAR PEDIDO:", e.message);
     res.status(500).json({ ok: false, erro: e.message });
   }
