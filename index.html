@@ -57,7 +57,7 @@
   .btn-topo-acao { background:#2563eb; color:white; border:none; padding:4px 8px; border-radius:10px; font-weight:800; font-size:0.7rem; cursor:pointer; display:inline-flex; align-items:center; gap:3px; }
   .btn-topo-sair { background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:10px; font-weight:800; font-size:0.7rem; cursor:pointer; }
 
-  .busca-wrap { flex:1; }
+  .busca-wrap { flex:1; min-width:0; }
   .busca-wrap input { width:100%; padding:9px 14px; border:none; border-radius:10px; font-family:inherit; font-size:.85rem; background:rgba(255,255,255,.18); color:white; }
   .busca-wrap input::placeholder { color:rgba(255,255,255,.7); }
   .busca-wrap input:focus { outline:none; background:rgba(255,255,255,.28); }
@@ -567,6 +567,18 @@
   .politica-texto h3 { font-size:.95rem; color:var(--azul-800); margin:22px 0 12px; }
   .politica-texto a { color:var(--azul-700); overflow-wrap:anywhere; }
   .aviso-frete { margin:0 0 10px; color:var(--cinza-500); font-size:.7rem; line-height:1.5; text-align:center; }
+  @media (max-width: 768px) {
+    .topo-inner { flex-wrap:wrap; row-gap:6px; }
+    .info-cliente { order:1; flex:1 1 auto; min-width:0; overflow:hidden; }
+    .info-cliente #nomeCliente { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+    .topo-inner > a { order:2; }
+    .busca-wrap { order:3; flex:0 0 100%; width:100%; min-width:0; }
+    .busca-wrap input { display:block; min-width:0; min-height:44px; font-size:16px; background:white; color:var(--texto); }
+    .busca-wrap input::placeholder { color:var(--cinza-500); }
+    .busca-wrap input:focus { background:white; outline:2px solid #60a5fa; }
+  }
+  .chips-wrap { top:var(--altura-topo, 49px); }
+  #barramarcasWrap { top:calc(var(--altura-topo, 49px) + var(--altura-grupos, 66px)) !important; }
 </style>
 </head>
 <body>
@@ -605,7 +617,7 @@
 
     <a href="novidades.html" onclick="abrirPaginaNovidades(event)" style="color:white; font-size:.8rem; text-decoration:none; white-space:nowrap;">✨ Novidades</a>
     <div class="busca-wrap">
-      <input type="search" id="busca" placeholder="🔍 Buscar produto por código, nome ou palavra-chave..." autocomplete="off">
+      <input type="search" id="busca" aria-label="Buscar produto por código, nome ou palavra-chave" placeholder="🔍 Buscar produto por código, nome ou palavra-chave..." autocomplete="off">
     </div>
   </div>
 </header>
@@ -751,6 +763,20 @@
 <script src="agrupados-cliente.js"></script>
 <script>
 let todosItens = [], todasFamilias = [], grupoAtual = '__OFERTAS__', buscaAtual = '', carrinho = {};
+let modelosIscaSelecionados = {};
+
+// A busca ocupa uma segunda linha no celular; as barras acompanham a altura real.
+function atualizarPosicaoBarras() {
+  document.documentElement.style.setProperty('--altura-topo', `${document.querySelector('.topo').getBoundingClientRect().height}px`);
+  document.documentElement.style.setProperty('--altura-grupos', `${document.querySelector('.chips-wrap').getBoundingClientRect().height}px`);
+}
+if (typeof ResizeObserver !== 'undefined') {
+  const observadorBarras = new ResizeObserver(atualizarPosicaoBarras);
+  observadorBarras.observe(document.querySelector('.topo'));
+  observadorBarras.observe(document.querySelector('.chips-wrap'));
+}
+window.addEventListener('resize', atualizarPosicaoBarras);
+atualizarPosicaoBarras();
 let clienteLogado = null;
 let porcentagemAcrescimo = 0;
 let mapaOfertas = {}; 
@@ -1671,6 +1697,14 @@ function filtrar() {
 }
 
 function renderizar() {
+  document.querySelectorAll('.isca-modelos-tabs .isca-modelo-btn.ativo').forEach(btn => {
+    const card = btn.closest('.isca-card[id^="card-fam-"]');
+    if (card) {
+      const famId = card.id.slice('card-fam-'.length);
+      modelosIscaSelecionados[famId] = btn.dataset.modelo || btn.textContent.trim();
+    }
+  });
+
   const cont = document.getElementById('conteudo');
 
   // 👇 A MÁGICA ACONTECE AQUI: Só renderiza ofertas se NÃO estiver buscando nada
@@ -2674,9 +2708,10 @@ function renderFamiliaIsca(fam, itens) {
   const modelos = Array.from(modelosMap.values());
   modelos.forEach(m => m.itens.sort((a, b) => a.ordem_excel - b.ordem_excel));
 
-  const tabsHtml = modelos.map((mod, idx) => `<button class="isca-modelo-btn ${idx===0?'ativo':''}" onclick="trocarModeloIsca('${fam.id}', '${escapeHtml(mod.nome)}')">${escapeHtml(mod.nome)}</button>`).join('');
+  const modeloSelecionado = modelos.find(mod => mod.nome === modelosIscaSelecionados[fam.id]) || modelos[0];
+  const tabsHtml = modelos.map(mod => `<button type="button" class="isca-modelo-btn ${mod === modeloSelecionado?'ativo':''}" data-modelo="${escapeHtml(mod.nome)}" onclick="trocarModeloIsca(this.closest('.isca-card').id.slice('card-fam-'.length), this.dataset.modelo)">${escapeHtml(mod.nome)}</button>`).join('');
   
-  const coresHtml = modelos[0] ? modelos[0].itens.map(it => {
+  const coresHtml = modeloSelecionado ? modeloSelecionado.itens.map(it => {
     const info = analisarIsca(it); 
     const q = carrinho[it.codigo] ? carrinho[it.codigo].qtd : 0;
     const calc = it.calculoPreco;
@@ -2729,11 +2764,13 @@ function renderFamiliaIsca(fam, itens) {
 }
 
 function trocarModeloIsca(famId, modeloNome) {
-  const modelos = window.iscasData[famId]; 
+  const modelos = window.iscasData?.[famId] || [];
   const modelo = modelos.find(m => m.nome === modeloNome);
   const card = document.getElementById(`card-fam-${famId}`);
+  if (!modelo || !card) return;
+  modelosIscaSelecionados[famId] = modelo.nome;
   card.querySelectorAll('.isca-modelo-btn').forEach(b => {
-    if(b.textContent.trim() === modeloNome) b.classList.add('ativo'); else b.classList.remove('ativo');
+    b.classList.toggle('ativo', b.dataset.modelo === modelo.nome);
   });
   const grade = document.getElementById(`grade-cores-${famId}`);
   grade.innerHTML = modelo.itens.map(it => {
@@ -3069,7 +3106,7 @@ function setQtd(cod, valor) {
     else { card.classList.remove('tem-qtd'); }
   }
 
-  if (grupoAtual === '__OFERTAS__') {
+  if (grupoAtual === '__OFERTAS__' && !buscaAtual.trim()) {
     renderizar();
   }
 
