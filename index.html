@@ -1226,6 +1226,7 @@ function calcularValoresProduto(precoBase, codItem) {
 function normalizarItem(it) {
   return {
     codigo: String(it.codigo ?? ''),
+    descricao_sistema: it.descricao_sistema || it.descricao || '',
     subgrupo: (it.subgrupo_scraping || it.descricao || '').trim(), 
     descricao_longa: it.descricao || it.descricao_longa || '', 
     imagem_url: it.imagem_url || '',
@@ -1654,19 +1655,21 @@ function trocarGrupo(grupo, btn) {
   renderizar();
 }
 
+function normalizarBuscaProdutos(valor) {
+  return String(valor ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+}
+
 function filtrar() {
   let lista = todosItens;
 
   // 1. Se houver texto na busca, ele ignora a aba e faz busca global
   if (buscaAtual.trim()) {
-    const q = buscaAtual.toLowerCase().trim();
+    const q = normalizarBuscaProdutos(buscaAtual);
     
     // Filtra por código, nome, marca ou grupo
-    lista = lista.filter(it => 
-      it.codigo.toLowerCase().includes(q) || 
-      (it.subgrupo || '').toLowerCase().includes(q) || 
-      (it.marca || '').toLowerCase().includes(q) ||
-      (it.grupo || '').toLowerCase().includes(q)
+    lista = lista.filter(it =>
+      [it.codigo, it.subgrupo, it.descricao_sistema, it.marca, it.grupo]
+        .some(valor => normalizarBuscaProdutos(valor).includes(q))
     );
 
     // Zera o filtro de marca e grupo para garantir que traga tudo

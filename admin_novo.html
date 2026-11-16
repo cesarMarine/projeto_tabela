@@ -286,7 +286,7 @@
           </div>
           <div style="display:flex; gap:10px;">
             <button class="btn-primario" style="background:#10b981;" onclick="abrirModalManual()">➕ Cadastrar Manual</button>
-            <button class="btn-primario" style="background:#38bdf8; color:#0f172a;" onclick="carregarAuditoria()">🔄 Gerar Relatório</button>
+            <button id="btnGerarAuditoria" class="btn-primario" style="background:#38bdf8; color:#0f172a;" onclick="carregarAuditoria()">🔄 Gerar Relatório</button>
           </div>
         </div>
 
@@ -305,10 +305,19 @@
           </div>
         </div>
 
+        <div id="acoesAuditoria" hidden style="margin-bottom:12px;">
+          <div style="display:flex; align-items:center; flex-wrap:wrap; gap:12px;">
+            <span id="auditoriaSelecionados" role="status" aria-live="polite">0 selecionados</span>
+            <button id="btnExcluirSelecionadosAuditoria" type="button" class="btn-primario btn-mini" style="background:#dc2626;" onclick="excluirSelecionadosAuditoria()" disabled>Excluir selecionados</button>
+            <button id="btnLimparSelecaoAuditoria" type="button" class="btn-primario btn-mini" style="background:#475569;" onclick="limparSelecaoAuditoria()" disabled>Limpar seleção</button>
+          </div>
+          <p id="auditoriaProgresso" role="status" aria-live="polite" style="margin-top:10px; font-size:14px; color:#cbd5e1;"></p>
+        </div>
         <div id="tabelaAuditoriaWrap" style="display:none; max-height: 600px; overflow-y: auto;">
           <table id="tabelaAuditoria">
             <thead style="position:sticky; top:0; background:#1e293b; z-index:10;">
               <tr>
+                <th style="width:48px; text-align:center;"><input id="selecionarTodosAuditoria" type="checkbox" aria-label="Selecionar todos os produtos da lista de auditoria" onchange="selecionarTodosAuditoria(this)" style="width:18px; height:18px; cursor:pointer;"></th>
                 <th>Código</th>
                 <th>Descrição (Sistema)</th>
                 <th style="text-align:center;">Estoque</th>
@@ -1493,68 +1502,161 @@ function filtrarTabelaEstoque(pagina = 1) {
   renderizarTabelaEstoque(filtrados, pagina);
 }
 
-async function excluirProdutoAuditoria(botao) {
-  const codigo = botao.dataset.codigo;
-  if (!confirm(`Excluir o produto ${codigo} da base da tabela?\n\nPedidos e histórico serão preservados. Se o código vier em uma nova planilha, será cadastrado novamente.`)) return;
-  botao.disabled = true;
+const selecionadosAuditoria = new Set();
+let produtosAuditoria = [];
+let auditoriaExcluindo = false;
+let auditoriaCarregando = false;
+
+function atualizarSelecaoAuditoria() {
+  const caixas = [...document.querySelectorAll('#tabelaAuditoria .auditoria-selecao')];
+  const bloqueado = auditoriaExcluindo || auditoriaCarregando;
+  caixas.forEach(caixa => {
+    caixa.checked = selecionadosAuditoria.has(caixa.dataset.codigo);
+    caixa.disabled = bloqueado;
+  });
+  const marcadas = caixas.filter(caixa => caixa.checked).length;
+  const todos = document.getElementById('selecionarTodosAuditoria');
+  todos.checked = caixas.length > 0 && marcadas === caixas.length;
+  todos.indeterminate = marcadas > 0 && marcadas < caixas.length;
+  todos.disabled = bloqueado || caixas.length === 0;
+  document.getElementById('auditoriaSelecionados').textContent = `${selecionadosAuditoria.size} selecionado(s)`;
+  document.getElementById('btnExcluirSelecionadosAuditoria').disabled = bloqueado || selecionadosAuditoria.size === 0 || caixas.length === 0;
+  document.getElementById('btnLimparSelecaoAuditoria').disabled = bloqueado || selecionadosAuditoria.size === 0;
+  document.getElementById('btnGerarAuditoria').disabled = bloqueado;
+  document.querySelectorAll('#tabelaAuditoria button').forEach(botao => { botao.disabled = bloqueado; });
+}
+
+function selecionarProdutoAuditoria(caixa) {
+  if (auditoriaExcluindo || auditoriaCarregando) return;
+  if (caixa.checked) selecionadosAuditoria.add(caixa.dataset.codigo);
+  else selecionadosAuditoria.delete(caixa.dataset.codigo);
+  atualizarSelecaoAuditoria();
+}
+
+function selecionarTodosAuditoria(caixa) {
+  if (auditoriaExcluindo || auditoriaCarregando) return;
+  document.querySelectorAll('#tabelaAuditoria .auditoria-selecao').forEach(item => {
+    if (caixa.checked) selecionadosAuditoria.add(item.dataset.codigo);
+    else selecionadosAuditoria.delete(item.dataset.codigo);
+  });
+  atualizarSelecaoAuditoria();
+}
+
+function limparSelecaoAuditoria() {
+  if (auditoriaExcluindo || auditoriaCarregando) return;
+  selecionadosAuditoria.clear();
+  atualizarSelecaoAuditoria();
+}
+
+function abrirCadastroProdutoAuditoria(botao) {
+  abrirModalManual(botao.dataset.codigo, botao.dataset.descricao);
+}
+
+async function excluirProdutosAuditoria(codigos) {
+  if (auditoriaExcluindo || auditoriaCarregando) return;
+  const disponiveis = new Set(produtosAuditoria.map(p => p.codigo));
+  const lista = [...new Set(codigos.map(String))].filter(codigo => disponiveis.has(codigo));
+  if (!lista.length) return;
+  if (!confirm(`Excluir ${lista.length} produto(s) selecionado(s) da base da tabela?\n\nPedidos e histórico serão preservados. Produtos que vierem em uma nova planilha poderão ser cadastrados novamente.`)) return;
+  auditoriaExcluindo = true;
+  atualizarSelecaoAuditoria();
+  const progresso = document.getElementById('auditoriaProgresso');
+  const falhas = [];
+  let excluidos = 0;
   try {
-    const resposta = await fetch('/api/admin/auditoria-produtos/' + encodeURIComponent(codigo), {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ confirmar: codigo })
-    });
-    const resultado = await resposta.json();
-    if (!resposta.ok || !resultado.ok) throw new Error(resultado.erro || 'Não foi possível excluir.');
-    await carregarAuditoria();
-    await carregarStatus();
-  } catch (e) {
-    alert('Erro ao excluir produto: ' + e.message);
+    for (let indice = 0; indice < lista.length; indice++) {
+      const codigo = lista[indice];
+      progresso.textContent = `Excluindo ${indice + 1} de ${lista.length}...`;
+      try {
+        const resposta = await fetch('/api/admin/auditoria-produtos/' + encodeURIComponent(codigo), {
+          method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ confirmar: codigo })
+        });
+        const resultado = await resposta.json();
+        if (!resposta.ok || !resultado.ok) throw new Error(resultado.erro || 'Não foi possível excluir.');
+        selecionadosAuditoria.delete(codigo);
+        excluidos++;
+      } catch (erro) {
+        falhas.push({ codigo, mensagem: erro.message });
+      }
+      document.getElementById('auditoriaSelecionados').textContent = `${selecionadosAuditoria.size} selecionado(s)`;
+    }
+    const recarregou = await carregarAuditoria(true);
+    try { await carregarStatus(); } catch { /* a exclusão já foi confirmada por produto */ }
+    progresso.textContent = `${excluidos} exclusão(ões) confirmada(s).` +
+      (falhas.length ? ` ${falhas.length} falha(s); revise os itens restantes. Códigos: ${falhas.slice(0, 10).map(f => f.codigo).join(', ')}${falhas.length > 10 ? '...' : ''}.` : '') +
+      (recarregou === false ? ' Não foi possível atualizar a lista; gere o relatório novamente.' : '');
   } finally {
-    botao.disabled = false;
+    auditoriaExcluindo = false;
+    atualizarSelecaoAuditoria();
   }
 }
 
-async function carregarAuditoria() {
+async function excluirProdutoAuditoria(botao) {
+  return excluirProdutosAuditoria([botao.dataset.codigo]);
+}
+
+async function excluirSelecionadosAuditoria() {
+  return excluirProdutosAuditoria([...selecionadosAuditoria]);
+}
+
+async function carregarAuditoria(forcar = false) {
+  if (auditoriaExcluindo && !forcar) return false;
+  if (auditoriaCarregando) return false;
   const tbody = document.querySelector('#tabelaAuditoria tbody');
   const resumo = document.getElementById('resumoAuditoria');
   const tableWrap = document.getElementById('tabelaAuditoriaWrap');
   
+  auditoriaCarregando = true;
+  document.getElementById('acoesAuditoria').hidden = false;
+  if (!auditoriaExcluindo) document.getElementById('auditoriaProgresso').textContent = '';
   tableWrap.style.display = 'block';
   resumo.style.display = 'grid';
-  tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:#94a3b8;">Cruzando dados... Aguarde.</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px; color:#94a3b8;">Cruzando dados... Aguarde.</td></tr>';
+  atualizarSelecaoAuditoria();
 
   try {
     const r = await fetch('/api/admin/auditoria-scraping');
     const j = await r.json();
 
-    if (!j.ok) throw new Error(j.erro);
+    if (!r.ok || !j.ok || !Array.isArray(j.produtos_sem_match)) throw new Error(j.erro || 'Resposta inválida da auditoria.');
+    produtosAuditoria = j.produtos_sem_match.filter(p => p.codigo !== null && p.codigo !== undefined)
+      .map(p => ({ ...p, codigo: String(p.codigo).trim() })).filter(p => p.codigo);
+    const disponiveis = new Set(produtosAuditoria.map(p => p.codigo));
+    selecionadosAuditoria.forEach(codigo => { if (!disponiveis.has(codigo)) selecionadosAuditoria.delete(codigo); });
 
     document.getElementById('audTotal').textContent = j.total_estoque;
     document.getElementById('audMatch').textContent = j.com_match;
     document.getElementById('audSemMatch').textContent = j.sem_match_qtd;
 
-    if (j.produtos_sem_match.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:#10b981; font-weight:bold;">🎉 Tudo certo! Todos os produtos com estoque possuem cadastro no scraping.</td></tr>';
-      return;
+    if (produtosAuditoria.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px; color:#10b981; font-weight:bold;">🎉 Tudo certo! Todos os produtos com estoque possuem cadastro no scraping.</td></tr>';
+      return true;
     }
 
     // 👇 AQUI ESTÁ O TRECHO QUE VOCÊ SUBSTITUI 👇
-    tbody.innerHTML = j.produtos_sem_match.map(p => `
+    tbody.innerHTML = produtosAuditoria.map(p => `
       <tr>
-        <td><strong style="color:#f87171; font-family:monospace;">${p.codigo}</strong></td>
-        <td>${p.descricao}</td>
-        <td style="text-align:center;"><span style="background:#7f1d1d; color:#fca5a5; font-weight:800; padding:3px 10px; border-radius:12px; font-size:12px;">${p.estoque}</span></td>
+        <td style="text-align:center;"><input type="checkbox" class="auditoria-selecao" data-codigo="${escapeHtml(p.codigo)}" aria-label="Selecionar produto ${escapeHtml(p.codigo)}" onchange="selecionarProdutoAuditoria(this)" ${selecionadosAuditoria.has(p.codigo) ? 'checked' : ''} style="width:18px; height:18px; cursor:pointer;"></td>
+        <td><strong style="color:#f87171; font-family:monospace;">${escapeHtml(p.codigo)}</strong></td>
+        <td>${escapeHtml(String(p.descricao || ''))}</td>
+        <td style="text-align:center;"><span style="background:#7f1d1d; color:#fca5a5; font-weight:800; padding:3px 10px; border-radius:12px; font-size:12px;">${escapeHtml(String(p.estoque ?? 0))}</span></td>
         <td style="text-align:right;">R$ ${Number(p.preco).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
         <td style="text-align:center;">
-          <button class="btn-primario btn-mini" style="background:#10b981;" onclick="abrirModalManual('${p.codigo}', '${p.descricao}')">➕ Cadastrar</button>
+          <button class="btn-primario btn-mini" style="background:#10b981;" data-codigo="${escapeHtml(p.codigo)}" data-descricao="${escapeHtml(String(p.descricao || ''))}" onclick="abrirCadastroProdutoAuditoria(this)">➕ Cadastrar</button>
           <button type="button" class="btn-primario btn-mini" style="background:#dc2626; margin:4px;" data-codigo="${escapeHtml(String(p.codigo))}" onclick="excluirProdutoAuditoria(this)">Excluir</button>
         </td>
       </tr>
     `).join('');
     // 👆 FIM DO TRECHO 👆
+    return true;
 
   } catch (e) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#ef4444; padding:20px;">Erro: ${e.message}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#ef4444; padding:20px;">Erro: ${escapeHtml(e.message)}</td></tr>`;
+    return false;
+  } finally {
+    auditoriaCarregando = false;
+    atualizarSelecaoAuditoria();
   }
 }
 
