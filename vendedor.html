@@ -180,6 +180,7 @@
 
 <!-- CONTEÚDO PRINCIPAL -->
 <div class="container" id="conteudoApp" style="display:none;">
+  <section class="card" id="painelMetricasVendedor" aria-label="Indicadores da carteira do vendedor"></section>
   
   <!-- NAVEGAÇÃO DE ABAS -->
   <div class="tabs">
@@ -379,6 +380,7 @@ async function fazerLogin() {
     document.getElementById('headerApp').style.display = 'flex';
     document.getElementById('conteudoApp').style.display = 'block';
     document.getElementById('nomeVendedor').textContent = vendedorLogado.nome;
+    window.painelVendedorMetricas?.iniciar(vendedorLogado, senha);
 
     await carregarClientes();
     carregarResumoPedidos();
@@ -974,5 +976,6 @@ document.getElementById('inputSenha').addEventListener('keypress', function(e) {
   if (e.key === 'Enter') fazerLogin();
 });
 </script>
+<script src="vendedor-metricas.js"></script>
 </body>
 </html>

@@ -3,6 +3,7 @@ import { identificarDispositivo } from './acessos-dispositivo.js';
 import { detectarDestaques, codigoNovidades } from './novidades-regras.js';
 import { registrarAgrupados, composicaoPedido } from './agrupados-server.js';
 import { registrarSecoesFamilias } from './familias-secoes-server.js';
+import { registrarMetricasVendedor } from './vendedor-metricas-server.js';
 import express from 'express';
 import multer from 'multer';
 import XLSX from 'xlsx';
@@ -19,6 +20,7 @@ app.use(express.json({ limit: '100mb' }));
 app.use(express.static('.'));
 registrarAgrupados(app, supabase);
 registrarSecoesFamilias(app, supabase);
+registrarMetricasVendedor(app, supabase);
 
 const soDigitos = (v) => String(v ?? '').replace(/\D/g, '');
 const num = (v) => {
