@@ -2,6 +2,7 @@ import { createHash as monitorPedidosHash, randomUUID as monitorPedidosUUID } fr
 import { identificarDispositivo } from './acessos-dispositivo.js';
 import { detectarDestaques, codigoNovidades } from './novidades-regras.js';
 import { registrarAgrupados, composicaoPedido } from './agrupados-server.js';
+import { registrarSecoesFamilias } from './familias-secoes-server.js';
 import express from 'express';
 import multer from 'multer';
 import XLSX from 'xlsx';
@@ -17,6 +18,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 app.use(express.json({ limit: '100mb' }));
 app.use(express.static('.'));
 registrarAgrupados(app, supabase);
+registrarSecoesFamilias(app, supabase);
 
 const soDigitos = (v) => String(v ?? '').replace(/\D/g, '');
 const num = (v) => {

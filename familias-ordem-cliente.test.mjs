@@ -86,3 +86,19 @@ test('Nao consulta em segundo plano e troca de grupo solicita ordem atualizada',
   const trocarGrupo = script.slice(a, script.indexOf('\nfunction ', a + 1));
   assert.ok(trocarGrupo.includes('window.atualizarOrdemFamilias?.()'));
 });
+test('Secoes atualizam mesmo sem mudar a ordem das familias e podem voltar ao visual anterior', async () => {
+  const t = tela();
+  vm.runInContext(fs.readFileSync(new URL('familias-secoes.js', import.meta.url), 'utf8'), t.c);
+  t.c.escapeHtml = v => String(v);
+  let ativo = true;
+  t.window.CatalogoSecoes.carregar = async () => ({ grupos: [{ grupo: 'VARAS', ativo, secoes: [
+    { id: 'primeira', nome: 'Primeira seção', familias: ['1'] },
+    { id: 'segunda', nome: 'Segunda seção', familias: ['2'] }
+  ] }] });
+  await t.eventos.focus();
+  assert.deepEqual(t.nomes(), ['Primeira seção', 'Vara A', 'Segunda seção', 'Vara B']);
+  ativo = false;
+  await t.eventos.focus();
+  assert.deepEqual(t.nomes(), ['Vara B', 'Vara A']);
+  assert.equal(t.carrinho['01'].qtd, 10);
+});

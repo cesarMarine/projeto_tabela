@@ -474,6 +474,7 @@
       </div>
 
       <div class="painel" id="ordenacao-visual-familias"></div>
+      <div class="painel" id="secoes-visuais-familias"></div>
       <div class="painel">
         <h2>Famílias já Criadas</h2>
         <div id="lista-familias-criadas"></div>
@@ -1794,6 +1795,7 @@ async function carregarFamiliasCriadas() {
       d.innerHTML = '<span style="color:#64748b">Nenhuma família cadastrada.</span>'; 
       familiasCache = []; 
       window.ordenacaoFamilias?.atualizar([], todosOsProdutos);
+      window.secoesFamilias?.atualizar([], todosOsProdutos);
       return; 
     }
     
@@ -1820,6 +1822,7 @@ async function carregarFamiliasCriadas() {
     });
 
     window.ordenacaoFamilias?.atualizar(familiasCache, todosOsProdutos);
+    window.secoesFamilias?.atualizar(familiasCache, todosOsProdutos);
     let html = '';
 
     Object.keys(gruposMap).sort().forEach(grupo => {
@@ -2254,5 +2257,7 @@ carregarStatus();
 </script>
 <script src="agrupados-admin.js"></script>
 <script src="familias-ordem-admin.js"></script>
+<script src="familias-secoes.js"></script>
+<script src="familias-secoes-admin.js"></script>
 </body>
 </html>

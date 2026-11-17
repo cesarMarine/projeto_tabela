@@ -782,6 +782,7 @@
 
 <script src="novidades-index.js"></script>
 <script src="agrupados-cliente.js"></script>
+<script src="familias-secoes.js"></script>
 <script>
 let todosItens = [], todasFamilias = [], grupoAtual = '__OFERTAS__', buscaAtual = '', carrinho = {};
 let modelosIscaSelecionados = {};
@@ -1560,6 +1561,10 @@ async function carregar() {
     if (!j.ok) throw new Error('Erro API');
     
     todosItens = j.itens.map(normalizarItem).filter(it => it.grupo.length > 0 && it.estoque > 0);
+    if (window.CatalogoSecoes) {
+      try { window.secoesCatalogo = (await window.CatalogoSecoes.carregar()).grupos; }
+      catch { window.secoesCatalogo = []; }
+    }
 
     mapaCatalogoCache = new Map();
     j.itens.forEach(it => mapaCatalogoCache.set(String(it.codigo), it));
@@ -1784,7 +1789,14 @@ function renderizar() {
     return (a.nome || '').localeCompare(b.nome || '');
   });
 
+  if (typeof window !== 'undefined' && window.CatalogoSecoes) {
+    familiasOrdenadas = window.CatalogoSecoes.organizar(familiasOrdenadas, lista, window.secoesCatalogo || []);
+  }
   familiasOrdenadas.forEach(fam => {
+    if (fam.cabecalhoSecao) {
+      html += `<header class="catalogo-secao" style="margin:24px 12px 12px;padding:16px 18px;border-radius:10px;background:linear-gradient(120deg,#003366,#00579c);color:white;box-shadow:0 3px 12px rgba(0,51,102,.15);"><small style="display:block;opacity:.8;font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;">${escapeHtml(fam.grupo)}</small><h2 style="font-size:1.15rem;margin-top:4px;overflow-wrap:anywhere;">${escapeHtml(fam.nome)}</h2></header>`;
+      return;
+    }
     if (fam.agrupado) { html += fam.html; return; }
     const filhos = lista.filter(it => fam.itens.includes(String(it.codigo).trim()));
     if (filhos.length > 0) {

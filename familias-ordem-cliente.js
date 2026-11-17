@@ -20,6 +20,15 @@
           todasFamilias = dados.familias;
           precisaRenderizar = true;
         }
+        if (window.CatalogoSecoes) {
+          try {
+            const secoes = (await window.CatalogoSecoes.carregar()).grupos;
+            if (assinatura(secoes) !== assinatura(window.secoesCatalogo || [])) {
+              window.secoesCatalogo = secoes;
+              precisaRenderizar = true;
+            }
+          } catch { /* Preserve a configuracao anterior se a consulta estiver indisponivel. */ }
+        }
         renderizarSePossivel();
       } catch (e) {
         console.warn('Ordem das famílias mantida: atualização indisponível.');
