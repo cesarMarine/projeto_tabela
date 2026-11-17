@@ -1621,11 +1621,27 @@ async function verificarRascunhoPendente() {
     const rascunho = j.pedidos?.find(p => (p.status || '').toUpperCase() === 'RASCUNHO');
     
     if (rascunho && rascunho.itens && rascunho.itens.length > 0) {
-      const continuar = !!sessionStorage.getItem('novidadesParaCarrinho') || confirm(`Você tem um pedido em aberto (#${rascunho.id}) no valor de R$ ${fmtMoeda(rascunho.total)}.\n\nDeseja continuar de onde parou?`);
+      const continuar = !!sessionStorage.getItem('novidadesParaCarrinho') || confirm(`Você tem um pedido em aberto (#${rascunho.id}) no valor de R$ ${fmtMoeda(rascunho.total)}.\n\nDeseja continuar de onde parou?\n\nOK: continuar o pedido.\nCancelar: excluir este rascunho e começar um novo.`);
       
       if (continuar) {
         const restaurado = carregarPedidoParaEdicao(rascunho.id, JSON.stringify(rascunho.itens), rascunho.composicao_agrupados);
         if (!restaurado) throw new Error('Não foi possível restaurar o pedido existente.');
+      } else {
+        try {
+          const exclusao = await fetch(`/api/cliente/${encodeURIComponent(clienteLogado.cnpj)}/rascunhos/${encodeURIComponent(rascunho.id)}`, { method: 'DELETE' });
+          const resultado = await exclusao.json();
+          if (!exclusao.ok || !resultado.ok) throw new Error(resultado.erro || 'Não foi possível excluir o rascunho.');
+        } catch (erro) {
+          alert('Não foi possível excluir o rascunho. Ele foi mantido no banco. Tente novamente.');
+          throw erro;
+        }
+        if (String(pedidoEmEdicaoId) === String(rascunho.id)) {
+          clearTimeout(timerAutosave);
+          pedidoEmEdicaoId = null;
+          carrinho = {};
+          carrinhoTemComposicao = false;
+          atualizarCarrinho();
+        }
       }
     }
     return true;
