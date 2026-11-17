@@ -21,7 +21,8 @@
     #ordenacao-visual-familias .ordem-foto { width:46px; height:46px; flex-shrink:0; object-fit:contain; background:white; border-radius:6px; }
     #ordenacao-visual-familias .ordem-nome { flex:1; min-width:0; overflow-wrap:anywhere; }
     #ordenacao-visual-familias .ordem-nome small { display:block; color:#94a3b8; margin-top:4px; }
-    #ordenacao-visual-familias .ordem-posicao { min-width:24px; font-weight:800; color:#38bdf8; }
+    #ordenacao-visual-familias .ordem-posicao { width:58px; min-width:44px; flex-shrink:0; padding:7px 3px; text-align:center; font-size:16px; font-weight:800; color:#38bdf8; background:#1e293b; border:1px solid #475569; border-radius:6px; }
+    #ordenacao-visual-familias .ordem-posicao:focus { outline:2px solid #38bdf8; outline-offset:2px; }
     #ordenacao-visual-familias .ordem-pega { cursor:grab; color:#94a3b8; font-size:20px; padding:4px; }
     #ordenacao-visual-familias .ordem-setas { display:flex; gap:4px; }
     #ordenacao-visual-familias button { min-height:36px; }
@@ -33,7 +34,7 @@
     }
   </style>
   <h2>Organizar a exibição das famílias</h2>
-  <p style="color:#94a3b8;line-height:1.6;">Escolha o grupo. Arraste pelo ☰ ou use ↑ ↓. A primeira família da lista aparece antes das demais no catálogo.</p>
+  <p style="color:#94a3b8;line-height:1.6;">Escolha o grupo. Digite a posição no número azul e pressione Enter ou saia do campo. Você também pode arrastar pelo ☰ ou usar ↑ ↓. Depois clique em Salvar ordem.</p>
   <div class="ordem-barra"><label for="ordem-grupo">Grupo</label><select id="ordem-grupo" aria-label="Grupo de famílias"></select></div>
   <p id="ordem-mensagem" role="status" aria-live="polite" style="color:#38bdf8;line-height:1.6;"></p>
   <ol id="ordem-lista" class="ordem-lista" aria-label="Sequência das famílias"></ol>
@@ -50,7 +51,7 @@
     const linhas = sequencia.map(id => familias.find(f => f.id === id));
     el('ordem-lista').innerHTML = linhas.map((f, i) => `<li class="ordem-linha" data-familia="${escapar(f.id)}">
       <span class="ordem-pega" draggable="${!salvando}" title="Arraste para mudar a posição" aria-hidden="true">☰</span>
-      <span class="ordem-posicao">${i + 1}</span>
+      <input class="ordem-posicao" data-posicao type="number" inputmode="numeric" min="1" max="${linhas.length}" step="1" value="${i + 1}" aria-label="Posição de ${escapar(f.nome)}" title="Digite a posição desejada, de 1 a ${linhas.length}" ${salvando ? 'disabled' : ''}>
       ${f.foto ? `<img class="ordem-foto" src="${escapar(f.foto)}" alt="" loading="lazy">` : '<span class="ordem-foto" aria-hidden="true" style="display:grid;place-items:center;">📦</span>'}
       <span class="ordem-nome"><strong>${escapar(f.nome)}</strong><small>${f.quantidade} produto(s) · ${f.estoque} em estoque</small></span>
       <span class="ordem-setas"><button type="button" class="btn-refresh" data-mover="-1" aria-label="Subir ${escapar(f.nome)}" ${salvando || i === 0 ? 'disabled' : ''}>↑</button><button type="button" class="btn-refresh" data-mover="1" aria-label="Descer ${escapar(f.nome)}" ${salvando || i === linhas.length - 1 ? 'disabled' : ''}>↓</button></span>
@@ -83,6 +84,22 @@
     const id = botao.closest('[data-familia]').dataset.familia;
     mover(id, sequencia.indexOf(id) + Number(botao.dataset.mover));
     el('ordem-lista').querySelector(`[data-familia="${id}"] [data-mover="${botao.dataset.mover}"]`)?.focus();
+  });
+  function aplicarPosicao(campo) {
+    if (!campo || salvando) return;
+    const id = campo.closest('[data-familia]').dataset.familia;
+    const posicao = Number(campo.value);
+    if (!Number.isSafeInteger(posicao) || posicao < 1 || posicao > sequencia.length) {
+      campo.value = sequencia.indexOf(id) + 1;
+      mensagem(`Informe uma posição inteira de 1 a ${sequencia.length}.`);
+      return;
+    }
+    mover(id, posicao - 1);
+  }
+  el('ordem-lista').addEventListener('change', e => aplicarPosicao(e.target.closest('[data-posicao]')));
+  el('ordem-lista').addEventListener('keydown', e => {
+    const campo = e.target.closest('[data-posicao]');
+    if (e.key === 'Enter' && campo) { e.preventDefault(); aplicarPosicao(campo); }
   });
   el('ordem-lista').addEventListener('dragstart', e => {
     if (salvando || !e.target.closest('.ordem-pega')) { e.preventDefault(); return; }
@@ -119,7 +136,7 @@
     if (salvando || !alterado()) return;
     salvando = true;
     desenhar();
-    let gravados = 0;
+    let gravados = 0, confirmado = false;
     try {
       for (let i = 0; i < sequencia.length; i++) {
         mensagem(`Salvando ${i + 1} de ${sequencia.length} famílias…`);
@@ -132,8 +149,18 @@
         familias.find(f => f.id === id).ordem = i + 1;
         gravados++;
       }
+      // Confirme a leitura usada pelo index, inclusive se o servidor publicado estiver antigo.
+      const leitura = await fetch('/api/familias', { cache: 'no-store' });
+      const dados = await leitura.json();
+      if (!leitura.ok || !dados.ok || !Array.isArray(dados.familias)) throw new Error('Não foi possível conferir as posições salvas.');
+      const posicoes = new Map(dados.familias.map(f => [String(f.id), Number(f.ordem)]));
+      if (sequencia.some((id, i) => posicoes.get(id) !== i + 1)) {
+        throw new Error('A API do catálogo não devolveu a ordem solicitada. Confira se o server_novo.js atualizado está em execução.');
+      }
       original = [...sequencia];
       gravacaoPendente = false;
+      confirmado = true;
+      try { localStorage.setItem('catalogo_familias_ordem_atualizada', String(Date.now())); } catch {}
       mensagem('Ordem salva! A sequência será usada ao atualizar o catálogo do cliente.');
     } catch (e) {
       gravacaoPendente = true;
@@ -142,7 +169,7 @@
       salvando = false;
       desenhar();
     }
-    if (gravados === sequencia.length && typeof carregarFamiliasCriadas === 'function') {
+    if (confirmado && typeof carregarFamiliasCriadas === 'function') {
       await carregarFamiliasCriadas();
       mensagem('Ordem salva! A sequência será usada ao atualizar o catálogo do cliente.');
     }

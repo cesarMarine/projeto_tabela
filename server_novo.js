@@ -465,16 +465,20 @@ app.get('/api/catalogo', async (req, res) => {
 });
 
 app.put('/api/familias/:id/ordem', async (req, res) => {
-  const { id } = req.params;
-  const { ordem } = req.body;
-
-  const { error } = await supabase
-    .from('familias')
-    .update({ ordem: Number(ordem) })
-    .eq('id', id);
-
-  if (error) return res.json({ ok: false, erro: error.message });
-  return res.json({ ok: true });
+  try {
+    const { id } = req.params;
+    const ordem = req.body?.ordem;
+    if (!/^\d+$/.test(id) || !Number.isSafeInteger(ordem) || ordem < 1) {
+      return res.status(400).json({ ok: false, erro: 'Informe uma família válida e uma posição inteira a partir de 1.' });
+    }
+    const { data, error } = await supabase.from('catalogo_familias')
+      .update({ ordem }).eq('id', id).select('id,ordem');
+    if (error) throw error;
+    if (!data?.length) return res.status(404).json({ ok: false, erro: 'Família não encontrada.' });
+    return res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ ok: false, erro: e.message });
+  }
 });
 
 // ==========================================
@@ -558,6 +562,7 @@ app.post('/api/admin/produtos/lancamento', async (req, res) => {
 // ==========================================
 app.get('/api/familias', async (req, res) => {
   try {
+    res.set('Cache-Control', 'no-store');
     const { data, error } = await supabase.from('catalogo_familias').select('*').order('id', { ascending: false });
     if (error) throw error;
     const familias = (data || []).map(f => ({ 
@@ -1255,6 +1260,30 @@ function iniciarMonitoramentoPedido(req, operacao) {
 }
 
 // DELETAR RASCUNHO/PEDIDO
+// Descarte no retorno do cliente: aceite somente rascunhos do cliente informado.
+app.delete('/api/cliente/:cnpj/rascunhos/:id', async (req, res) => {
+  try {
+    const { id, cnpj } = req.params;
+    if (!/^\d+$/.test(id) || !/^\d+$/.test(cnpj)) {
+      return res.status(400).json({ ok: false, erro: 'Cliente ou rascunho inválido.' });
+    }
+    const { data: pedido, error: erroConsulta } = await supabase.from('pedidos02')
+      .select('id').eq('id', id).eq('cnpj_cliente', cnpj).eq('status', 'RASCUNHO').maybeSingle();
+    if (erroConsulta) throw erroConsulta;
+    if (!pedido) return res.status(404).json({ ok: false, erro: 'Rascunho não encontrado para este cliente.' });
+
+    const { error: erroItens } = await supabase.from('pedidos02_itens').delete().eq('pedido_id', pedido.id);
+    if (erroItens) throw erroItens;
+    const { data: excluidos, error: erroPedido } = await supabase.from('pedidos02').delete()
+      .eq('id', pedido.id).eq('cnpj_cliente', cnpj).eq('status', 'RASCUNHO').select('id');
+    if (erroPedido) throw erroPedido;
+    if (!excluidos?.length) return res.status(409).json({ ok: false, erro: 'O pedido mudou de status. Atualize a página.' });
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
+
 app.delete('/api/pedidos/:id', async (req, res) => {
   const monitor = iniciarMonitoramentoPedido(req, 'exclusao');
   try {

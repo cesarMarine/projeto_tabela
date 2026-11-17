@@ -1554,7 +1554,7 @@ async function carregar() {
       jo.ofertas.forEach(o => mapaOfertas[o.codigo] = o.desconto_porcentagem);
     }
 
-    const rf = await fetch('/api/familias'); const jf = await rf.json();
+    const rf = await fetch('/api/familias', { cache: 'no-store' }); const jf = await rf.json();
     if (jf.ok) todasFamilias = jf.familias;
     const r = await fetch('/api/catalogo'); const j = await r.json();
     if (!j.ok) throw new Error('Erro API');
@@ -1690,6 +1690,7 @@ function trocarGrupo(grupo, btn) {
   btn.classList.add('ativo'); 
   montarBarraMarcas();
   renderizar();
+  window.atualizarOrdemFamilias?.();
 }
 
 function normalizarBuscaProdutos(valor) {
@@ -3479,5 +3480,6 @@ document.addEventListener('input', function(e) {
   }
 });
 </script>
+<script src="familias-ordem-cliente.js"></script>
 </body>
 </html>
