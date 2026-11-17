@@ -61,6 +61,13 @@
   .busca-wrap input { width:100%; padding:9px 14px; border:none; border-radius:10px; font-family:inherit; font-size:.85rem; background:rgba(255,255,255,.18); color:white; }
   .busca-wrap input::placeholder { color:rgba(255,255,255,.7); }
   .busca-wrap input:focus { outline:none; background:rgba(255,255,255,.28); }
+  .pedido-topo { width:calc(100% - 24px); max-width:1576px; margin:0 auto 8px; padding:10px 14px; border:1px solid #6ee7b7; border-radius:10px; background:#047857; color:white; cursor:pointer; align-items:center; justify-content:space-between; gap:12px; text-align:left; box-shadow:0 3px 12px rgba(0,0,0,.15); }
+  .pedido-topo:focus-visible { outline:3px solid white; outline-offset:2px; }
+  .pedido-topo strong { display:block; font-size:.88rem; overflow-wrap:anywhere; }
+  .pedido-topo small { display:block; margin-top:3px; font-size:.7rem; color:#d1fae5; }
+  .pedido-topo-resumo { flex-shrink:0; text-align:right; font-weight:900; font-size:.95rem; }
+  .item-especificacoes { display:grid; gap:3px; margin:5px 0; padding:5px; border-radius:5px; background:#eff6ff; color:#334155; font-size:.68rem; line-height:1.4; overflow-wrap:anywhere; }
+  .item-especificacoes .item-codigo-empate { color:#003366; font-weight:800; }
 
   /* BOTÕES DE GRUPO PREENCHIDOS */
   .chips-wrap { background:white; border-bottom:1px solid var(--cinza-200); position:sticky; top:49px; z-index:90; padding:8px 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -641,6 +648,10 @@
       <input type="search" id="busca" aria-label="Buscar produto por código, nome ou palavra-chave" placeholder="🔍 Buscar produto por código, nome ou palavra-chave..." autocomplete="off">
     </div>
   </div>
+  <button type="button" class="pedido-topo" id="pedidoTopo" onclick="abrirCarrinhoParaEnvio()" aria-controls="painelCarrinho" style="display:none;">
+    <span><strong id="pedidoTopoVendedor">🛒 Enviar pedido ao vendedor</strong><small>Revise seu carrinho e confirme o envio</small></span>
+    <span class="pedido-topo-resumo"><span id="pedidoTopoTotal">R$ 0,00</span><small id="pedidoTopoQuantidade">0 unidades</small></span>
+  </button>
 </header>
 
 <!-- AVISO DE VALIDADE DA TABELA -->
@@ -934,11 +945,38 @@ function filtrarPorMarca(marca, btn) {
   renderizar();
 }
 
+function nomeVendedorAtual() {
+  return String(clienteLogado?.vendedor?.nome || '').trim().split(/\s+/)[0] || '';
+}
+
+function atualizarResumoPedidoTopo(total, quantidade) {
+  const botao = document.getElementById('pedidoTopo');
+  if (!botao) return;
+  if (total === undefined || quantidade === undefined) {
+    total = 0; quantidade = 0;
+    Object.entries(carrinho).forEach(([codigo, item]) => {
+      total += calcularValoresProduto(item.precoBase, codigo).precoFinal * item.qtd;
+      quantidade += item.qtd;
+    });
+  }
+  const nome = nomeVendedorAtual();
+  document.getElementById('pedidoTopoVendedor').textContent = nome ? `🛒 Enviar pedido para ${nome}` : '🛒 Enviar pedido ao vendedor';
+  document.getElementById('pedidoTopoTotal').textContent = `R$ ${fmtMoeda(total)}`;
+  document.getElementById('pedidoTopoQuantidade').textContent = `${quantidade} ${quantidade === 1 ? 'unidade' : 'unidades'}`;
+  botao.style.display = clienteLogado && quantidade > 0 ? 'flex' : 'none';
+}
+
+function abrirCarrinhoParaEnvio() {
+  if (!clienteLogado || !Object.keys(carrinho).length) return;
+  document.getElementById('painelCarrinho').classList.add('on');
+}
+
 function configurarWhatsAppVendedor() {
+  atualizarResumoPedidoTopo();
   if (clienteLogado && clienteLogado.vendedor && clienteLogado.vendedor.whatsapp) {
     const numWhats = clienteLogado.vendedor.whatsapp.replace(/\D/g, '');
     if (!numWhats) return;
-    const nomeVendedor = clienteLogado.vendedor.nome.split(' ')[0];
+    const nomeVendedor = nomeVendedorAtual() || 'Vendedor';
     const mensagem = encodeURIComponent(`Olá ${nomeVendedor}, sou da empresa ${clienteLogado.nome} (CNPJ: ${clienteLogado.cnpj}) e gostaria de tirar uma dúvida sobre os produtos.`);
     const link = `https://wa.me/55${numWhats}?text=${mensagem}`;
     const btn = document.getElementById('btnWhatsVendedor');
@@ -1327,6 +1365,24 @@ function analisarVestuario(it) {
     if (matchTam) tam = matchTam[1]; else tam = it.subgrupo || 'ÚNICO';
   }
   return { tamanho: tam };
+}
+
+function renderInformacoesItem(it, mostrarCodigo = true) {
+  if (!it) return '';
+  let atributos = it.atributos || it.atributos_json || {};
+  for (let i = 0; i < 2 && typeof atributos === 'string'; i++) {
+    try { atributos = JSON.parse(atributos); } catch { atributos = {}; }
+  }
+  const detalhes = [];
+  const normalizar = valor => String(valor).normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+  if (mostrarCodigo && normalizar(it.grupo || it.grupo_scraping || '').includes('empate')) {
+    detalhes.push(`<div class="item-codigo-empate">CÓD: ${escapeHtml(String(it.codigo ?? ''))}</div>`);
+  }
+  for (const [chave, valor] of Object.entries(atributos || {})) {
+    if (!['resistencia (kg)', 'comprimento (cm)'].includes(normalizar(chave)) || valor == null || typeof valor === 'object' || !String(valor).trim()) continue;
+    detalhes.push(`<div><strong>${escapeHtml(chave)}:</strong> ${escapeHtml(String(valor))}</div>`);
+  }
+  return detalhes.length ? `<div class="item-especificacoes">${detalhes.join('')}</div>` : '';
 }
 
 function analisarAnzol(it) {
@@ -1977,7 +2033,7 @@ function renderOfertas() {
             ${escapeHtml(nomeOferta)}
             ${detalheOferta ? `<div style="font-size: 0.65rem; color: #64748b; font-weight: 700; margin-top: 4px;">${escapeHtml(detalheOferta)}</div>` : ''}
           </div>
-
+          ${renderInformacoesItem(itemBruto)}
           <div class="bloco-preco-balcao">
             <span class="txt-de">De: R$ ${fmtMoeda(calc.precoOriginal)}</span>
             <span class="txt-por">Por: R$ ${fmtMoeda(calc.precoFinal)}</span>
@@ -2153,6 +2209,7 @@ function montarCardCarretilha(it) {
         </div>
       ` : `<div class="molinete-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
 
+      ${renderInformacoesItem(it)}
       <div class="molinete-qtd-ctrl" onclick="event.stopPropagation()">
         <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
         <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
@@ -2213,6 +2270,7 @@ function renderFamiliaMolinete(fam, itens) {
           </div>
         ` : `<div class="molinete-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
 
+        ${renderInformacoesItem(it)}
         <div class="molinete-qtd-ctrl" onclick="event.stopPropagation()">
           <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
           <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
@@ -2282,6 +2340,7 @@ function trocarTipoMolinete(famId, subIndex) {
           </div>
         ` : `<div class="molinete-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
 
+        ${renderInformacoesItem(it)}
         <div class="molinete-qtd-ctrl" onclick="event.stopPropagation()">
           <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
           <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
@@ -2338,6 +2397,7 @@ function renderFamiliaMotor(fam, itens) {
           </div>
         ` : `<div class="cor-preco" style="font-size:0.85rem; font-weight:900; color:var(--verde); margin-bottom:4px;">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
 
+        ${renderInformacoesItem(it)}
         <div class="isca-qtd-ctrl" onclick="event.stopPropagation()">
           <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
           <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
@@ -2391,6 +2451,7 @@ function linhaMotor(it) {
       <div class="linha-filho">
         <div class="l-info-main">
           <span class="l-cod">${it.codigo}</span>
+          ${renderInformacoesItem(it, false)}
           ${info.tagPotencia ? `<span class="tag-lado">${escapeHtml(info.tagPotencia)}</span>` : ''}
           ${calc.temOferta ? `<span class="tarja-oferta-item">🔥 -${calc.pctDesconto}%</span>` : ''}
         </div>
@@ -2457,6 +2518,7 @@ function renderFamiliaVara(fam, itens) {
               <button type="button" onclick="event.stopPropagation(); togglePainelVara('${it.codigo}')" title="Ver libragem e detalhes" style="padding:2px 5px; font-size:0.68rem; border-radius:4px; background:#eff6ff; border:1px solid #93c5fd; cursor:pointer;">👁️</button>
             </div>
             ${libragem ? `<div style="font-size:0.65rem; color:#2563eb; font-weight:700; margin-top:2px;">${escapeHtml(libragem)}</div>` : ''}
+            ${renderInformacoesItem(it, false)}
             ${calc.temOferta ? `<span class="tarja-oferta-item">🔥 -${calc.pctDesconto}%</span>` : ''}
           </td>
           <td class="vara-preco" style="text-align:center; font-weight:800; color:var(--azul-800); padding:8px 2px; vertical-align:middle; white-space:nowrap;">
@@ -2565,6 +2627,7 @@ function renderFamiliaLinha(fam, itens) {
             </div>
           ` : `<div class="cor-preco" style="font-size: .85rem; margin-bottom: 6px;">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
 
+          ${renderInformacoesItem(it)}
           <div class="qtd-ctrl" style="display: flex; width: 100%; justify-space-between;" onclick="event.stopPropagation()">
             <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
             <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)" style="flex: 1;">
@@ -2652,6 +2715,7 @@ function renderFamiliaGrade(fam, itens) {
                 <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
               </div>
             ` : `<div class="anzol-preco" style="font-size:0.85rem; font-weight:800; color:var(--verde); margin-bottom:4px;">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+            ${renderInformacoesItem(it)}
             <div class="anzol-qtd-ctrl" onclick="event.stopPropagation()">
               <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
               <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
@@ -2704,6 +2768,7 @@ function renderFamiliaGrade(fam, itens) {
               </div>
             ` : `<div class="preco" style="font-size:.8rem; font-weight:900; color:var(--verde); text-align:center;">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
             
+            ${renderInformacoesItem(it, false)}
             <div class="qtd-ctrl" style="display:flex; width:100%; justify-content:space-between;" onclick="event.stopPropagation()">
               <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
               <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)" style="flex:1;">
@@ -2782,6 +2847,7 @@ function renderFamiliaIsca(fam, itens) {
           </div>
         ` : `<div class="cor-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
 
+        ${renderInformacoesItem(it)}
         <div class="isca-qtd-ctrl" onclick="event.stopPropagation()">
           <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
           <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
@@ -2842,6 +2908,7 @@ function trocarModeloIsca(famId, modeloNome) {
             <span class="preco-por">R$ ${fmtMoeda(calc.precoFinal)}</span>
           </div>
         ` : `<div class="cor-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
+        ${renderInformacoesItem(it)}
         <div class="isca-qtd-ctrl" onclick="event.stopPropagation()">
           <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
           <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
@@ -2899,6 +2966,7 @@ function renderFamiliaAnzol(fam, itens) {
           </div>
         ` : `<div class="anzol-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
 
+        ${renderInformacoesItem(it)}
         <div class="anzol-qtd-ctrl" onclick="event.stopPropagation()">
           <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
           <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
@@ -2968,6 +3036,7 @@ function trocarTipoAnzol(famId, subIndex) {
           </div>
         ` : `<div class="anzol-preco">R$ ${fmtMoeda(calc.precoFinal)}</div>`}
 
+        ${renderInformacoesItem(it)}
         <div class="anzol-qtd-ctrl" onclick="event.stopPropagation()">
           <button onclick="mudarQtd('${it.codigo}', -1)">−</button>
           <input type="number" min="0" value="${q}" onchange="setQtd('${it.codigo}', this.value)">
@@ -3010,6 +3079,7 @@ function renderFamiliaComum(fam, itens) {
         <div class="l-nome">
           ${nomeExibicao}
           ${badgeLote}
+          ${renderInformacoesItem(it, false)}
           ${calc.temOferta ? `<span class="tarja-oferta-item">🔥 -${calc.pctDesconto}%</span>` : ''}
         </div>
         <div class="l-var-col"></div>
@@ -3047,6 +3117,7 @@ function cardSoltos(it) {
       <div class="img" onclick="abrirZoomImagem(this)">${it.imagem_url ? `<img src="${it.imagem_url}">` : '🖼️'}</div>
       <div style="font-size:0.6rem; color:var(--cinza-400); font-weight:700; margin-bottom:2px;">CÓD: ${escapeHtml(it.codigo)}</div>
       <div class="nome">${escapeHtml(it.subgrupo)}</div>
+      ${renderInformacoesItem(it, false)}
       ${calc.temOferta ? `
         <div class="preco-box-oferta" style="align-items:center;">
           <span class="preco-de">R$ ${fmtMoeda(calc.precoOriginal)}</span>
@@ -3319,6 +3390,7 @@ function atualizarCarrinho() {
   }).join('');
 
   const btnFab = document.getElementById('btnCarrinho');
+  atualizarResumoPedidoTopo(total, qtdTotal);
   const badgeFab = document.getElementById('topoQtd');
   
   if (qtdTotal > 0) { btnFab.style.display = 'flex'; badgeFab.textContent = qtdTotal; } 
