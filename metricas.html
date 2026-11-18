@@ -81,8 +81,12 @@
   .resumo-dia div { background:#f8fafc; padding:16px; }
   .resumo-dia strong { font-size:1.5rem; }
   .resumo-dia small { display:block; margin-top:6px; }
-  .metricas-extras > summary { cursor:pointer; padding:16px 20px; background:white; border:1px solid #e2e8f0; border-radius:10px; font-weight:700; color:#0d3b66; }
-  .metricas-extras > summary:focus-visible { outline:3px solid #60a5fa; }
+  .pedidos-periodo { margin-bottom:24px; }
+  .pedidos-periodo .chart-container { height:300px; margin:18px 0; }
+  .pedidos-periodo th,.pedidos-periodo td { padding:10px 12px; }
+  .pedidos-periodo th { position:sticky; top:0; background:white; }
+  .pedidos-periodo td:not(:first-child),.pedidos-periodo th:not(:first-child) { text-align:right; }
+  .erro-periodo { color:#b91c1c; margin:10px 0; font-size:.85rem; }
   @media(max-width:480px) { .resumo-dia strong { font-size:1.15rem; } .resumo-dia div { padding:12px; } }
 .resumo-principal .kpi-card{padding:16px}.resumo-principal .value{font-size:1.45rem;overflow-wrap:anywhere}.kpi-card small{display:block;margin-top:8px;color:#64748b;font-size:.72rem;line-height:1.5}
 .dispositivos-resumo{background:white;border:1px solid #e2e8f0;border-radius:12px;padding:18px;margin-bottom:24px}.dispositivos-resumo h2{font-size:1rem;margin-bottom:6px}.dispositivos-contadores{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:14px}.dispositivos-contadores div{padding:12px;background:#f8fafc;border-radius:8px;display:grid;gap:6px}.dispositivos-contadores span{font-size:.8rem;color:#475569}.dispositivos-contadores strong{font-size:1.3rem;color:#003366}.dispositivos-contadores small{font-size:.7rem;color:#64748b}@media(max-width:600px){.dispositivos-contadores{grid-template-columns:repeat(2,minmax(0,1fr))}.resumo-principal{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}}
@@ -129,6 +133,25 @@
       <div><h2 id="tituloDispositivos">De onde os clientes acessam</h2><p class="texto-apoio">Últimos 30 dias · Classificação aproximada pelo navegador. Registros antigos podem não ter dispositivo.</p></div>
       <div id="resumoDispositivos" class="dispositivos-contadores" aria-live="polite">Carregando...</div>
     </section>
+    <section class="chart-card pedidos-periodo" aria-labelledby="tituloPedidosPeriodo">
+      <h3 id="tituloPedidosPeriodo">Pedidos recebidos por dia</h3>
+      <p class="texto-apoio">Valor e quantidade de pedidos enviados na tabela, por data registrada em horário de Brasília. Dias sem pedidos aparecem com zero.</p>
+      <div class="filtros-dia">
+        <label>De<input type="date" id="inicioPedidosPeriodo" onchange="renderizarPedidosPeriodo()"></label>
+        <label>Até<input type="date" id="fimPedidosPeriodo" onchange="renderizarPedidosPeriodo()"></label>
+      </div>
+      <p id="erroPedidosPeriodo" class="erro-periodo" role="alert"></p>
+      <div class="resumo-dia">
+        <div>Valor recebido em pedidos no período<strong id="valorPedidosPeriodo">R$ 0,00</strong></div>
+        <div>Quantidade no período<strong id="qtdPedidosPeriodo">0</strong></div>
+      </div>
+      <div class="chart-container"><canvas id="graficoPedidosPeriodo" role="img" aria-label="Valor dos pedidos recebidos por dia. Os mesmos dados estão na tabela abaixo."></canvas></div>
+      <p class="texto-apoio" id="estadoPedidosPeriodo" role="status"></p>
+      <div class="tabela-scroll" style="max-height:300px; margin-top:14px;"><table class="tabela-mini">
+        <thead><tr><th>Dia</th><th>Pedidos recebidos</th><th>Valor recebido em pedidos</th></tr></thead>
+        <tbody id="listaPedidosPeriodo"><tr><td colspan="3">Carregando pedidos...</td></tr></tbody>
+      </table></div>
+    </section>
     <section class="lista-card pedidos-dia" aria-labelledby="tituloPedidosDia">
       <h3 id="tituloPedidosDia">Pedidos do dia</h3>
       <div class="filtros-dia">
@@ -144,8 +167,7 @@
         <tbody id="listaPedidosDia"><tr><td colspan="6">Carregando pedidos...</td></tr></tbody>
       </table></div>
     </section>
-    <details class="metricas-extras" ontoggle="if(this.open) redimensionarGraficosMetricas()">
-    <summary>Ver mais métricas</summary>
+    <section class="metricas-extras" aria-label="Demais indicadores">
     <h2 class="secao-titulo">Totais acumulados</h2>
     
     <div class="kpi-grid">
@@ -232,7 +254,7 @@
       </div>
     </div>
 
-    </details>
+    </section>
   </div>
 </div>
 
@@ -240,9 +262,10 @@
 let chartVendedores = null;
 let chartUFs = null;
 let chartAcessos = null;
+let chartPedidosPeriodo = null;
 function redimensionarGraficosMetricas() {
   requestAnimationFrame(() => {
-    [chartVendedores, chartUFs, chartAcessos].forEach(chart => { if (chart) chart.resize(); });
+    [chartVendedores, chartUFs, chartAcessos, chartPedidosPeriodo].forEach(chart => { if (chart) chart.resize(); });
   });
 }
 
@@ -293,6 +316,8 @@ async function carregarMetricas() {
     pedidosMetricasCache = pedidos;
     if (!document.getElementById('dataPedidosDia').value) document.getElementById('dataPedidosDia').value = diaBrasilia(new Date());
     renderizarPedidosDia();
+    inicializarPeriodoPedidos();
+    renderizarPedidosPeriodo();
     const logins = dataLogins.logins || [];
     const totalLogins = dataLogins.total_logins || 0;
     const loginsHistorico = dataLogins.logins_historico || [];
@@ -324,6 +349,84 @@ function diaBrasilia(valor) {
   const partes = new Intl.DateTimeFormat('en-US', {timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(data);
   const campo = tipo => partes.find(p => p.type === tipo).value;
   return `${campo('year')}-${campo('month')}-${campo('day')}`;
+}
+function inicializarPeriodoPedidos() {
+  const fim = document.getElementById('fimPedidosPeriodo');
+  const inicio = document.getElementById('inicioPedidosPeriodo');
+  if (!fim.value) fim.value = diaBrasilia(new Date());
+  if (!inicio.value) {
+    const data = new Date(fim.value + 'T00:00:00Z');
+    data.setUTCDate(data.getUTCDate() - 29);
+    inicio.value = data.toISOString().slice(0, 10);
+  }
+}
+function agruparPedidosPorDia(pedidos, inicio, fim) {
+  const validar = dia => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dia)) throw new Error('Preencha as duas datas do intervalo.');
+    const data = new Date(dia + 'T00:00:00Z');
+    if (!Number.isFinite(data.getTime()) || data.toISOString().slice(0, 10) !== dia) throw new Error('Escolha datas válidas.');
+    return data;
+  };
+  const desde = validar(inicio), ate = validar(fim);
+  if (desde > ate) throw new Error('A data inicial deve ser anterior ou igual à data final.');
+  const dias = new Map();
+  for (const data = new Date(desde); data <= ate; data.setUTCDate(data.getUTCDate() + 1)) {
+    const dia = data.toISOString().slice(0, 10);
+    dias.set(dia, { dia, quantidade: 0, centavos: 0 });
+  }
+  for (const pedido of pedidos) {
+    if (String(pedido.status || '').trim().toUpperCase() !== 'ENVIADO' || !pedido.data_criacao) continue;
+    const dia = diaBrasilia(pedido.data_criacao), linha = dias.get(dia);
+    if (!linha) continue;
+    const valor = Number(pedido.total);
+    linha.quantidade++;
+    if (Number.isFinite(valor)) linha.centavos += Math.sign(valor) * Math.round((Math.abs(valor) + Number.EPSILON) * 100);
+  }
+  return [...dias.values()];
+}
+function renderizarPedidosPeriodo() {
+  const el = id => document.getElementById(id);
+  const erro = el('erroPedidosPeriodo'), estado = el('estadoPedidosPeriodo');
+  let dias;
+  try {
+    dias = agruparPedidosPorDia(pedidosMetricasCache, el('inicioPedidosPeriodo').value, el('fimPedidosPeriodo').value);
+  } catch (e) {
+    erro.textContent = e.message;
+    el('valorPedidosPeriodo').textContent = '—'; el('qtdPedidosPeriodo').textContent = '—';
+    el('listaPedidosPeriodo').innerHTML = '<tr><td colspan="3">Ajuste as datas para consultar o período.</td></tr>';
+    estado.textContent = '';
+    if (chartPedidosPeriodo) { chartPedidosPeriodo.destroy(); chartPedidosPeriodo = null; }
+    return;
+  }
+  erro.textContent = '';
+  const quantidade = dias.reduce((s, d) => s + d.quantidade, 0);
+  const centavos = dias.reduce((s, d) => s + d.centavos, 0);
+  el('valorPedidosPeriodo').textContent = 'R$ ' + fmtMoeda(centavos / 100);
+  el('qtdPedidosPeriodo').textContent = quantidade;
+  estado.textContent = quantidade ? `${dias.length} dia(s) no intervalo. Valores diários detalhados abaixo.` : 'Nenhum pedido enviado neste intervalo.';
+  const dataCurta = dia => dia.split('-').reverse().join('/');
+  el('listaPedidosPeriodo').innerHTML = dias.map(d => `<tr><td>${dataCurta(d.dia)}</td><td>${d.quantidade}</td><td>R$ ${fmtMoeda(d.centavos / 100)}</td></tr>`).join('');
+  if (typeof Chart === 'undefined') { estado.textContent += ' Gráfico indisponível; consulte os valores na tabela.'; return; }
+  const labels = dias.map(d => dataCurta(d.dia)), valores = dias.map(d => d.centavos / 100);
+  if (chartPedidosPeriodo) {
+    chartPedidosPeriodo.data.labels = labels;
+    chartPedidosPeriodo.data.datasets[0].data = valores;
+    chartPedidosPeriodo.update();
+    return;
+  }
+  chartPedidosPeriodo = new Chart(el('graficoPedidosPeriodo').getContext('2d'), {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Valor recebido em pedidos (R$)', data: valores,
+      borderColor: '#0d3b66', backgroundColor: 'rgba(13,59,102,.08)', borderWidth: 2,
+      fill: true, tension: 0, pointRadius: dias.length <= 60 ? 3 : 0, pointHitRadius: 12 }] },
+    options: { responsive: true, maintainAspectRatio: false,
+      interaction: { intersect: false, mode: 'index' },
+      plugins: { legend: { display: false }, tooltip: { callbacks: {
+        label: contexto => 'Valor: R$ ' + fmtMoeda(contexto.parsed.y)
+      } } },
+      scales: { x: { ticks: { maxTicksLimit: 12 } }, y: { beginAtZero: true, ticks: { callback: v => 'R$ ' + fmtMoeda(v) } } }
+    }
+  });
 }
 function renderizarPedidosDia() {
   const dia = document.getElementById('dataPedidosDia').value;
