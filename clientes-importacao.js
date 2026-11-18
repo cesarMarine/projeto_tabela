@@ -89,34 +89,51 @@ export function prepararClientes(wb) {
   return { aceitos, removidos, revisar, resumo, cabecalho };
 }
 
-// Never upsert: existing official customers and access settings must remain intact.
+// Atualiza somente codigo provisorio e UF vazia. Nunca usa upsert para sobrescrever o cadastro.
 export async function importarClientesProtegidos(supabase, preparados) {
-  const resultado = { ...preparados.resumo, criados: 0, codigos_atualizados: 0, preservados: 0, erros: 0, erros_exemplo: [] };
+  const resultado = { ...preparados.resumo, criados: 0, codigos_atualizados: 0, ufs_preenchidas: 0,
+    clientes_atualizados: 0, preservados: 0, erros: 0, erros_exemplo: [] };
+  const ufs = new Set('AC AL AP AM BA CE DF ES GO MA MT MS MG PA PB PR PE PI RJ RN RS RO RR SC SP SE TO'.split(' '));
   const falha = (registro, error) => {
     resultado.erros++;
     if (resultado.erros_exemplo.length < 5) resultado.erros_exemplo.push({ linha: registro.linha, codigo_erro: error?.code || 'IMPORTACAO',
-      mensagem: 'Cadastro preservado ou nao incluido; revisar esta linha antes de tentar novamente.' });
+      mensagem: 'Operacao nao concluida; revisar esta linha. Alteracoes anteriores da carga podem ter sido confirmadas.' });
   };
   const consultar = async documentos => {
     const rows = [];
     for (let start = 0; ; start += 200) {
-      const { data, error } = await supabase.from('clientes').select('cnpj,codigo').in('cnpj', documentos)
+      const { data, error } = await supabase.from('clientes').select('cnpj,codigo,uf').in('cnpj', documentos)
         .order('cnpj').order('codigo').range(start, start + 199);
       if (error) throw error;
       rows.push(...(data || []));
       if (!data || data.length < 200) return rows;
     }
   };
-  const atualizarCodigo = async (registro, existentes) => {
+  const atualizarExistente = async (registro, existentes) => {
     if (existentes.length !== 1) { falha(registro, { code: 'CNPJ_DUPLICADO_NO_BANCO' }); return; }
     const existente = existentes[0];
-    if (!codigoProvisorio(existente.codigo)) { resultado.preservados++; return; }
-    const { data, error } = await supabase.from('clientes').update({ codigo: registro.item.codigo })
-      .eq('cnpj', registro.item.cnpj).eq('codigo', existente.codigo).select('codigo');
-    if (error) { falha(registro, error); return; }
-    if (data?.length === 1) resultado.codigos_atualizados++;
-    else if (!data?.length) resultado.preservados++; // Another request already changed the provisional code.
-    else falha(registro, { code: 'CNPJ_DUPLICADO_NO_BANCO' });
+    let alterado = false, falhou = false;
+    try {
+      if (codigoProvisorio(existente.codigo)) {
+        const { data, error } = await supabase.from('clientes').update({ codigo: registro.item.codigo })
+          .eq('cnpj', registro.item.cnpj).eq('codigo', existente.codigo).select('codigo');
+        if (error) throw error;
+        if (data?.length > 1) throw { code: 'CNPJ_DUPLICADO_NO_BANCO' };
+        if (data?.length === 1) { resultado.codigos_atualizados++; alterado = true; }
+      }
+      const novaUf = String(registro.item.uf || '').trim().toUpperCase();
+      if (!String(existente.uf ?? '').trim() && ufs.has(novaUf)) {
+        let query = supabase.from('clientes').update({ uf: novaUf }).eq('cnpj', registro.item.cnpj);
+        // Compara com o valor lido: nao sobrescreve uma UF preenchida por outra requisicao.
+        query = existente.uf == null ? query.is('uf', null) : query.eq('uf', existente.uf);
+        const { data, error } = await query.select('uf');
+        if (error) throw error;
+        if (data?.length > 1) throw { code: 'CNPJ_DUPLICADO_NO_BANCO' };
+        if (data?.length === 1) { resultado.ufs_preenchidas++; alterado = true; }
+      }
+    } catch (error) { falha(registro, error); falhou = true; }
+    if (alterado) resultado.clientes_atualizados++;
+    else if (!falhou) resultado.preservados++;
   };
   for (let offset = 0; offset < preparados.aceitos.length; offset += 200) {
     const lote = preparados.aceitos.slice(offset, offset + 200);
@@ -131,7 +148,7 @@ export async function importarClientesProtegidos(supabase, preparados) {
     const novos = [];
     for (const registro of lote) {
       if (porDocumento.has(registro.item.cnpj)) {
-        try { await atualizarCodigo(registro, porDocumento.get(registro.item.cnpj)); }
+        try { await atualizarExistente(registro, porDocumento.get(registro.item.cnpj)); }
         catch (error) { falha(registro, error); }
       } else novos.push(registro);
     }
@@ -145,12 +162,12 @@ export async function importarClientesProtegidos(supabase, preparados) {
     for (const registro of novos) {
       try {
         const existentes = await consultar([registro.item.cnpj]);
-        if (existentes.length) { await atualizarCodigo(registro, existentes); continue; }
+        if (existentes.length) { await atualizarExistente(registro, existentes); continue; }
         const { error } = await supabase.from('clientes').insert([registro.item]);
         if (error) falha(registro, error); else resultado.criados++;
       } catch (error) { falha(registro, error); }
     }
   }
   return { ok: true, parcial: resultado.erros > 0, ...resultado,
-    inseridos: resultado.criados + resultado.codigos_atualizados };
+    inseridos: resultado.criados + resultado.clientes_atualizados };
 }
