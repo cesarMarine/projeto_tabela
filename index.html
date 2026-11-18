@@ -1098,6 +1098,18 @@ function sairCliente() {
 }
 
 let pedidoEmEdicaoId = null;
+let filaOperacoesPedido = Promise.resolve();
+let rascunhoVerificadoNestaSessao = false;
+function enfileirarOperacaoPedido(operacao) {
+  const atual = filaOperacoesPedido.then(operacao, operacao);
+  filaOperacoesPedido = atual.catch(() => {});
+  return atual;
+}
+async function excluirRascunhoCliente(idPedido) {
+  const r = await fetch(`/api/cliente/${encodeURIComponent(clienteLogado.cnpj)}/rascunhos/${encodeURIComponent(idPedido)}`, { method: 'DELETE' });
+  const j = await r.json();
+  if (!r.ok || !j.ok) throw new Error(j.erro || 'Não foi possível excluir o rascunho.');
+}
 
 async function abrirMeusPedidos() {
   if (!clienteLogado) return;
@@ -1164,19 +1176,19 @@ async function abrirMeusPedidos() {
 
 async function deletarRascunho(idPedido) {
   if (!confirm(`Tem certeza que deseja excluir o rascunho #${idPedido}?`)) return;
+  return enfileirarOperacaoPedido(async () => {
   try {
-    const r = await fetch(`/api/pedidos/${idPedido}`, { method: 'DELETE' });
-    const j = await r.json();
-    if (j.ok) {
-      if (pedidoEmEdicaoId === idPedido) {
+      await excluirRascunhoCliente(idPedido);
+      if (String(pedidoEmEdicaoId) === String(idPedido)) {
+        clearTimeout(timerAutosave);
         carrinho = {};
         pedidoEmEdicaoId = null;
         atualizarCarrinho();
       }
       alert('🗑️ Rascunho excluído!');
       abrirMeusPedidos();
-    } else { alert('❌ Erro ao excluir: ' + j.erro); }
-  } catch (e) { alert('❌ Erro de conexão ao excluir rascunho.'); }
+  } catch (e) { alert('❌ Não foi possível excluir o rascunho: ' + e.message); }
+  });
 }
 
 function carregarPedidoParaEdicao(idPedido, jsonItensStr, composicao = null) {
@@ -1216,6 +1228,7 @@ function carregarPedidoParaEdicao(idPedido, jsonItensStr, composicao = null) {
 }
 
 async function salvarRascunho() {
+  return enfileirarOperacaoPedido(async () => {
   const itens = itensPedidoComAgrupados();
 
   if (itens.length === 0) { alert('Seu carrinho está vazio.'); return; }
@@ -1260,6 +1273,7 @@ async function salvarRascunho() {
       btnSalvar.disabled = false;
     }
   }
+  });
 }
 
 function abrirZoomImagem(elemento) {
@@ -1549,9 +1563,6 @@ porcentagemAcrescimo = parseFloat(
       body: JSON.stringify({ cnpj: j.cliente.cnpj, nome: j.cliente.nome, touch_points: navigator.maxTouchPoints || 0 })
     }).catch(() => {});
 
-    carregar();
-
-
     localStorage.setItem('acrescimoB2B', porcentagemAcrescimo);
     configurarWhatsAppVendedor();
 
@@ -1565,6 +1576,7 @@ porcentagemAcrescimo = parseFloat(
 }
 
 async function finalizarPedido() {
+  return enfileirarOperacaoPedido(async () => {
   const itens = itensPedidoComAgrupados();
   if (itens.length === 0) { alert('Seu carrinho está vazio.'); return; }
 
@@ -1607,6 +1619,7 @@ async function finalizarPedido() {
       fecharCarrinho();
     } else { alert('❌ Erro ao enviar o pedido: ' + j.erro); }
   } catch (e) { alert('❌ Erro ao enviar o pedido.'); }
+  });
 }
 
 async function carregar() {
@@ -1677,7 +1690,9 @@ async function registrarAcessoDiario() {
 
 
 async function verificarRascunhoPendente() {
+  return enfileirarOperacaoPedido(async () => {
   if (!clienteLogado) return;
+  if (rascunhoVerificadoNestaSessao) return true;
   
   try {
     const r = await fetch(`/api/cliente/${encodeURIComponent(clienteLogado.cnpj)}/pedidos`);
@@ -1687,7 +1702,7 @@ async function verificarRascunhoPendente() {
     // Procura se existe algum pedido com status RASCUNHO
     const rascunho = j.pedidos?.find(p => (p.status || '').toUpperCase() === 'RASCUNHO');
     
-    if (rascunho && rascunho.itens && rascunho.itens.length > 0) {
+    if (rascunho) {
       const continuar = !!sessionStorage.getItem('novidadesParaCarrinho') || confirm(`Você tem um pedido em aberto (#${rascunho.id}) no valor de R$ ${fmtMoeda(rascunho.total)}.\n\nDeseja continuar de onde parou?\n\nOK: continuar o pedido.\nCancelar: excluir este rascunho e começar um novo.`);
       
       if (continuar) {
@@ -1711,10 +1726,12 @@ async function verificarRascunhoPendente() {
         }
       }
     }
+    rascunhoVerificadoNestaSessao = true;
     return true;
   } catch (e) {
     console.error("Erro ao verificar rascunho pendente:", e);
   }
+  });
 }
 function montarChips() {
   const contagem = {};
@@ -3437,7 +3454,7 @@ function atualizarCarrinho() {
 
   // Mantém o autosave rodando
   clearTimeout(timerAutosave);
-  if (Object.keys(carrinho).length > 0) {
+  if (clienteLogado && (Object.keys(carrinho).length > 0 || pedidoEmEdicaoId || isAutosaving)) {
     timerAutosave = setTimeout(() => {
       autosaveCarrinho();
     }, 2000);
@@ -3445,26 +3462,17 @@ function atualizarCarrinho() {
 }
 
 async function deletarItemCarrinho(codigo) {
-  // 👇 Registra no log antes de deletar
   const qtdAnterior = carrinho[codigo] ? carrinho[codigo].qtd : 0;
   if (qtdAnterior > 0) registrarAcaoLog(codigo, 'REMOVEU', qtdAnterior);
-
-  // 1. Remove o item da memória
   setQtd(codigo, 0);
-
-  // 2. Verifica se o carrinho ficou vazio
   if (Object.keys(carrinho).length === 0) {
-    if (pedidoEmEdicaoId) {
-      try {
-        await fetch(`/api/pedidos/${pedidoEmEdicaoId}`, { method: 'DELETE' });
-        pedidoEmEdicaoId = null;
-      } catch (e) { console.error(e); }
-    }
     clearTimeout(timerAutosave);
+    await autosaveCarrinho(); // Aguarda o salvamento em andamento antes de excluir.
   }
 }
 
 async function autosaveCarrinho() {
+  return enfileirarOperacaoPedido(async () => {
   // Proteções iniciais
   if (!clienteLogado) return;
   if (isAutosaving) return; 
@@ -3475,9 +3483,22 @@ async function autosaveCarrinho() {
     return;
   }
   
-  isAutosaving = true;
-
   const itens = itensPedidoComAgrupados();
+  if (itens.length === 0) {
+    clearTimeout(timerAutosave);
+    if (!pedidoEmEdicaoId) return true;
+    const idVazio = pedidoEmEdicaoId;
+    try {
+      await excluirRascunhoCliente(idVazio);
+      if (String(pedidoEmEdicaoId) === String(idVazio)) pedidoEmEdicaoId = null;
+      return true;
+    } catch (e) {
+      alert('Nao foi possivel excluir o rascunho vazio. Ele foi mantido no banco. Tente novamente.');
+      console.error('Falha ao excluir rascunho vazio:', e.message);
+      return false;
+    }
+  }
+  isAutosaving = true;
   
   const total = itens.reduce((acc, it) => acc + (it.precoFinal * it.qtd), 0);
 
@@ -3520,6 +3541,7 @@ async function autosaveCarrinho() {
       }
     }, 2000);
   }
+  });
 }
 
 function toggleCarrinho() { document.getElementById('painelCarrinho').classList.toggle('on'); }

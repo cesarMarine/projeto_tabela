@@ -4,6 +4,8 @@ import { detectarDestaques, codigoNovidades } from './novidades-regras.js';
 import { registrarAgrupados, composicaoPedido } from './agrupados-server.js';
 import { registrarSecoesFamilias } from './familias-secoes-server.js';
 import { registrarMetricasVendedor } from './vendedor-metricas-server.js';
+import { criarFilaPedidos } from './pedidos-concorrencia.js';
+const executarPedidoCliente = criarFilaPedidos();
 import express from 'express';
 import multer from 'multer';
 import XLSX from 'xlsx';
@@ -1266,6 +1268,7 @@ function iniciarMonitoramentoPedido(req, operacao) {
 // DELETAR RASCUNHO/PEDIDO
 // Descarte no retorno do cliente: aceite somente rascunhos do cliente informado.
 app.delete('/api/cliente/:cnpj/rascunhos/:id', async (req, res) => {
+  return executarPedidoCliente(req.params.cnpj, async () => {
   try {
     const { id, cnpj } = req.params;
     if (!/^\d+$/.test(id) || !/^\d+$/.test(cnpj)) {
@@ -1286,6 +1289,7 @@ app.delete('/api/cliente/:cnpj/rascunhos/:id', async (req, res) => {
   } catch (e) {
     res.status(500).json({ ok: false, erro: e.message });
   }
+  });
 });
 
 app.delete('/api/pedidos/:id', async (req, res) => {
@@ -1636,6 +1640,7 @@ app.get('/api/cliente/:cnpj/pedidos', async (req, res) => {
 
 // Rota exclusiva para Autosave (Salvamento automático em segundo plano)
 app.post('/api/pedidos/autosave', async (req, res) => {
+  return executarPedidoCliente(req.body?.cnpj_cliente, async () => {
   const monitor = iniciarMonitoramentoPedido(req, 'autosave');
   try {
     const { id, cnpj_cliente, codigo_representante, total, itens } = req.body;
@@ -1645,14 +1650,26 @@ app.post('/api/pedidos/autosave', async (req, res) => {
       return res.status(400).json({ ok: false, erro: 'Carrinho vazio.' });
     }
 
+    if (!id) {
+      const { data: existente, error: erroExistente } = await supabase.from('pedidos02')
+        .select('id').eq('cnpj_cliente', cnpj_cliente).eq('status', 'RASCUNHO')
+        .order('id', { ascending: false }).limit(1).maybeSingle();
+      if (erroExistente) throw erroExistente;
+      if (existente) return res.status(409).json({ ok: false, rascunho_id: existente.id,
+        erro: 'Voce ja possui um rascunho em aberto. Abra Meus Pedidos para continuar ou excluir esse rascunho.' });
+    }
+
     const composicao = composicaoPedido(req.body);
     let pedidoId = id;
 
     monitor.etapa=pedidoId ? 'atualizar_cabecalho' : 'criar_cabecalho';
     if (pedidoId) {
       // Atualiza o rascunho existente
-      const { error: erroCabecalho } = await supabase.from('pedidos02').update({ ...composicao, total, status: 'RASCUNHO', data_criacao: new Date().toISOString() }).eq('id', pedidoId);
+      const { data: atualizado, error: erroCabecalho } = await supabase.from('pedidos02')
+        .update({ ...composicao, total, status: 'RASCUNHO', data_criacao: new Date().toISOString() })
+        .eq('id', pedidoId).eq('cnpj_cliente', cnpj_cliente).eq('status', 'RASCUNHO').select('id').maybeSingle();
       if (erroCabecalho) throw erroCabecalho;
+      if (!atualizado) return res.status(409).json({ ok: false, erro: 'O rascunho foi excluído ou já foi enviado. Atualize a página.' });
       const { error: erroRemocao } = await supabase.from('pedidos02_itens').delete().eq('pedido_id', pedidoId);
       if (erroRemocao) throw erroRemocao;
     } else {
@@ -1693,6 +1710,7 @@ app.post('/api/pedidos/autosave', async (req, res) => {
     console.error("Erro no autosave:", e.message);
     res.status(500).json({ ok: false, erro: e.message });
   }
+  });
 });
 
 // ==========================================
@@ -2030,6 +2048,7 @@ app.delete('/api/admin/scraping-produtos/:id', async (req, res) => {
 // 2. ROTA PARA CRIAR OU ATUALIZAR PEDIDO (RASCUNHO OU ENVIADO)
 // 2. SALVAR RASCUNHO OU FINALIZAR PEDIDO
 app.post('/api/pedidos', async (req, res) => {
+  return executarPedidoCliente(req.body?.cnpj_cliente, async () => {
   const monitor = iniciarMonitoramentoPedido(req, 'salvar');
   try {
     const { id, cnpj_cliente, codigo_representante, status = 'ENVIADO', total, itens } = req.body;
@@ -2039,21 +2058,34 @@ app.post('/api/pedidos', async (req, res) => {
       return res.status(400).json({ ok: false, erro: 'Dados do pedido incompletos.' });
     }
 
+    if (!id) {
+      const { data: existente, error: erroExistente } = await supabase.from('pedidos02')
+        .select('id').eq('cnpj_cliente', cnpj_cliente).eq('status', 'RASCUNHO')
+        .order('id', { ascending: false }).limit(1).maybeSingle();
+      if (erroExistente) throw erroExistente;
+      if (existente) return res.status(409).json({ ok: false, rascunho_id: existente.id,
+        erro: 'Voce ja possui um rascunho em aberto. Abra Meus Pedidos para continuar ou excluir esse rascunho.' });
+    }
+
     const composicao = composicaoPedido(req.body);
     let pedidoId = id;
 
     monitor.etapa=pedidoId ? 'atualizar_cabecalho' : 'criar_cabecalho';
     if (pedidoId) {
       // Atualiza o rascunho / pedido existente
-      const { error: errUpdate } = await supabase
+      const atualizacao = supabase
         .from('pedidos02')
         .update({ ...composicao, total, status, data_criacao: new Date().toISOString() })
-        .eq('id', pedidoId);
+        .eq('id', pedidoId).eq('cnpj_cliente', cnpj_cliente);
+      if (String(status).toUpperCase() === 'RASCUNHO') atualizacao.eq('status', 'RASCUNHO');
+      const { data: atualizado, error: errUpdate } = await atualizacao.select('id').maybeSingle();
 
       if (errUpdate) throw errUpdate;
+      if (!atualizado) return res.status(409).json({ ok: false, erro: 'Este pedido não está mais disponível. Atualize a página.' });
 
       // Substitui os itens antigos pelos novos do carrinho
-      await supabase.from('pedidos02_itens').delete().eq('pedido_id', pedidoId);
+      const { error: erroRemocao } = await supabase.from('pedidos02_itens').delete().eq('pedido_id', pedidoId);
+      if (erroRemocao) throw erroRemocao;
     } else {
       // Cria um novo pedido
       const { data: novoPed, error: errInsert } = await supabase
@@ -2102,6 +2134,7 @@ app.post('/api/pedidos', async (req, res) => {
     console.error("ERRO AO SALVAR PEDIDO:", e.message);
     res.status(500).json({ ok: false, erro: e.message });
   }
+  });
 });
 
 // Objeto em memória ou persistido no teu banco de dados/JSON
