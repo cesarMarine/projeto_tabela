@@ -6,6 +6,8 @@ import { registrarSecoesFamilias } from './familias-secoes-server.js';
 import { registrarMetricasVendedor } from './vendedor-metricas-server.js';
 import { criarFilaPedidos } from './pedidos-concorrencia.js';
 import { prepararClientes, importarClientesProtegidos } from './clientes-importacao.js';
+import { criarCacheConsultas, registrarInvalidacaoConsultas } from './cache-consultas.js';
+import { registrarLeituraPedidosVendedor } from './vendedor-pedidos-server.js';
 const executarPedidoCliente = criarFilaPedidos();
 import express from 'express';
 import multer from 'multer';
@@ -18,12 +20,15 @@ const PORT = process.env.PORT || 3001;
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_KEY;
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+const cacheConsultas = criarCacheConsultas();
 
 app.use(express.json({ limit: '100mb' }));
 app.use(express.static('.'));
+registrarInvalidacaoConsultas(app, cacheConsultas);
 registrarAgrupados(app, supabase);
 registrarSecoesFamilias(app, supabase);
-registrarMetricasVendedor(app, supabase);
+registrarMetricasVendedor(app, supabase, () => new Date(), cacheConsultas);
+registrarLeituraPedidosVendedor(app, supabase, cacheConsultas);
 
 const soDigitos = (v) => String(v ?? '').replace(/\D/g, '');
 const num = (v) => {
@@ -403,6 +408,7 @@ app.get('/api/estoque-subgrupos', async (req, res) => {
 // ==========================================
 app.get('/api/catalogo', async (req, res) => {
   try {
+    const resposta = await cacheConsultas.obter('publico:catalogo', 300000, async () => {
     let todosItensSis = [];
     let de = 0;
     const tamanhoPagina = 1000;
@@ -465,7 +471,9 @@ app.get('/api/catalogo', async (req, res) => {
       };
     });
 
-    res.json({ ok: true, total: linhas.length, itens: linhas });
+    return { ok: true, total: linhas.length, itens: linhas };
+    });
+    res.json(resposta);
   } catch (e) {
     res.status(500).json({ ok: false, erro: e.message });
   }
@@ -531,14 +539,16 @@ app.post('/api/admin/produtos/lancamento', async (req, res) => {
 app.get('/api/familias', async (req, res) => {
   try {
     res.set('Cache-Control', 'no-store');
-    const { data, error } = await supabase.from('catalogo_familias').select('*').order('id', { ascending: false });
-    if (error) throw error;
-    const familias = (data || []).map(f => ({ 
+    const familias = await cacheConsultas.obter('publico:familias', 60000, async () => {
+      const { data, error } = await supabase.from('catalogo_familias').select('*').order('id', { ascending: false });
+      if (error) throw error;
+      return (data || []).map(f => ({
       ...f, 
       itens: JSON.parse(f.subgrupos || '[]'), 
       subdivisoes: JSON.parse(f.subdivisoes || '[]'),
       ordem_customizada: JSON.parse(f.ordem_customizada || '[]') // 👈 NOVO
     }));
+    });
     res.json({ ok: true, familias });
   } catch (e) { res.status(500).json({ erro: e.message }); }
 });
@@ -1310,25 +1320,7 @@ app.patch('/api/vendedor/:codigo/pedidos/:id/finalizacao', async (req, res) => {
   }
 });
 
-app.get('/api/vendedor/:codigo/pedidos', async (req, res) => {
-  try {
-    const { data: pedidos, error } = await supabase.from('pedidos02').select('*').eq('codigo_representante', req.params.codigo).order('id', { ascending: false });
-    if (error) throw error;
 
-    for (let p of pedidos) {
-      const { data: itens } = await supabase.from('pedidos02_itens').select('*').eq('pedido_id', p.id);
-      p.itens = itens || [];
-const { data: cli } = await supabase.from('clientes').select('codigo, nome_fantasia, razao_social, uf').eq('cnpj', p.cnpj_cliente).single();
-if (cli) { 
-  p.codigo_cliente = cli.codigo; // 👈 Adicionando o código aqui
-  p.nome_fantasia = cli.nome_fantasia; 
-  p.razao_social = cli.razao_social; 
-  p.uf = cli.uf; 
-}
-    }
-    res.json({ ok: true, pedidos });
-  } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }
-});
 
 // 1. Rota para o cliente registrar a ação (Chamada silenciosa do index.html)
 app.post('/api/log-acao', async (req, res) => {

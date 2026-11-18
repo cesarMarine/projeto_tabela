@@ -1,3 +1,4 @@
+import { criarCacheConsultas } from './cache-consultas.js';
 const zona = 'America/Sao_Paulo';
 const documento = v => String(v || '').replace(/\D/g, '');
 const tipos = ['celular', 'computador', 'tablet', 'nao_identificado'];
@@ -67,7 +68,7 @@ async function paginar(criarConsulta) {
   }
 }
 
-export function registrarMetricasVendedor(app, supabase, relogio = () => new Date()) {
+export function registrarMetricasVendedor(app, supabase, relogio = () => new Date(), cache = criarCacheConsultas()) {
   app.get('/api/vendedor/:codigo/metricas', async (req, res) => {
     res.set('Cache-Control', 'no-store');
     const codigo = String(req.params.codigo || '').trim(), senha = req.get('x-vendedor-senha');
@@ -82,6 +83,7 @@ export function registrarMetricasVendedor(app, supabase, relogio = () => new Dat
       const { data: acesso, error: erroAcesso } = await supabase.from('vendedores_acesso').select('senha').eq('vendedor_id', vendedor.id).single();
       if (erroAcesso || !acesso || acesso.senha !== senha) return res.status(401).json({ ok: false, erro: 'Acesso inválido.' });
 
+      const metricas = await cache.obter(`metricas:${codigo}:${data}`, 60000, async () => {
       const clientes = await paginar(() => supabase.from('clientes').select('codigo,cnpj,nome_fantasia,razao_social,uf').eq('codigo_representante', codigo).order('cnpj'));
       const pedidos = clientes.length ? await paginar(() => supabase.from('pedidos02').select('id,cnpj_cliente,total,status,data_criacao').eq('codigo_representante', codigo).order('id')) : [];
       const documentos = [...new Set(clientes.map(c => documento(c.cnpj)).filter(Boolean))];
@@ -101,7 +103,9 @@ export function registrarMetricasVendedor(app, supabase, relogio = () => new Dat
         if (!['42703', 'PGRST204'].includes(e?.code)) throw e;
         aparelhoDisponivel = false; logins = await consultarLogins(false);
       }
-      res.json({ ok: true, metricas: { ...resumirMetricas({ clientes, pedidos, logins, data, agora }), aparelho_disponivel: aparelhoDisponivel } });
+        return { ...resumirMetricas({ clientes, pedidos, logins, data, agora }), aparelho_disponivel: aparelhoDisponivel };
+      });
+      res.json({ ok: true, metricas });
     } catch { res.status(500).json({ ok: false, erro: 'Não foi possível carregar os indicadores. Tente novamente.' }); }
   });
 }

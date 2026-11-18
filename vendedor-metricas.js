@@ -33,7 +33,7 @@
     @media(max-width:480px) { #painelMetricasVendedor .met-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } #painelMetricasVendedor .met-item { padding:10px; } #painelMetricasVendedor .met-item strong { font-size:1.1rem; } }
   </style>
   <div class="met-barra"><h2 style="margin:0;border:0;">Acompanhamento da minha carteira</h2><div class="met-filtros"><label for="met-data">Dia</label><input id="met-data" type="date"><button type="button" class="btn-toggle-detalhe" id="met-atualizar">Atualizar</button></div></div>
-  <small>Acessos e envios no dia escolhido, em horário de Brasília. Rascunhos mostram o que está em aberto agora. Atualização a cada 30 segundos enquanto esta aba estiver visível.</small>
+  <small>Acessos e envios no dia escolhido, em horário de Brasília. Rascunhos mostram o que está em aberto agora. Atualização automática a cada 2 minutos enquanto esta aba estiver visível.</small>
   <p id="met-status" role="status" aria-live="polite" style="font-size:.8rem;margin-top:10px;color:#475569;">Entre para consultar os indicadores.</p>
   <div class="met-grid">
     <div class="met-item"><h3>Clientes que acessaram no dia</h3><strong id="met-acessaram">—</strong><small id="met-carteira">Clientes distintos da sua carteira.</small></div>
@@ -107,7 +107,7 @@
     iniciar(usuario, credencial) {
       vendedor = usuario; senha = credencial;
       if (timer) clearInterval(timer);
-      timer = setInterval(atualizar, 30000);
+      timer = setInterval(atualizar, 120000);
       return atualizar();
     }, atualizar
   };

@@ -352,6 +352,10 @@
 let vendedorLogado = null;
 let pedidosCache = [];
 let clientesCache = [];
+let timerPedidos = null;
+let verificacaoPedidosPendente = null;
+let assinaturaPedidosAtual = null;
+let ultimaVerificacaoPedidos = 0;
 
 const fmtMoeda = v => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -385,8 +389,9 @@ async function fazerLogin() {
     await carregarClientes();
     carregarResumoPedidos();
     
-    // 👇 INICIA A VERIFICAÇÃO DE NOVOS PEDIDOS A CADA 30 SEGUNDOS 👇
-    setInterval(verificarNovosPedidos, 30000);
+    // 👇 INICIA A VERIFICAÇÃO DE NOVOS PEDIDOS A CADA 60 SEGUNDOS 👇
+    if (timerPedidos) clearInterval(timerPedidos);
+    timerPedidos = setInterval(verificarNovosPedidos, 60000);
     
   } catch (e) { erro.textContent = 'Erro de conexão com o servidor.'; erro.style.display = 'block'; }
 }
@@ -394,37 +399,40 @@ async function fazerLogin() {
 // ==========================================
 // VIGIA DE NOVOS PEDIDOS (ALERTA NO NAVEGADOR)
 // ==========================================
+document.addEventListener('visibilitychange', () => { if (!document.hidden) verificarNovosPedidos(); });
 let qtdPedidosAnterior = -1;
 let alertaPiscando = null;
 let tituloOriginalAba = document.title;
 
-async function verificarNovosPedidos() {
-  if (!vendedorLogado) return;
-
+async function verificarNovosPedidos(forcar = false) {
+  if (!vendedorLogado || document.hidden) return;
+  if (verificacaoPedidosPendente) return verificacaoPedidosPendente;
+  if (!forcar && Date.now() - ultimaVerificacaoPedidos < 5000) return;
+  verificacaoPedidosPendente = (async () => {
   try {
-    const r = await fetch('/api/vendedor/' + vendedorLogado.codigo + '/pedidos');
+    const r = await fetch('/api/vendedor/' + encodeURIComponent(vendedorLogado.codigo) + '/pedidos-resumo', { cache: 'no-store' });
     const j = await r.json();
-    
-    if (!j.ok) return;
-
-    atualizarTotaisPedidos(j.pedidos);
-    const assinatura = pedidos => JSON.stringify(pedidos.map(p => [p.id, p.status, p.data_criacao, p.total, p.finalizado_vendedor, p.finalizado_vendedor_em]));
-    if (document.getElementById('abaPedidos').style.display !== 'none' && assinatura(pedidosCache) !== assinatura(j.pedidos)) {
-      pedidosCache = j.pedidos;
-      await carregarPedidos(true);
+    if (!r.ok || !j.ok) return;
+    ultimaVerificacaoPedidos = Date.now();
+    const resumo = j.resumo;
+    aplicarResumoPedidos(resumo);
+    let detalhesAtualizados = true;
+    if (document.getElementById('abaPedidos').style.display !== 'none' && assinaturaPedidosAtual !== resumo.assinatura) {
+      detalhesAtualizados = (await carregarPedidos()) !== false;
     }
-
-    const pedidosFinalizados = j.pedidos.filter(p => (p.status || '').toUpperCase() !== 'RASCUNHO');
-    const qtdAtual = pedidosFinalizados.length;
-
+    if (detalhesAtualizados) assinaturaPedidosAtual = resumo.assinatura;
+    const qtdAtual = resumo.enviados;
     // Se for a primeira vez, apenas salva a quantidade
     if (qtdPedidosAnterior === -1) {
       qtdPedidosAnterior = qtdAtual;
       return;
     }
 
+    const quantidadeAnterior = qtdPedidosAnterior;
+    qtdPedidosAnterior = qtdAtual;
+
     // Se a quantidade aumentou, é porque entrou pedido novo!
-    if (qtdAtual > qtdPedidosAnterior) {
+    if (qtdAtual > quantidadeAnterior) {
       qtdPedidosAnterior = qtdAtual;
       
       const alerta = document.getElementById('alertaPedido');
@@ -455,6 +463,8 @@ async function verificarNovosPedidos() {
   } catch (e) {
     console.error('Erro ao verificar novos pedidos:', e);
   }
+  })().finally(() => { verificacaoPedidosPendente = null; });
+  return verificacaoPedidosPendente;
 }
 
 function abrirPedidosDoAlerta() {
@@ -724,18 +734,20 @@ async function toggleAcesso(cnpj, liberado) {
 // RESUMO E PEDIDOS
 // ==========================================
 async function carregarResumoPedidos() {
-  try {
-    const r = await fetch('/api/vendedor/' + vendedorLogado.codigo + '/pedidos');
-    const j = await r.json();
-    if (j.ok) {
-      const qtdFinalizados = j.pedidos.filter(p => (p.status || '').toUpperCase() !== 'RASCUNHO').length;
-      document.getElementById('dashPedidos').textContent = qtdFinalizados;
-      atualizarTotaisPedidos(j.pedidos);
-      
-      // Inicializa a contagem para o vigia de novos pedidos
-      if (qtdPedidosAnterior === -1) qtdPedidosAnterior = qtdFinalizados;
-    }
-  } catch (e) { console.error(e); }
+  return verificarNovosPedidos(true);
+}
+
+function aplicarResumoPedidos(resumo) {
+  const valores = {
+    dashValorFinalizados: `R$ ${fmtMoeda(resumo.valor_finalizados)}`,
+    valorFinalizadosVendedor: `R$ ${fmtMoeda(resumo.valor_finalizados)}`,
+    dashValorRascunhos: `R$ ${fmtMoeda(resumo.valor_rascunhos)}`,
+    valorRascunhosVendedor: `R$ ${fmtMoeda(resumo.valor_rascunhos)}`,
+    dashPedidos: resumo.finalizados, dashRascunhos: resumo.rascunhos,
+    totalPendentesVendedor: resumo.pendentes, totalFinalizadosVendedor: resumo.finalizados,
+    totalRascunhosVendedor: resumo.rascunhos
+  };
+  Object.entries(valores).forEach(([id, value]) => { document.getElementById(id).textContent = value; });
 }
 
 function atualizarTotaisPedidos(pedidos) {
@@ -784,7 +796,7 @@ async function carregarPedidos(apenasRender = false) {
       (filtro === 'finalizados' ? p.finalizado_vendedor === true : p.finalizado_vendedor !== true));
     if (pedidosVisiveis.length === 0) {
       container.innerHTML = '<p style="text-align:center; color:#94a3b8; padding:20px;">Nenhum pedido neste filtro.</p>';
-      return;
+      return true;
     }
 
     container.innerHTML = pedidosVisiveis.map(p => {
@@ -855,8 +867,10 @@ async function carregarPedidos(apenasRender = false) {
         </div>
       `;
     }).join('');
+    return true;
   } catch (e) {
     container.innerHTML = `<p style="text-align:center; color:#ef4444; padding:20px;">Erro: ${e.message}</p>`;
+    return false;
   }
 }
 
