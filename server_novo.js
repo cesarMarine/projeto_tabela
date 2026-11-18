@@ -5,6 +5,7 @@ import { registrarAgrupados, composicaoPedido } from './agrupados-server.js';
 import { registrarSecoesFamilias } from './familias-secoes-server.js';
 import { registrarMetricasVendedor } from './vendedor-metricas-server.js';
 import { criarFilaPedidos } from './pedidos-concorrencia.js';
+import { prepararClientes, importarClientesProtegidos } from './clientes-importacao.js';
 const executarPedidoCliente = criarFilaPedidos();
 import express from 'express';
 import multer from 'multer';
@@ -492,54 +493,15 @@ app.put('/api/familias/:id/ordem', async (req, res) => {
 // ==========================================
 app.post('/api/importar/clientes', upload.single('arquivo'), async (req, res) => {
   try {
-    if (!req.file) return res.status(400).json({ erro: 'Nenhum arquivo enviado.' });
-    
-    const wb = XLSX.read(req.file.buffer, { type: 'buffer' });
-    const aba = wb.SheetNames[0]; 
-    const linhas = XLSX.utils.sheet_to_json(wb.Sheets[aba], { defval: '' });
-
-    let inseridos = 0;
-    let errosSuapbase = [];
-
-    for (const r of linhas) {
-      const cnpjRaw = r['CPF/CNPJ'] ?? r['CPF_CNPJ'] ?? r['CNPJ'] ?? r['cnpj'] ?? '';
-      const cnpj = String(cnpjRaw).replace(/\D/g, ''); 
-      const codigo = String(r['CODIGO'] ?? r['CÓDIGO'] ?? r['codigo'] ?? '').trim();
-      
-      if (!cnpj || !codigo) continue; 
-
-      const rep = r['VENDEDOR'] ?? r['Vendedor'] ?? r['vendedor'] ?? 
-                  r['Representante'] ?? r['REPRESENTANTE'] ?? r['representante'] ?? 
-                  r['COD REP'] ?? r['Cód. Rep'] ?? r['codigo_representante'] ?? '';
-
-      const item = {
-        codigo: codigo,
-        cnpj: cnpj,
-        nome_fantasia: String(r['NOME_FANTASIA'] ?? r['Nome Fantasia'] ?? r['NOME'] ?? r['Nome'] ?? '').trim(),
-        razao_social: String(r['RAZAO_SOCIAL'] ?? r['RAZÃO SOCIAL'] ?? r['Razão Social'] ?? r['Razao'] ?? '').trim(),
-        cidade: String(r['CIDADE'] ?? r['Cidade'] ?? '').trim(),
-        uf: String(r['ESTADO'] ?? r['Estado'] ?? r['UF'] ?? r['uf'] ?? '').trim().toUpperCase(),
-        codigo_representante: String(rep).trim(),
-        ativo: 1
-      };
-      
-      // UPSERT SEM FORÇAR ONCONFLICT SE NÃO HOUVER CONSTRAINT UNIQUE
-      const { error } = await supabase.from('clientes').upsert(item, { onConflict: 'cnpj' });
-      
-      if (error) {
-        if (errosSuapbase.length < 3) errosSuapbase.push(error.message);
-      } else {
-        inseridos++;
-      }
-    }
-
-    if (errosSuapbase.length > 0) {
-      console.log('❌ Erros do Supabase ao importar:', errosSuapbase);
-    }
-
-    res.json({ ok: true, inseridos, erroExemplo: errosSuapbase[0] || null });
-  } catch (e) { 
-    res.status(500).json({ erro: e.message }); 
+    if (!req.file) return res.status(400).json({ ok: false, erro: 'Nenhum arquivo enviado.' });
+    const wb = XLSX.read(req.file.buffer, { type: 'buffer', cellText: true, cellNF: true });
+    const preparados = prepararClientes(wb);
+    if (req.query.simular === '1') return res.json({ ok: true, simulacao: true, ...preparados.resumo });
+    if (!preparados.aceitos.length) return res.status(400).json({ ok: false,
+      erro: 'Nenhum cliente com codigo e CNPJ valido para importar.', ...preparados.resumo });
+    res.json(await importarClientesProtegidos(supabase, preparados));
+  } catch {
+    res.status(500).json({ ok: false, erro: 'Nao foi possivel concluir a importacao de clientes. Confira o arquivo e tente novamente.' });
   }
 });
 

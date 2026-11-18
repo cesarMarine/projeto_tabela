@@ -221,6 +221,7 @@
           <button class="btn-primario" id="btn-clientes" onclick="upload('clientes')">Importar</button>
         </div>
         <div class="msg" id="msg-clientes"></div>
+        <p style="color:#94a3b8;font-size:.8rem;margin-top:10px;line-height:1.5;">Clientes novos são incluídos. CNPJ já cadastrado com código S1/S2 recebe somente o código da planilha. Cadastros com código oficial ficam inalterados. CPFs, vazios e documentos inválidos ficam fora da importação; nos repetidos, vale a primeira ocorrência válida.</p>
       </div>
     </section>
 
@@ -1371,7 +1372,14 @@ async function upload(tipo) {
     const r = await fetch('/api/importar/' + tipo, { method: 'POST', body: fd });
     const j = await r.json();
     if (!r.ok || j.erro) throw new Error(j.erro);
-    msg.textContent = `Sucesso: ${j.inseridos} itens` + (tipo === 'sistema' ? ` · ${j.novos || 0} lançamentos · ${j.chegaram || 0} reposições` : '');
+    if (tipo === 'clientes') {
+      msg.textContent = `${j.parcial ? 'Concluída com pendências' : 'Concluída'}: ${j.criados || 0} novos · ${j.codigos_atualizados || 0} códigos S substituídos · ${j.preservados || 0} cadastros preservados. ` +
+        `Fora da carga: ${j.cpfs_removidos || 0} CPFs · ${j.vazios_removidos || 0} vazios · ${j.repetidos_removidos || 0} repetidos · ${j.revisar || 0} para revisão. ` +
+        `Zeros repostos: ${j.zeros_repostos || 0}. Erros: ${j.erros || 0}.` +
+        (j.erros_exemplo?.length ? ' Confira as linhas: ' + j.erros_exemplo.map(e => e.linha).join(', ') + '.' : '');
+    } else {
+      msg.textContent = `Sucesso: ${j.inseridos} itens` + (tipo === 'sistema' ? ` · ${j.novos || 0} lançamentos · ${j.chegaram || 0} reposições` : '');
+    }
     carregarStatus(); 
     if (tipo === 'scraping') carregarDados();
   } catch(e) { 
