@@ -1388,6 +1388,8 @@ async function upload(tipo) {
   const fd = new FormData(); fd.append('arquivo', fi.files[0]);
   if(tipo==='sistema')fd.append('lista_completa',document.getElementById('importacaoListaCompleta').checked?'1':'0');
   btn.disabled = true; msg.className = 'msg'; msg.textContent = 'Importando...'; msg.style.display = 'block';
+  const btnRascunhos=document.getElementById('btnAtualizarPrecosRascunhos');
+  if(tipo==='sistema')btnRascunhos.disabled=true;
   
   try {
     const r = await fetch('/api/importar/' + tipo, { method: 'POST', body: fd });
@@ -1400,20 +1402,43 @@ async function upload(tipo) {
         (j.erros_exemplo?.length ? ' Confira as linhas: ' + j.erros_exemplo.map(e => e.linha).join(', ') + '.' : '');
     } else {
       msg.textContent = `Sucesso: ${j.inseridos} itens` + (tipo === 'sistema' ? ` · ${j.novos || 0} lançamentos · ${j.chegaram || 0} reposições` : '');
-      if(tipo==='sistema')msg.textContent+=` · ${j.rascunhos?.pedidos||0} rascunhos atualizados · ${j.rascunhos?.esgotados||0} itens esgotados nos rascunhos`+(j.ausentes_esgotados?` · ${j.ausentes_esgotados} produtos ausentes marcados como esgotados`:'');
+      if(tipo==='sistema'){
+        const resumoCarga=msg.textContent+(j.ausentes_esgotados?` · ${j.ausentes_esgotados} produtos ausentes marcados como esgotados`:'');
+        if(j.rascunhos?.pendente){
+          try{const totais=await recalcularRascunhosEmLotes(msg,true);msg.textContent=resumoCarga+` · ${totais.pedidos} rascunhos atualizados · ${totais.esgotados} itens esgotados nos rascunhos`;}
+          catch(e){throw new Error('A planilha foi importada. A atualização dos rascunhos ficou pendente: '+e.message+' Use “Atualizar rascunhos existentes” para retomar; não precisa importar novamente.');}
+        }else msg.textContent=resumoCarga+` · ${j.rascunhos?.pedidos||0} rascunhos atualizados · ${j.rascunhos?.esgotados||0} itens esgotados nos rascunhos`;
+      }
     }
     carregarStatus(); 
     if (tipo === 'scraping') carregarDados();
   } catch(e) { 
     msg.textContent = e.message; 
-  } finally { btn.disabled = false; }
+  } finally { btn.disabled = false;if(tipo==='sistema')btnRascunhos.disabled=false; }
+}
+
+async function recalcularRascunhosEmLotes(msg,reiniciar=false){
+  const chave='admin_rascunhos_precos_lote';
+  let estado={depois_id:0,ate_id:null,pedidos:0,itens:0,esgotados:0};
+  if(!reiniciar){try{const salvo=JSON.parse(sessionStorage.getItem(chave));if(salvo&&Number.isSafeInteger(salvo.depois_id)&&salvo.depois_id>=0&&Number.isSafeInteger(salvo.ate_id)&&salvo.ate_id>=salvo.depois_id&&['pedidos','itens','esgotados'].every(k=>Number.isSafeInteger(salvo[k])&&salvo[k]>=0))estado=salvo;}catch{}}
+  try{sessionStorage.setItem(chave,JSON.stringify(estado));}catch{}
+  for(;;){
+    msg.textContent=`Atualizando em lotes: ${estado.pedidos} rascunhos e ${estado.itens} itens concluídos. Mantenha esta página aberta.`;
+    const r=await fetch('/api/admin/rascunhos/atualizar-precos',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({depois_id:estado.depois_id,ate_id:estado.ate_id})}),j=await r.json();
+    if(!r.ok||!j.ok)throw new Error(j.erro||'Lote não confirmado.');
+    if(!Number.isSafeInteger(j.ultimo_id)||j.ultimo_id<estado.depois_id||!Number.isSafeInteger(j.ate_id)||j.ate_id<j.ultimo_id||typeof j.tem_mais!=='boolean'||j.tem_mais&&j.ultimo_id===estado.depois_id)throw new Error('O servidor ainda não confirmou a atualização em lotes. Confira o deploy e o SQL de correção.');
+    estado={depois_id:j.ultimo_id,ate_id:j.ate_id,pedidos:estado.pedidos+j.pedidos,itens:estado.itens+j.itens,esgotados:estado.esgotados+j.esgotados};
+    if(!j.tem_mais){try{sessionStorage.removeItem(chave);}catch{}return estado;}
+    try{sessionStorage.setItem(chave,JSON.stringify(estado));}catch{}
+  }
 }
 
 async function atualizarPrecosRascunhosAdmin(){
   const b=document.getElementById('btnAtualizarPrecosRascunhos'),msg=document.getElementById('resultadoPrecosRascunhos');
+  if(b.disabled)return;
   if(!confirm('Atualizar preços e disponibilidade de todos os rascunhos com a tabela atual? Produtos e quantidades serão mantidos. Nenhum pedido será enviado.'))return;
-  b.disabled=true;msg.textContent='Atualizando rascunhos… Aguarde a confirmação.';
-  try{const r=await fetch('/api/admin/rascunhos/atualizar-precos',{method:'POST'}),j=await r.json();if(!r.ok||!j.ok)throw new Error(j.erro||'Atualização não confirmada.');msg.textContent=`Concluído: ${j.pedidos} rascunhos, ${j.itens} itens recalculados e ${j.esgotados} itens esgotados. Nenhum pedido foi enviado.`;}catch(e){msg.textContent=e.message;}finally{b.disabled=false;}
+  const importar=document.getElementById('btn-sistema');b.disabled=true;importar.disabled=true;
+  try{const j=await recalcularRascunhosEmLotes(msg);msg.textContent=`Concluído: ${j.pedidos} rascunhos, ${j.itens} itens recalculados e ${j.esgotados} itens esgotados. Nenhum pedido foi enviado.`;}catch(e){msg.textContent=e.message+' Atualização interrompida. Os lotes confirmados foram mantidos. Clique novamente para retomar.';}finally{b.disabled=false;importar.disabled=false;}
 }
 
 async function carregarEstoque() {

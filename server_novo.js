@@ -120,8 +120,10 @@ app.post('/api/pedidos/cotar',async(req,res)=>{
     res.json({ok:true,ativo:true,precos:await cotarItensPedido(req.body.cnpj_cliente,req.body.itens)});
   }catch(e){res.status(503).json({ok:false,erro:erroRotinaPrecos(e)});}
 });
-app.post('/api/admin/rascunhos/atualizar-precos',async(_req,res)=>{
-  try{const {data,error}=await supabase.rpc('tabela_atualizar_rascunhos');if(error)throw error;cacheConsultas.invalidarPrefixo('precos:');cacheConsultas.invalidarPrefixo('vendedor:');cacheConsultas.invalidarPrefixo('metricas:');res.json({ok:true,...data});}
+app.post('/api/admin/rascunhos/atualizar-precos',async(req,res)=>{
+  const depois=req.body?.depois_id??0,ate=req.body?.ate_id??null;
+  if(!Number.isSafeInteger(depois)||depois<0||ate!==null&&(!Number.isSafeInteger(ate)||ate<depois))return res.status(400).json({ok:false,erro:'Intervalo de atualização inválido.'});
+  try{const {data,error}=await supabase.rpc('tabela_atualizar_rascunhos_lote',{p_depois:depois,p_ate:ate,p_limite:5});if(error)throw error;cacheConsultas.invalidarPrefixo('precos:');cacheConsultas.invalidarPrefixo('vendedor:');cacheConsultas.invalidarPrefixo('metricas:');res.json({ok:true,...data});}
   catch(e){res.status(503).json({ok:false,erro:erroRotinaPrecos(e)});}
 });
 
