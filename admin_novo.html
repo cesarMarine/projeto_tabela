@@ -453,6 +453,14 @@
 
     <!-- PÁGINA: FAMÍLIAS -->
     <section class="page" id="page-familias">
+      <div class="painel" id="painelCompatibilidadePecas">
+        <h2>Compatibilidade das peças</h2>
+        <p style="color:#94a3b8;margin:10px 0;">Busque a peça e informe os modelos compatíveis. O texto aparecerá à direita da peça no catálogo. Vazio oculta a informação.</p>
+        <label for="buscaCompatibilidade">Código ou descrição da peça</label>
+        <input id="buscaCompatibilidade" type="search" placeholder="Ex.: 9623 ou agulha" oninput="renderizarCompatibilidadesAdmin()" style="width:100%;margin:10px 0;">
+        <p id="mensagemCompatibilidade" role="status"></p>
+        <div style="overflow-x:auto;"><table style="width:100%;"><thead><tr><th>Código</th><th>Peça</th><th style="width:55%;">Compatibilidade</th><th>Ação</th></tr></thead><tbody id="listaCompatibilidades"><tr><td colspan="4">Abra Famílias para carregar.</td></tr></tbody></table></div>
+      </div>
       <div class="painel" id="painelMultiplosVenda">
         <h2>Múltiplos de venda por produto</h2>
         <p style="color:#94a3b8;margin:10px 0;">Funciona com ou sem família. Informe 10 para vender em 10, 20, 30… unidades. Vazio mantém a regra atual do HTML; 1 permite venda unitária.</p>
@@ -1714,6 +1722,34 @@ async function salvarMultiploVenda(botao,restaurar=false){
   }catch(e){msg.textContent=e.message;}finally{botao.disabled=false;}
 }
 
+let compatibilidadesAdmin={textos:{},disponivel:false};
+async function carregarCompatibilidadesAdmin(){
+  const msg=document.getElementById('mensagemCompatibilidade');
+  try{
+    const r=await fetch('/api/admin/produtos-compatibilidade'),j=await r.json();
+    if(!r.ok||!j.ok)throw new Error(j.erro||'Não foi possível carregar as compatibilidades.');
+    compatibilidadesAdmin=j;
+    msg.textContent=j.disponivel?'':'Para habilitar o salvamento, execute produtos-compatibilidade.sql uma vez no banco.';
+    renderizarCompatibilidadesAdmin();
+  }catch(e){msg.textContent=e.message;}
+}
+function renderizarCompatibilidadesAdmin(){
+  const normal=v=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  const busca=normal(document.getElementById('buscaCompatibilidade').value.trim());
+  const rows=todosOsProdutos.filter(p=>normal(p.grupo_scraping||p.grupo).includes('pecas')).filter(p=>busca?normal([p.codigo,p.descricao_sistema,p.subgrupo_scraping].join(' ')).includes(busca)||chaveMultiploAdmin(p.codigo)===chaveMultiploAdmin(busca):Boolean(compatibilidadesAdmin.textos[chaveMultiploAdmin(p.codigo)]));
+  document.getElementById('listaCompatibilidades').innerHTML=rows.slice(0,30).map(p=>`<tr><td>${escapeHtml(String(p.codigo))}</td><td>${escapeHtml(p.descricao_sistema||p.subgrupo_scraping||'')}</td><td><textarea aria-label="Compatibilidade da peça ${escapeHtml(String(p.codigo))}" maxlength="4000" rows="4" style="width:100%;min-width:260px;background:#0f172a;color:#e2e8f0;padding:10px;border:1px solid #475569;border-radius:6px;font:inherit;" placeholder="Ex.: compatível com carretilhas Brisa LS 2024…">${escapeHtml(compatibilidadesAdmin.textos[chaveMultiploAdmin(p.codigo)]||'')}</textarea></td><td><button type="button" class="btn-primario" data-codigo="${escapeHtml(String(p.codigo))}" onclick="salvarCompatibilidadeAdmin(this)" ${compatibilidadesAdmin.disponivel?'':'disabled'}>Salvar</button></td></tr>`).join('')||'<tr><td colspan="4">Busque uma peça pelo código ou descrição para preencher a compatibilidade.</td></tr>';
+  if(rows.length>30)document.getElementById('listaCompatibilidades').innerHTML+='<tr><td colspan="4">Mostrando 30 peças. Refine a busca.</td></tr>';
+}
+async function salvarCompatibilidadeAdmin(botao){
+  const campo=botao.closest('tr').querySelector('textarea'),msg=document.getElementById('mensagemCompatibilidade');botao.disabled=true;
+  try{
+    const r=await fetch('/api/admin/produtos/compatibilidade',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({codigo:botao.dataset.codigo,compatibilidade:campo.value})}),j=await r.json();
+    if(!r.ok||!j.ok)throw new Error(j.erro||'A gravação não foi confirmada.');
+    if(j.compatibilidade)compatibilidadesAdmin.textos[j.codigo]=j.compatibilidade;else delete compatibilidadesAdmin.textos[j.codigo];
+    campo.value=j.compatibilidade;msg.textContent='Compatibilidade da peça '+botao.dataset.codigo+(j.compatibilidade?' salva. Atualize o catálogo do cliente.':' removida. O bloco ficará oculto no catálogo.');
+  }catch(e){msg.textContent=e.message;}finally{botao.disabled=false;}
+}
+
 async function carregarDados() {
   try {
     const rf = await fetch('/api/familias'); 
@@ -1740,6 +1776,7 @@ async function carregarDados() {
     const j = await r.json();
     todosOsProdutos = j.itens || [];
     void carregarMultiplosVendaAdmin();
+    void carregarCompatibilidadesAdmin();
 
     const re = await fetch('/api/estoque-subgrupos'); 
     const je = await re.json();

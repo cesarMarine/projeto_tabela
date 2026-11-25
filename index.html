@@ -6,6 +6,14 @@
 <title>Tabela Marine</title>
 <meta property="og:title" content="Tabela Marine">
 <style>
+.tem-compatibilidade{display:grid!important;grid-template-columns:minmax(130px,var(--largura-opcoes-compatibilidade,150px)) minmax(220px,1fr);gap:22px;align-items:start;}
+.compatibilidade-opcoes{min-width:0;}
+.compatibilidade-peca{padding:20px;background:#f3f7fc;border:1px solid #dbe7f4;border-left:4px solid #07568a;border-radius:8px;min-width:0;}
+.compatibilidade-peca h3{font-size:15px;color:#003366;margin:0 0 7px;}
+.compatibilidade-referencia{display:block;color:#64748b;font-size:12px;margin-bottom:12px;}
+.compatibilidade-texto{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;line-height:1.7;color:#334155;}
+.compatibilidade-selecionada{outline:2px solid #07568a;outline-offset:2px;}
+@media(max-width:760px){.tem-compatibilidade{grid-template-columns:1fr;gap:14px;}.compatibilidade-peca{padding:15px;}}
   /* BADGE DE LANÇAMENTO FLUTUANTE NA FOTO PRINCIPAL */
   .tarja-lancamento-foto {
     position: absolute;
@@ -1310,6 +1318,7 @@ function normalizarItem(it) {
   return {
     codigo: String(it.codigo ?? ''),
     multiplo_venda: it.multiplo_venda??null,
+    compatibilidade: typeof it.compatibilidade==='string'?it.compatibilidade:'',
     descricao_sistema: it.descricao_sistema || it.descricao || '',
     subgrupo: (it.subgrupo_scraping || it.descricao || '').trim(), 
     descricao_longa: it.descricao || it.descricao_longa || '', 
@@ -1389,6 +1398,46 @@ function analisarVestuario(it) {
     if (matchTam) tam = matchTam[1]; else tam = it.subgrupo || 'ÚNICO';
   }
   return { tamanho: tam };
+}
+
+function textoCompatibilidadePeca(it){
+  const grupo=String(it?.grupo||it?.grupo_scraping||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  return grupo.includes('pecas')&&typeof it?.compatibilidade==='string'?it.compatibilidade.trim():'';
+}
+function montarCompatibilidadePecas(){
+  const raiz=document.getElementById('conteudo');if(!raiz)return;
+  const chave=v=>String(v??'').trim().replace(/^0+(?=\d)/,'').toLowerCase();
+  const pecas=new Map(todosItens.filter(p=>String(p.grupo||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().includes('pecas')).map(p=>[chave(p.codigo),p]));
+  if(![...pecas.values()].some(p=>textoCompatibilidadePeca(p)))return;
+  const codigoDoInput=input=>input?.getAttribute('onchange')?.match(/setQtd\('([^']+)'/)?.[1];
+  const hosts=new Set();
+  for(const input of raiz.querySelectorAll('input[onchange]')){
+    if(!pecas.has(chave(codigoDoInput(input))))continue;
+    const host=input.closest('.molinete-info,.familia-info,.isca-info,.anzol-info');if(host)hosts.add(host);
+  }
+  for(const host of hosts){
+    if(host.dataset.compatibilidadeMontada)continue;
+    host.dataset.compatibilidadeMontada='1';
+    const opcoes=document.createElement('div');opcoes.className='compatibilidade-opcoes';
+    while(host.firstChild)opcoes.appendChild(host.firstChild);host.appendChild(opcoes);
+    const painel=document.createElement('aside');painel.className='compatibilidade-peca';painel.setAttribute('aria-live','polite');painel.innerHTML='<h3>Compatibilidade</h3><small class="compatibilidade-referencia"></small><div class="compatibilidade-texto"></div>';host.appendChild(painel);
+    const selecionar=input=>{
+      const p=pecas.get(chave(codigoDoInput(input))),texto=textoCompatibilidadePeca(p);
+      painel.hidden=!texto;host.classList.toggle('tem-compatibilidade',Boolean(texto));
+      host.style.setProperty('--largura-opcoes-compatibilidade',Math.min(380,Math.max(150,opcoes.querySelectorAll('input[onchange]').length*140))+'px');
+      painel.querySelector('.compatibilidade-referencia').textContent=p?'Código '+p.codigo:'';
+      painel.querySelector('.compatibilidade-texto').textContent=texto;
+      for(const card of opcoes.querySelectorAll('.compatibilidade-selecionada'))card.classList.remove('compatibilidade-selecionada');
+      if(texto)input?.closest('[id^="mini-"],.linha-filho')?.classList.add('compatibilidade-selecionada');
+    };
+    const acompanhar=e=>{
+      const card=e.target.closest('[id^="mini-"],.linha-filho'),input=e.target.matches('input[onchange]')?e.target:card?.querySelector('input[onchange]');
+      if(input)selecionar(input);else if(e.target.closest('button')&&!e.target.closest('.btn-detalhes'))selecionar(opcoes.querySelector('input[onchange]'));
+    };
+    opcoes.addEventListener('click',acompanhar);opcoes.addEventListener('focusin',acompanhar);
+    opcoes.addEventListener('pointerdown',e=>{if(e.target.closest('[id^="mini-"],.linha-filho'))acompanhar(e);},true);
+    selecionar(opcoes.querySelector('input[onchange]'));
+  }
 }
 
 function renderInformacoesItem(it, mostrarCodigo = true) {
@@ -1941,6 +1990,7 @@ function renderizar() {
     </aside>`;
   }
   cont.innerHTML = html;
+  if(typeof montarCompatibilidadePecas==='function')montarCompatibilidadePecas();
 }
 
 /* ============================================================

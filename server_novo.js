@@ -58,6 +58,22 @@ async function validarMultiplosVenda(body){
   }
 }
 
+// Compatibilidade cadastrada por produto, preservada nas importações do catálogo.
+async function carregarCompatibilidades(){
+  const resultado=await cacheConsultas.obter('compatibilidade:produtos',300000,async()=>{
+    const textos=new Map();
+    for(let inicio=0;;inicio+=1000){
+      const {data,error}=await supabase.from('produtos_compatibilidade').select('codigo,compatibilidade').order('codigo').range(inicio,inicio+999);
+      if(error){if(['42P01','PGRST205'].includes(error.code))return {disponivel:false,textos};throw error;}
+      for(const p of data||[])textos.set(codigoMultiploVenda(p.codigo),p.compatibilidade);
+      if(!data||data.length<1000)break;
+    }
+    return {disponivel:true,textos};
+  });
+  if(!resultado.disponivel)cacheConsultas.invalidarPrefixo('compatibilidade:');
+  return resultado;
+}
+
 app.use(express.json({ limit: '100mb' }));
 app.post(['/api/pedidos/autosave','/api/pedidos'],async(req,res,next)=>{
   try{await validarMultiplosVenda(req.body);next();}catch(e){res.status(e.status||503).json({ok:false,erro:e.status?e.message:'Não foi possível validar os múltiplos de venda. Tente novamente; o pedido foi preservado.'});}
@@ -71,6 +87,21 @@ registrarLeituraPedidosVendedor(app, supabase, cacheConsultas);
 
 app.get('/api/admin/produtos-multiplos',async(req,res)=>{
   try{const {disponivel,regras}=await carregarMultiplosVenda();res.json({ok:true,disponivel,regras:Object.fromEntries(regras),legados:Object.fromEntries(multiplosLegadosVenda)});}catch(e){res.status(503).json({ok:false,erro:'Não foi possível carregar os múltiplos de venda.'});}
+});
+
+app.get('/api/admin/produtos-compatibilidade',async(req,res)=>{
+  try{const {disponivel,textos}=await carregarCompatibilidades();res.json({ok:true,disponivel,textos:Object.fromEntries(textos)});}catch(e){res.status(503).json({ok:false,erro:'Não foi possível carregar as compatibilidades.'});}
+});
+app.put('/api/admin/produtos/compatibilidade',async(req,res)=>{
+  const codigo=codigoMultiploVenda(req.body?.codigo),bruto=req.body?.compatibilidade;
+  if(!/^[a-z0-9._-]{1,80}$/.test(codigo)||typeof bruto!=='string'||bruto.trim().length>4000)return res.status(400).json({ok:false,erro:'Informe o código e uma compatibilidade de até 4000 caracteres.'});
+  const compatibilidade=bruto.trim();
+  try{
+    const resultado=compatibilidade?await supabase.from('produtos_compatibilidade').upsert({codigo,compatibilidade,atualizado_em:new Date().toISOString()},{onConflict:'codigo'}):await supabase.from('produtos_compatibilidade').delete().eq('codigo',codigo);
+    if(resultado.error)throw resultado.error;
+    cacheConsultas.invalidarPrefixo('compatibilidade:');cacheConsultas.invalidarPrefixo('publico:');
+    res.json({ok:true,codigo,compatibilidade});
+  }catch(e){res.status(503).json({ok:false,erro:['42P01','PGRST205'].includes(e.code)?'Execute produtos-compatibilidade.sql uma vez no banco para habilitar o campo.':'Não foi possível confirmar a gravação da compatibilidade.'});}
 });
 app.put('/api/admin/produtos/multiplo',async(req,res)=>{
   const codigo=codigoMultiploVenda(req.body?.codigo),multiplo=req.body?.multiplo;
@@ -494,6 +525,7 @@ app.get('/api/catalogo', async (req, res) => {
     });
 
     const {regras:multiplosVenda}=await carregarMultiplosVenda();
+    const {textos:compatibilidades}=await carregarCompatibilidades();
     const linhas = todosItensSis.map(s => {
       const chaveSis = norm(s.codigo);
       const scr = mapaScr[chaveSis] || {};
@@ -507,6 +539,7 @@ app.get('/api/catalogo', async (req, res) => {
         codigo: s.codigo,
         cod_barras: s.cod_barras,
         multiplo_venda: multiplosVenda.get(codigoMultiploVenda(s.codigo))??null,
+        compatibilidade: compatibilidades.get(codigoMultiploVenda(s.codigo))??'',
         descricao_sistema: s.descricao,
         estoque: s.estoque,
         preco_venda: s.preco_venda,
