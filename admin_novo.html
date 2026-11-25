@@ -203,6 +203,10 @@
           <button class="btn-primario" id="btn-sistema" onclick="upload('sistema')">Importar</button>
         </div>
         <div class="msg" id="msg-sistema"></div>
+        <label style="display:block;margin-top:12px;color:#cbd5e1;"><input type="checkbox" id="importacaoListaCompleta"> Esta é a lista completa: marcar como esgotados os produtos que não aparecem no arquivo.</label>
+        <p style="color:#94a3b8;font-size:.8rem;margin-top:8px;">Após importar, os preços e totais dos rascunhos são recalculados. Em listas parciais, os produtos ausentes são preservados. Produtos com estoque zero ficam sem valor e marcados como esgotados.</p>
+        <button type="button" class="btn-primario" id="btnAtualizarPrecosRascunhos" onclick="atualizarPrecosRascunhosAdmin()" style="margin-top:14px;">Atualizar rascunhos existentes</button>
+        <p id="resultadoPrecosRascunhos" role="status" style="margin-top:10px;"></p>
       </div>
 
       <div class="painel">
@@ -1382,6 +1386,7 @@ async function upload(tipo) {
   const fi = document.getElementById('file-' + tipo), btn = document.getElementById('btn-' + tipo), msg = document.getElementById('msg-' + tipo);
   if (!fi.files.length) return;
   const fd = new FormData(); fd.append('arquivo', fi.files[0]);
+  if(tipo==='sistema')fd.append('lista_completa',document.getElementById('importacaoListaCompleta').checked?'1':'0');
   btn.disabled = true; msg.className = 'msg'; msg.textContent = 'Importando...'; msg.style.display = 'block';
   
   try {
@@ -1395,12 +1400,20 @@ async function upload(tipo) {
         (j.erros_exemplo?.length ? ' Confira as linhas: ' + j.erros_exemplo.map(e => e.linha).join(', ') + '.' : '');
     } else {
       msg.textContent = `Sucesso: ${j.inseridos} itens` + (tipo === 'sistema' ? ` · ${j.novos || 0} lançamentos · ${j.chegaram || 0} reposições` : '');
+      if(tipo==='sistema')msg.textContent+=` · ${j.rascunhos?.pedidos||0} rascunhos atualizados · ${j.rascunhos?.esgotados||0} itens esgotados nos rascunhos`+(j.ausentes_esgotados?` · ${j.ausentes_esgotados} produtos ausentes marcados como esgotados`:'');
     }
     carregarStatus(); 
     if (tipo === 'scraping') carregarDados();
   } catch(e) { 
     msg.textContent = e.message; 
   } finally { btn.disabled = false; }
+}
+
+async function atualizarPrecosRascunhosAdmin(){
+  const b=document.getElementById('btnAtualizarPrecosRascunhos'),msg=document.getElementById('resultadoPrecosRascunhos');
+  if(!confirm('Atualizar preços e disponibilidade de todos os rascunhos com a tabela atual? Produtos e quantidades serão mantidos. Nenhum pedido será enviado.'))return;
+  b.disabled=true;msg.textContent='Atualizando rascunhos… Aguarde a confirmação.';
+  try{const r=await fetch('/api/admin/rascunhos/atualizar-precos',{method:'POST'}),j=await r.json();if(!r.ok||!j.ok)throw new Error(j.erro||'Atualização não confirmada.');msg.textContent=`Concluído: ${j.pedidos} rascunhos, ${j.itens} itens recalculados e ${j.esgotados} itens esgotados. Nenhum pedido foi enviado.`;}catch(e){msg.textContent=e.message;}finally{b.disabled=false;}
 }
 
 async function carregarEstoque() {

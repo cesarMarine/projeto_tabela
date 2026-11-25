@@ -74,9 +74,36 @@ async function carregarCompatibilidades(){
   return resultado;
 }
 
+// Preços dos rascunhos são calculados no banco; o navegador não define o valor gravado.
+async function controlePrecosRascunhos(){
+  return cacheConsultas.obter('precos:controle',5000,async()=>{
+    const {data,error}=await supabase.from('tabela_controle_precos').select('revisao,importando,atualizado_em').eq('id',1).maybeSingle();
+    if(error){if(['42P01','PGRST205'].includes(error.code))return {ativo:false};throw error;}
+    return {ativo:Boolean(data),...data};
+  });
+}
+function erroRotinaPrecos(e){
+  return ['PGRST202','42883','PGRST205','42P01'].includes(e?.code)?'Execute rascunhos-precos.sql no SQL Editor para habilitar a atualização dos rascunhos.':e?.message||'Não foi possível concluir a atualização dos preços.';
+}
+async function cotarItensPedido(cnpj,itens){
+  const {data,error}=await supabase.rpc('tabela_cotar_itens',{p_cnpj:String(cnpj||''),p_itens:itens.map(i=>({codigo:String(i.codigo),qtd:Number(i.qtd)}))});
+  if(error)throw error;return data;
+}
+async function prepararPrecosRascunho(req){
+  if(!Array.isArray(req.body?.itens)||!req.body.itens.length)return;
+  const controle=await controlePrecosRascunhos();if(!controle.ativo)return;
+  if(controle.importando)throw Object.assign(new Error('A tabela está em atualização. Aguarde para salvar.'),{status:503});
+  const precos=await cotarItensPedido(req.body.cnpj_cliente,req.body.itens),mapa=new Map(precos.itens.map(i=>[codigoMultiploVenda(i.codigo),i]));
+  const envio=req.path==='/api/pedidos'&&String(req.body.status||'ENVIADO').toUpperCase()!=='RASCUNHO';
+  const mudou=req.body.itens.some(i=>{const p=mapa.get(codigoMultiploVenda(i.codigo));return Math.abs(Number(i.precoFinal)-Number(p.precoFinal))>0.005;});
+  if(envio&&mudou)throw Object.assign(new Error('Os preços ou a disponibilidade mudaram. Revise o carrinho atualizado antes de enviar novamente.'),{status:409,precos});
+  req.body.itens=req.body.itens.map(i=>({...i,...mapa.get(codigoMultiploVenda(i.codigo)),codigo:i.codigo,qtd:i.qtd,desc:i.desc}));
+  req.body.total=precos.total;req.precosAtualizados=precos;
+}
+
 app.use(express.json({ limit: '100mb' }));
 app.post(['/api/pedidos/autosave','/api/pedidos'],async(req,res,next)=>{
-  try{await validarMultiplosVenda(req.body);next();}catch(e){res.status(e.status||503).json({ok:false,erro:e.status?e.message:'Não foi possível validar os múltiplos de venda. Tente novamente; o pedido foi preservado.'});}
+  try{await validarMultiplosVenda(req.body);await prepararPrecosRascunho(req);next();}catch(e){res.status(e.status||503).json({ok:false,precos:e.precos,erro:e.status?e.message:'Não foi possível validar o pedido. '+erroRotinaPrecos(e)});}
 });
 app.use(express.static('.'));
 registrarInvalidacaoConsultas(app, cacheConsultas);
@@ -84,6 +111,19 @@ registrarAgrupados(app, supabase);
 registrarSecoesFamilias(app, supabase);
 registrarMetricasVendedor(app, supabase, () => new Date(), cacheConsultas);
 registrarLeituraPedidosVendedor(app, supabase, cacheConsultas);
+
+app.get('/api/precos/versao',async(_req,res)=>{try{res.set('Cache-Control','no-store');res.json({ok:true,...await controlePrecosRascunhos()});}catch(e){res.status(503).json({ok:false,erro:erroRotinaPrecos(e)});}});
+app.post('/api/pedidos/cotar',async(req,res)=>{
+  try{
+    if(!/^\d{14}$/.test(String(req.body?.cnpj_cliente||''))||!Array.isArray(req.body?.itens)||req.body.itens.length>2000)return res.status(400).json({ok:false,erro:'Cliente e itens inválidos.'});
+    const c=await controlePrecosRascunhos();if(!c.ativo)return res.json({ok:true,ativo:false});
+    res.json({ok:true,ativo:true,precos:await cotarItensPedido(req.body.cnpj_cliente,req.body.itens)});
+  }catch(e){res.status(503).json({ok:false,erro:erroRotinaPrecos(e)});}
+});
+app.post('/api/admin/rascunhos/atualizar-precos',async(_req,res)=>{
+  try{const {data,error}=await supabase.rpc('tabela_atualizar_rascunhos');if(error)throw error;cacheConsultas.invalidarPrefixo('precos:');cacheConsultas.invalidarPrefixo('vendedor:');cacheConsultas.invalidarPrefixo('metricas:');res.json({ok:true,...data});}
+  catch(e){res.status(503).json({ok:false,erro:erroRotinaPrecos(e)});}
+});
 
 app.get('/api/admin/produtos-multiplos',async(req,res)=>{
   try{const {disponivel,regras}=await carregarMultiplosVenda();res.json({ok:true,disponivel,regras:Object.fromEntries(regras),legados:Object.fromEntries(multiplosLegadosVenda)});}catch(e){res.status(503).json({ok:false,erro:'Não foi possível carregar os múltiplos de venda.'});}
@@ -184,6 +224,7 @@ app.post('/api/importar/sistema', upload.single('arquivo'), async (req, res) => 
     let inseridos = 0;
     let comEstoque = 0;
     let ordem = 0;
+    const preparados=new Map();
 
     // Pega a data de hoje no formato YYYY-MM-DD (Fuso de Brasília)
     const dataHoje = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"})).toISOString().split('T')[0];
@@ -216,28 +257,24 @@ app.post('/api/importar/sistema', upload.single('arquivo'), async (req, res) => 
         ...detectarDestaques(anteriores.get(codigoNovidades(codigoOriginal)), estoque, anteriores.size > 0, agoraImportacao)
       };
       
-      // Atualiza a tabela principal (itens_sistema)
-      const { error } = await supabase.from('itens_sistema').upsert(item, { onConflict: 'codigo' });
-      if (error) throw error;
+      preparados.set(item.codigo,item);
       inseridos++;
       if (item.lancamento_em === agoraImportacao) novos++;
       if (item.chegou_em === agoraImportacao) chegaram++;
 
       // 👇 SALVA NO HISTÓRICO 👇
       // Usa UPSERT para o caso de importar duas planilhas no mesmo dia (não duplica, apenas atualiza)
-      await supabase.from('historico_estoque').upsert({
-        data_importacao: dataHoje,
-        codigo_produto: item.codigo,
-        estoque: item.estoque,
-        preco_venda: item.preco_venda
-      }, { onConflict: 'data_importacao,codigo_produto' });
       // 👆 FIM DO HISTÓRICO 👆
     }
     
-    res.json({ ok: true, inseridos, comEstoque, novos, chegaram });
+    if(!preparados.size)return res.status(400).json({ok:false,erro:'Nenhum produto válido na planilha. A base não foi alterada.'});
+    const {data:importacao,error:erroImportacao}=await supabase.rpc('tabela_importar_precos',{p_itens:[...preparados.values()],p_lista_completa:req.body?.lista_completa==='1',p_data:dataHoje});
+    if(erroImportacao)throw erroImportacao;
+    cacheConsultas.invalidarPrefixo('precos:');cacheConsultas.invalidarPrefixo('vendedor:');cacheConsultas.invalidarPrefixo('metricas:');
+    res.json({ ok: true, inseridos:importacao.inseridos, comEstoque, novos, chegaram,rascunhos:importacao.rascunhos,ausentes_esgotados:importacao.ausentes_esgotados });
   } catch (e) { 
     console.error("Erro importação sistema:", e);
-    res.status(500).json({ erro: e.message }); 
+    res.status(500).json({ erro: erroRotinaPrecos(e) });
   }
 });
 
@@ -1752,7 +1789,7 @@ app.post('/api/pedidos/autosave', async (req, res) => {
     }
 
     monitor.registrar('concluido');
-    res.json({ ok: true, id: pedidoId });
+    res.json({ ok: true, id: pedidoId,precos:req.precosAtualizados });
   } catch (e) {
     monitor.registrar('erro', { codigo_erro:e?.code || null, mensagem:String(e?.message || 'Erro').slice(0,400) });
     console.error("Erro no autosave:", e.message);
@@ -2176,7 +2213,7 @@ app.post('/api/pedidos', async (req, res) => {
     }
 
     monitor.registrar('concluido');
-    res.json({ ok: true, id: pedidoId, mensagem: 'Gravado com sucesso!' });
+    res.json({ ok: true, id: pedidoId, precos:req.precosAtualizados, mensagem: 'Gravado com sucesso!' });
   } catch (e) {
     monitor.registrar('erro', { codigo_erro:e?.code || null, mensagem:String(e?.message || 'Erro').slice(0,400) });
     console.error("ERRO AO SALVAR PEDIDO:", e.message);

@@ -818,9 +818,9 @@ async function carregarPedidos(apenasRender = false) {
         const totalItem = precoUnitario * qtd;
 
         return `
-          <tr>
+          <tr style="${it.esgotado?'background:#fff1f2;color:#9f1239;':''}">
             <td><strong>${it.codigo_produto}</strong></td>
-            <td>${it.descricao}</td>
+            <td>${it.descricao}${it.esgotado?'<br><strong>Esgotado — sem valor</strong>':''}</td>
             <td style="text-align:center; font-weight:800;">${qtd}</td>
             <td style="text-align:right;">R$ ${fmtMoeda(precoUnitario)}</td>
             <td style="text-align:right; font-weight:800;">R$ ${fmtMoeda(totalItem)}</td>
@@ -953,7 +953,7 @@ function exportarPedidoExcel(pedidoId) {
       0,                               // Coluna C
       0,                               // Coluna D
       "",                              // Coluna E vazia
-      String(it.descricao || ''),      // Coluna F
+      (it.esgotado?'[ESGOTADO] ':'')+String(it.descricao || ''),      // Coluna F
       "",                              // Coluna G
       qtd,                             // Coluna H
       unitario,                        // Coluna I

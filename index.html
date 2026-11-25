@@ -6,6 +6,8 @@
 <title>Tabela Marine</title>
 <meta property="og:title" content="Tabela Marine">
 <style>
+.item-carrinho.item-esgotado{background:#fff1f2;border:1px solid #fda4af;border-left:4px solid #e11d48;}
+.aviso-esgotado{display:block;color:#9f1239;font-size:12px;font-weight:800;margin:6px 0;}
 .tem-compatibilidade{display:grid!important;grid-template-columns:minmax(130px,var(--largura-opcoes-compatibilidade,150px)) minmax(220px,1fr);gap:22px;align-items:start;}
 .compatibilidade-opcoes{min-width:0;}
 .compatibilidade-peca{padding:20px;background:#f3f7fc;border:1px solid #dbe7f4;border-left:4px solid #07568a;border-radius:8px;min-width:0;}
@@ -828,6 +830,7 @@ atualizarPosicaoBarras();
 let clienteLogado = null;
 let porcentagemAcrescimo = 0;
 let mapaOfertas = {}; 
+let cotacoesCarrinho=new Map(),revisaoPrecosCarrinho=null,atualizandoPrecosCarrinho=false,aplicandoPrecosCarrinho=false,cotacaoCarrinhoPendente=null;
 let marcaAtual = '';
 let ofertasCache = [];
 let mapaCatalogoCache = new Map();
@@ -1221,6 +1224,7 @@ function carregarPedidoParaEdicao(idPedido, jsonItensStr, composicao = null) {
       carrinho[it.codigo_produto] = {
         qtd: it.quantidade,
         precoBase: precoAtualizado, 
+        esgotado:Boolean(it.esgotado),
         desc: prodEncontrado ? prodEncontrado.subgrupo : it.descricao, // Pega a descrição nova tbm se tiver
         img: prodEncontrado ? prodEncontrado.imagem_url : ''
       };
@@ -1243,7 +1247,7 @@ async function salvarRascunho() {
   const itens = itensPedidoComAgrupados();
 
   if (itens.length === 0) { alert('Seu carrinho está vazio.'); return; }
-  const total = itens.reduce((acc, it) => acc + (it.precoFinal * it.qtd), 0);
+  const total = itens.reduce((acc, it) => acc + Math.round(it.precoFinal * it.qtd * 100), 0) / 100;
 
   // Desabilita o botão para não clicar 2 vezes enquanto salva
   const btnSalvar = document.querySelector('button[onclick="salvarRascunho()"]');
@@ -1269,6 +1273,7 @@ async function salvarRascunho() {
     });
     const j = await r.json();
 
+    if(j.precos)aplicarCotacaoCarrinho(j.precos);
     if (j.ok) {
       pedidoEmEdicaoId = j.id;
       alert('💾 Rascunho salvo no banco com sucesso!');
@@ -1298,8 +1303,52 @@ function fecharZoomModal() {
   if (modalBg) modalBg.classList.remove('on');
 }
 
+function chavePrecoCarrinho(codigo){return String(codigo??'').trim().replace(/^0+(?=\d)/,'').toLowerCase();}
+function produtoBrutoCarrinho(codigo){
+  return mapaCatalogoCache.get(String(codigo))||[...mapaCatalogoCache.values()].find(p=>chavePrecoCarrinho(p.codigo)===chavePrecoCarrinho(codigo));
+}
+function estaEsgotadoCarrinho(codigo,item){
+  if(item?.kit)return item.kit.componentes.some(c=>estaEsgotadoCarrinho(c.codigo,c));
+  const cotacao=cotacoesCarrinho.get(chavePrecoCarrinho(codigo));if(cotacao)return Boolean(cotacao.esgotado);
+  const bruto=produtoBrutoCarrinho(codigo);return !bruto||Number(bruto.estoque)<=0||Number(bruto.preco_venda)<=0||Boolean(item?.esgotado);
+}
+function aplicarCotacaoCarrinho(cotacao){
+  if(!cotacao?.itens)return;
+  if(document.activeElement?.matches('input[type="number"]')){cotacaoCarrinhoPendente=cotacao;return;}
+  let mudou=false;
+  for(const p of cotacao.itens){
+    const chave=chavePrecoCarrinho(p.codigo),anterior=cotacoesCarrinho.get(chave);
+    if(!anterior||['precoBase','precoFinal','precoOriginal','esgotado'].some(k=>anterior[k]!==p[k]))mudou=true;
+    cotacoesCarrinho.set(chave,p);
+  }
+  revisaoPrecosCarrinho=cotacao.revisao;
+  for(const [codigo,item]of Object.entries(carrinho)){
+    if(item.kit){for(const c of item.kit.componentes){const p=cotacoesCarrinho.get(chavePrecoCarrinho(c.codigo));if(p){c.precoBase=Number(p.precoBase);c.esgotado=Boolean(p.esgotado);}}}
+    else{const p=cotacoesCarrinho.get(chavePrecoCarrinho(codigo));if(p){item.precoBase=Number(p.precoBase);item.esgotado=Boolean(p.esgotado);}}
+  }
+  if(mudou){aplicandoPrecosCarrinho=true;try{atualizarCarrinho();}finally{aplicandoPrecosCarrinho=false;}}
+}
+async function atualizarPrecosCarrinho(forcar=false){
+  if(atualizandoPrecosCarrinho||!clienteLogado||!Object.keys(carrinho).length||document.hidden||isAutosaving)return;
+  atualizandoPrecosCarrinho=true;
+  try{
+    const v=await fetch('/api/precos/versao',{cache:'no-store',signal:AbortSignal.timeout(15000)}),meta=await v.json();
+    if(!v.ok||!meta.ok||!meta.ativo||meta.importando||!forcar&&meta.revisao===revisaoPrecosCarrinho)return;
+    const itens=new Map(),adicionar=(codigo,q)=>itens.set(String(codigo),(itens.get(String(codigo))||0)+Number(q));
+    for(const [codigo,item]of Object.entries(carrinho)){if(item.kit)for(const c of item.kit.componentes)adicionar(c.codigo,c.quantidade*item.qtd);else adicionar(codigo,item.qtd);}
+    const r=await fetch('/api/pedidos/cotar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cnpj_cliente:clienteLogado.cnpj,itens:[...itens].map(([codigo,qtd])=>({codigo,qtd}))}),signal:AbortSignal.timeout(20000)}),j=await r.json();
+    if(!r.ok||!j.ok)throw new Error(j.erro||'Não foi possível atualizar os preços do carrinho.');if(j.precos)aplicarCotacaoCarrinho(j.precos);
+  }catch(e){console.warn('Atualização de preços do carrinho pendente:',e.message);}finally{atualizandoPrecosCarrinho=false;}
+}
+setInterval(()=>atualizarPrecosCarrinho(),60000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)atualizarPrecosCarrinho(true);});
+document.addEventListener('focusout',()=>setTimeout(()=>{if(cotacaoCarrinhoPendente){const p=cotacaoCarrinhoPendente;cotacaoCarrinhoPendente=null;aplicarCotacaoCarrinho(p);}},0));
+
 function calcularValoresProduto(precoBase, codItem) {
   if (carrinho[codItem]?.kit) return precoAgrupado(carrinho[codItem].kit);
+  const cotacao=typeof cotacoesCarrinho!=='undefined'?cotacoesCarrinho.get(chavePrecoCarrinho(codItem)):null;
+  if(cotacao)return {precoOriginal:Number(cotacao.precoOriginal),precoFinal:Number(cotacao.precoFinal),pctDesconto:Number(cotacao.pctDesconto)||0,temOferta:Number(cotacao.precoFinal)<Number(cotacao.precoOriginal)};
+  if(typeof estaEsgotadoCarrinho==='function'&&estaEsgotadoCarrinho(codItem,carrinho[codItem]))return {precoOriginal:0,precoFinal:0,pctDesconto:0,temOferta:false};
   // Pega a taxa de acréscimo ativa
   const taxaUf = porcentagemAcrescimo || parseFloat(clienteLogado?.acrescimo) || 0;
   
@@ -1647,7 +1696,7 @@ async function finalizarPedido() {
     } catch (e) { console.error("Erro ao validar rascunhos em aberto", e); }
   }
 
-  const total = itens.reduce((acc, it) => acc + (it.precoFinal * it.qtd), 0);
+  const total = itens.reduce((acc, it) => acc + Math.round(it.precoFinal * it.qtd * 100), 0) / 100;
   if (!confirm(`Deseja finalizar e enviar este pedido no valor de R$ ${fmtMoeda(total)}?`)) return;
 
   try {
@@ -1665,6 +1714,7 @@ async function finalizarPedido() {
       })
     });
     const j = await r.json();
+    if(j.precos)aplicarCotacaoCarrinho(j.precos);
     if (j.ok) {
       alert('✅ Pedido enviado com sucesso!');
       carrinho = {};
@@ -1710,6 +1760,7 @@ async function carregar() {
     // 👇 Verifica se o cliente deixou algum rascunho salvo ao sair
     const rascunhoVerificado = await verificarRascunhoPendente();
     if (rascunhoVerificado) await receberNovidadesNoCarrinho();
+    void atualizarPrecosCarrinho(true);
 
   } catch (e) { document.getElementById('conteudo').innerHTML = '<div class="loading">Erro ao carregar.</div>'; }
 }
@@ -2013,7 +2064,7 @@ function renderOfertas() {
   const ofertasRender = ofertasCache.map(of => {
     const cat = mapaCatalogoCache.get(String(of.codigo)) || {};
     const subgrupo = of.subgrupo || cat.subgrupo_scraping || cat.descricao_sistema || `Produto ${of.codigo}`;
-    const precoBase = Number(of.preco_base || cat.preco_venda || 0);
+    const precoBase = Number(cat.preco_venda ?? of.preco_base ?? 0);
     const imagem = of.imagem_oferta || cat.imagem_url || '';
     const marca = of.marca || cat.marca || '';
     const grupo = of.grupo || cat.grupo_scraping || cat.grupo || 'OUTROS';
@@ -3403,6 +3454,7 @@ function atualizarCarrinho() {
     const i = carrinho[cod];
     const detalhes = detalhesItemCarrinho(cod, i);
     const calc = calcularValoresProduto(i.precoBase, cod);
+    const esgotado=typeof estaEsgotadoCarrinho==='function'&&estaEsgotadoCarrinho(cod,i);
     
     const fatorLote = i.kit ? (i.kit.multiplicador || i.kit.minimo) : 1;
     const qtdExibida = i.qtd / fatorLote;
@@ -3416,7 +3468,7 @@ function atualizarCarrinho() {
     qtdTotal += i.qtd;
     
     return `
-      <div class="item-carrinho ${calc.temOferta ? 'item-com-oferta' : ''}">
+      <div class="item-carrinho ${calc.temOferta ? 'item-com-oferta' : ''} ${esgotado?'item-esgotado':''}">
         
         <div class="item-img-wrap">
           ${i.img ? `<img src="${i.img}">` : '<span style="font-size:16px;">🖼️</span>'}
@@ -3425,6 +3477,7 @@ function atualizarCarrinho() {
         <div class="item-dados">
           <span class="item-titulo">${escapeHtml(detalhes.nome)}</span>
           <span class="item-codigo">Código: ${escapeHtml(String(cod))}${i.kit ? ` · Lotes de ${fatorLote}` : ''}</span>
+          ${esgotado?`<span class="aviso-esgotado">${i.kit?'Kit com componente esgotado':'Esgotado — sem valor'}. O vendedor será informado.</span>`:''}
           ${detalhes.variacoes.length ? `<dl class="item-variacoes">${detalhes.variacoes.map(([rotulo, valor]) => `<div><dt>${escapeHtml(rotulo)}: </dt><dd>${escapeHtml(valor)}</dd></div>`).join('')}</dl>` : ''}
           
           <div class="item-valores" style="margin-top: 4px;">
@@ -3436,12 +3489,12 @@ function atualizarCarrinho() {
                 <button onclick="event.stopPropagation(); mudarQtd('${cod}', 1)">+</button>
               </div>
               <span class="item-linha-valor">
-                ${calc.temOferta 
+                ${esgotado&&!i.kit?'<span class="val-unit">Sem valor</span>':calc.temOferta
                   ? `<span class="val-de">R$ ${fmtMoeda(calc.precoOriginal * fatorLote)}</span> <span class="val-unit-oferta">R$ ${fmtMoeda(subUnitario * fatorLote)}</span>` 
                   : `<span class="val-unit">R$ ${fmtMoeda(subUnitario * fatorLote)}</span>`}
               </span>
             </div>
-            <span class="item-linha-total" style="margin-top: 4px;">Total: <strong>R$ ${fmtMoeda(subTotal)}</strong></span>
+            <span class="item-linha-total" style="margin-top: 4px;">Total: <strong>${esgotado&&!i.kit?'Sem valor':'R$ '+fmtMoeda(subTotal)}</strong></span>
           </div>
 
           ${calc.temOferta ? `
@@ -3455,6 +3508,8 @@ function atualizarCarrinho() {
         <button class="item-remover" onclick="deletarItemCarrinho('${cod}')" title="Remover">✕</button>
       </div>`;
   }).join('');
+
+  if(typeof itensPedidoComAgrupados==='function')total=itensPedidoComAgrupados().reduce((s,it)=>s+Math.round(it.precoFinal*it.qtd*100),0)/100;
 
   const btnFab = document.getElementById('btnCarrinho');
   atualizarResumoPedidoTopo(total, qtdTotal);
@@ -3497,11 +3552,13 @@ function atualizarCarrinho() {
   rodapeEcoEl.innerHTML = rodapeAviso + rodapeEconomia;
 
   // Mantém o autosave rodando
+  if(typeof aplicandoPrecosCarrinho==='undefined'||!aplicandoPrecosCarrinho){
   clearTimeout(timerAutosave);
   if (clienteLogado && (Object.keys(carrinho).length > 0 || pedidoEmEdicaoId || isAutosaving)) {
     timerAutosave = setTimeout(() => {
       autosaveCarrinho();
     }, 2000);
+  }
   }
 }
 
@@ -3544,7 +3601,7 @@ async function autosaveCarrinho() {
   }
   isAutosaving = true;
   
-  const total = itens.reduce((acc, it) => acc + (it.precoFinal * it.qtd), 0);
+  const total = itens.reduce((acc, it) => acc + Math.round(it.precoFinal * it.qtd * 100), 0) / 100;
 
   const painelHead = document.querySelector('#painelCarrinho .painel-head span');
   const textoOriginal = painelHead ? painelHead.textContent : 'Seu Pedido';
@@ -3567,6 +3624,7 @@ async function autosaveCarrinho() {
     
     const j = await r.json();
     
+    if(j.precos)aplicarCotacaoCarrinho(j.precos);
     if (j.ok) {
       pedidoEmEdicaoId = j.id; // Atualiza a variável com o ID que o backend devolveu
       if (painelHead) painelHead.innerHTML = 'Seu Pedido <span style="font-size:0.7rem; color:#6ee7b7;">(✓ salvo)</span>';

@@ -13,16 +13,18 @@ function produtoComponente(codigo) {
   const bruto = mapaCatalogoCache.get(String(codigo));
   return bruto ? normalizarItem(bruto) : null;
 }
-function componentesAtuais(kit) {
+function componentesAtuais(kit,permitirIndisponivel=false) {
   return kit.componentes.map(c => {
     const produto = produtoComponente(c.codigo);
-    if (!produto || produto.precoBase <= 0) throw new Error(`O componente ${c.codigo} está sem cadastro ou preço. Entre em contato com o vendedor.`);
-    return { ...c, precoBase: produto.precoBase, desc: produto.subgrupo || produto.descricao_longa || c.codigo, img: produto.imagem_url };
+    const cotacao=typeof cotacoesCarrinho!=='undefined'?cotacoesCarrinho.get(chavePrecoCarrinho(c.codigo)):null;
+    const indisponivel=cotacao?cotacao.esgotado:!produto||produto.precoBase<=0||Number(produto.estoque)<=0;
+    if (indisponivel&&!permitirIndisponivel) throw new Error(`O componente ${c.codigo} está sem cadastro, estoque ou preço. Entre em contato com o vendedor.`);
+    return { ...c, precoBase:indisponivel?0:Number(cotacao?.precoBase??produto.precoBase),esgotado:indisponivel, desc: produto?.subgrupo || produto?.descricao_longa || c.desc || c.codigo, img: produto?.imagem_url || c.img || '' };
   });
 }
 function precoAgrupado(kit) {
   let precoOriginal = 0, precoFinal = 0;
-  for (const c of componentesAtuais(kit)) {
+  for (const c of componentesAtuais(kit,true)) {
     const preco = calcularValoresProduto(c.precoBase, c.codigo);
     precoOriginal += preco.precoOriginal * c.quantidade;
     precoFinal += preco.precoFinal * c.quantidade;
@@ -72,7 +74,7 @@ function itensPedidoComAgrupados() {
     else somados.set(codigo, { codigo, desc: descricaoCompletaCarrinho(codigo,item), qtd, precoBase: item.precoBase, precoFinal: calc.precoFinal });
   };
   for (const [codigo, item] of Object.entries(carrinho)) {
-    if (item.kit) for (const c of componentesAtuais(item.kit)) adicionar(c.codigo,c,c.quantidade * item.qtd);
+    if (item.kit) for (const c of componentesAtuais(item.kit,true)) adicionar(c.codigo,c,c.quantidade * item.qtd);
     else adicionar(codigo,item,item.qtd);
   }
   return [...somados.values()];
@@ -82,7 +84,7 @@ function restaurarComposicaoAgrupados(composicao) {
   const restaurado = {};
   for (const [codigo,item] of Object.entries(composicao.carrinho)) {
     if (item.kit) {
-      const componentes = componentesAtuais(item.kit);
+      const componentes = componentesAtuais(item.kit,true);
       restaurado[codigo] = { ...item, kit: { ...item.kit, componentes } };
     } else {
       const p = produtoComponente(codigo);
