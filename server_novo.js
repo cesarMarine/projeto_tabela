@@ -99,9 +99,15 @@ app.put('/api/admin/produtos/compatibilidade',async(req,res)=>{
   try{
     const resultado=compatibilidade?await supabase.from('produtos_compatibilidade').upsert({codigo,compatibilidade,atualizado_em:new Date().toISOString()},{onConflict:'codigo'}):await supabase.from('produtos_compatibilidade').delete().eq('codigo',codigo);
     if(resultado.error)throw resultado.error;
-    cacheConsultas.invalidarPrefixo('compatibilidade:');cacheConsultas.invalidarPrefixo('publico:');
-    res.json({ok:true,codigo,compatibilidade});
-  }catch(e){res.status(503).json({ok:false,erro:['42P01','PGRST205'].includes(e.code)?'Execute produtos-compatibilidade.sql uma vez no banco para habilitar o campo.':'Não foi possível confirmar a gravação da compatibilidade.'});}
+    const leitura=await supabase.from('produtos_compatibilidade').select('codigo,compatibilidade').eq('codigo',codigo).maybeSingle();
+    if(leitura.error)throw leitura.error;
+    if(compatibilidade?leitura.data?.compatibilidade!==compatibilidade:Boolean(leitura.data))throw Object.assign(new Error('O banco não confirmou o texto enviado. Confira a permissão de leitura e gravação da configuração.'),{code:'GRAVACAO_NAO_CONFIRMADA'});
+    res.json({ok:true,confirmado:true,codigo,compatibilidade:leitura.data?.compatibilidade||''});
+  }catch(e){
+    console.error('[COMPATIBILIDADE] Falha na confirmação:',e.code||'SEM_CODIGO');
+    const erro=['42P01','PGRST205'].includes(e.code)?'Execute produtos-compatibilidade.sql uma vez no banco para habilitar o campo.':['42501','PGRST301'].includes(e.code)?'O servidor não tem permissão para ler ou gravar a compatibilidade. Confira a chave de serviço e as permissões da tabela.':e.code==='GRAVACAO_NAO_CONFIRMADA'?e.message:'Não foi possível confirmar a gravação da compatibilidade. Tente novamente.';
+    res.status(503).json({ok:false,erro});
+  }finally{cacheConsultas.invalidarPrefixo('compatibilidade:');cacheConsultas.invalidarPrefixo('publico:');}
 });
 app.put('/api/admin/produtos/multiplo',async(req,res)=>{
   const codigo=codigoMultiploVenda(req.body?.codigo),multiplo=req.body?.multiplo;

@@ -1739,15 +1739,38 @@ function renderizarCompatibilidadesAdmin(){
   const rows=todosOsProdutos.filter(p=>normal(p.grupo_scraping||p.grupo).includes('pecas')).filter(p=>busca?normal([p.codigo,p.descricao_sistema,p.subgrupo_scraping].join(' ')).includes(busca)||chaveMultiploAdmin(p.codigo)===chaveMultiploAdmin(busca):Boolean(compatibilidadesAdmin.textos[chaveMultiploAdmin(p.codigo)]));
   document.getElementById('listaCompatibilidades').innerHTML=rows.slice(0,30).map(p=>`<tr><td>${escapeHtml(String(p.codigo))}</td><td>${escapeHtml(p.descricao_sistema||p.subgrupo_scraping||'')}</td><td><textarea aria-label="Compatibilidade da peça ${escapeHtml(String(p.codigo))}" maxlength="4000" rows="4" style="width:100%;min-width:260px;background:#0f172a;color:#e2e8f0;padding:10px;border:1px solid #475569;border-radius:6px;font:inherit;" placeholder="Ex.: compatível com carretilhas Brisa LS 2024…">${escapeHtml(compatibilidadesAdmin.textos[chaveMultiploAdmin(p.codigo)]||'')}</textarea></td><td><button type="button" class="btn-primario" data-codigo="${escapeHtml(String(p.codigo))}" onclick="salvarCompatibilidadeAdmin(this)" ${compatibilidadesAdmin.disponivel?'':'disabled'}>Salvar</button></td></tr>`).join('')||'<tr><td colspan="4">Busque uma peça pelo código ou descrição para preencher a compatibilidade.</td></tr>';
   if(rows.length>30)document.getElementById('listaCompatibilidades').innerHTML+='<tr><td colspan="4">Mostrando 30 peças. Refine a busca.</td></tr>';
+  document.getElementById('listaCompatibilidades').oninput=e=>{
+    const botao=e.target.closest('tr')?.querySelector('button');
+    if(botao&&botao.dataset.salvando!=='1')botao.textContent='Salvar alterações';
+    document.getElementById('mensagemCompatibilidade').textContent='Há alterações ainda não salvas. Clique em Salvar.';
+  };
 }
 async function salvarCompatibilidadeAdmin(botao){
-  const campo=botao.closest('tr').querySelector('textarea'),msg=document.getElementById('mensagemCompatibilidade');botao.disabled=true;
+  if(botao.dataset.salvando==='1')return;
+  const linha=botao.closest('tr'),campo=linha.querySelector('textarea'),msg=document.getElementById('mensagemCompatibilidade'),enviado=campo.value;
+  let estado=linha.querySelector('.confirmacao-compatibilidade');
+  if(!estado){estado=document.createElement('small');estado.className='confirmacao-compatibilidade';estado.style.display='block';estado.style.marginTop='8px';estado.setAttribute('role','status');campo.after(estado);}
+  botao.disabled=true;botao.dataset.salvando='1';botao.textContent='Salvando…';
+  estado.textContent='Aguardando confirmação do banco…';msg.textContent='Gravando compatibilidade da peça '+botao.dataset.codigo+'…';
   try{
-    const r=await fetch('/api/admin/produtos/compatibilidade',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({codigo:botao.dataset.codigo,compatibilidade:campo.value})}),j=await r.json();
+    const r=await fetch('/api/admin/produtos/compatibilidade',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({codigo:botao.dataset.codigo,compatibilidade:enviado}),signal:AbortSignal.timeout(20000)});
+    if(r.headers&&!r.headers.get('content-type')?.includes('application/json'))throw new Error('O servidor não respondeu à gravação (HTTP '+r.status+'). Confira a publicação do server_novo.js.');
+    const j=await r.json();
     if(!r.ok||!j.ok)throw new Error(j.erro||'A gravação não foi confirmada.');
+    if(j.confirmado!==true)throw new Error('Atualize o server_novo.js para confirmar a gravação no banco. O texto digitado foi mantido.');
     if(j.compatibilidade)compatibilidadesAdmin.textos[j.codigo]=j.compatibilidade;else delete compatibilidadesAdmin.textos[j.codigo];
-    campo.value=j.compatibilidade;msg.textContent='Compatibilidade da peça '+botao.dataset.codigo+(j.compatibilidade?' salva. Atualize o catálogo do cliente.':' removida. O bloco ficará oculto no catálogo.');
-  }catch(e){msg.textContent=e.message;}finally{botao.disabled=false;}
+    if(campo.value===enviado){
+      campo.value=j.compatibilidade;botao.textContent='Salvo ✓';
+      estado.textContent=(j.compatibilidade?'Gravado e confirmado':'Remoção confirmada')+' às '+new Date().toLocaleTimeString('pt-BR')+'.';
+      msg.textContent='Compatibilidade da peça '+botao.dataset.codigo+' confirmada no banco. '+(j.compatibilidade?'Atualize o catálogo do cliente.':'O bloco ficará oculto no catálogo.');
+    }else{
+      botao.textContent='Salvar alterações';estado.textContent='A versão enviada foi salva. Há novas alterações neste campo que ainda precisam ser salvas.';msg.textContent=estado.textContent;
+    }
+  }catch(e){
+    botao.textContent='Tentar salvar novamente';
+    estado.textContent=['TimeoutError','AbortError'].includes(e.name)?'O servidor demorou a confirmar. Seu texto foi mantido; tente salvar novamente.':e.message;
+    msg.textContent=estado.textContent;
+  }finally{botao.disabled=false;delete botao.dataset.salvando;}
 }
 
 async function carregarDados() {
