@@ -94,9 +94,7 @@ async function prepararPrecosRascunho(req){
   const controle=await controlePrecosRascunhos();if(!controle.ativo)return;
   if(controle.importando)throw Object.assign(new Error('A tabela está em atualização. Aguarde para salvar.'),{status:503});
   const precos=await cotarItensPedido(req.body.cnpj_cliente,req.body.itens),mapa=new Map(precos.itens.map(i=>[codigoMultiploVenda(i.codigo),i]));
-  const envio=req.path==='/api/pedidos'&&String(req.body.status||'ENVIADO').toUpperCase()!=='RASCUNHO';
-  const mudou=req.body.itens.some(i=>{const p=mapa.get(codigoMultiploVenda(i.codigo));return Math.abs(Number(i.precoFinal)-Number(p.precoFinal))>0.005;});
-  if(envio&&mudou)throw Object.assign(new Error('Os preços ou a disponibilidade mudaram. Revise o carrinho atualizado antes de enviar novamente.'),{status:409,precos});
+  // Recalcular também no envio, inclusive para navegadores com a tabela antiga aberta.
   req.body.itens=req.body.itens.map(i=>({...i,...mapa.get(codigoMultiploVenda(i.codigo)),codigo:i.codigo,qtd:i.qtd,desc:i.desc}));
   req.body.total=precos.total;req.precosAtualizados=precos;
 }
