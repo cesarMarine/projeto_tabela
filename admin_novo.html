@@ -453,6 +453,14 @@
 
     <!-- PÁGINA: FAMÍLIAS -->
     <section class="page" id="page-familias">
+      <div class="painel" id="painelMultiplosVenda">
+        <h2>Múltiplos de venda por produto</h2>
+        <p style="color:#94a3b8;margin:10px 0;">Funciona com ou sem família. Informe 10 para vender em 10, 20, 30… unidades. Vazio mantém a regra atual do HTML; 1 permite venda unitária.</p>
+        <label for="buscaMultiploVenda">Buscar código ou descrição</label>
+        <input id="buscaMultiploVenda" type="search" placeholder="Ex.: 10342 ou nome do produto" oninput="renderizarMultiplosVenda()" style="width:100%;margin:10px 0;">
+        <p id="mensagemMultiplosVenda" role="status"></p>
+        <div style="overflow-x:auto;"><table style="width:100%;"><thead><tr><th>Código</th><th>Produto</th><th>Múltiplo configurado</th><th>Regra em uso</th><th>Ações</th></tr></thead><tbody id="listaMultiplosVenda"><tr><td colspan="5">Abra Famílias e busque o produto.</td></tr></tbody></table></div>
+      </div>
       <div class="painel" id="painelAgrupados"></div>
       <div class="painel">
         <h2>Criar Família de Produtos</h2>
@@ -1670,6 +1678,42 @@ async function carregarAuditoria(forcar = false) {
   }
 }
 
+// Configuração individual, independente do cadastro de famílias.
+let multiplosVendaAdmin={regras:{},legados:{},disponivel:false,carregado:false};
+const chaveMultiploAdmin=v=>String(v??'').trim().replace(/^0+(?=\d)/,'').toLowerCase();
+async function carregarMultiplosVendaAdmin(){
+  try{
+    const r=await fetch('/api/admin/produtos-multiplos'),j=await r.json();
+    if(!r.ok||!j.ok)throw new Error(j.erro||'Não foi possível carregar a configuração.');
+    multiplosVendaAdmin={...j,carregado:true};
+    document.getElementById('mensagemMultiplosVenda').textContent=j.disponivel?'':'Para habilitar o salvamento, execute produtos-multiplos.sql uma vez no banco. As regras atuais do HTML continuam em uso.';
+    renderizarMultiplosVenda();
+  }catch(e){document.getElementById('mensagemMultiplosVenda').textContent=e.message;}
+}
+function renderizarMultiplosVenda(){
+  const t=document.getElementById('listaMultiplosVenda'),normal=v=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  const busca=normal(document.getElementById('buscaMultiploVenda').value.trim());
+  if(!busca){t.innerHTML='<tr><td colspan="5">Digite um código ou uma descrição para configurar o produto, mesmo que já pertença a uma família.</td></tr>';return;}
+  const rows=todosOsProdutos.filter(p=>normal([p.codigo,p.descricao_sistema,p.subgrupo_scraping].join(' ')).includes(busca)||chaveMultiploAdmin(p.codigo)===chaveMultiploAdmin(busca));
+  t.innerHTML=rows.slice(0,40).map(p=>{
+    const c=chaveMultiploAdmin(p.codigo),atual=multiplosVendaAdmin.regras[c],efetivo=atual??multiplosVendaAdmin.legados[c]??1;
+    return `<tr><td>${escapeHtml(String(p.codigo))}</td><td>${escapeHtml(p.descricao_sistema||p.subgrupo_scraping||'')}</td><td><input aria-label="Múltiplo do produto ${escapeHtml(String(p.codigo))}" type="number" min="1" max="1000000" step="1" placeholder="Regra atual" value="${atual??''}" style="width:130px;"></td><td>${efetivo===1?'Unitário':`Múltiplos de ${efetivo}`}<small style="display:block;">${atual==null?'Regra atual / HTML':'Configurado no admin'}</small></td><td><button type="button" class="btn-primario" data-codigo="${escapeHtml(String(p.codigo))}" onclick="salvarMultiploVenda(this)" ${!multiplosVendaAdmin.disponivel?'disabled':''}>Salvar</button> <button type="button" data-codigo="${escapeHtml(String(p.codigo))}" onclick="salvarMultiploVenda(this,true)" ${!multiplosVendaAdmin.disponivel?'disabled':''}>Usar regra atual</button></td></tr>`;
+  }).join('')||'<tr><td colspan="5">Produto não encontrado no catálogo.</td></tr>';
+  if(rows.length>40)t.innerHTML+='<tr><td colspan="5">Mostrando 40 de '+rows.length+' produtos. Refine a busca.</td></tr>';
+}
+async function salvarMultiploVenda(botao,restaurar=false){
+  const input=botao.closest('tr').querySelector('input'),v=input.value.trim(),multiplo=restaurar||!v?null:Number(v),msg=document.getElementById('mensagemMultiplosVenda');
+  if(multiplo!==null&&(!Number.isSafeInteger(multiplo)||multiplo<1||multiplo>1000000)){msg.textContent='Informe um número inteiro de 1 a 1000000.';return;}
+  botao.disabled=true;
+  try{
+    const r=await fetch('/api/admin/produtos/multiplo',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({codigo:botao.dataset.codigo,multiplo})}),j=await r.json();
+    if(!r.ok||!j.ok)throw new Error(j.erro||'Falha ao salvar.');
+    if(multiplo===null)delete multiplosVendaAdmin.regras[j.codigo];else multiplosVendaAdmin.regras[j.codigo]=multiplo;
+    msg.textContent='Produto '+botao.dataset.codigo+' salvo: '+(j.efetivo===1?'venda unitária.':'múltiplos de '+j.efetivo+'.')+' Atualize o catálogo do cliente para carregar a nova regra.';
+    renderizarMultiplosVenda();
+  }catch(e){msg.textContent=e.message;}finally{botao.disabled=false;}
+}
+
 async function carregarDados() {
   try {
     const rf = await fetch('/api/familias'); 
@@ -1695,6 +1739,7 @@ async function carregarDados() {
     const r = await fetch('/api/catalogo'); 
     const j = await r.json();
     todosOsProdutos = j.itens || [];
+    void carregarMultiplosVendaAdmin();
 
     const re = await fetch('/api/estoque-subgrupos'); 
     const je = await re.json();

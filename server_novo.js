@@ -1,4 +1,5 @@
 import { createHash as monitorPedidosHash, randomUUID as monitorPedidosUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { identificarDispositivo } from './acessos-dispositivo.js';
 import { detectarDestaques, codigoNovidades } from './novidades-regras.js';
 import { registrarAgrupados, composicaoPedido } from './agrupados-server.js';
@@ -22,13 +23,65 @@ const SUPABASE_KEY = process.env.SUPABASE_KEY;
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 const cacheConsultas = criarCacheConsultas();
 
+// Múltiplos individuais: o HTML continua sendo a regra padrão dos produtos antigos.
+const codigoMultiploVenda = v => String(v??'').trim().replace(/^0+(?=\d)/,'').toLowerCase();
+const htmlMultiplosVenda = readFileSync(new URL('./index.html',import.meta.url),'utf8');
+const multiplosLegadosVenda = new Map();
+for(const [nome,multiplo]of [['PRODUTOS_LOTE_10',10],['PRODUTOS_LOTE_12',12]]){
+  const trecho=htmlMultiplosVenda.match(new RegExp('const '+nome+' = \\[([\\s\\S]*?)\\];'));
+  if(!trecho)throw new Error('Lista de múltiplos não encontrada no index.html: '+nome);
+  for(const m of trecho[1].matchAll(/['"]([^'"]+)['"]/g))if(!multiplosLegadosVenda.has(codigoMultiploVenda(m[1])))multiplosLegadosVenda.set(codigoMultiploVenda(m[1]),multiplo);
+}
+async function carregarMultiplosVenda(){
+  return cacheConsultas.obter('multiplos:venda',300000,async()=>{
+    const regras=new Map();
+    for(let inicio=0;;inicio+=1000){
+      const {data,error}=await supabase.from('produtos_multiplos_venda').select('codigo,multiplo').order('codigo').range(inicio,inicio+999);
+      if(error){if(['42P01','PGRST205'].includes(error.code))return {disponivel:false,regras};throw error;}
+      for(const p of data||[])regras.set(codigoMultiploVenda(p.codigo),p.multiplo);
+      if(!data||data.length<1000)break;
+    }
+    return {disponivel:true,regras};
+  });
+}
+async function validarMultiplosVenda(body){
+  if(!Array.isArray(body?.itens)||!body.itens.length)return;
+  const {regras}=await carregarMultiplosVenda();
+  let itens=body.itens;
+  if(body.composicao_agrupados){
+    composicaoPedido(body);
+    itens=Object.entries(body.composicao_agrupados.carrinho).filter(([c])=>!c.startsWith('kit:')).map(([codigo,i])=>({codigo,qtd:i.qtd}));
+  }
+  for(const item of itens){
+    const codigo=codigoMultiploVenda(item.codigo),multiplo=regras.get(codigo)??multiplosLegadosVenda.get(codigo)??1;
+    if(multiplo>1&&(!Number.isSafeInteger(Number(item.qtd))||Number(item.qtd)<=0||Number(item.qtd)%multiplo!==0))throw Object.assign(new Error('Produto '+item.codigo+': informe uma quantidade múltipla de '+multiplo+' ('+multiplo+', '+multiplo*2+', '+multiplo*3+'...).'),{status:400});
+  }
+}
+
 app.use(express.json({ limit: '100mb' }));
+app.post(['/api/pedidos/autosave','/api/pedidos'],async(req,res,next)=>{
+  try{await validarMultiplosVenda(req.body);next();}catch(e){res.status(e.status||503).json({ok:false,erro:e.status?e.message:'Não foi possível validar os múltiplos de venda. Tente novamente; o pedido foi preservado.'});}
+});
 app.use(express.static('.'));
 registrarInvalidacaoConsultas(app, cacheConsultas);
 registrarAgrupados(app, supabase);
 registrarSecoesFamilias(app, supabase);
 registrarMetricasVendedor(app, supabase, () => new Date(), cacheConsultas);
 registrarLeituraPedidosVendedor(app, supabase, cacheConsultas);
+
+app.get('/api/admin/produtos-multiplos',async(req,res)=>{
+  try{const {disponivel,regras}=await carregarMultiplosVenda();res.json({ok:true,disponivel,regras:Object.fromEntries(regras),legados:Object.fromEntries(multiplosLegadosVenda)});}catch(e){res.status(503).json({ok:false,erro:'Não foi possível carregar os múltiplos de venda.'});}
+});
+app.put('/api/admin/produtos/multiplo',async(req,res)=>{
+  const codigo=codigoMultiploVenda(req.body?.codigo),multiplo=req.body?.multiplo;
+  if(!/^[a-z0-9._-]{1,80}$/.test(codigo)||!(multiplo===null||Number.isSafeInteger(multiplo)&&multiplo>=1&&multiplo<=1000000))return res.status(400).json({ok:false,erro:'Informe o código e um múltiplo inteiro entre 1 e 1000000, ou deixe vazio para usar a regra atual.'});
+  try{
+    const resultado=multiplo===null?await supabase.from('produtos_multiplos_venda').delete().eq('codigo',codigo):await supabase.from('produtos_multiplos_venda').upsert({codigo,multiplo,atualizado_em:new Date().toISOString()},{onConflict:'codigo'});
+    if(resultado.error)throw resultado.error;
+    cacheConsultas.invalidarPrefixo('multiplos:');cacheConsultas.invalidarPrefixo('publico:');
+    res.json({ok:true,codigo,multiplo,efetivo:multiplo??multiplosLegadosVenda.get(codigo)??1});
+  }catch(e){res.status(503).json({ok:false,erro:['42P01','PGRST205'].includes(e.code)?'Habilite a configuração executando produtos-multiplos.sql no banco.':'Não foi possível salvar o múltiplo. A alteração não foi confirmada.'});}
+});
 
 const soDigitos = (v) => String(v ?? '').replace(/\D/g, '');
 const num = (v) => {
@@ -440,6 +493,7 @@ app.get('/api/catalogo', async (req, res) => {
       if (chave) mapaScr[chave] = s;
     });
 
+    const {regras:multiplosVenda}=await carregarMultiplosVenda();
     const linhas = todosItensSis.map(s => {
       const chaveSis = norm(s.codigo);
       const scr = mapaScr[chaveSis] || {};
@@ -452,6 +506,7 @@ app.get('/api/catalogo', async (req, res) => {
       return {
         codigo: s.codigo,
         cod_barras: s.cod_barras,
+        multiplo_venda: multiplosVenda.get(codigoMultiploVenda(s.codigo))??null,
         descricao_sistema: s.descricao,
         estoque: s.estoque,
         preco_venda: s.preco_venda,
