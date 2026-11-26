@@ -533,9 +533,8 @@ app.get('/api/estoque-subgrupos', async (req, res) => {
 // ==========================================
 // CATÁLOGO (item + scraping)
 // ==========================================
-app.get('/api/catalogo', async (req, res) => {
-  try {
-    const resposta = await cacheConsultas.obter('publico:catalogo', 300000, async () => {
+async function carregarCatalogoPublico() {
+    return cacheConsultas.obter('publico:catalogo', 300000, async () => {
     let todosItensSis = [];
     let de = 0;
     const tamanhoPagina = 1000;
@@ -604,6 +603,18 @@ app.get('/api/catalogo', async (req, res) => {
 
     return { ok: true, total: linhas.length, itens: linhas };
     });
+}
+app.get('/api/oportunidade/cruiser', async (_req,res) => {
+  try {
+    const catalogo=await carregarCatalogoPublico();
+    const produto=catalogo.itens.find(p=>String(p.codigo).trim().replace(/^0+(?=\d)/,'')==='8586');
+    if(!produto)return res.status(404).json({ok:false,erro:'Produto indisponível nesta tabela. Consulte seu vendedor.'});
+    res.set('Cache-Control','no-store').json({ok:true,produto});
+  }catch{res.status(503).json({ok:false,erro:'Não foi possível consultar a disponibilidade. Tente novamente.'});}
+});
+app.get('/api/catalogo', async (_req, res) => {
+  try {
+    const resposta=await carregarCatalogoPublico();
     res.json(resposta);
   } catch (e) {
     res.status(500).json({ ok: false, erro: e.message });

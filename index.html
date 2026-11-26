@@ -661,6 +661,7 @@
     </div>
 
     <a href="novidades.html" onclick="abrirPaginaNovidades(event)" style="color:white; font-size:.8rem; text-decoration:none; white-space:nowrap;">✨ Novidades</a>
+    <a href="oportunidade.html" style="color:#ffe4a2;font-size:.8rem;text-decoration:none;white-space:nowrap;font-weight:700">Phantom Cruiser ↗</a>
     <div class="busca-wrap">
       <input type="search" id="busca" aria-label="Buscar produto por código, nome ou palavra-chave" placeholder="🔍 Buscar produto por código, nome ou palavra-chave..." autocomplete="off">
     </div>
@@ -1760,9 +1761,25 @@ async function carregar() {
     // 👇 Verifica se o cliente deixou algum rascunho salvo ao sair
     const rascunhoVerificado = await verificarRascunhoPendente();
     if (rascunhoVerificado) await receberNovidadesNoCarrinho();
+    receberOportunidadeNoCarrinho();
     void atualizarPrecosCarrinho(true);
 
   } catch (e) { document.getElementById('conteudo').innerHTML = '<div class="loading">Erro ao carregar.</div>'; }
+}
+
+function receberOportunidadeNoCarrinho() {
+  let pedido;
+  try { pedido=JSON.parse(sessionStorage.getItem('oportunidade_cruiser')||'null'); } catch { return; }
+  if(!pedido||!clienteLogado)return;
+  if(pedido.tipo!=='phantom-cruiser'||!Number.isFinite(pedido.criadoEm)||Date.now()-pedido.criadoEm>30*60*1000||pedido.criadoEm>Date.now()+60000){sessionStorage.removeItem('oportunidade_cruiser');return;}
+  if(pedido.cliente&&pedido.cliente!==String(clienteLogado.cnpj)){sessionStorage.removeItem('oportunidade_cruiser');return;}
+  const produto=todosItens.find(p=>String(p.codigo).replace(/^0+(?=\d)/,'')==='8586');
+  if(!produto||produto.estoque<=0){sessionStorage.removeItem('oportunidade_cruiser');alert('O Phantom Cruiser não está disponível na tabela atual. Consulte seu vendedor.');return;}
+  const quantidade=Number(pedido.quantidade);
+  if(!Number.isSafeInteger(quantidade)||quantidade<1||quantidade>999){sessionStorage.removeItem('oportunidade_cruiser');return;}
+  sessionStorage.removeItem('oportunidade_cruiser');
+  setQtd(produto.codigo,Number(carrinho[produto.codigo]?.qtd||0)+quantidade);
+  document.getElementById('painelCarrinho').classList.add('on');
 }
 
 async function registrarAcessoDiario() {
@@ -1949,7 +1966,7 @@ function renderizar() {
   if (!lista.length && !blocosAgrupados.length) { cont.innerHTML = '<div class="loading">Nenhum produto encontrado.</div>'; return; }
   
   const processados = new Set(); 
-  let html = "";
+  let html = !buscaAtual.trim() && String(grupoAtual).toUpperCase().includes("MOTOR") ? `<a href="oportunidade.html" style="display:flex;justify-content:space-between;align-items:center;gap:14px;padding:18px 22px;margin:0 0 18px;border-radius:12px;background:#092d46;color:white;text-decoration:none"><span><small style="color:#f5c879">EM DESTAQUE</small><br><strong>PHANTOM CRUISER 65lb · COM PEDAL</strong></span><span>Conhecer o motor ↗</span></a>` : "";
 
   let familiasOrdenadas = todasFamilias.map(f => {
     let rawItens = f.subgrupos || f.itens || [];
