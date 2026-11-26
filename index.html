@@ -8,6 +8,13 @@
 <style>
 .item-carrinho.item-esgotado{background:#fff1f2;border:1px solid #fda4af;border-left:4px solid #e11d48;}
 .aviso-esgotado{display:block;color:#9f1239;font-size:12px;font-weight:800;margin:6px 0;}
+.titulo-secao-carrinho{font-size:12px;font-weight:800;color:#475569;padding:12px 3px 8px;}
+.titulo-secao-carrinho.indisponiveis{color:#9f1239;}
+.aviso-indisponiveis{display:flex;gap:16px;align-items:center;max-width:1536px;margin:12px auto 0;padding:14px 18px;border:1px solid #fecdd3;border-left:4px solid #be123c;border-radius:9px;background:#fff1f2;color:#881337;}
+.aviso-indisponiveis[hidden]{display:none;}
+.aviso-indisponiveis div{flex:1;min-width:0;}.aviso-indisponiveis strong{font-size:13px;}.aviso-indisponiveis p{font-size:12px;line-height:1.5;margin:5px 0 0;overflow-wrap:anywhere;}
+.aviso-indisponiveis button{border:0;cursor:pointer;border-radius:6px;padding:10px 13px;background:#003366;color:white;font-weight:700;font-size:12px;white-space:nowrap;}.aviso-indisponiveis .dispensar-aviso{padding:6px;background:transparent;color:#881337;font-size:18px;}
+@media(max-width:640px){.aviso-indisponiveis{margin:10px 12px 0;gap:10px;flex-wrap:wrap;padding:12px;}.aviso-indisponiveis div{flex-basis:calc(100% - 34px);}.aviso-indisponiveis .revisar-aviso{order:3;}}
 .tem-compatibilidade{display:grid!important;grid-template-columns:minmax(130px,var(--largura-opcoes-compatibilidade,150px)) minmax(220px,1fr);gap:22px;align-items:start;}
 .compatibilidade-opcoes{min-width:0;}
 .compatibilidade-peca{padding:20px;background:#f3f7fc;border:1px solid #dbe7f4;border-left:4px solid #07568a;border-radius:8px;min-width:0;}
@@ -683,6 +690,11 @@
   <div id="barramarcas" style="max-width:1600px; margin:0 auto; display:flex; gap:8px; align-items:center;"></div>
 </div>
 
+<section id="avisoIndisponiveis" class="aviso-indisponiveis" role="status" aria-live="polite" hidden>
+  <div><strong id="tituloAvisoIndisponiveis"></strong><p id="nomesAvisoIndisponiveis"></p></div>
+  <button type="button" class="revisar-aviso" onclick="revisarItensIndisponiveis()">Revisar meu carrinho →</button>
+  <button type="button" class="dispensar-aviso" onclick="dispensarAvisoIndisponiveis()" aria-label="Fechar aviso de produtos indisponíveis">×</button>
+</section>
 <main class="conteudo" id="conteudo">
   <div class="loading">Carregando catálogo…</div>
 </main>
@@ -829,6 +841,7 @@ if (typeof ResizeObserver !== 'undefined') {
 window.addEventListener('resize', atualizarPosicaoBarras);
 atualizarPosicaoBarras();
 let clienteLogado = null;
+let avisoIndisponiveisDispensado=false;
 let porcentagemAcrescimo = 0;
 let mapaOfertas = {}; 
 let cotacoesCarrinho=new Map(),revisaoPrecosCarrinho=null,atualizandoPrecosCarrinho=false,aplicandoPrecosCarrinho=false,cotacaoCarrinhoPendente=null;
@@ -1313,6 +1326,34 @@ function estaEsgotadoCarrinho(codigo,item){
   const cotacao=cotacoesCarrinho.get(chavePrecoCarrinho(codigo));if(cotacao)return Boolean(cotacao.esgotado);
   const bruto=produtoBrutoCarrinho(codigo);return !bruto||Number(bruto.estoque)<=0||Number(bruto.preco_venda)<=0||Boolean(item?.esgotado);
 }
+function indisponiveisConfirmadosCarrinho(){
+  const encontrados=new Map();
+  const incluir=(codigo,item)=>{
+    const chave=chavePrecoCarrinho(codigo);
+    if(cotacoesCarrinho.get(chave)?.esgotado===true&&!encontrados.has(chave))encontrados.set(chave,{codigo,nome:detalhesItemCarrinho(codigo,item).nome});
+  };
+  for(const [codigo,item]of Object.entries(carrinho)){
+    if(item.kit)for(const componente of item.kit.componentes)incluir(componente.codigo,componente);
+    else incluir(codigo,item);
+  }
+  return [...encontrados.values()];
+}
+function atualizarAvisoIndisponiveis(){
+  const aviso=document.getElementById('avisoIndisponiveis');if(!aviso)return;
+  const itens=indisponiveisConfirmadosCarrinho();
+  aviso.hidden=avisoIndisponiveisDispensado||!clienteLogado||!itens.length;
+  if(aviso.hidden)return;
+  document.getElementById('tituloAvisoIndisponiveis').textContent=itens.length===1?'1 produto do seu carrinho está indisponível':`${itens.length} produtos do seu carrinho estão indisponíveis`;
+  document.getElementById('nomesAvisoIndisponiveis').textContent=itens.slice(0,3).map(i=>i.nome).join(' · ')+(itens.length>3?` · e mais ${itens.length-3}. Veja todos no carrinho.`:'');
+}
+function dispensarAvisoIndisponiveis(){
+  avisoIndisponiveisDispensado=true;
+  const aviso=document.getElementById('avisoIndisponiveis');if(aviso)aviso.hidden=true;
+}
+function revisarItensIndisponiveis(){
+  dispensarAvisoIndisponiveis();abrirCarrinhoParaEnvio();
+  const lista=document.getElementById('listaCarrinho');if(lista)lista.scrollTop=0;
+}
 function aplicarCotacaoCarrinho(cotacao){
   if(!cotacao?.itens)return;
   if(document.activeElement?.matches('input[type="number"]')){cotacaoCarrinhoPendente=cotacao;return;}
@@ -1328,6 +1369,7 @@ function aplicarCotacaoCarrinho(cotacao){
     else{const p=cotacoesCarrinho.get(chavePrecoCarrinho(codigo));if(p){item.precoBase=Number(p.precoBase);item.esgotado=Boolean(p.esgotado);}}
   }
   if(mudou){aplicandoPrecosCarrinho=true;try{atualizarCarrinho();}finally{aplicandoPrecosCarrinho=false;}}
+  if(typeof atualizarAvisoIndisponiveis==='function')atualizarAvisoIndisponiveis();
 }
 async function atualizarPrecosCarrinho(forcar=false){
   if(atualizandoPrecosCarrinho||!clienteLogado||!Object.keys(carrinho).length||document.hidden||isAutosaving)return;
@@ -3463,11 +3505,13 @@ function descricaoCompletaCarrinho(codigo, itemCarrinho) {
 }
 
 function atualizarCarrinho() {
-  const itens = Object.keys(carrinho); 
+  const itens = Object.keys(carrinho);
+  const indisponiveis=new Set(itens.filter(cod=>typeof estaEsgotadoCarrinho==='function'&&estaEsgotadoCarrinho(cod,carrinho[cod])));
+  itens.sort((a,b)=>Number(indisponiveis.has(b))-Number(indisponiveis.has(a)));
   let total = 0, qtdTotal = 0;
   let economiaTotal = 0; 
   
-  const html = itens.map(cod => {
+  const html = itens.map((cod,posicao) => {
     const i = carrinho[cod];
     const detalhes = detalhesItemCarrinho(cod, i);
     const calc = calcularValoresProduto(i.precoBase, cod);
@@ -3484,7 +3528,8 @@ function atualizarCarrinho() {
     total += subTotal; 
     qtdTotal += i.qtd;
     
-    return `
+    const secao=indisponiveis.size&&(posicao===0?'<div class="titulo-secao-carrinho indisponiveis">Itens indisponíveis</div>':posicao===indisponiveis.size?'<div class="titulo-secao-carrinho">Demais itens do pedido</div>':'');
+    return `${secao||''}
       <div class="item-carrinho ${calc.temOferta ? 'item-com-oferta' : ''} ${esgotado?'item-esgotado':''}">
         
         <div class="item-img-wrap">
@@ -3555,6 +3600,7 @@ function atualizarCarrinho() {
 
   document.getElementById('carrinhoTotal').textContent = `R$ ${fmtMoeda(total)}`;
   document.getElementById('listaCarrinho').innerHTML = html || '<div style="text-align:center;color:#94a3b8;padding:20px;">Vazio</div>';
+  if(typeof atualizarAvisoIndisponiveis==='function')atualizarAvisoIndisponiveis();
 
    
 
