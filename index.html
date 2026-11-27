@@ -327,6 +327,12 @@
     text-transform: uppercase; letter-spacing: 1px; margin-top: 2px;
   }
 
+  .black-hero.black-final{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(245px,1fr);align-items:center;gap:20px;text-align:left;background:radial-gradient(ellipse at 95% 10%,#09558766,transparent 55%),linear-gradient(115deg,#080d15,#102339);border:1px solid #254c70;border-left:5px solid #facc15;padding:24px 30px;margin:12px;border-radius:14px;box-shadow:0 8px 24px #08244520}
+  .black-final::before{display:none}.black-final-copy,.black-final-prazo{position:relative;z-index:1;min-width:0}.black-final .tag-black{border-radius:4px;padding:5px 9px;margin:0 0 12px;font-size:10px;letter-spacing:1.5px;box-shadow:none}.black-final .black-chamada{display:inline-block;margin-left:10px;color:#e5eef7;font-size:10px;font-weight:800;letter-spacing:1px}.black-final h1{font-size:clamp(25px,3.6vw,42px);line-height:1.05;letter-spacing:-1px;color:#fff;background:none;-webkit-text-fill-color:currentColor;margin:0 0 10px}.black-final h1 em{font-style:normal;color:#facc15}.black-final p{font-size:13px;color:#d2dfeb;opacity:1;font-weight:400;line-height:1.6;margin:0 0 15px;max-width:510px}.black-final-acoes{display:flex;align-items:center;gap:15px;flex-wrap:wrap}.black-final-cta{display:inline-flex;align-items:center;justify-content:center;gap:20px;background:#facc15;color:#0b1725!important;border:0;border-radius:6px;font:inherit;font-size:13px;font-weight:850;text-decoration:none;padding:11px 17px;cursor:pointer;transition:background .15s,transform .15s}.black-final-cta:hover{background:#fde047;transform:translateY(-1px)}.black-final-cta:focus-visible{outline:3px solid #fff;outline-offset:3px}.black-final-acoes small{font-size:11px;color:#a5bfd3}.black-final-prazo{border-left:1px solid #7ba2c440;padding-left:25px;text-align:center}.black-final-prazo>strong{display:block;color:#facc15;font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px}.black-final .black-contador{display:flex;gap:7px;flex-wrap:nowrap}.black-final .bloco-tempo{flex:1;min-width:44px;max-width:75px;border:1px solid #42627e;background:#ffffff08;padding:11px 6px;border-radius:6px}.black-final .num-tempo{color:#fff;font-size:28px}.black-final .label-tempo{font-size:9px;color:#b4c8d9;letter-spacing:.5px;margin-top:5px}.black-final-data{display:block;color:#c0d1df;font-size:11px;margin-top:10px}.grade-ofertas{scroll-margin-top:180px}
+  @media(max-width:650px){.black-hero.black-final{grid-template-columns:1fr;gap:17px;padding:20px;margin:8px;border-radius:10px}.black-final h1{font-size:32px}.black-final .black-chamada{font-size:9px;margin-left:7px;letter-spacing:.4px}.black-final p{font-size:12px;margin-bottom:12px}.black-final-prazo{border-left:0;border-top:1px solid #7ba2c440;padding:14px 0 0;display:grid;grid-template-columns:1fr 1.2fr;align-items:center;gap:7px 12px;text-align:left}.black-final-prazo>strong{font-size:10px;line-height:1.5;letter-spacing:.6px;margin:0}.black-final .black-contador{gap:4px;grid-row:1/3;grid-column:2}.black-final .bloco-tempo{min-width:30px;padding:8px 3px}.black-final .num-tempo{font-size:20px}.black-final .label-tempo{font-size:7px}.black-final-data{font-size:10px;margin:0}.black-final-acoes{gap:9px}.black-final-acoes small{font-size:10px}}
+
+  @media(max-width:360px){.black-hero.black-final{padding:16px;gap:12px}.black-final h1{font-size:26px}.black-final .tag-black{font-size:9px;letter-spacing:1px}.black-final .black-chamada{display:block;margin:0 0 9px}.black-final p{font-size:11px}.black-final .bloco-tempo{min-width:25px}.black-final .num-tempo{font-size:18px}}
+
   .black-filtros {
     display: flex; gap: 8px; overflow-x: auto; padding: 4px 12px 12px 12px;
     -webkit-overflow-scrolling: touch;
@@ -2106,6 +2112,29 @@ function renderizar() {
 /* ============================================================
    BLACK NOVEMBER — ENCARTE INLINE
    ============================================================ */
+function destaqueFinalBlack() {
+  const fim=getFimBlackNovember(),restante=fim-new Date();
+  const encerrada=restante<=0;
+  const chamada=encerrada?'Confira as ofertas':restante<=48*60*60*1000?'Últimas horas.':'Últimos dias.';
+  return `<section class="black-hero black-final" aria-label="Black November Marine">
+    <div class="black-final-copy">
+      <span class="tag-black">BLACK NOVEMBER</span><span class="black-chamada">${encerrada?'SELEÇÃO ESPECIAL':'RETA FINAL · APROVEITE'}</span>
+      <h1 id="blackFinalTitulo">${chamada}<br><em>Aproveite a Black.</em></h1>
+      <p id="blackFinalTexto">${encerrada?'Confira os produtos disponíveis e suas condições atuais.':'Os produtos que sua loja precisa, com condições especiais. Escolha seus favoritos e monte seu pedido.'}</p>
+      <div class="black-final-acoes"><a class="black-final-cta" href="#blackOfertasLista">Aproveitar ofertas <span aria-hidden="true">↓</span></a><small>Ofertas enquanto durarem os estoques.</small></div>
+    </div>
+    <div class="black-final-prazo">
+      <strong id="blackFinalPrazo">${encerrada?'Período encerrado':'A Black termina em'}</strong>
+      <div class="black-contador" aria-label="Contagem até o fim da Black November">
+        <div class="bloco-tempo"><span class="num-tempo" id="bnDias">--</span><span class="label-tempo">Dias</span></div>
+        <div class="bloco-tempo"><span class="num-tempo" id="bnHoras">--</span><span class="label-tempo">Horas</span></div>
+        <div class="bloco-tempo"><span class="num-tempo" id="bnMin">--</span><span class="label-tempo">Min</span></div>
+        <div class="bloco-tempo"><span class="num-tempo" id="bnSeg">--</span><span class="label-tempo">Seg</span></div>
+      </div>
+      <small class="black-final-data">Até ${fim.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}, às 23h59.</small>
+    </div>
+  </section>`;
+}
 function renderOfertas() {
   const cont = document.getElementById('conteudo');
 
@@ -2233,19 +2262,9 @@ function renderOfertas() {
   }).join('');
 
   cont.innerHTML = `
-    <div class="black-hero">
-      <span class="tag-black">BLACK NOVEMBER</span>
-      <h1>Ofertas do Mês</h1>
-      <p>Preços especiais válidos enquanto durarem os estoques!</p>
-      <div class="black-contador">
-        <div class="bloco-tempo"><span class="num-tempo" id="bnDias">--</span><span class="label-tempo">Dias</span></div>
-        <div class="bloco-tempo"><span class="num-tempo" id="bnHoras">--</span><span class="label-tempo">Horas</span></div>
-        <div class="bloco-tempo"><span class="num-tempo" id="bnMin">--</span><span class="label-tempo">Min</span></div>
-        <div class="bloco-tempo"><span class="num-tempo" id="bnSeg">--</span><span class="label-tempo">Seg</span></div>
-      </div>
-    </div>
+    ${ofertasRender.length?destaqueFinalBlack():'<div class="black-vazio">Nenhuma oferta disponível no momento.</div>'}
     ${filtrosHtml}
-    <div class="grade-ofertas">${htmlCards || '<div class="black-vazio">Nenhuma oferta neste grupo.</div>'}</div>`;
+    <div class="grade-ofertas" id="blackOfertasLista">${htmlCards || '<div class="black-vazio">Nenhuma oferta neste grupo.</div>'}</div>`;
 
   iniciarContadorBlack();
 }
@@ -2293,6 +2312,9 @@ function iniciarContadorBlack() {
 
     const d = document.getElementById('bnDias');
     if (d) {
+      const titulo=document.getElementById('blackFinalTitulo');
+      if(titulo)titulo.innerHTML=diff<=0?'Confira as ofertas<br><em>Black November.</em>':diff<=48*60*60*1000?'Últimas horas.<br><em>Aproveite a Black.</em>':'Últimos dias.<br><em>Aproveite a Black.</em>';
+      if(diff<=0){const prazo=document.getElementById('blackFinalPrazo'),texto=document.getElementById('blackFinalTexto');if(prazo)prazo.textContent='Período encerrado';if(texto)texto.textContent='Confira os produtos disponíveis e suas condições atuais.';}
       d.textContent = String(dias).padStart(2, '0');
       document.getElementById('bnHoras').textContent = String(horas).padStart(2, '0');
       document.getElementById('bnMin').textContent = String(min).padStart(2, '0');
