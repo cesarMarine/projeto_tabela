@@ -119,6 +119,12 @@
   }
   
   .chip-img { width: 100%; height: 100%; object-fit: contain; border-radius: 8px; }
+  .chips-wrap{display:flex;align-items:center;gap:9px;overflow:hidden}
+  .chips-wrap>.chips{flex:1;min-width:0;overflow-x:auto;padding:2px 0;scrollbar-width:thin}
+  .chip.chip-oferta{width:151px;height:44px;gap:8px;padding:5px 10px;text-align:left;border-radius:8px;box-shadow:none;background:linear-gradient(115deg,#080d15,#102e49)}
+  .chip.chip-oferta::after{display:none}.chip.chip-oferta.ativo{background:linear-gradient(115deg,#080d15,#125387);box-shadow:none}
+  .chip-oferta .black-atalho-icone{font-size:21px;line-height:1}.chip-oferta .black-atalho-texto{display:grid;gap:4px}.chip-oferta strong{color:#facc15;font-size:11px;font-weight:900;letter-spacing:.5px;white-space:nowrap}.chip-oferta small{font-size:9px;color:#fff;font-weight:650;white-space:nowrap}.chip.chip-oferta:focus-visible{outline:2px solid #125387;outline-offset:2px}
+  @media(max-width:650px){.chips-wrap{gap:7px;padding-left:8px;padding-right:8px}.chip.chip-oferta{width:126px;padding:4px 7px;gap:5px}.chip-oferta strong{font-size:10px;letter-spacing:0}.chip-oferta small{font-size:8px}.chip-oferta .black-atalho-icone{font-size:18px}}
 
   /* LOGOMARCAS */
   .marca-logo-img { height: 26px; max-width: 110px; object-fit: contain; vertical-align: middle; }
@@ -689,7 +695,7 @@
 <div id="barraAvisoTabela" style="display:none; text-align:center; padding:8px 12px; font-weight:800; font-size:0.8rem; border-bottom:1px solid transparent;"></div>
 
 <!-- CABAÇALHO DE GRUPOS -->
-<div class="chips-wrap"><div class="chips" id="chips"></div></div>
+<div class="chips-wrap"><button type="button" id="atalhoBlack" class="chip chip-oferta ativo" onclick="abrirBlackNovember(this)" aria-label="Black November: ver ofertas" aria-controls="conteudo"><span class="black-atalho-icone" aria-hidden="true">🔥</span><span class="black-atalho-texto"><strong>BLACK NOVEMBER</strong><small id="chamadaAtalhoBlack">Reta final · Aproveite →</small></span></button><div class="chips" id="chips"></div></div>
 
 <!-- BARRA SECUNDÁRIA DE MARCAS -->
 <div id="barramarcasWrap" style="display:none; background:#f1f5f9; border-bottom:1px solid #e2e8f0; padding:6px 12px; position:sticky; top:105px; z-index:89; overflow-x:auto;">
@@ -1926,7 +1932,6 @@ function montarChips() {
   });
 
   document.getElementById('chips').innerHTML = `
-    <button class="chip chip-oferta ativo" onclick="trocarGrupo('__OFERTAS__', this)" title="Black November - Ofertas">🔥</button>
     ${todosGrupos.map(g => {
       const iconeUrl = getIconeUrl(g);
       return `<button class="chip" onclick="trocarGrupo('${g}', this)" title="${g}"><img src="${iconeUrl}" class="chip-img" alt="${g}" onerror="this.onerror=null; this.src='${BUCKET_ICONIS}ACESSORIOS.jpg';"></button>`;
@@ -1934,6 +1939,16 @@ function montarChips() {
   `;
 }
 
+function abrirBlackNovember(btn) {
+  trocarGrupo('__OFERTAS__',btn||document.getElementById('atalhoBlack'));
+  const reduzir=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  window.scrollTo({top:0,behavior:reduzir?'instant':'smooth'});
+}
+function atualizarAtalhoBlack() {
+  const chamada=document.getElementById('chamadaAtalhoBlack');if(!chamada)return;
+  const restante=getFimBlackNovember()-new Date();
+  chamada.textContent=restante<=0?'Ver ofertas →':restante<=48*60*60*1000?'Últimas horas · Aproveite →':'Reta final · Aproveite →';
+}
 function trocarGrupo(grupo, btn) {
   clearTimeout(deb);
   buscaAtual = '';
@@ -1993,6 +2008,7 @@ function filtrar() {
 }
 
 function renderizar() {
+  atualizarAtalhoBlack();
   document.querySelectorAll('.isca-modelos-tabs .isca-modelo-btn.ativo').forEach(btn => {
     const card = btn.closest('.isca-card[id^="card-fam-"]');
     if (card) {
